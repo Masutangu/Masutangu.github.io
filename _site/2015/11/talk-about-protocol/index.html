@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>谈谈前后台协议</title>
+  <meta name="description" content="最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="谈谈前后台协议">
+  <meta name="twitter:description" content="最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="谈谈前后台协议">
+  <meta property="og:description" content="最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2015/11/talk-about-protocol/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2015-11-03 16:07:58 +0800" itemprop="datePublished" class="post-meta__date date">2015-11-03</time> &#8226; <span class="post-meta__tags tags">后台开发</span>
+    </div>
+    <h1 class="post-title">谈谈前后台协议</h1>
+  </header>
+
+  <section class="post">
+    <p>最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。</p>
+
+<p>制定协议最主要就是灵活，通用。针对一款内容型的app，你可能会有很多个页面，展示很多种元素，每个元素会是不同的类型。我们拿一款fm的app来做示例：
+<img src="/assets/images/talk-about-protocol/example.png" alt="app示例" title="app示例" width="800" /></p>
+
+<p>如果我们要开发上面这三个页面，你会怎么制定和客户端的协议？</p>
+
+<p>我们先来简单分析下。精选页有banner／新闻栏目／音乐栏目等。各个栏目下的元素是专辑，展现形式为一行三个专辑。电台页有地区／分类／正在直播。地区和分类的元素是分类，点击可以进入到该分类下的电台。正在直播的元素是电台，展现形式是一行一个电台。小说页有banner／神推荐栏目。神推荐栏目下的元素是专辑，展现形式为一行一个专辑。</p>
+
+<p>可以看出，这三个页面虽然看起来大不相同，但其实本质是一样的。每一页（Page）由一列列（Column）构成，每一列可以有banner／栏目／分类这几种类型。每一列可以有一行一个／一行三个这些展现形式。每一列内可以有专辑／电台／节目／分类这些元素（Item)。每一列可以有不同的点击事件（跳web页面，跳更多页）。所以，这三个页面可以通过一个通用的协议来表达：
+<img src="/assets/images/talk-about-protocol/solution.png" alt="协议示例" title="协议示例" width="800" /></p>
+
+<p>这样如果需要再开发一个新的页面，就无需再操心和客户端费心思去定一个新的协议。同时这样的协议非常灵活，客户端ui的展现和点击事件完全由后台来控制。</p>
+
+<p>这样的例子看起来很简单。但是在比较大的团队里，要做到协议的通用还是比较困难的。因为每个人会负责不同的模块，极有可能你只关注到自己做的那个模块，设计出来的协议可能只适用于你自己。要如何规避这种情况呢？这里我提下个人粗浅的观点：在app项目启动的时候，团队首先对app样式上整体有个粗略的规划（可能会有哪些页面，向用户展示什么信息？），汇总出一套模版。每一个app都是由各个不同的页面构成，尽量去抽取出各个页面的共性。内容型app就非常明显，各个页面再怎么变化，都是由元素＋展现形式构成。制定像上面这样的通用协议，大家的开发都基于上面的协议，有需要再去扩展新的元素类型／新的ui。这样整套协议非常清晰，同时减少前后台沟通成本（大家对通用的协议都很熟悉，规则也是固定的），能够提高开发的效率，减少重复劳动力。</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/11/read-nsq-source-code/" title="link to NSQ源码解读 NSQD篇">NSQ源码解读 NSQD篇</a></h2>
+       <p class="excerpt">接触go语言也有几个月了，从入门后一直用go写些小项目，语法和编程思维已经比较熟悉了，但是感觉很难再进阶一级，因此决定来读一读优秀的go项目源码。这篇文章名叫“解读”，其实有点言过其实。这里我主要是贴出我梳理的NSQ源码的代码架构，给出流程图，并提取其中比较精妙的代码来分析学习，算是比较粗糙。为什么选择NSQ知乎上不少人推荐对消息队列挺感兴趣，想了解其实现。# 关于NSQ #官网介绍在此：http://nsq.io/overview/quick_start.html 简单复制粘贴下NSQ包...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-11-11 16:07:58 +0800" class="post-list__meta--date date">2015-11-11</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2015/11/read-nsq-source-code/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/10/clever-way-of-using-cookie/" title="link to 应对反爬虫之换Cookie">应对反爬虫之换Cookie</a></h2>
+       <p class="excerpt">最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。说搞就搞，通过抓包分析移动版微博，很容易就知道新浪微博的api接口（获取粉丝列表，获取微博列表），更爽的是，这些接口不需要登陆态，并且返回的都是json数据。本来我的目的就是分析数据，正好也不想花费太多精力在爬虫上。基于python的request库很快写好了代码，一跑，嘿嘿，一下子抓了几千条数据下来，但...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-10-31 16:07:58 +0800" class="post-list__meta--date date">2015-10-31</time> &#8226; <span class="post-list__meta--tags tags">爬虫</span><a class="btn-border-small" href=/2015/10/clever-way-of-using-cookie/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2015/11/talk-about-protocol/";
+        this.page.identifier = "/2015/11/talk-about-protocol/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

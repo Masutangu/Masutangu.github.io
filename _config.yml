@@ -1,0 +1,50 @@
+# Basic
+title: Masutangu
+subtitle: 
+welcome_message: 
+description: 长风破浪会有时
+creator: <a href="http://onev.cat">@onevcat</a>
+
+url: "http://masutangu.github.io/"
+
+
+permalink: /:year/:month/:title/
+
+# Format
+highlighter: plain
+markdown: redcarpet
+redcarpet:
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript", tables]
+
+# supported colors: blue, green, purple, red, orange or slate. If you need clear, leave it empty.
+cover_color: slate
+
+# The blog button should not be removed.
+blog_button:
+    title: 博客
+    description: Visit blog
+
+# Navigation buttons in the front page.
+nav:
+    - {title: 项目, description: My Projects, url: 'https://github.com/Masutangu'}
+    - {title: 关于, description: About me, url: 'https://about.me/masutangu'}
+
+# Pagination
+gems: [jekyll-paginate]
+paginate: 10
+paginate_path: "page/:num/"
+
+# Comment
+comment:
+    disqus: vno-jekyll
+    # duoshuo: 
+    
+# Social
+social:
+    github: masutangu
+    mail: masutangu.cs@gmail.com
+
+# Google Analytics
+ga:
+    id: UA-77236140-1
+    host: masutangu.github.io

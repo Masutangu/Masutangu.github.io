@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Tcpcopy源码阅读</title>
+  <meta name="description" content="tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tcpcopy源码阅读">
+  <meta name="twitter:description" content="tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Tcpcopy源码阅读">
+  <meta property="og:description" content="tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2016/05/read-tcpcopy-source-code/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2016-05-05 10:00:25 +0800" itemprop="datePublished" class="post-meta__date date">2016-05-05</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">Tcpcopy源码阅读</h1>
+  </header>
+
+  <section class="post">
+    <p><a href="https://github.com/session-replay-tools/tcpcopy">tcpcopy</a>是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
+由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。</p>
+
+<!--more-->
+
+<h1>架构</h1>
+
+<p>第一种架构：</p>
+
+<ul>
+<li><p>实现原理：</p>
+
+<ul>
+<li>从数据链路层捕获客户端的请求包，修改目的IP地址为压测机器，再从IP层发送出去。</li>
+<li>从数据链路层捕获压测机器的响应包，保持tcp会话的状态（seq number，ack number等），以此来欺骗压测机器的TCP协议栈。</li>
+</ul></li>
+<li><p>图解： 
+<img src="/assets/images/read-tcpcopy-source-code/illustration-1.png" width="800" />
+<img src="/assets/images/read-tcpcopy-source-code/illustration-2.png" width="800" /></p></li>
+<li><p>局限：</p>
+
+<ul>
+<li>只支持同一网段：tcpcopy通过网卡的混杂模式来抓包，因此除非在路由设备上设置强制路由，否则响应包无法回到tcpcopy的机器。</li>
+<li>难以支持多台现网机器流量复制：把在线请求包导到压测机器进行压测的关键在于欺骗压测机器的TCP协议栈，因此我们需要在tcpcopy的进程捕获压测机器的响应包，保存相关字段来维持和压测机器之间会话的状态。如果有多个tcpcopy机器，那压测机器需要维护多个tcpcopy机器的请求包关系，才能把响应包回给响相应的tcpcopy机器，只有当tcpcopy机器能正常收到压测机器的响应包，才能维护正确的TCP会话状态。而目前的架构压测机器无法得知请求包来自哪个tcpcopy机器，自然也没办法将响应包回给正确的tcpcopy机器。
+为什么不把请求包的源IP替换成tcpcopy机器的IP呢？这样压测机器就能把响应包准确回复给相应的tcpcopy的机器。但如果这样的话，由于tcpcopy机器并没有监听该端口，会发送reset包给压测机器，连接将被断开，压测也无法进行下去。</li>
+</ul></li>
+</ul>
+
+<h1>流程</h1>
+
+<p>截获客户端请求包的处理：</p>
+
+<ol>
+<li> 如果是SYN/RST包，转发一份到压测机器。</li>
+<li> 如果是FIN包，判断下之前的数据包压测机器是否已经确认，如果都确认了，就转发FIN包给压测机器，如果还有没确认的，则先把FIN包保存下来。</li>
+<li> 如果是普通数据包，如果当前是SYN_SENT状态，则先保存到unsend列表里，否则转发到压测机器。</li>
+</ol>
+
+<p>截获压测机器响应包的处理：</p>
+
+<ol>
+<li> 如果是reset包，设置reset_flag为true。</li>
+<li> 如果不是ack包，不需要处理。</li>
+<li> 保存响应包的ack_seq到virtual_ack字段。</li>
+<li> 如果是SYN包，更新virtual_next_sequence字段的值为响应包的seq number加1，更新virtual_status为SYN_CONFIRM，三次握手完成，将unsend的数据包（如果有）转发给压测机器。</li>
+<li> 如果是FIN包，更新virtual_status为SERVER FIN，更新virtual_next_sequence字段的值为响应包的seq number加1。如果有fin_ack_packge，则将该fin_ack_package发送给压测机器。</li>
+<li> 如果是数据包，根据头部的信息更新virtual_next_sequence。</li>
+</ol>
+
+<h1>源码细节</h1>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">struct session_st {
+    uint32_t virtual_next_sequence; //下个要发送的segment的ack sequence number
+    uint32_t virtual_ack; //收到segment的ack sequence number
+    uint16_t virtual_status; //当前状态：Client Fin, Server Fin, SYN_CONFIRM, SYN_SENT
+    uint32_t client_next_sequence; //下个要发送的segment的sequence number
+    uint16_t client_window; // 窗口大小
+    uint16_t client_ip_id ;  //包的序列号
+    unsigned char *fin_ack_package; //fin ack包
+    bool     reset_flag; //是否重置
+    dataContainer unsend; //segment缓存队列
+｝
+
+
+int main(int argc ,char **argv)
+{
+    ...
+    //创建收发二层（链路层）报文的raw socket，链路层抓包
+    int sock = socket(AF_PACKET,SOCK_RAW,htons(ETH_P_ALL));
+
+    //创建收发三层（IP层）报文的raw socket，IP层转发包
+    send_init();
+    while(1)
+    {
+      //在链路层捕获到客户端请求包或压测机器的回包时，由process函数处理
+      int recv_len = recvfrom(sock,recvbuf,2000,0,NULL,NULL);
+      process(recvbuf,recv_len);
+    }
+    return 0;
+}
+
+void process(char *packet,int len)
+{
+    struct etharp_frame *ether = (struct etharp_frame *)packet;
+    ...
+    //判断以太网报文的类型是不是IP
+    if(ntohs(ether-&gt;type) != 0x800){
+      return;
+    }
+    ip_header = (struct iphdr*)(packet+sizeof(struct etharp_frame ) );
+    //判断是不是TCP
+    if(ip_header-&gt;protocol != IPPROTO_TCP)
+    {
+      return ;
+    }
+
+    size_ip = ip_header-&gt;ihl*4; //获取ip头部的大小
+    tcp_header = (struct tcphdr*)((char *)ip_header+size_ip); 
+    size_tcp = tcp_header-&gt;doff*4; //获取tcp头部的大小
+
+
+    if( (ip_header-&gt;saddr==remote_ip) &amp;&amp; (tcp_header-&gt;source==remote_port) )
+    {
+        //如果是压测机器的回包，由update_virtual_status函数处理
+        seIterator iter = sessions.find(get_ip_port_value(ip_header-&gt;daddr,tcp_header-&gt;dest));
+        if(iter != sessions.end())
+        {
+            iter-&gt;second.update_virtual_status(ip_header,tcp_header);
+            if( iter-&gt;second.is_over())
+            {
+              sessions.erase(iter);
+            }
+        }
+    }
+    else if( (ip_header-&gt;daddr==local_ip) &amp;&amp; (tcp_header-&gt;dest==local_port))
+    {
+        //如果是客户端请求包，由process_recv函数处理
+        if(tcp_header-&gt;syn)
+        {
+          sessions[get_ip_port_value(ip_header-&gt;saddr,tcp_header-&gt;source)].process_recv(ip_header,tcp_header);
+        }
+        else
+        {
+            seIterator iter = sessions.find(get_ip_port_value(ip_header-&gt;saddr,tcp_header-&gt;source));
+            if(iter != sessions.end())
+            {
+                iter-&gt;second.process_recv(ip_header,tcp_header);
+                if ((iter-&gt;second.is_over()))
+                {
+                    sessions.erase(iter);
+                }
+            }
+        }
+    }
+}
+
+void session_st::update_virtual_status(struct iphdr *ip_header,struct tcphdr* tcp_header)
+{
+    if( !(tcp_header-&gt;ack))
+    {
+        return; //不是ack不处理
+    }
+    //记录压测机器回包的ack seq number
+    virtual_ack = tcp_header-&gt;ack_seq;
+    //处理syn包
+    if( tcp_header-&gt;syn)
+    {
+        //virtual_next_sequence加1
+        virtual_next_sequence = plus_1(tcp_header-&gt;seq);
+        virtual_status |= SYN_CONFIRM;
+        //如果缓存队列有未发送的包，则转发到压测机器
+        while(! unsend.empty())
+        {
+          unsigned char *data = unsend.front();
+          send_ip_package(data, virtual_next_sequence);
+          free(data);
+          unsend.pop_front();
+        }
+        return;
+    }
+    //处理fin包
+    else if(tcp_header-&gt;fin)
+    {
+        virtual_status  |= SERVER_FIN;
+        //virtual_next_sequence加1
+        virtual_next_sequence = plus_1(tcp_header-&gt;seq);
+        //如果有保存fin_ack_package，则发送出去。
+        if(fin_ack_package)
+        {
+            send_ip_package(fin_ack_package,virtual_next_sequence);
+        }
+        return;
+    }
+    uint32_t tot_len = ntohs(ip_header-&gt;tot_len);
+    uint32_t next_seq = htonl(ntohl(tcp_header-&gt;seq)+tot_len-ip_header-&gt;ihl*4-tcp_header-&gt;doff*4);
+
+    if(ntohl(next_seq) &lt; ntohl(virtual_next_sequence))
+    {
+        //如果next_seq小于virtual_next_sequence，意味着之前给压测机器的ack包丢了，重新发送ack包
+        send_fake_ack(ip_header-&gt;daddr,tcp_header-&gt;dest);
+    }
+    else if(ntohl(next_seq)==ntohl(virtual_next_sequence))
+    {
+        //has data
+        if(tot_len != ip_header-&gt;ihl*4+tcp_header-&gt;doff*4)
+        {
+            //同上，ack包丢了，重发
+            send_fake_ack(ip_header-&gt;daddr,tcp_header-&gt;dest);
+        }
+    }
+    else
+    {
+        virtual_next_sequence = next_seq;
+    }
+
+    /* 如果收到客户端的fin包，但压测机器还有回包没有ack，就会把客户端的fin包保存在fin_ack_package。当virtual_ack等于client_next_sequence，意味着服务器已经确认了所有数据，如果fin_ack_package不为空，意味着客户端没有数据要发送了，因此将之前保存的fin包发送给压测机器。
+    */
+    if(virtual_ack == client_next_sequence)
+    {
+        if(fin_ack_package)
+        {
+            send_ip_package(fin_ack_package,virtual_next_sequence);
+            virtual_status |= CLIENT_FIN;
+            confirmed = true;
+        }
+    }
+}
+
+void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
+{
+    //syn包
+    if(tcp_header-&gt;syn)
+    {
+      send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
+      return;
+    }
+    //fin包
+    if(tcp_header-&gt;fin)
+    {
+        //virtual_ack等于tcp_header-&gt;seq表示压测机器已经ack了所有请求数据
+        if(virtual_ack == tcp_header-&gt;seq)
+        {
+            send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
+            virtual_status |= CLIENT_FIN;
+            return;
+        }
+        else
+        { 
+            //如果压测机器还有未确认的请求包，则先保存客户端的fin包
+            fin_ack_package = copy_ip_package(ip_header);
+        }
+        return;
+    }
+    //更新client_next_sequence    
+    save_header_info(ip_header,tcp_header);
+    //如果三次握手还没完成，先将数据包压入缓存队列
+    if(virtual_status == SYN_SEND)
+    {
+        unsend.push_back(copy_ip_package(ip_header));
+    }
+    else
+    {
+        //否则直接转发给压测机器
+        send_ip_package((unsigned char *)ip_header,virtual_next_sequence); 
+    }
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/04/ios-introduction/" title="link to iOS初体验">iOS初体验</a></h2>
+       <p class="excerpt">客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：ToDo。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。&lt;!--more--&gt;What’s ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-04-28 23:10:00 +0800" class="post-list__meta--date date">2016-04-28</time> &#8226; <span class="post-list__meta--tags tags">iOS</span><a class="btn-border-small" href=/2016/04/ios-introduction/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2016/05/read-tcpcopy-source-code/";
+        this.page.identifier = "/2016/05/read-tcpcopy-source-code/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

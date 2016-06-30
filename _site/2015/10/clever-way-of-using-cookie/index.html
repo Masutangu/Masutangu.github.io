@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>应对反爬虫之换Cookie</title>
+  <meta name="description" content="最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="应对反爬虫之换Cookie">
+  <meta name="twitter:description" content="最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="应对反爬虫之换Cookie">
+  <meta property="og:description" content="最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2015/10/clever-way-of-using-cookie/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2015-10-31 16:07:58 +0800" itemprop="datePublished" class="post-meta__date date">2015-10-31</time> &#8226; <span class="post-meta__tags tags">爬虫</span>
+    </div>
+    <h1 class="post-title">应对反爬虫之换Cookie</h1>
+  </header>
+
+  <section class="post">
+    <p>最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。</p>
+
+<p>说搞就搞，通过抓包分析移动版微博，很容易就知道新浪微博的api接口（获取粉丝列表，获取微博列表），更爽的是，这些接口不需要登陆态，并且返回的都是json数据。本来我的目的就是分析数据，正好也不想花费太多精力在爬虫上。基于python的request库很快写好了代码，一跑，嘿嘿，一下子抓了几千条数据下来，但是跑不到几分钟之后，就被封掉了。。- -!</p>
+
+<p>怎么搞？我也是爬虫菜鸟。记忆中要减少被封的几率，只有1. 换ip，2. 降低爬取频率两个办法。所以我在代码里加了些sleep，降低了些爬取的频率。再跑一次，这次坚持久了些。但是跑了5，6分钟后，还是被封了。</p>
+
+<p>出师未捷身先死，跑个几分钟，被封几小时，这爬虫是搞不下去了。只好上网Google一番如何应对反爬虫。幸运的是找到下面这篇文章《记搜狗微信号搜索反爬虫》。作者提到他在探索搜狗微信公众号反爬虫时，分析出服务器是通过Cookie来做反爬的，因此他维护了一个Cookie池，定期去更新，爬虫则从Cookie池中取Cookie。</p>
+
+<p>于是我也尝试了一把，把cookie换掉，再访问一次，发现竟然又能访问了。看来新浪微博的反爬虫机制也是基于Cookied的，并非基于ip。这办法可行！接下来就很简单了，搞一个Cookie生成器，定期往Cookie池里塞Cookie，爬虫每次爬取前都从Cookie池里取Cookie出来使用，如果发现使用该Cookie不能访问了，则将其从Cookie池里删掉。下面看看代码：</p>
+
+<p><strong>Cookie生成器</strong>：每隔20秒往服务器发送不带Cookie的head请求，解析回包的set-cookie的值，提取出Cookie并保存到CookieCollector中。
+<img src="/assets/images/clever-way-of-using-cookie/cookie-generator.png" alt="Cookie生成器" title="Cookie生成器" width="800" /></p>
+
+<p><strong>爬虫</strong>：爬取前取Cookie，如果发现Cookie不可用，则将该Cookie从CookieCollector中删除。
+<img src="/assets/images/clever-way-of-using-cookie/cookie-pool.png" alt="cookie池" title="cookie池" width="800" /></p>
+
+<p><strong>Cookie池</strong>：这里我采用了Redis的有序集合来实现，score值则为获取到Cookie的时间，这是为了让爬虫每次取Cookie都先取最旧的Cookie。
+<img src="/assets/images/clever-way-of-using-cookie/crawler.png" alt="爬虫" title="爬虫" width="800" /></p>
+
+<p>这样就完成了一个非常简单的自动更新Cookie的爬虫。这样就搞定了吗？显然还没有，正当我兴高采烈的写完这篇文章后，一看爬虫，又被封了。。而且这次连换Cookie也行不通了。看来新浪微博的反爬虫机制还要高级些，不仅通过Cookie，还会通过IP? 下一步如何应对，等我的IP解封后，再继续探索吧。。。( T T )</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/11/talk-about-protocol/" title="link to 谈谈前后台协议">谈谈前后台协议</a></h2>
+       <p class="excerpt">最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。制定协议最主要就是灵活，通用。针对一款内容型的app，你可能会有很多个页面，展示很多种元素，每个元素会是不同的类型。我们拿一款fm的app来做示例：如果我们要开发上面这三个页面，你会怎么制定和客户端的协议？我们先来简单分析下。精选页有banner／新闻栏目／音乐栏目等。各个栏目下的元素是专辑，展现形式为一行三个专辑。电台页有地区／...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-11-03 16:07:58 +0800" class="post-list__meta--date date">2015-11-03</time> &#8226; <span class="post-list__meta--tags tags">后台开发</span><a class="btn-border-small" href=/2015/11/talk-about-protocol/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/10/elric-change-log-1/" title="link to Elric Change Log I">Elric Change Log I</a></h2>
+       <p class="excerpt">自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。接口简化之前的worker在往某个queue提交任务之前，需要调用add_queue()方法来先在master创建一个queue。同时worker也需要注册自己监听哪些queue，这里worker和master就有两个queue的交互，一条queue用于提交任务，一条queue用于拉取任务来执行。但对于Elric的使用者，并不需要关心这些细节，因此我把add_queu...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-10-27 16:07:58 +0800" class="post-list__meta--date date">2015-10-27</time> &#8226; <span class="post-list__meta--tags tags">优化&重构</span><a class="btn-border-small" href=/2015/10/elric-change-log-1/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2015/10/clever-way-of-using-cookie/";
+        this.page.identifier = "/2015/10/clever-way-of-using-cookie/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

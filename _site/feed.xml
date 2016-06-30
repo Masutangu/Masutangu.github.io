@@ -1,0 +1,1297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Masutangu</title>
+    <description>长风破浪会有时</description>
+    <link>http://masutangu.github.io//</link>
+    <atom:link href="http://masutangu.github.io//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Thu, 30 Jun 2016 22:47:38 +0800</pubDate>
+    <lastBuildDate>Thu, 30 Jun 2016 22:47:38 +0800</lastBuildDate>
+    <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Tcpcopy源码阅读</title>
+        <description>&lt;p&gt;&lt;a href=&quot;https://github.com/session-replay-tools/tcpcopy&quot;&gt;tcpcopy&lt;/a&gt;是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
+由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h1&gt;架构&lt;/h1&gt;
+
+&lt;p&gt;第一种架构：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;实现原理：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;从数据链路层捕获客户端的请求包，修改目的IP地址为压测机器，再从IP层发送出去。&lt;/li&gt;
+&lt;li&gt;从数据链路层捕获压测机器的响应包，保持tcp会话的状态（seq number，ack number等），以此来欺骗压测机器的TCP协议栈。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;图解： 
+&lt;img src=&quot;/assets/images/read-tcpcopy-source-code/illustration-1.png&quot; width=&quot;800&quot; /&gt;
+&lt;img src=&quot;/assets/images/read-tcpcopy-source-code/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;局限：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;只支持同一网段：tcpcopy通过网卡的混杂模式来抓包，因此除非在路由设备上设置强制路由，否则响应包无法回到tcpcopy的机器。&lt;/li&gt;
+&lt;li&gt;难以支持多台现网机器流量复制：把在线请求包导到压测机器进行压测的关键在于欺骗压测机器的TCP协议栈，因此我们需要在tcpcopy的进程捕获压测机器的响应包，保存相关字段来维持和压测机器之间会话的状态。如果有多个tcpcopy机器，那压测机器需要维护多个tcpcopy机器的请求包关系，才能把响应包回给响相应的tcpcopy机器，只有当tcpcopy机器能正常收到压测机器的响应包，才能维护正确的TCP会话状态。而目前的架构压测机器无法得知请求包来自哪个tcpcopy机器，自然也没办法将响应包回给正确的tcpcopy机器。
+为什么不把请求包的源IP替换成tcpcopy机器的IP呢？这样压测机器就能把响应包准确回复给相应的tcpcopy的机器。但如果这样的话，由于tcpcopy机器并没有监听该端口，会发送reset包给压测机器，连接将被断开，压测也无法进行下去。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;流程&lt;/h1&gt;
+
+&lt;p&gt;截获客户端请求包的处理：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt; 如果是SYN/RST包，转发一份到压测机器。&lt;/li&gt;
+&lt;li&gt; 如果是FIN包，判断下之前的数据包压测机器是否已经确认，如果都确认了，就转发FIN包给压测机器，如果还有没确认的，则先把FIN包保存下来。&lt;/li&gt;
+&lt;li&gt; 如果是普通数据包，如果当前是SYN_SENT状态，则先保存到unsend列表里，否则转发到压测机器。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;截获压测机器响应包的处理：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt; 如果是reset包，设置reset_flag为true。&lt;/li&gt;
+&lt;li&gt; 如果不是ack包，不需要处理。&lt;/li&gt;
+&lt;li&gt; 保存响应包的ack_seq到virtual_ack字段。&lt;/li&gt;
+&lt;li&gt; 如果是SYN包，更新virtual_next_sequence字段的值为响应包的seq number加1，更新virtual_status为SYN_CONFIRM，三次握手完成，将unsend的数据包（如果有）转发给压测机器。&lt;/li&gt;
+&lt;li&gt; 如果是FIN包，更新virtual_status为SERVER FIN，更新virtual_next_sequence字段的值为响应包的seq number加1。如果有fin_ack_packge，则将该fin_ack_package发送给压测机器。&lt;/li&gt;
+&lt;li&gt; 如果是数据包，根据头部的信息更新virtual_next_sequence。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1&gt;源码细节&lt;/h1&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;struct session_st {
+    uint32_t virtual_next_sequence; //下个要发送的segment的ack sequence number
+    uint32_t virtual_ack; //收到segment的ack sequence number
+    uint16_t virtual_status; //当前状态：Client Fin, Server Fin, SYN_CONFIRM, SYN_SENT
+    uint32_t client_next_sequence; //下个要发送的segment的sequence number
+    uint16_t client_window; // 窗口大小
+    uint16_t client_ip_id ;  //包的序列号
+    unsigned char *fin_ack_package; //fin ack包
+    bool     reset_flag; //是否重置
+    dataContainer unsend; //segment缓存队列
+｝
+
+
+int main(int argc ,char **argv)
+{
+    ...
+    //创建收发二层（链路层）报文的raw socket，链路层抓包
+    int sock = socket(AF_PACKET,SOCK_RAW,htons(ETH_P_ALL));
+
+    //创建收发三层（IP层）报文的raw socket，IP层转发包
+    send_init();
+    while(1)
+    {
+      //在链路层捕获到客户端请求包或压测机器的回包时，由process函数处理
+      int recv_len = recvfrom(sock,recvbuf,2000,0,NULL,NULL);
+      process(recvbuf,recv_len);
+    }
+    return 0;
+}
+
+void process(char *packet,int len)
+{
+    struct etharp_frame *ether = (struct etharp_frame *)packet;
+    ...
+    //判断以太网报文的类型是不是IP
+    if(ntohs(ether-&amp;gt;type) != 0x800){
+      return;
+    }
+    ip_header = (struct iphdr*)(packet+sizeof(struct etharp_frame ) );
+    //判断是不是TCP
+    if(ip_header-&amp;gt;protocol != IPPROTO_TCP)
+    {
+      return ;
+    }
+
+    size_ip = ip_header-&amp;gt;ihl*4; //获取ip头部的大小
+    tcp_header = (struct tcphdr*)((char *)ip_header+size_ip); 
+    size_tcp = tcp_header-&amp;gt;doff*4; //获取tcp头部的大小
+
+
+    if( (ip_header-&amp;gt;saddr==remote_ip) &amp;amp;&amp;amp; (tcp_header-&amp;gt;source==remote_port) )
+    {
+        //如果是压测机器的回包，由update_virtual_status函数处理
+        seIterator iter = sessions.find(get_ip_port_value(ip_header-&amp;gt;daddr,tcp_header-&amp;gt;dest));
+        if(iter != sessions.end())
+        {
+            iter-&amp;gt;second.update_virtual_status(ip_header,tcp_header);
+            if( iter-&amp;gt;second.is_over())
+            {
+              sessions.erase(iter);
+            }
+        }
+    }
+    else if( (ip_header-&amp;gt;daddr==local_ip) &amp;amp;&amp;amp; (tcp_header-&amp;gt;dest==local_port))
+    {
+        //如果是客户端请求包，由process_recv函数处理
+        if(tcp_header-&amp;gt;syn)
+        {
+          sessions[get_ip_port_value(ip_header-&amp;gt;saddr,tcp_header-&amp;gt;source)].process_recv(ip_header,tcp_header);
+        }
+        else
+        {
+            seIterator iter = sessions.find(get_ip_port_value(ip_header-&amp;gt;saddr,tcp_header-&amp;gt;source));
+            if(iter != sessions.end())
+            {
+                iter-&amp;gt;second.process_recv(ip_header,tcp_header);
+                if ((iter-&amp;gt;second.is_over()))
+                {
+                    sessions.erase(iter);
+                }
+            }
+        }
+    }
+}
+
+void session_st::update_virtual_status(struct iphdr *ip_header,struct tcphdr* tcp_header)
+{
+    if( !(tcp_header-&amp;gt;ack))
+    {
+        return; //不是ack不处理
+    }
+    //记录压测机器回包的ack seq number
+    virtual_ack = tcp_header-&amp;gt;ack_seq;
+    //处理syn包
+    if( tcp_header-&amp;gt;syn)
+    {
+        //virtual_next_sequence加1
+        virtual_next_sequence = plus_1(tcp_header-&amp;gt;seq);
+        virtual_status |= SYN_CONFIRM;
+        //如果缓存队列有未发送的包，则转发到压测机器
+        while(! unsend.empty())
+        {
+          unsigned char *data = unsend.front();
+          send_ip_package(data, virtual_next_sequence);
+          free(data);
+          unsend.pop_front();
+        }
+        return;
+    }
+    //处理fin包
+    else if(tcp_header-&amp;gt;fin)
+    {
+        virtual_status  |= SERVER_FIN;
+        //virtual_next_sequence加1
+        virtual_next_sequence = plus_1(tcp_header-&amp;gt;seq);
+        //如果有保存fin_ack_package，则发送出去。
+        if(fin_ack_package)
+        {
+            send_ip_package(fin_ack_package,virtual_next_sequence);
+        }
+        return;
+    }
+    uint32_t tot_len = ntohs(ip_header-&amp;gt;tot_len);
+    uint32_t next_seq = htonl(ntohl(tcp_header-&amp;gt;seq)+tot_len-ip_header-&amp;gt;ihl*4-tcp_header-&amp;gt;doff*4);
+
+    if(ntohl(next_seq) &amp;lt; ntohl(virtual_next_sequence))
+    {
+        //如果next_seq小于virtual_next_sequence，意味着之前给压测机器的ack包丢了，重新发送ack包
+        send_fake_ack(ip_header-&amp;gt;daddr,tcp_header-&amp;gt;dest);
+    }
+    else if(ntohl(next_seq)==ntohl(virtual_next_sequence))
+    {
+        //has data
+        if(tot_len != ip_header-&amp;gt;ihl*4+tcp_header-&amp;gt;doff*4)
+        {
+            //同上，ack包丢了，重发
+            send_fake_ack(ip_header-&amp;gt;daddr,tcp_header-&amp;gt;dest);
+        }
+    }
+    else
+    {
+        virtual_next_sequence = next_seq;
+    }
+
+    /* 如果收到客户端的fin包，但压测机器还有回包没有ack，就会把客户端的fin包保存在fin_ack_package。当virtual_ack等于client_next_sequence，意味着服务器已经确认了所有数据，如果fin_ack_package不为空，意味着客户端没有数据要发送了，因此将之前保存的fin包发送给压测机器。
+    */
+    if(virtual_ack == client_next_sequence)
+    {
+        if(fin_ack_package)
+        {
+            send_ip_package(fin_ack_package,virtual_next_sequence);
+            virtual_status |= CLIENT_FIN;
+            confirmed = true;
+        }
+    }
+}
+
+void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
+{
+    //syn包
+    if(tcp_header-&amp;gt;syn)
+    {
+      send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
+      return;
+    }
+    //fin包
+    if(tcp_header-&amp;gt;fin)
+    {
+        //virtual_ack等于tcp_header-&amp;gt;seq表示压测机器已经ack了所有请求数据
+        if(virtual_ack == tcp_header-&amp;gt;seq)
+        {
+            send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
+            virtual_status |= CLIENT_FIN;
+            return;
+        }
+        else
+        { 
+            //如果压测机器还有未确认的请求包，则先保存客户端的fin包
+            fin_ack_package = copy_ip_package(ip_header);
+        }
+        return;
+    }
+    //更新client_next_sequence    
+    save_header_info(ip_header,tcp_header);
+    //如果三次握手还没完成，先将数据包压入缓存队列
+    if(virtual_status == SYN_SEND)
+    {
+        unsend.push_back(copy_ip_package(ip_header));
+    }
+    else
+    {
+        //否则直接转发给压测机器
+        send_ip_package((unsigned char *)ip_header,virtual_next_sequence); 
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
+        <pubDate>Thu, 05 May 2016 10:00:25 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/05/read-tcpcopy-source-code/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/05/read-tcpcopy-source-code/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
+    
+      <item>
+        <title>iOS初体验</title>
+        <description>&lt;p&gt;客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&amp;lt;iOS Programming The Big Nerd Ranch Guide&amp;gt;,最后写了个非常简单的App：&lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDo&lt;/a&gt;。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。
+&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+
+&lt;h1&gt;What’s in iOS?&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-1.png&quot; alt=&quot;iOS架构图&quot; title=&quot;iOS架构图&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;iOS处于底层硬件和app的中间。iOS的整体架构可以划分为四层：Core OS, Core Services, Media, Cocoa Touch&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Core OS: Contains the low-level features that most other technologies are built upon. Include：OSX Kernel, Mach 3.0, BSD, Sockets, Security, Power Management, Keychain Access, Certificates, File System, Bonjour&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Core Services: Contains fundamental system services for apps. This layer also contains individual technologies to support features such as location, iCloud, social media, and networking. Include：Collections, Address Book, Networking, File Access, SQLite, Core Location, Net Services, Threading, Preferences, URL Utilities. 我理解是在Core OS基础上封装了一层接口。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Media: Contains the graphics, audio, and video technologies you use to implement multimedia experiences in your apps. Include：Core Audio，OpenAL, Audio Mixing, Audio Recording, Video Playback, OpenGL ES, Core Animation.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Cocoa Touch: Contains key frameworks for building iOS apps. These frameworks define the appearance of your app. They also provide the basic app infrastructure and support for key technologies such as multitasking, touch-based input, push notifications, and many high-level system services. Include: Multi-Touch, Core Motion, View Hierarchy, Localization, Controls, Alerts, Web View, Map Kit, Image Picker, Camera.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;MVC&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-2.png&quot; alt=&quot;MVC&quot; title=&quot;MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Model&lt;/strong&gt;: What your application is (but not how it is displayed)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Controller&lt;/strong&gt;: How your Model is presented to the user (UI logic)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;View&lt;/strong&gt;:  Your Controller’s minions&lt;br&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;应用程序的逻辑应该放在Model而不是Controller，因为&lt;strong&gt;Model = What your application is&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h2&gt;MVC之间的关系&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-3.png&quot; alt=&quot;MVC关系&quot; title=&quot;MVC关系&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Controller可以直接访问Model和View（outlet）&lt;/li&gt;
+&lt;li&gt;Model和View是完全隔离开的&lt;/li&gt;
+&lt;li&gt;View通过protocol的方式（blind and structured）访问Controller，包括：&lt;strong&gt;target-action&lt;/strong&gt;方式，&lt;strong&gt;delegate&lt;/strong&gt;方式和&lt;strong&gt;data source&lt;/strong&gt;方式。&lt;/li&gt;
+&lt;li&gt;Model通过&lt;strong&gt;notification&amp;amp;KVO（Key Value Observing）&lt;/strong&gt;将变化通知给Controller&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;多个MVC的组织&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-4.png&quot; alt=&quot;错误方式组织多个MVC&quot; title=&quot;错误方式组织多个MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;错误的做法：不同模块的communication非常杂乱，难以维护。&lt;/em&gt;
+&lt;img src=&quot;/assets/images/ios-introduction/illustration-5.png&quot; alt=&quot;正确方式组织多个MVC&quot; title=&quot;正确方式组织多个MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;正确的做法：Using MVC as part of the view of another MVC。划分好模块，不同模块间的communication非常少。&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1&gt;Objective-C&lt;/h1&gt;
+
+&lt;p&gt;面向对象编程的三个原则是：&lt;strong&gt;基于消息传递机制&lt;/strong&gt;，&lt;strong&gt;对象分离&lt;/strong&gt;和&lt;strong&gt;多态&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Category&lt;/strong&gt;
+给已存在的类新增新的方法。
+&lt;pre&gt;&lt;code&gt;
+//NSObject+HelloWorld.h
+@interface NSObject (HelloWorld)&lt;br&gt;
+-(void)HelloWorld;&lt;br&gt;
+@end&lt;br&gt;
+//NSObject+HelloWorld.m
+#import &amp;quot;NSObject+HelloWorld.h&amp;quot;&lt;br&gt;
+@implementation NSObject (HelloWorld)&lt;br&gt;
+-(void)HelloWorld{&lt;br&gt;
+    NSLog(@&amp;quot;Hello World!&amp;quot;);&lt;br&gt;
+}&lt;br&gt;
+@end&lt;br&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Category vs Inheritance&lt;/strong&gt;:
+Category用于给一个类新增一个功能，Inheritance用于修改父类的功能。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Category vs Extension&lt;/strong&gt;:
+Extension一般用来隐藏类的私有信息，需要有类的源码才能添加Extension。另外Extension可以添加成员变量，而Category不允许。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;动态绑定&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Introspection&lt;/strong&gt;: Asking at runtime what class an object is or what messages can be sent to it. 
+&lt;pre&gt;&lt;code&gt;
+&lt;strong&gt;isKindOfClass&lt;/strong&gt;: returns whether an object is that kind of class (inheritance included) 
+&lt;strong&gt;isMemberOfClass&lt;/strong&gt;: returns whether an object is that kind of class (no inheritance) 
+&lt;strong&gt;respondsToSelector&lt;/strong&gt;: returns whether an object responds to a given method
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Protocols&lt;/strong&gt;: A syntax that is “in between” id and static typing. Does not specify the class of an object pointed to, but does specify what methods it implements.
+&lt;pre&gt;&lt;code&gt;
+//definition file
+@protocol Foo
+-(void)someMethod;
+-(void)methodWithArgument:(BOOL)argument;
+@property (readonly) int readonlyProperty; // getter (only) is part of this protocol
+@property NSString &lt;em&gt;readwriteProperty; // getter and setter are both in the protocol 
+-(int)methodThatReturnsSomething;
+@end
+//example file
+id &lt;Foo&gt; obj = [[MyClass alloc] init];
+&lt;/code&gt;&lt;/pre&gt;
+Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 &lt;strong&gt;dataSources&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;设计模式&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Target-Action&lt;/strong&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Cocoa uses the &lt;strong&gt;target-action&lt;/strong&gt; mechanism for communication between a &lt;strong&gt;control&lt;/strong&gt; and another object.  The receiving object—typically an instance of a custom class—is called the &lt;strong&gt;target&lt;/strong&gt;. The &lt;strong&gt;action&lt;/strong&gt; is the message that the control sends to the target.   &lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Delegation&lt;/strong&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Delegation&lt;/strong&gt; is a simple and powerful pattern in which one object in a program acts on behalf of, or in coordination with, another object. The delegating object keeps a reference to the other object—the delegate—and at the appropriate time sends a message to it.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Date Source&lt;/strong&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;A data source&lt;/strong&gt; is almost identical to a &lt;strong&gt;delegate&lt;/strong&gt;. The difference is in the relationship with the delegating object. Instead of being delegated control of the user interface, a data source is &lt;strong&gt;delegated control of data&lt;/strong&gt;. The delegating object, typically a view object such as a table view, holds a reference to its data source and occasionally asks it for the data it should display.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;KVO&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Key-value observing&lt;/strong&gt; is a mechanism that enables an object to be notified directly when a property of another object changes.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;内存管理&lt;/h1&gt;
+
+&lt;p&gt;iOS使用&lt;strong&gt;Automatic Reference Counting&lt;/strong&gt;来做内存管理。ARC在编译期会分析代码，确定对象的生命周期，在相应的位置自动加上retain和release。&lt;/p&gt;
+</description>
+        <pubDate>Thu, 28 Apr 2016 23:10:00 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/04/ios-introduction/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/04/ios-introduction/</guid>
+        
+        
+        <category>iOS</category>
+        
+      </item>
+    
+      <item>
+        <title>Python 进程池的坑：Pickling Error!</title>
+        <description>&lt;p&gt;前阵子在跑&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：&lt;/p&gt;
+
+&lt;p&gt;File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute lookup thread.lock failed
+&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+
+&lt;h1&gt;解决思路&lt;/h1&gt;
+
+&lt;p&gt;接下来就是艰辛的定位问题之旅：&lt;/p&gt;
+
+&lt;p&gt;Step 1：我检查了Elric里面的pickle操作（序列化提交的任务时会使用到pickle），没有发现问题。&lt;/p&gt;
+
+&lt;p&gt;Step 2：因为rpc调用会输出到标准输出，上个版本我刚好在master 新增了一个queue用以缓存没来得及处理的job，因此我也特别检查了这部分代码，也没有发现问题。&lt;/p&gt;
+
+&lt;p&gt;Step 3：从输出到traceback来看，最上层的调用不是我的代码，因此我猜测是进程池fork进程出来后发生的exception，之所以打印到标准输出来是因为这个exception没有被catch。&lt;/p&gt;
+
+&lt;p&gt;Step 4：打算用pdb打断点进行调试，没想到其他比较好的办法。于是我简单粗暴地把queues.py文件拷贝了一份，在第266行的send(obj)设置了断点。把代码里import到的queues文件都替换成我拷贝出来的这份，pdb执行一下，当遇到exception的时候程序就会停住。打印此时的obj，输出&lt;core.my_process._ResultItem object at xxxx&gt;，说明是在进程池往queue里塞进程执行结果的时候，pickle失败了。观察了下_ResultItem的成员，有work_id, exception, result。其中exception和result都有可能包含了thread.lock导致pickle失败。再打印下obj.exception，输出(&lt;request.packages.urllib3.connectionpool.HTTPConnectionPool object at xxxx&gt;, ‘Connection to xxxx timed out.(connect timeoout=3)’)&lt;/p&gt;
+
+&lt;p&gt;看起来有可能是HTTPConnectionPool这个对象无法pickle，验证一下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/python-pickling-error/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/python-pickling-error/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;果然是因为HTTPConnectionPool对象包含了lock导致无法被pickle。&lt;/p&gt;
+
+&lt;p&gt;但是在我自己电脑上验证时，pickle却不会报错。比对了线上环境和自己电脑的requests库版本，线上环境是2.3.0, 自己电脑是2.6.0。应该是requests修改了HTTPConnectionPool的实现，去掉了内部的lock。&lt;/p&gt;
+
+&lt;h1&gt;解决方案&lt;/h1&gt;
+
+&lt;p&gt;在使用python进程池提交任务的时候，注意任务执行可能会抛出一些无法pickle的exception，导致进程池拉取任务执行结果的时候pickle失败。建议是在任务代码中catch所有可能的exception，然后reraise自定义的支持pickle的exception。&lt;/p&gt;
+
+&lt;h1&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;这次定位问题的手段太过简单粗暴，但自己也没想出更好的办法。幸好最终是确定了问题所在。如果大家对于解决该问题有什么建议，欢迎留言或发邮件提出。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 15 Apr 2016 16:07:58 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/04/python-pickling-error/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/04/python-pickling-error/</guid>
+        
+        
+        <category>编程语言</category>
+        
+      </item>
+    
+      <item>
+        <title>使用binlog实时监控Mysql数据更新</title>
+        <description>&lt;p&gt;上一篇文章《&lt;a href=&quot;http://masutangu.github.io/blog/2016/02/29/udftrigger%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7mysql%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0/&quot;&gt;UDF+Trigger实时监控Mysql数据更新&lt;/a&gt;》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。
+&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+
+&lt;h1&gt;binlog 简介&lt;/h1&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The binary log is a set of log files that contain information about data modifications made to a MySQL server instance.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;其主要有以下两个用途：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;主从同步&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;数据恢复&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;mysql主从同步原理 利用binlog来监控mysql数据的更新，以更新缓存。原理类似于mysql的主从同步。先简单介绍下mysql主从同步的原理：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Whenever the master’s database is modified, the change is written to a file, the so-called binary log, or binlog. This is done by the client thread that executed the query that modified the database.&lt;/li&gt;
+&lt;li&gt;The master has a thread, called the dump thread, that continuously reads the master’s binlog and sends it to the slave.&lt;/li&gt;
+&lt;li&gt;The slave has a thread, called the IO thread, that receives the binlog that the master’s dump thread sent, and writes it to a file: the relay log.&lt;/li&gt;
+&lt;li&gt;The slave has another thread, called the SQL thread, that continuously reads the relay log and applies the changes to the slave server.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;利用binlog监听mysql更新&lt;/h1&gt;
+
+&lt;p&gt;我们的目的是监听mysql数据变化，及时更新缓存以保证缓存数据不过期。如果我们模拟Mysql Slave的交互协议，伪装自己为Mysql Slave，向Master发送dump协议，Master收到dump请求，就会推送binary log给我们的伪Slave。接下来解析binlog，把相应的更新同步到缓存就可以了。&lt;/p&gt;
+
+&lt;h1&gt;Python-Mysql-Replication #&lt;/h1&gt;
+
+&lt;p&gt;伪装Mysql Slave，解析binlog都需要对mysql有更深入的了解。为了把精力关注在我们的目标上，这里我选择了一个现有的python库：Python-Mysql-Replication。&lt;/p&gt;
+
+&lt;p&gt;官方给的demo很简单：
+&lt;img src=&quot;/assets/images/using-binlog/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;dump方法就会把各类event的详细信息都打印出来。我们需要关心的event类型有：DeleteRowsEvent / UpdateRowsEvent / WriteRowsEvent / RotateEvent。&lt;/p&gt;
+
+&lt;p&gt;前三个事件分别对应删除操作／更新操作／新增操作。看看UpdateRowsEvent包含了哪些信息：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/using-binlog/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们需要关注的信息有date/log position/table/values。log position表示这个event在binlog文件的offset。&lt;/p&gt;
+
+&lt;p&gt;RotateEvent则给出当前使用的binlog的文件名（binlog文件超过指定size时会rotate，这时通过监听RotateEvent就能拿到最新的binlog文件名）：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/using-binlog/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;通过RotateEvent提供的binlog文件名，和DeleteRowsEvent / UpdateRowsEvent / WriteRowsEvent等Event附带的log position信息，我们就能记录当前已经处理的binlog的偏移。实际上，Mysql Slave就是通过这种方式来做增量更新的，Slave通过将Relay_Master_Log_File和Exec_Master_Log_Pos这两个字段记录在relay-log.info文件来存储同步的进度。&lt;/p&gt;
+
+&lt;h1&gt;和udf+trigger方式的比较&lt;/h1&gt;
+
+&lt;p&gt;使用udf＋trigger的方式的优点是简单，不足主要如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;运维成本高&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;有一定开销&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;难以监控trigger的成功率&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使用binlog的难点主要是解析比较麻烦，不过现有的各种库很好的帮我们处理了。优点主要如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;运维无成本&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;对mysql没有什么开销&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;由于binlog是全库的log，如果需求是监听一两张表的数据更新，建议采用trigger＋udf的方式。而如果监听的表数量较多，那么建议使用binlog的方式。&lt;/p&gt;
+</description>
+        <pubDate>Tue, 08 Mar 2016 16:07:58 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/03/using-binlog/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/03/using-binlog/</guid>
+        
+        
+        <category>数据库</category>
+        
+      </item>
+    
+      <item>
+        <title>水滴石穿－第三期</title>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;不积跬步，无以至千里；不积小流，无以成江海&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://www.theatlantic.com/technology/archive/2015/07/i-like-instagram/398834/&quot;&gt;Instagram Is the Best Social Network&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;作者谈他为何觉得Instagram是最好的社交应用，主要是以下三点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;简单
+
+&lt;ul&gt;
+&lt;li&gt;信息简单：Instagram以纯图片的方式传递，没有超链接，没有一大段文字&lt;/li&gt;
+&lt;li&gt;操作简单：点赞或者只是浏览。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;安静
+不打扰用户，用户用完即走。这和之前张小龙演讲提到的观点是一致的。&lt;/li&gt;
+&lt;li&gt;无限制社交&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Instagram的定位并不是密友社交。并顺带举了path失败的例子，密友社交不是需求，真正的密友社交是一对一的，而不是一个密友圈。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;People like social networks because they’re an efficient way of communicating with many others, but, as he said, “efficiency is the enemy of intimacy.”&lt;/p&gt;
+
+&lt;p&gt;“Real intimacy can never, ever be broadcast. It must be either one-to-one or one-off,”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;所以你在Instagram上看到不同圈子的照片，你可以有自己的解读：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;You can skip inside jokes. You can miss subtext that pricks someone else’s hearts. You can savor the density of meaning in pictures from close friends and the surface beauty of posts from distant ones.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://www.trevormckendrick.com/how-to-choose-a-profitable-niche/&quot;&gt;How To Choose a Profitable Niche&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;作者提出具备好商机的app有下面三个条件：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Is profitable
+如何确定是否有潜在的利润？作者这块分析的结论没看出来。&lt;/li&gt;
+&lt;li&gt; Can be found via App Store search
+找到用户搜索的热词，了解用户需求。&lt;/li&gt;
+&lt;li&gt;Has crappy competitors
+竞争对手比较烂。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;延伸阅读：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.trevormckendrick.com/how-i-sold-my-bible-app-company/&quot;&gt;How I Sold my Bible App Company&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://thenextweb.com/entrepreneur/2015/06/02/9-daily-habits-of-successful-mobile-app-entrepreneurs/&quot;&gt;9 daily habits of successful mobile app entrepreneurs&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;如何做好一个app？可以参考下该文章提出的几个习惯：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Study the App Store：了解用户的评价，排名趋势和排序算法。&lt;/li&gt;
+&lt;li&gt;Learn From The Horrible Apps：分析优秀的app和糟糕的app之间的差别。&lt;/li&gt;
+&lt;li&gt;Answer Support Calls &amp;amp; Emails (Even as a CEO)：回复咨询电话和邮件：每天花部分时间亲自回复用户的咨询，即使你是ceo。&lt;/li&gt;
+&lt;li&gt;Consume Something Inspirational：读些motivational的书，听听ted talk，保持积极向上的心态。&lt;/li&gt;
+&lt;li&gt;Write EVERYTHING Down：好记性不如烂笔头。&lt;/li&gt;
+&lt;li&gt;Benchmark Your Data：紧盯数据趋势（评分，用户评价等），确保走在正确的方向上。&lt;/li&gt;
+&lt;li&gt;Inbox Zero：及时回复邮件。&lt;/li&gt;
+&lt;li&gt;Keep a Journal：“I use journaling as a form of therapy and as a way for me to start each day with a clean slate.”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://medium.com/@benbrown/slack-is-the-operating-system-6bae1a6c0291#.m8unpie2p&quot;&gt;Slack is the Operating System Slack is the Operating System&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;对于大多数新的app来说，slack是一个操作系统。在slack上运作一个app，它是跨平台的，实时同步的，并且界面一致，对用户友好。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Designing for messaging will become a discipline as important as responsive design, and will incorporate skills as diverse as copy writing, business analytics and API programming.&lt;/p&gt;
+
+&lt;p&gt;We’re going to call it Messaging Experience Design, or MXD.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://www.trenchant.org/daily/2015/6/3/&quot;&gt;Messaging is the New Web&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;Web的优点在于易部署易扩展易分发。而在智能手机兴起的大背景下，Messaging应运而生。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Messaging (in a very broad sense including SMS, texting apps, and things like Slack) present a similar challenge and opportunity today in the context of smartphones.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;回复信息/文本会话相比起app来说要轻量得多，比起打开浏览器，输入url再等待页面展示也更近方便。同时登陆认证对于用户来说是透明的，用户不需要额外申请账户，也不需要额外学习新的操作界面。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;If integration with Slack is cheap and easy and provides additional distribution for business services, more services will be incentivized to offer it, which in turn makes Slack more valuable for its customers. And when Slack’s customers have a host of services integrated with their Slack instance, the more valuable Slack becomes to them&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://medium.com/@paulcolomiets/the-future-of-asynchronous-io-in-python-ce200536d847#.tctyl610p&quot;&gt;The Future of Asynchronous IO in Python&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;这篇没怎么看懂，欢迎交流。&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp&quot;&gt;Making sense of MVP (Minimum Viable Product) — and why I prefer Earliest Testable/Usable/Lovable&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;深度好文！文章最后的总结如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Avoid Big Bang delivery for complex, innovative product development. Do it iteratively and incrementally. You knew that already. But are you actually doing it?&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Start by identifying your skateboard — the earliest testable product. Aim for the clouds, but swallow your pride and start by delivering the skateboard.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Avoid the term MVP. Be more explicit about what you’re actually talking about. Earliest testable/usable/lovable is just one example, use whatever terms are least confusing to your stakeholders..&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;以下是精华摘抄：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;We start with the same context — the customer ordered a car. But this time we don’t just build a car. Instead we focus on the underlying need the customer wants fulfilled. Turns out that his underlying need is “I need to get from A to B faster”, and Car is just one possible solution to that.&lt;/p&gt;
+
+&lt;p&gt;We might learn some really surprising things. Suppose the customer says he hates the skateboard, we ask why, and he says “I hate the color”. We’re like “uh…. the color? That’s all?”. And the customer says “Yeah, make it blue! Other than that, it’s fine!”. You just saved &lt;em&gt;alot&lt;/em&gt; of money not building the car! Not likely, but who knows?&lt;/p&gt;
+
+&lt;p&gt;The key question is “What is the cheapest and fastest way we can start learning?” Can we deliver something even earlier than a skateboard? How about a bus ticket?&lt;/p&gt;
+
+&lt;p&gt;In most real-life product development scenarios I’ve seen, no matter how much up-front analysis you do, you’re still surprised when you put the first real release into the hands of a real user, and many of your assumptions turn out to be way off.&lt;/p&gt;
+
+&lt;p&gt;Early feedback from real users! Don’t just design the product and build the whole thing.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://stratechery.com/2014/pleco-building-business-just-app/&quot;&gt;Pleco: Building a Business, not an App&lt;/a&gt;&lt;/h1&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;What stands out to me about Love’s approach was that from day one his differentiation was not based on design, ease-of-use, or some other attribute we usually glorify in developers. Rather, he focused on decidedly less sexy things like licensing. Sure, licensing is particularly pertinent to a dictionary app, but the broader point is that Love’s sustainable differentiation was not about his own code. Sustainable differentiation never is.&lt;/p&gt;
+
+&lt;p&gt;This is the critical point: developers all want to write an app for themselves, which means everyone has. That’s why there is no money to be made in something like an RSS reader. But there are whole swathes of people out there who have really interesting and specific needs — like Chinese language learning — just waiting for someone who can not only develop, but can also do market research, build a business model, and do all the messystuff upon which true differentiation — and sustainable businesses — are built.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://highscalability.com/blog/2015/7/22/architecting-backend-for-a-social-product.html&quot;&gt;Architecting Backend for a Social Product&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;如何设计社交产品的后台架构？&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;存储
+
+&lt;ul&gt;
+&lt;li&gt;Master Data or Static Form of Data Like User Profile
+选择document based storage，推荐mongodb。优点：分布式／高可用／可分库分表。&lt;/li&gt;
+&lt;li&gt;Connected or Relational Data 
+选择图数据库，推荐Neo4j，但是其不支持分库分表。其他选择：FlockDB, AllegroGraph 和InfiniteGraph。&lt;/li&gt;
+&lt;li&gt;Binary data (UGC)
+推荐Amazon S3&lt;/li&gt;
+&lt;li&gt;Session Data&lt;/li&gt;
+&lt;li&gt;用户相关，推荐redis。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;索引
+Apache Storm用于实时生成索引。Lucene（性能不够）或SolrCloud做索引系统。&lt;/li&gt;
+&lt;li&gt;Queuing &amp;amp; Push Notifications
+使用ActiveMQ做队列，push通知可以采用pyapns, CommandIQ 或App Booster。&lt;/li&gt;
+&lt;li&gt;缓存策略
+
+&lt;ul&gt;
+&lt;li&gt;Application Level Caching (Content Cache)
+redis。&lt;/li&gt;
+&lt;li&gt;Proxy Cache
+Nginx 或ATS。&lt;/li&gt;
+&lt;li&gt;Second Level Cache (Code Level Caching)
+EhCache。&lt;/li&gt;
+&lt;li&gt;Client Cache
+客户端做缓存。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;传输协议
+http客户端采用OkHttp，消息传输采用MQTT。&lt;/li&gt;
+&lt;li&gt;安全
+All our user data must be encrypted
+&amp;gt; MongoDB and Neo4j already supports Storage Encryption. On case basis we can decide to encrypt key user information. Transport Encryption must be enabled for all DB related calls.
+
+&lt;ul&gt;
+&lt;li&gt;Secure Socket Layer
+SSL&lt;/li&gt;
+&lt;li&gt;All our api endpoints should be run on non default ports and should implement Oauth without fail&lt;/li&gt;
+&lt;li&gt;All reads from DB should happen through rest endpoints always&lt;/li&gt;
+&lt;li&gt;The configuration which holds password must be dealt specially&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;模块
+整个后台架构包括以下模块：
+
+&lt;ul&gt;
+&lt;li&gt;Load Balancer：负载均衡&lt;/li&gt;
+&lt;li&gt;Proxy Server：处理http请求，包括cache策略&lt;/li&gt;
+&lt;li&gt;Ingestion Engine：处理输入数据，包括缓存，转码，压缩&lt;/li&gt;
+&lt;li&gt;REST Server: 访问db&lt;/li&gt;
+&lt;li&gt;Event Processor: 从ActiveMQ读取消息并通过notification engine生成push通知。&lt;/li&gt;
+&lt;li&gt;Recommendation Engine: 根据用户操作，做些推荐相关的算法。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://engineering.skybettingandgaming.com/2016/02/02/how-we-release-so-frequently/&quot;&gt;How We Release So Frequently How We Release So Frequently&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;如何快速发布？作者提了下面几个快速发布的准则：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Forward-only Migrations
+不允许回滚数据库的Migrations。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Take dropping a column as an example; how do you release that change? Easy:
+Release a version of the code that doesn’t use that column; ensure it is stable / won’t be rolled back.
+Do a second release that has a migration to remove the column.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;New Code != New Features
+用户应该对你代码的发布无感知。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;It’s a really bad experience for customers to see a new feature appear, start using it, and then have it disappear a few minutes later as a release is rolled back — possibly for unrelated reasons&lt;/p&gt;
+
+&lt;p&gt;Every new feature is first released in a hidden state, ready to be turned on with a ‘feature toggle’.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are some really strong plus points to this approach:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;We don’t have to roll back a whole release (which may contain several changes) just because a single new feature isn’t working&lt;/li&gt;
+&lt;li&gt;We can fully test new features in an environment that has the exact hardware, software and data we need&lt;/li&gt;
+&lt;li&gt;We can release new features to customers gradually&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;文中介绍了利用session和cookie来实现灰度升级，有兴趣可以仔细阅读下。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Small Releases
+The more often we release, the smaller the releases can be. Smaller releases carry less risk, letting us release even more often.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 08 Mar 2016 12:42:43 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/03/dewdrop-note-3/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/03/dewdrop-note-3/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
+    
+      <item>
+        <title>UDF+Trigger实时监控Mysql数据更新</title>
+        <description>&lt;p&gt;最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：
+&amp;lt;!--more--&amp;gt;
+&lt;img src=&quot;/assets/images/using-udf-plus-trigger/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;大家都知道，缓存带来性能上的提高，然而却有数据不一致的可能。比方说修改了mysql的数据，但是用户读取到的缓存数据还未更新，这时就会有不一致的问题。&lt;/p&gt;
+
+&lt;p&gt;这样就需要一种机制来监控mysql中数据的变化以更新缓存：
+&lt;img src=&quot;/assets/images/using-udf-plus-trigger/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h1&gt;方案&lt;/h1&gt;
+
+&lt;p&gt;有两种办法可以实时监控mysql，一是利用mysql的binlog，二是利用mysql的trigger。这篇文章主要介绍trigger的方式。&lt;/p&gt;
+
+&lt;p&gt;trigger可以在特定事件发生时触发指定的操作，因此可以用trigger来监听insert/update/delete操作。再利用udf，我们就能将这些事件通知到同步server，再由同步server更新缓存中已经过时的数据。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;关于udf的介绍：
+&lt;a href=&quot;http://dev.mysql.com/doc/refman/5.7/en/adding-udf.html&quot;&gt;http://dev.mysql.com/doc/refman/5.7/en/adding-udf.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;如何编写udf：&lt;a href=&quot;http://blog.loftdigital.com/blog/how-to-write-mysql-functions-in-c&quot;&gt;http://blog.loftdigital.com/blog/how-to-write-mysql-functions-in-c&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这里我使用了mysql-udf-http，它是开源的UDF，提供了利用HTTP协议进行REST操作的能力。&lt;/p&gt;
+
+&lt;p&gt;安装完成后，创建trigger如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/using-udf-plus-trigger/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;创建trigger成功后，如果在posts表有insert操作，就会发一个http put请求到指定ip和端口上；如果有delete操作，就会发送一个http delete请求到指定的ip和端口上。&lt;/p&gt;
+
+&lt;p&gt;这样我们只需要搭建一个http同步server，等待接收触发trigger调用udf发送的http请求，并更新相应的缓存就可以了。&lt;/p&gt;
+
+&lt;p&gt;如果你担心trigger是比较昂贵的操作，你可以在mysql的从库上创建trigger，该从库不对外服务，只用于监控数据更新。&lt;/p&gt;
+
+&lt;h1&gt;不足&lt;/h1&gt;
+
+&lt;p&gt;使用trigger＋udf虽然方便，不过需要手动为监听的每张表创建trigger。另外处理trigger事件的同步server只能使用单进程模型，不然无法保证同步的顺序。但是单进程的效率又太低了。&lt;/p&gt;
+
+&lt;h1&gt;一点联想&lt;/h1&gt;
+
+&lt;p&gt;实现监控mysql数据更新这个功能的过程中，我对设计数据库表结构也有一点启发：在设计表的时候，需要做到&lt;strong&gt;动静分离&lt;/strong&gt;。把静态的（不常更新的）数据放在一张表，而把动态的（经常更新的）数据放在另外的表。&lt;/p&gt;
+
+&lt;p&gt;比如说：我们把专辑的信息放一张表，把专辑的订阅数／粉丝数／播放量放另外的表。这样我们只需要监控专辑信息表，及时更新缓存就可以了。&lt;/p&gt;
+
+&lt;p&gt;相反的，如果我们把订阅数等和专辑信息表放在一起，由于订阅数经常会变，我们要么得写一个复杂的trigger监听某几个字段的更新（不清楚能否实现），要么需要在同步server做逻辑判断，非常的繁琐。&lt;/p&gt;
+</description>
+        <pubDate>Mon, 29 Feb 2016 16:07:58 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/02/using-udf-plus-trigger/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/02/using-udf-plus-trigger/</guid>
+        
+        
+        <category>数据库</category>
+        
+      </item>
+    
+      <item>
+        <title>Elric Change Log II</title>
+        <description>&lt;p&gt;最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。&lt;/p&gt;
+
+&lt;h1&gt;优化Worker拉取任务逻辑&lt;/h1&gt;
+
+&lt;p&gt;之前的逻辑是从任务队列里拉取任务后就塞给进程池，会导致worker不断从任务队列里取任务，然后在进程池里等待执行。这样的话，Worker不是按需取任务，而是揽一大堆活然后一直积压在手里做不完，而后续拉起空闲的Worker则取不到任务。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;之前的逻辑，拉取任务后直接塞给进程池这里我对取任务的逻辑做了优化，使用Queue来统计正在执行中的任务。初始化一个Queue，其最大长度等于Worker的进程池大小。拉取任务前，往Queue里put一个控制符。任务执行完时，从Queue里get一个控制符。当进程池的进程都在执行任务的时候，此时Queue是满的，put操作会阻塞，因此Worker阻塞到Queue有空间的时候（有进程完成任务了，从Queue里get走了一个控制符，也意味着有空闲的进程了），才会到任务队列里拉取任务。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;拉取任务前，尝试往queue里put一个控制符，如果queue已满（没有空闲进程），则一直阻塞&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;任务执行完，从queue里get一个控制符&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/e84d359b2082e97f4aa8b400f2b8e1651506fae3&quot;&gt;https://github.com/Masutangu/Elric/commit/e84d359b2082e97f4aa8b400f2b8e1651506fae3&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1&gt;限制任务队列的长度&lt;/h1&gt;
+
+&lt;p&gt;之前Master会一直往任务队列里提交任务，并不关心任务队列积压的任务数。这样如果Worker挂掉一段时间后再拉起的时候，就会一直执行积压的过期任务。&lt;/p&gt;
+
+&lt;p&gt;于是我希望给Master提供一个控制队列长度的能力。首先给任务队列新增一个接口is_full()，返回True表示任务队列已满。在Master提交任务到任务队列前，先检查任务队列是否已满。如果队列已经满了，则把该任务写到Buffer Queue里，在另外的线程里去做定期重试写入任务队列的逻辑。&lt;/p&gt;
+
+&lt;p&gt;这里其实是参考了nsq的做法。只不过我把Python的Queue当成Golang的channel来使用。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-4.png&quot; alt=&quot;示例4&quot; title=&quot;示例4&quot; width=&quot;800&quot; /&gt;
+&lt;em&gt;新增is_full()接口&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-5.png&quot; alt=&quot;示例5&quot; title=&quot;示例5&quot; width=&quot;800&quot; /&gt;
+&lt;em&gt;提交任务前检查下任务队列是否已满，如果是，则写到buffer_queue里&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-6.png&quot; alt=&quot;示例6&quot; title=&quot;示例6&quot; width=&quot;800&quot; /&gt;
+&lt;em&gt;start_process_buffer_job线程处理buffer_queue的任务，定期尝试写入到任务队列里，如果任务队列已满，则再次放回buffer_queue。如果超过一定时间都没有提交成功，则将任务丢弃&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/592e6756725bf2e138d2e1f1de1c9f7d579a4324&quot;&gt;https://github.com/Masutangu/Elric/commit/592e6756725bf2e138d2e1f1de1c9f7d579a4324&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1&gt;提供任务存储的mongodb支持&lt;/h1&gt;
+
+&lt;p&gt;之前的任务存储是基于内存，为了使master有更高的可用性，这里我新增了mongodb的支持。&lt;/p&gt;
+
+&lt;p&gt;同时为了更好的监控任务的执行情况，需要有存储来记录每个任务执行是否成功，失败则记录Exception的信息。如果是循环任务，则只需要记录近N次的执行结果。&lt;/p&gt;
+
+&lt;p&gt;Mongodb的Array类型提供了限制大小的能力，非常符合我仅记录近N次执行结果的需求。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-7.png&quot; alt=&quot;示例7&quot; title=&quot;示例7&quot; width=&quot;800&quot; /&gt;
+&lt;em&gt;slice用与限制array的大小&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&quot;&gt;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 03 Feb 2016 16:07:58 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/02/elric-change-log-2/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/02/elric-change-log-2/</guid>
+        
+        
+        <category>优化&amp;重构</category>
+        
+      </item>
+    
+      <item>
+        <title>水滴石穿－第二期</title>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;不积跬步，无以至千里；不积小流，无以成江海&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://blog.cleancoder.com/uncle-bob/2016/01/04/ALittleArchitecture.html&quot;&gt;A Little Architecture&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;文章以问答的形式，讲解了如何成为一名优秀的架构师。&lt;/p&gt;
+
+&lt;p&gt;成为一名优秀的架构师，不仅仅是知道如何选择数据库，选择框架。&lt;strong&gt;一个优秀的架构，业务逻辑不需要依赖底层的技术架构。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;文章提出两个重要的原则：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Dependency Inversion Principle&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The source code of the sender does not mention, or depend upon, the source code of the receiver. In fact the source code of the receiver depends upon the source code of the sender.&lt;/p&gt;
+
+&lt;p&gt;The principles of architecture, of course. Senders own the interfaces that the receivers must implement.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Interface Segregation Principle&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Each business rule class will only use some of the facilities of the database. And so each business rule provides an interface that gives it access to just those facilities.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;良好的接口设计，能够让你延后做出技术选型的决定。你可以在初期使用轻量级的技术框架来实现功能，后期再根据实际情况进行调整。而你出色的接口设计使得你的业务逻辑不会依赖底层技术，换句话说，底层使用什么技术框架对于业务逻辑来说都是透明的。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Blessed is the team whose architects have provided the means by which all these decisions can be deferred until there is enough information to make them.&lt;/p&gt;
+
+&lt;p&gt;Blessed is the team whose architects have so isolated them from slow and resource hungry IO devices and frameworks that they can create fast and lightweight test environments.&lt;/p&gt;
+
+&lt;p&gt;Blessed is the team whose architects care about what really matters, and defer those things that don’t.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://www.theeffectiveengineer.com/blog/debugging-user-behavior&quot;&gt;Why’d You Do That?!? An Engineer’s Guide to Debugging User Behavior&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;代码不符合我们的预期，我们可以通过各种方法进行调试，比如打断点，打log等。那如果用户的行为不符合我们的预期，我们应该如何debug用户呢？&lt;/p&gt;
+
+&lt;p&gt;文章提了几种方法来debug用户：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;A/B test&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;session logs&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;user tests&lt;/strong&gt;:
+Let engaged customers or early adopters beta test a feature and then collect their feedback in a doc or talk to them in person.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://blog.krzyzanowskim.com/2015/12/28/how-to-be-awesome-swift-developer/&quot;&gt;How to be awesome Swift developer&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;如何成为了不起的swift程序员？作者给了一些很有用的建议，摘抄如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;embrace legacy
+do:
+
+&lt;ul&gt;
+&lt;li&gt;experiment a lot &lt;/li&gt;
+&lt;li&gt;don’t be afraid doing things in non optimal way — wrong is way better than none&lt;/li&gt;
+&lt;li&gt;open your mind, try new things&lt;/li&gt;
+&lt;li&gt;read blogs of other developers&lt;/li&gt;
+&lt;li&gt;learn by doing&lt;/li&gt;
+&lt;li&gt;check what’s inside to understand it more&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;don’t be a douchebag
+don’t:
+
+&lt;ul&gt;
+&lt;li&gt;my code is better than yours&lt;/li&gt;
+&lt;li&gt;don’t complain to much about what’s done (your work or in general)&lt;/li&gt;
+&lt;li&gt;for God’s sake stop telling people that tools you’re using are the best in the world just because you know how to use it&lt;/li&gt;
+&lt;li&gt;programming language doesn’t matter.&lt;/li&gt;
+&lt;li&gt;avoid “I know better” attitude&lt;/li&gt;
+&lt;li&gt;don’t be a douchebag&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://www.objc.io/issues/13-architecture/mvvm/&quot;&gt;Introduction to MVVM Introduction to MVVM&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;MVC有时被戏称为Massive View Controller，因为Controller的逻辑太重了。而且大部分是展示逻辑：把Model的数据转化为View的展现形式。&lt;/p&gt;
+
+&lt;p&gt;MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model层，这样不仅减轻了Controller的逻辑，简化了代码。同时也易于测试。&lt;/p&gt;
+
+&lt;p&gt;延伸阅读：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.teehanlax.com/blog/model-view-viewmodel-for-ios/&quot;&gt;Model-View-ViewModel for iOS Model-View-ViewModel for iOS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://scalemybusiness.com/the-ultimate-guide-to-minimum-viable-products/&quot;&gt;The Ultimate Guide to Minimum Viable Products&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;最简可行产品(MVP)是指以最低成本尽可能展现核心概念的产品策略，即是指用最快、最简明的方式建立一个可用的产品原型，这个原型要表达出你产品最终想要的效果，然后通过迭代来完善细节。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;A minimum viable product is therefore not a product. It is a minimum viable go to market step.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这篇文章列举了7个MVP例子：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Explainer Video
+以dropbox为例，用一段视频来介绍你的产品，从而收集用户反馈。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;A Landing Page
+善用登陆页来向用户展示核心信息，并借助统计工具（例如Google Analytics）来分析转化率／用户行为。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Wizard of Oz MVP
+Put up a front that looks like a real working product, but you manually carry out product functions.
+以Zappos为例，初期是创始人到实体鞋店把照片拍下来，放到网店上，用户下单后再去实体店买回来并邮寄给用户这种方式运作的。通过这种方式，几乎不需要什么成本就可以清楚用户是否有网上购鞋的需求。当需求明确之后，再开始开发整个网站，从手工转向自动化。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Concierge MVP
+和Wizard of Oz MVP类似，前期人工提供服务，逐渐改进，直到后期用户逐渐增多，再慢慢使用软件来代替人工。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Piecemeal MVP
+和Concierge MVP及Wizard of Oz MVP类似，但是借助现有工具而不是manually去完成整个流程。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Raise Funds from Customers
+众筹，不仅能验证你的产品是否有市场，还能拿到资金投入到产品之中。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;A Single Featured MVP
+Chances are that if you cannot find that one killer feature that can stand on its own — at least in with early users — adding more features will not make the product a must have.
+专注在简单，功能单一的功能。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;最后文章的总结：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The 20 second summary of this lesson is: don’t burn your money on a product no one will want to use. Get creative and think hard about what is the minimum thing you can do now to make sure that doesn’t happen:
+* Select one MVP strategy you think would work for you
+* Create a simple plan to execute on it (remember the “minimal” in MVP)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://www.williambharding.com/blog/hiring/meta-analysis-best-interview-questions-to-spot-ideal-employees/&quot;&gt;Meta-analysis: best interview questions to spot ideal employees&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;招聘者最看重的特质是什么？&lt;/p&gt;
+
+&lt;p&gt;有团队意识，适应性强，值得信赖，价值观相符。&lt;/p&gt;
+
+&lt;p&gt;另外后面还有些经典的面试题，供面试者和面试官参考学习。&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://firstround.com/review/square-defangs-difficult-decisions-with-this-system-heres-how/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29&quot;&gt;Square Defangs Difficult Decisions with this System — Here’s How&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;文章介绍SPADE，如何运用它来更好地做决策。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Setting: The setting has three parts: what, when and why&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Precisely define the decision to capture the “what.”&lt;/li&gt;
+&lt;li&gt;Calendar the exact timeline for the decision to realize the “when.”&lt;/li&gt;
+&lt;li&gt;Parse the objective from the plan to isolate the “why.”&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;People: This includes those who are consulted and give input towards the decision, the person whoapproves the decision, and most importantly the person who’sresponsible for ultimately making the call&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Synonymize accountability and responsibility. 亲身经验告诉我，这点非常重要！
+&amp;gt; “At Square, the person who’s responsible for making the decision is the person who’s accountable for its execution and success.&lt;/li&gt;
+&lt;li&gt;Veto decisions mainly for their quality, not necessarily their result.&lt;/li&gt;
+&lt;li&gt;Formally recognize the roles of all active participants.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Listening matters. Much, much more than you think. People want the option to chime or chip in, even if their stance is counter to the end decision. They just want to be listened to.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Alternatives: Alternatives should be feasible — they should be realistic; diverse — they should not all be micro-variants of the same situation; and comprehensive — they should cover the problem space&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;“Get in a room, get on a whiteboard, and brainstorm,” says Rajaram. “For each alternative, list out the pros and cons, as well as the parameters behind the quantitative model. There are no shortcuts. Get into the numbers as much as possible. It can be very hard with ambiguous decisions to get down into the numbers, but it’s very valuable to do so.”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;数字更直观，尽量把各个方案转化为数值进行比较。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Decide&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The most important part part of this process is to ask them to send you their vote privately.（也许匿名是个更好的主意）&lt;/li&gt;
+&lt;li&gt;That said, in exceptional circumstances, choices can be articulated openly.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Explain&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Run your decision and the process by the Approver.&lt;/li&gt;
+&lt;li&gt;Convene a commitment meeting.&lt;/li&gt;
+&lt;li&gt;Circulate the annals of the decision for precedent and posterity.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://blog.lateral.io/2015/05/full-text-search-in-milliseconds-with-postgresql/&quot;&gt;Full text search in milliseconds with PostgreSQL &lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;简单介绍了如何用PostgreSQL做全文检索。&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://gingearstudio.com/why-i-quit-my-dream-job-at-ubisoft&quot;&gt;Why I Quit my Dream Job at Ubisoft Why I Quit my Dream Job at Ubisoft&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;作者讲述了自己从大公司辞职，自己组团队做独立游戏的原因：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;每个人的贡献被稀释了，因此缺少了动力。&lt;/li&gt;
+&lt;li&gt;沟通成本变高了。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;When people realize they’re just one very replaceable person on a massive production chain, you can imagine it impacts their motivation.&lt;br&gt;
+No matter what’s your job, you don’t have a significant contribution on the game. You’re a drop in a glass of water, and as soon as you realize it, your ownership will evaporate in the sun. And without ownership, no motivation.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://gold.xitu.io/entry/5649618800b0ee7f5991a717&quot;&gt;消息系统设计与实现 稀土掘金：消息系统设计与实现「上篇」 &lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;分析了消息系统的设计与实现，非常有参考价值。&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;http://v.qq.com/cover/a/a7v5hfc9umds0c9.html?vid=s0019dietdc&quot;&gt;张小龙谈微信价值观 微信公开课PRO版&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;微信的四个价值观：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;一切以用户价值为依归。强调公平公正，善良比聪明更重要。&lt;/li&gt;
+&lt;li&gt;让创造发挥价值。&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;用完即走，提高用户效率。帮用户过滤掉无用的信息，只留下用户关心的价值点。做法：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;限制营销信息，简化朋友圈内容 &lt;/li&gt;
+&lt;li&gt; 提高加好友门槛 &lt;/li&gt;
+&lt;li&gt; 限制公众号下发消息的频率。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果用户在你产品上找不到价值，或者很难找到价值（无用信息太多，骚扰太多），就会离开你的产品。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;让商业化存在于无形之中。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;最后张小龙剧透了下微信的应用号，听起来很有趣，以后可以尝试一下。&lt;/p&gt;
+
+&lt;h1&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=vBmavNoChZc&quot;&gt;Amazon founder and CEO Jeff Bezos delivers graduation speech at Princeton University&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.princeton.edu/main/news/archive/S27/52/51O99/index.xml&quot;&gt;原文链接&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;“善良比聪明更重要，选择比天赋更重要”。最后的一系列反问句满满的正能量：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;How will you use your gifts? What choices will you make?&lt;/p&gt;
+
+&lt;p&gt;Will inertia be your guide, or will you follow your passions?&lt;/p&gt;
+
+&lt;p&gt;Will you follow dogma, or will you be original?&lt;/p&gt;
+
+&lt;p&gt;Will you choose a life of ease, or a life of service and adventure?&lt;/p&gt;
+
+&lt;p&gt;Will you wilt under criticism, or will you follow your convictions?&lt;/p&gt;
+
+&lt;p&gt;Will you bluff it out when you’re wrong, or will you apologize?&lt;/p&gt;
+
+&lt;p&gt;When it’s tough, will you give up, or will you be relentless?&lt;/p&gt;
+
+&lt;p&gt;Will you be a cynic, or will you be a builder?&lt;/p&gt;
+
+&lt;p&gt;Will you be clever at the expense of others, or will you be kind?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1&gt;一勺鸡汤&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;How do you know you are on the right path in your life? When you no longer hate Monday mornings.&lt;/strong&gt;&lt;/p&gt;
+</description>
+        <pubDate>Tue, 26 Jan 2016 12:42:43 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/01/dewdrop-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/01/dewdrop-note-2/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
+    
+      <item>
+        <title>回顾2015这一年</title>
+        <description>&lt;p&gt;时间飞逝，今天已是12月的中旬。还记得年初我给自己定下了详细的计划和目标，转眼一年时间就快过去了。刚好今天公司年会，心里特别有感触，所以就提前回顾和总结下这一年的点点滴滴。&lt;/p&gt;
+
+&lt;h1&gt;计划回顾&lt;/h1&gt;
+
+&lt;p&gt;首先来看看我年初给自己定的计划：
+&lt;img src=&quot;/assets/images/review-2015/plan-1.png&quot; alt=&quot;2015计划1&quot; title=&quot;2015计划1&quot; width=&quot;800&quot; /&gt;
+&lt;img src=&quot;/assets/images/review-2015/plan-2.png&quot; alt=&quot;2015计划2&quot; title=&quot;2015计划2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h1&gt;完成度&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;［阅读计划：0％］&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;很惭愧，制定的阅读计划一本都没有读，这其实是有原因的。因为我发现自己的代码量远远不够，看书的话很有可能还是无法把理论和实践很好的结合起来。因此我决定改变策略，先从写代码／读源码做起，等有了一定的积累，再读相关的书籍，也许会事半功倍，感触和体会更深入。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;［新技术学习：50％］&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;语言：golang。&lt;/p&gt;
+
+&lt;p&gt;数据库：redis（半桶水）/mongodb（没怎么实践过）/influxdb（正准备实践）。&lt;/p&gt;
+
+&lt;p&gt;前端：发现自己在这方面实在没有天赋和兴趣，虽然我很渴望能够搭建一个自己的博客。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;［想完成的事情：40％］&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;coursera：看了两门课，后来觉得太浅，就没有继续看下去。&lt;/p&gt;
+
+&lt;p&gt;github项目：写了两个项目，Elric和SuperScripter。算是超额完成任务。&lt;/p&gt;
+
+&lt;p&gt;源码阅读：python方面读了apscheduler，golang读了nsq的nsqd模块，c/c++读了公司框架的部分代码和ffmpeg的部分代码。&lt;/p&gt;
+
+&lt;p&gt;播客&amp;amp;leetcode：没能坚持下去。&lt;/p&gt;
+
+&lt;p&gt;拿五星：没能达标。。＝ ＝&lt;/p&gt;
+
+&lt;p&gt;乐器：完全没有开始过。。&lt;/p&gt;
+
+&lt;p&gt;每周打球：最近开始一两周一次。&lt;/p&gt;
+
+&lt;h1&gt;时间轴&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;1－3月&lt;/strong&gt;：主要完成coursera课程。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4－5月&lt;/strong&gt;：读了python的apscheduler源码，借此原型自己写了Elric，并用在项目上。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;6－7月&lt;/strong&gt;：工作太忙，个人学习中断。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;8－9月&lt;/strong&gt;：速成golang，写了SuperScripter，同样用在项目上。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;10－11月&lt;/strong&gt;：读了nsq的nsqd模块，对golang的使用更加熟悉。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;11月－12月&lt;/strong&gt;：读了ffmpeg，能比较快的解决项目的问题。另外大招还在憋，最近有点忙，有点便秘，进度缓慢。&lt;/p&gt;
+
+&lt;h1&gt;半途而废的项目&lt;/h1&gt;
+
+&lt;p&gt;微博爬虫：想借此搞搞数据分析。因为想搞的事情实在太多，这个排不上号，不过个人感觉挺有意思，以后有时间会继续。&lt;/p&gt;
+
+&lt;p&gt;redis源码：期间工作太忙，没精力坚持下去，改明年完成。&lt;/p&gt;
+
+&lt;p&gt;成长，心得和不足 这一年技术上的成长我还是比较满意的。2015年的首要目标是广度，自己感兴趣的东西都会尽量找机会去了解。&lt;/p&gt;
+
+&lt;p&gt;对自己不满意的一点是我&lt;strong&gt;难以持续稳定的输出&lt;/strong&gt;。这可能和我不擅长控制情绪有关。有时我会觉得动力满满，有时则会有些消沉。希望接下来我可以坚持锻炼，合理安排好精力，以维持稳定和高效的输出。&lt;/p&gt;
+
+&lt;p&gt;在这一年的学习我也发现了自己的&lt;strong&gt;基本功并不扎实&lt;/strong&gt;。这可能是因为大学期间错误的学习方法导致的。大学只注重读书，没有注重实践。导致我的理论知识没有得到很好的理解和沉淀，学过很快就忘记。&lt;/p&gt;
+
+&lt;p&gt;工作上，自己对&lt;strong&gt;细节和整体的把控还是不够火候&lt;/strong&gt;，也挖了不少坑，花了很多时间填坑，因此也错过很多机会。真是不应该，还好从中能学到很多。&lt;/p&gt;
+
+&lt;p&gt;另外自己的视野还是太&lt;strong&gt;狭隘&lt;/strong&gt;，可能有点只关注技术方面而忽视了其他。nba的超级球星，不仅仅是身体劲爆技术出众，同时还需要具备极高的球商，极强的意识，而后两项往往是超巨和普通球员之间难以逾越差距。&lt;strong&gt;技术决定下限，而视野决定上限&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h1&gt;展望&lt;/h1&gt;
+
+&lt;p&gt;希望未来这一年，能够变得更强，更自信，更有把握。既要保持学生的心态，好奇好学，又要以职场的心态来看待问题。希望我能保持纯粹的心，一步步向前走，一步步逼近自己的梦想。&lt;/p&gt;
+</description>
+        <pubDate>Tue, 26 Jan 2016 12:42:43 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/01/2015-review/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/01/2015-review/</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>设计模式之 控制反转</title>
+        <description>&lt;p&gt;今天重新设计了&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;的logging模块，接触到了Inversion of Control设计模式，记录下分享给大家。&lt;em&gt;注：本文定义介绍均取自wiki，代码样例取自&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1&gt;定义&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;控制反转&lt;/strong&gt;（Inversion of Control，缩写为IoC），是面向对象编程中的一种设计原则，可以用来减低计算机代码之间的耦合度。”&lt;/p&gt;
+
+&lt;h1&gt;实现方法&lt;/h1&gt;
+
+&lt;p&gt;实现控制反转主要有两种方式：&lt;strong&gt;依赖注入&lt;/strong&gt;和&lt;strong&gt;依赖查找&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;两者的区别在于，前者是被动的接收对象，在类A的实例创建过程中即创建了依赖的B对象，通过类型或名称来判断将不同的对象注入到不同的属性中，而后者是主动索取响应名称的对象，获得依赖对象的时间也可以在代码中自由控制。&lt;/p&gt;
+
+&lt;h1&gt;Demo&lt;/h1&gt;
+
+&lt;p&gt;这里用一个简单的例子来解释依赖注入的实现方式。以Elric为例，其包括了Master, Worker, Executor, JobQueue, JobStore等好几个模块。而这几个模块有相互依赖，比如说JobStore作为Master的一个成员变量，JobStore依赖到Master创建的logger对象来打印log。&lt;/p&gt;
+
+&lt;p&gt;一开始我的做法是，将Master的logger对象传给JobStore：
+&lt;img src=&quot;/assets/images/inversion-of-control/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;JobStore就可以将传进来的logger对象保存到自己的成员变量self.log中，之后就可以通过该成员变量打印log了。
+&lt;img src=&quot;/assets/images/inversion-of-control/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;那如果JobStore还需要依赖到Master其他的成员变量呢？也要一个一个通过构造函数传进来吗？又或者说JobStore还依赖Master的成员方法，这时应该怎么处理？有没有更好的方案呢？&lt;/p&gt;
+
+&lt;p&gt;当然有，很简单，把整个Master对象传进来就好啦！
+&lt;img src=&quot;/assets/images/inversion-of-control/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;相应的修改JobStore的构造函数：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/inversion-of-control/illustration-4.png&quot; alt=&quot;示例4&quot; title=&quot;示例4&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Done！之后JobStore如果需要用到Master的其他成员变量或者方法，就可以通过self.context来调用啦！&lt;/p&gt;
+
+&lt;h1&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;在之前看nsq的代码，就看到过这种把A对象传到B对象的构造函数的做法，当初并不了解其中缘由。今天重新设计了Elric的logging模块，使用到IoC时，才恍然大悟，也算是有所收获～&lt;/p&gt;
+</description>
+        <pubDate>Tue, 12 Jan 2016 16:07:58 +0800</pubDate>
+        <link>http://masutangu.github.io//2016/01/inversion-of-control/</link>
+        <guid isPermaLink="true">http://masutangu.github.io//2016/01/inversion-of-control/</guid>
+        
+        
+        <category>设计模式</category>
+        
+      </item>
+    
+  </channel>
+</rss>

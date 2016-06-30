@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Elric Change Log I</title>
+  <meta name="description" content="自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Elric Change Log I">
+  <meta name="twitter:description" content="自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Elric Change Log I">
+  <meta property="og:description" content="自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2015/10/elric-change-log-1/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2015-10-27 16:07:58 +0800" itemprop="datePublished" class="post-meta__date date">2015-10-27</time> &#8226; <span class="post-meta__tags tags">优化&重构</span>
+    </div>
+    <h1 class="post-title">Elric Change Log I</h1>
+  </header>
+
+  <section class="post">
+    <p>自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。</p>
+
+<h1>接口简化</h1>
+
+<p>之前的worker在往某个queue提交任务之前，需要调用add_queue()方法来先在master创建一个queue。同时worker也需要注册自己监听哪些queue，这里worker和master就有两个queue的交互，一条queue用于提交任务，一条queue用于拉取任务来执行。但对于Elric的使用者，并不需要关心这些细节，因此我把add_queue()接口给去掉了：</p>
+
+<p><img src="/assets/images/elric-change-log-1/change-1.png" alt="代码修改1" title="代码修改1" width="800" /></p>
+
+<p><img src="/assets/images/elric-change-log-1/change-2.png" alt="代码修改2" title="代码修改2" width="800" />
+把worker和master的add_queue接口去掉。在worker提交任务的时候，检查该queue是否存在，如果不存在（抛KeyError）则创建之。</p>
+
+<h1>Bug fix</h1>
+
+<p>之前遇到过奇怪的bug。在获取到执行时间点的任务时，有些任务没有被取出来，代码逻辑如下：
+<img src="/assets/images/elric-change-log-1/bug-1.png" alt="bug代码1" title="bug代码1" width="800" /></p>
+
+<p>问题就出在get_due_jobs()上，看下我修改前后的代码：
+<img src="/assets/images/elric-change-log-1/bug-fix-1.png" alt="bug fix代码1" title="bug fix代码1" width="800" /></p>
+
+<p>之前采用的是yield，现在改成把到期的任务放到list后再返回整个list。这里的yield是坑，因为yield会记住上次执行的位置，而我们的代码逻辑如下：</p>
+
+<p><img src="/assets/images/elric-change-log-1/illustration-1.png" alt="样例1" title="样例1" width="800" /></p>
+
+<p>假设当前时间是8点，get_due_jobs()第一次for循环取出job1，并更新了job1的next_run_time为9点（假设job1的intervals为1小时），可以看到job_run_time列表中，job2现在排在第一位，job1排在第二位。而get_due_jobs()的下一次for循环将从job_run_time列表的第二位开始（因为使用了yield，会从代码上次执行的位置后继续执行），因此导致job2没有被取出来。因此这里我把yield的逻辑改成列表。</p>
+
+<h1>爬虫扩展</h1>
+
+<p>很早之前我就在Elric的基础上实现了分布式爬虫，只是代码一直没提交。这里也顺带提一下。相信看过这篇<a href="blog/2015/08/01/elricpython%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%B3%BB%E7%BB%9F/">文章</a>的同学都知道，Elric最初就是为分布式爬虫而设计的。那在他基础上封装一个爬虫也是非常简单的事情。有兴趣的同学直接看这个文件即可。简单来说就是在原有基础上添加了爬取去重逻辑，master在提交任务前先判断该任务是否已经存在，如果已存在则直接过滤。</p>
+
+<h1>任务优化</h1>
+
+<p>之前在任务分发下去之后，master就不管任务成功与否（master也没办法拿到这部分信息）。而我们有时需要对失败的任务做些记录或者处理，因此我给Elric新增了一个rpc接口：finish_job()。任务成功执行后，会向master上报：
+<img src="/assets/images/elric-change-log-1/optimization-1.png" alt="优化1" title="优化1" width="800" /></p>
+
+<p>这里如果要任务执行失败也上报也是ok的。至于master的finish_job接口要如何设计，则完全取决于你了。在我扩展实现的爬虫master中，任务执行成功后我会把该任务的过滤信息记录下来，以此实现爬虫的去重逻辑：
+<img src="/assets/images/elric-change-log-1/optimization-2.png" alt="优化2" title="优化2" width="800" /></p>
+
+<h1>总结心得</h1>
+
+<p>自己写的工具，有机会还是要推动大家去使用。写demo容易，写一个成熟的工具很困难。只有大家去使用自己的工具，发现坑或者发现不合理的地方，才能促进自己去思考优化改进。</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/10/clever-way-of-using-cookie/" title="link to 应对反爬虫之换Cookie">应对反爬虫之换Cookie</a></h2>
+       <p class="excerpt">最近想玩一玩数据分析，却苦于没有数据。所以想写写爬虫抓些数据来分析分析。想来想去，把目标瞄准了新浪微博。虽然现在微博已经不太行了，但是毕竟UGC内容很多，并且都是短文本，感觉比较好处理些。说搞就搞，通过抓包分析移动版微博，很容易就知道新浪微博的api接口（获取粉丝列表，获取微博列表），更爽的是，这些接口不需要登陆态，并且返回的都是json数据。本来我的目的就是分析数据，正好也不想花费太多精力在爬虫上。基于python的request库很快写好了代码，一跑，嘿嘿，一下子抓了几千条数据下来，但...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-10-31 16:07:58 +0800" class="post-list__meta--date date">2015-10-31</time> &#8226; <span class="post-list__meta--tags tags">爬虫</span><a class="btn-border-small" href=/2015/10/clever-way-of-using-cookie/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/08/talk-about-golang/" title="link to 谈谈我对Golang的理解">谈谈我对Golang的理解</a></h2>
+       <p class="excerpt">谈谈我对Golang的理解 一直想了解下go这门新的语言。前段时间看了Google IO上Rob Pike对Go语言的介绍，又过了下A Tour of Go。然后趁热打铁花了两天时间写了个比较有趣的脚本管理器Scripter。当然对Go语言的语法规范和代码组织还不了解，所以这代码写的有些凌乱。回到主题，从开始看Google IO，到用Go写完了Scripter，加起来花了差不多五天。不是我天赋过人，而是Go的语法实在是太简洁了。简单来说，Go是一门写起来像动态语言，有着动态语言开发效率的静...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-08-02 16:07:58 +0800" class="post-list__meta--date date">2015-08-02</time> &#8226; <span class="post-list__meta--tags tags">编程语言</span><a class="btn-border-small" href=/2015/08/talk-about-golang/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2015/10/elric-change-log-1/";
+        this.page.identifier = "/2015/10/elric-change-log-1/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

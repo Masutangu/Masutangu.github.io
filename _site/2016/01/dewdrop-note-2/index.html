@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>水滴石穿－第二期</title>
+  <meta name="description" content="不积跬步，无以至千里；不积小流，无以成江海">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="水滴石穿－第二期">
+  <meta name="twitter:description" content="不积跬步，无以至千里；不积小流，无以成江海">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="水滴石穿－第二期">
+  <meta property="og:description" content="不积跬步，无以至千里；不积小流，无以成江海">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2016/01/dewdrop-note-2/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2016-01-26 12:42:43 +0800" itemprop="datePublished" class="post-meta__date date">2016-01-26</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">水滴石穿－第二期</h1>
+  </header>
+
+  <section class="post">
+    <blockquote>
+<p>不积跬步，无以至千里；不积小流，无以成江海</p>
+</blockquote>
+
+<h1><a href="http://blog.cleancoder.com/uncle-bob/2016/01/04/ALittleArchitecture.html">A Little Architecture</a></h1>
+
+<p>文章以问答的形式，讲解了如何成为一名优秀的架构师。</p>
+
+<p>成为一名优秀的架构师，不仅仅是知道如何选择数据库，选择框架。<strong>一个优秀的架构，业务逻辑不需要依赖底层的技术架构。</strong></p>
+
+<p>文章提出两个重要的原则：</p>
+
+<ul>
+<li><p><strong>Dependency Inversion Principle</strong></p>
+
+<blockquote>
+<p>The source code of the sender does not mention, or depend upon, the source code of the receiver. In fact the source code of the receiver depends upon the source code of the sender.</p>
+
+<p>The principles of architecture, of course. Senders own the interfaces that the receivers must implement.</p>
+</blockquote></li>
+<li><p><strong>Interface Segregation Principle</strong></p>
+
+<blockquote>
+<p>Each business rule class will only use some of the facilities of the database. And so each business rule provides an interface that gives it access to just those facilities.</p>
+</blockquote>
+
+<p>良好的接口设计，能够让你延后做出技术选型的决定。你可以在初期使用轻量级的技术框架来实现功能，后期再根据实际情况进行调整。而你出色的接口设计使得你的业务逻辑不会依赖底层技术，换句话说，底层使用什么技术框架对于业务逻辑来说都是透明的。</p>
+
+<blockquote>
+<p>Blessed is the team whose architects have provided the means by which all these decisions can be deferred until there is enough information to make them.</p>
+
+<p>Blessed is the team whose architects have so isolated them from slow and resource hungry IO devices and frameworks that they can create fast and lightweight test environments.</p>
+
+<p>Blessed is the team whose architects care about what really matters, and defer those things that don’t.</p>
+</blockquote></li>
+</ul>
+
+<h1><a href="http://www.theeffectiveengineer.com/blog/debugging-user-behavior">Why’d You Do That?!? An Engineer’s Guide to Debugging User Behavior</a></h1>
+
+<p>代码不符合我们的预期，我们可以通过各种方法进行调试，比如打断点，打log等。那如果用户的行为不符合我们的预期，我们应该如何debug用户呢？</p>
+
+<p>文章提了几种方法来debug用户：</p>
+
+<ul>
+<li><p><strong>A/B test</strong></p></li>
+<li><p><strong>session logs</strong></p></li>
+<li><p><strong>user tests</strong>:
+Let engaged customers or early adopters beta test a feature and then collect their feedback in a doc or talk to them in person.</p></li>
+</ul>
+
+<h1><a href="http://blog.krzyzanowskim.com/2015/12/28/how-to-be-awesome-swift-developer/">How to be awesome Swift developer</a></h1>
+
+<p>如何成为了不起的swift程序员？作者给了一些很有用的建议，摘抄如下：</p>
+
+<ul>
+<li>embrace legacy
+do:
+
+<ul>
+<li>experiment a lot </li>
+<li>don’t be afraid doing things in non optimal way — wrong is way better than none</li>
+<li>open your mind, try new things</li>
+<li>read blogs of other developers</li>
+<li>learn by doing</li>
+<li>check what’s inside to understand it more</li>
+</ul></li>
+<li>don’t be a douchebag
+don’t:
+
+<ul>
+<li>my code is better than yours</li>
+<li>don’t complain to much about what’s done (your work or in general)</li>
+<li>for God’s sake stop telling people that tools you’re using are the best in the world just because you know how to use it</li>
+<li>programming language doesn’t matter.</li>
+<li>avoid “I know better” attitude</li>
+<li>don’t be a douchebag</li>
+</ul></li>
+</ul>
+
+<h1><a href="https://www.objc.io/issues/13-architecture/mvvm/">Introduction to MVVM Introduction to MVVM</a></h1>
+
+<p>MVC有时被戏称为Massive View Controller，因为Controller的逻辑太重了。而且大部分是展示逻辑：把Model的数据转化为View的展现形式。</p>
+
+<p>MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model层，这样不仅减轻了Controller的逻辑，简化了代码。同时也易于测试。</p>
+
+<p>延伸阅读：</p>
+
+<p><a href="http://www.teehanlax.com/blog/model-view-viewmodel-for-ios/">Model-View-ViewModel for iOS Model-View-ViewModel for iOS</a></p>
+
+<h1><a href="http://scalemybusiness.com/the-ultimate-guide-to-minimum-viable-products/">The Ultimate Guide to Minimum Viable Products</a></h1>
+
+<p>最简可行产品(MVP)是指以最低成本尽可能展现核心概念的产品策略，即是指用最快、最简明的方式建立一个可用的产品原型，这个原型要表达出你产品最终想要的效果，然后通过迭代来完善细节。</p>
+
+<blockquote>
+<p><strong>A minimum viable product is therefore not a product. It is a minimum viable go to market step.</strong></p>
+</blockquote>
+
+<p>这篇文章列举了7个MVP例子：</p>
+
+<ul>
+<li><p>Explainer Video
+以dropbox为例，用一段视频来介绍你的产品，从而收集用户反馈。</p></li>
+<li><p>A Landing Page
+善用登陆页来向用户展示核心信息，并借助统计工具（例如Google Analytics）来分析转化率／用户行为。</p></li>
+<li><p>Wizard of Oz MVP
+Put up a front that looks like a real working product, but you manually carry out product functions.
+以Zappos为例，初期是创始人到实体鞋店把照片拍下来，放到网店上，用户下单后再去实体店买回来并邮寄给用户这种方式运作的。通过这种方式，几乎不需要什么成本就可以清楚用户是否有网上购鞋的需求。当需求明确之后，再开始开发整个网站，从手工转向自动化。</p></li>
+<li><p>Concierge MVP
+和Wizard of Oz MVP类似，前期人工提供服务，逐渐改进，直到后期用户逐渐增多，再慢慢使用软件来代替人工。</p></li>
+<li><p>Piecemeal MVP
+和Concierge MVP及Wizard of Oz MVP类似，但是借助现有工具而不是manually去完成整个流程。</p></li>
+<li><p>Raise Funds from Customers
+众筹，不仅能验证你的产品是否有市场，还能拿到资金投入到产品之中。</p></li>
+<li><p>A Single Featured MVP
+Chances are that if you cannot find that one killer feature that can stand on its own — at least in with early users — adding more features will not make the product a must have.
+专注在简单，功能单一的功能。</p></li>
+</ul>
+
+<p>最后文章的总结：</p>
+
+<blockquote>
+<p>The 20 second summary of this lesson is: don’t burn your money on a product no one will want to use. Get creative and think hard about what is the minimum thing you can do now to make sure that doesn’t happen:
+* Select one MVP strategy you think would work for you
+* Create a simple plan to execute on it (remember the “minimal” in MVP)</p>
+</blockquote>
+
+<h1><a href="http://www.williambharding.com/blog/hiring/meta-analysis-best-interview-questions-to-spot-ideal-employees/">Meta-analysis: best interview questions to spot ideal employees</a></h1>
+
+<p>招聘者最看重的特质是什么？</p>
+
+<p>有团队意识，适应性强，值得信赖，价值观相符。</p>
+
+<p>另外后面还有些经典的面试题，供面试者和面试官参考学习。</p>
+
+<h1><a href="http://firstround.com/review/square-defangs-difficult-decisions-with-this-system-heres-how/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29">Square Defangs Difficult Decisions with this System — Here’s How</a></h1>
+
+<p>文章介绍SPADE，如何运用它来更好地做决策。</p>
+
+<ul>
+<li><p>Setting: The setting has three parts: what, when and why</p>
+
+<ul>
+<li>Precisely define the decision to capture the “what.”</li>
+<li>Calendar the exact timeline for the decision to realize the “when.”</li>
+<li>Parse the objective from the plan to isolate the “why.”</li>
+</ul></li>
+<li><p>People: This includes those who are consulted and give input towards the decision, the person whoapproves the decision, and most importantly the person who’sresponsible for ultimately making the call</p>
+
+<ul>
+<li>Synonymize accountability and responsibility. 亲身经验告诉我，这点非常重要！
+&gt; “At Square, the person who’s responsible for making the decision is the person who’s accountable for its execution and success.</li>
+<li>Veto decisions mainly for their quality, not necessarily their result.</li>
+<li>Formally recognize the roles of all active participants.</li>
+</ul>
+
+<blockquote>
+<p>Listening matters. Much, much more than you think. People want the option to chime or chip in, even if their stance is counter to the end decision. They just want to be listened to.</p>
+</blockquote></li>
+<li><p>Alternatives: Alternatives should be feasible — they should be realistic; diverse — they should not all be micro-variants of the same situation; and comprehensive — they should cover the problem space</p>
+
+<blockquote>
+<p>“Get in a room, get on a whiteboard, and brainstorm,” says Rajaram. “For each alternative, list out the pros and cons, as well as the parameters behind the quantitative model. There are no shortcuts. Get into the numbers as much as possible. It can be very hard with ambiguous decisions to get down into the numbers, but it’s very valuable to do so.”</p>
+</blockquote>
+
+<p>数字更直观，尽量把各个方案转化为数值进行比较。</p></li>
+<li><p>Decide</p>
+
+<ul>
+<li>The most important part part of this process is to ask them to send you their vote privately.（也许匿名是个更好的主意）</li>
+<li>That said, in exceptional circumstances, choices can be articulated openly.</li>
+</ul></li>
+<li><p>Explain</p>
+
+<ul>
+<li>Run your decision and the process by the Approver.</li>
+<li>Convene a commitment meeting.</li>
+<li>Circulate the annals of the decision for precedent and posterity.</li>
+</ul></li>
+</ul>
+
+<h1><a href="https://blog.lateral.io/2015/05/full-text-search-in-milliseconds-with-postgresql/">Full text search in milliseconds with PostgreSQL </a></h1>
+
+<p>简单介绍了如何用PostgreSQL做全文检索。</p>
+
+<h1><a href="http://gingearstudio.com/why-i-quit-my-dream-job-at-ubisoft">Why I Quit my Dream Job at Ubisoft Why I Quit my Dream Job at Ubisoft</a></h1>
+
+<p>作者讲述了自己从大公司辞职，自己组团队做独立游戏的原因：</p>
+
+<ul>
+<li>每个人的贡献被稀释了，因此缺少了动力。</li>
+<li>沟通成本变高了。</li>
+</ul>
+
+<blockquote>
+<p>When people realize they’re just one very replaceable person on a massive production chain, you can imagine it impacts their motivation.<br>
+No matter what’s your job, you don’t have a significant contribution on the game. You’re a drop in a glass of water, and as soon as you realize it, your ownership will evaporate in the sun. And without ownership, no motivation.</p>
+</blockquote>
+
+<h1><a href="http://gold.xitu.io/entry/5649618800b0ee7f5991a717">消息系统设计与实现 稀土掘金：消息系统设计与实现「上篇」 </a></h1>
+
+<p>分析了消息系统的设计与实现，非常有参考价值。</p>
+
+<h1><a href="http://v.qq.com/cover/a/a7v5hfc9umds0c9.html?vid=s0019dietdc">张小龙谈微信价值观 微信公开课PRO版</a></h1>
+
+<p>微信的四个价值观：</p>
+
+<ul>
+<li>一切以用户价值为依归。强调公平公正，善良比聪明更重要。</li>
+<li>让创造发挥价值。</li>
+<li><p>用完即走，提高用户效率。帮用户过滤掉无用的信息，只留下用户关心的价值点。做法：</p>
+
+<ul>
+<li>限制营销信息，简化朋友圈内容 </li>
+<li> 提高加好友门槛 </li>
+<li> 限制公众号下发消息的频率。</li>
+</ul>
+
+<p>如果用户在你产品上找不到价值，或者很难找到价值（无用信息太多，骚扰太多），就会离开你的产品。</p></li>
+<li><p>让商业化存在于无形之中。</p></li>
+</ul>
+
+<p>最后张小龙剧透了下微信的应用号，听起来很有趣，以后可以尝试一下。</p>
+
+<h1><a href="https://www.youtube.com/watch?v=vBmavNoChZc">Amazon founder and CEO Jeff Bezos delivers graduation speech at Princeton University</a></h1>
+
+<p><a href="http://www.princeton.edu/main/news/archive/S27/52/51O99/index.xml">原文链接</a></p>
+
+<p>“善良比聪明更重要，选择比天赋更重要”。最后的一系列反问句满满的正能量：</p>
+
+<blockquote>
+<p>How will you use your gifts? What choices will you make?</p>
+
+<p>Will inertia be your guide, or will you follow your passions?</p>
+
+<p>Will you follow dogma, or will you be original?</p>
+
+<p>Will you choose a life of ease, or a life of service and adventure?</p>
+
+<p>Will you wilt under criticism, or will you follow your convictions?</p>
+
+<p>Will you bluff it out when you’re wrong, or will you apologize?</p>
+
+<p>When it’s tough, will you give up, or will you be relentless?</p>
+
+<p>Will you be a cynic, or will you be a builder?</p>
+
+<p>Will you be clever at the expense of others, or will you be kind?</p>
+</blockquote>
+
+<h1>一勺鸡汤</h1>
+
+<p><strong>How do you know you are on the right path in your life? When you no longer hate Monday mornings.</strong></p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/02/elric-change-log-2/" title="link to Elric Change Log II">Elric Change Log II</a></h2>
+       <p class="excerpt">最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。优化Worker拉取任务逻辑之前的逻辑是从任务队列里拉取任务后就塞给进程池，会导致worker不断从任务队列里取任务，然后在进程池里等待执行。这样的话，Worker不是按需取任务，而是揽一大堆活然后一直积压在手里做不完，而后续拉起空闲的Worker则取不到任务。之前的逻辑，拉取任务后直接塞给进程池这里我对取任务的逻辑做了优化，使用Queue来统计正在执行中的任务。初始化一个Queue，其最大长度等于W...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-02-03 16:07:58 +0800" class="post-list__meta--date date">2016-02-03</time> &#8226; <span class="post-list__meta--tags tags">优化&重构</span><a class="btn-border-small" href=/2016/02/elric-change-log-2/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/01/2015-review/" title="link to 回顾2015这一年">回顾2015这一年</a></h2>
+       <p class="excerpt">时间飞逝，今天已是12月的中旬。还记得年初我给自己定下了详细的计划和目标，转眼一年时间就快过去了。刚好今天公司年会，心里特别有感触，所以就提前回顾和总结下这一年的点点滴滴。计划回顾首先来看看我年初给自己定的计划：完成度［阅读计划：0％］很惭愧，制定的阅读计划一本都没有读，这其实是有原因的。因为我发现自己的代码量远远不够，看书的话很有可能还是无法把理论和实践很好的结合起来。因此我决定改变策略，先从写代码／读源码做起，等有了一定的积累，再读相关的书籍，也许会事半功倍，感触和体会更深入。［新技术...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-01-26 12:42:43 +0800" class="post-list__meta--date date">2016-01-26</time> &#8226; <span class="post-list__meta--tags tags">随笔</span><a class="btn-border-small" href=/2016/01/2015-review/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2016/01/dewdrop-note-2/";
+        this.page.identifier = "/2016/01/dewdrop-note-2/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

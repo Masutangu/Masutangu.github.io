@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>NSQ源码解读 NSQD篇</title>
+  <meta name="description" content="接触go语言也有几个月了，从入门后一直用go写些小项目，语法和编程思维已经比较熟悉了，但是感觉很难再进阶一级，因此决定来读一读优秀的go项目源码。这篇文章名叫“解读”，其实有点言过其实。这里我主要是贴出我梳理的NSQ源码的代码架构，给出流程图，并提取其中比较精妙的代码来分析学习，算是比较粗糙。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="NSQ源码解读 NSQD篇">
+  <meta name="twitter:description" content="接触go语言也有几个月了，从入门后一直用go写些小项目，语法和编程思维已经比较熟悉了，但是感觉很难再进阶一级，因此决定来读一读优秀的go项目源码。这篇文章名叫“解读”，其实有点言过其实。这里我主要是贴出我梳理的NSQ源码的代码架构，给出流程图，并提取其中比较精妙的代码来分析学习，算是比较粗糙。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="NSQ源码解读 NSQD篇">
+  <meta property="og:description" content="接触go语言也有几个月了，从入门后一直用go写些小项目，语法和编程思维已经比较熟悉了，但是感觉很难再进阶一级，因此决定来读一读优秀的go项目源码。这篇文章名叫“解读”，其实有点言过其实。这里我主要是贴出我梳理的NSQ源码的代码架构，给出流程图，并提取其中比较精妙的代码来分析学习，算是比较粗糙。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2015/11/read-nsq-source-code/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2015-11-11 16:07:58 +0800" itemprop="datePublished" class="post-meta__date date">2015-11-11</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">NSQ源码解读 NSQD篇</h1>
+  </header>
+
+  <section class="post">
+    <p>接触go语言也有几个月了，从入门后一直用go写些小项目，语法和编程思维已经比较熟悉了，但是感觉很难再进阶一级，因此决定来读一读优秀的go项目源码。这篇文章名叫“解读”，其实有点言过其实。这里我主要是贴出我梳理的NSQ源码的代码架构，给出流程图，并提取其中比较精妙的代码来分析学习，算是比较粗糙。</p>
+
+<h1>为什么选择NSQ</h1>
+
+<ul>
+<li>知乎上不少人推荐</li>
+<li>对消息队列挺感兴趣，想了解其实现。
+# 关于NSQ #
+官网介绍在此：<a href="http://nsq.io/overview/quick_start.html">http://nsq.io/overview/quick_start.html</a> 简单复制粘贴下NSQ包含的几个模块：</li>
+<li>nsqd is the daemon that receives, queues, and delivers messages to clients.</li>
+<li>nsqlookupd is the daemon that manages topology information. Clients query </li>
+<li> nsqlookupd to discover nsqdproducers for a specific topic and nsqd nodes broadcasts topic and channel information.
+nsqadmin is a Web UI to view aggregated cluster stats in realtime and perform various administrative tasks.</li>
+</ul>
+
+<p>阅读这篇文章前建议先看下NSQ的文档，需要对NSQ的基本概念有粗浅的了解。</p>
+
+<h1>NSQD代码架构</h1>
+
+<p>我主要是读了nsq中nsqd这个模块。下图是我总结的代码架构图：
+<img src="/assets/images/read-nsq-source-code/illustration-1.png" alt="图例1" title="图例1" width="800" /></p>
+
+<p>下面针对上图的各个流程贴下相应的代码，方便读者查阅。
+nsqd启动时开启tcp和http服务：
+<img src="/assets/images/read-nsq-source-code/illustration-2.png" alt="nsqd.go: Main()" title="nsqd.go: Main()" width="800" />
+tcp接收到client的请求后，创建protocol实例并调用其IOLoop()方法：
+<img src="/assets/images/read-nsq-source-code/illustration-3.png" alt="tcp.go: Handle()" title="tcp.go: Handle()" width="800" />
+protocol的IOLoop接收client的请求，根据命令的不同做相应处理：
+<img src="/assets/images/read-nsq-source-code/illustration-4.png" alt="protocol_v2.go: IOLoop()" title="protocol_v2.go: IOLoop()" width="800" />
+同时IOLoop会起一个goroutine运行messagePump()，该函数从该client订阅的channel的clientMsgChan中读取消息并发送给client：
+<img src="/assets/images/read-nsq-source-code/illustration-5.png" alt="protocol_v2.go: messagePump()" title="protocol_v2.go: messagePump()" width="800" />
+上面的代码看到protocol是从channel的clientMsgChan中读取消息的，那么clientMsgChan的消息是从哪里来的呢？我们来看看protocol/topic/channel的关系图，看看一条消息是如何流转的：
+<img src="/assets/images/read-nsq-source-code/illustration-6.png" alt="示例6" title="示例6" width="800" />
+从提交消息开始，可以通过http或者tcp的方式往一个topic发送一条消息。先看看http的方式。
+注册回调函数doPUB：
+<img src="/assets/images/read-nsq-source-code/illustration-7.png" alt="http.go: newHTTPServer()" title="http.go: newHTTPServer()" width="800" />
+看看doPUB函数的关键代码，查询到相应的topic，创建Message实例，调用topic的PutMessage方法将该消息写入topic：
+<img src="/assets/images/read-nsq-source-code/illustration-8.png" alt="http.go: doPUB()" title="http.go: doPUB()" width="800" />
+再看看tcp的方式，上面提到protocol的IOLoop会根据client的不同请求做相应处理，Exec方法判断请求的参数，调用不同的方法：
+<img src="/assets/images/read-nsq-source-code/illustration-9.png" alt="protocol_v2.go: Exec()" title="protocol_v2.go: Exec()" width="800" />
+看看PUB()的实现，类似的，查询相应的topic，创建Message实例，调用topic的PutMessage方法将该消息写入topic：
+<img src="/assets/images/read-nsq-source-code/illustration-10.png" alt="protocol_v2.go: PUB()" title="protocol_v2.go: PUB()" width="800" />
+<img src="/assets/images/read-nsq-source-code/illustration-11.png" alt="protocol_v2.go: PUB()" title="protocol_v2.go: PUB()" width="800" />
+topic的PutMessage函数调用了put函数，put函数将消息写入memoryMsgChan，如果memoryMsgChan写满了则写到backend队列中：
+<img src="/assets/images/read-nsq-source-code/illustration-12.png" alt="topic.go: PutMessage()" title="topic.go: PutMessage()" width="800" />
+<img src="/assets/images/read-nsq-source-code/illustration-13.png" alt="topic.go: PutMessage()" title="topic.go: PutMessage()" width="800" /></p>
+
+<p>topic的messagePump函数会不断从memoryMsgChan/backend队列中读消息，并将消息每个复制一遍，发送给topic下的所有channel（因为channel会修改消息里的字段，因此需要将每个消息都复制一遍）：
+<img src="/assets/images/read-nsq-source-code/illustration-14.png" alt="topic.go: messagePump()" title="topic.go: messagePump()" width="800" />
+<img src="/assets/images/read-nsq-source-code/illustration-15.png" alt="topic.go: messagePump()" title="topic.go: messagePump()" width="800" />
+channel也非常类似，PutMessage方法调用put方法，把消息写入memoryMsgChan，如果memoryMsgChan写满了则写到backend队列中：
+<img src="/assets/images/read-nsq-source-code/illustration-16.png" alt="channel.go: PutMessage()" title="channel.go: PutMessage()" width="800" /></p>
+
+<p>channel的messagePump函数会不断从memoryMsgChan／backend队列中读消息，并把消息发送到clientMsgChan中：
+<img src="/assets/images/read-nsq-source-code/illustration-17.png" alt="channel.go: messagePump()" title="channel.go: messagePump()" width="800" />
+最后，protocol的messagePump方法会从client订阅的topic下的所有channel中的clientMsgChan中读取消息，并发送给client（详见上图）。这就是整个消息流转的流程。</p>
+
+<h1>NSQD细节代码分享</h1>
+
+<ol>
+<li><p>channel和select<br>
+channel和select的结合使用非常精妙。例如下面这段代码：
+<img src="/assets/images/read-nsq-source-code/illustration-18.png" alt="channel.go: put()" title="channel.go: put()" width="800" />
+NSQ Channel类包含了MemoryQueue和BackendQueue。在往NSQ Channel塞数据时（调用put()方法），首先先写MemoryQueue，如果MemoryQueue写满了，则先写到BackendQueue里缓存起来。上面这段代码用select非常简洁的实现里这个功能。select的case1尝试往memoryMsgChan里写数据，如果memoryMsgChan已经写满，这时会进入到default代码端，将msg写到BackendQueue里（writeMessageToBackend()方法）。
+下面这段代码也非常巧妙，go在select的时候会自动跳过channel为nil的case。由于clientMsgChan有可能在另一个goroutine里被close掉。因此在检测到clientMsgChan已经关闭时（ok为false），将clientMsgChan设为nil。下次进入select语句时，case _, ok := &lt;-clientMsgChan这个分支将被跳过。
+<img src="/assets/images/read-nsq-source-code/illustration-19.png" alt="channel.go: Empty()" title="channel.go: Empty()" width="800" />
+对于channel的处理，为什么clientMsgChan使用range，而memoryMsgChan使用select？区别是？
+<img src="/assets/images/read-nsq-source-code/illustration-20.png" alt="channel.go: flush()" title="channel.go: flush()" width="800" />
+由于在退出时，clientMsgChan会被close。当channel已经关闭时，for…range循环会自动结束。而对于select来说，“A closed channel is always available for read so its case in select is always readable.”。因此在处理memoryMsgChan时，需要加上default分支，因为即使memoryMsgChan被关闭了，select还是会阻塞，除非把该channel设为nil。</p></li>
+<li><p>解读DiskQueue<br>
+DiskQueue类里有两个变量：readPos和nextReadPos。看起来有点重复，实际上表示了不同的含义。readPos记录当前readFileNum指向的文件已经读取并发送出去的文件位置。nextReadPos则记录当前readFileNum指向的文件已经读取但是还没发送出去的文件位置。瞧一瞧下面这段代码：
+<img src="/assets/images/read-nsq-source-code/illustration-21.png" alt="diskqueue.go: ioLoop()" title="diskqueue.go: ioLoop()" width="800" />
+首先注意到，当nextReadPos等于readPos的时候，才会调用readOne()读取一块数据。这是因为只有当nextReadPos（已发送的文件位置）与readPos（已读取未发送的文件位置）相等，才表示之前读取的数据都已经发送出去了。当从readOne()读取一块新数据并发送出去的时候（r&lt;-dataRead)，调用MoveForward()函数，我们看看MoveForward()做了什么事情：
+<img src="/assets/images/read-nsq-source-code/illustration-22.png" alt="diskqueue.go: moveForward()" title="diskqueue.go: moveForward()" width="800" />
+很简单，他把readPos设置为nextReadPos的值。这样下次进入循环的时候，nextReadPos就会等于readPos，也就会再次调用readOne()读取一块数据。</p></li>
+<li><p>GC优化<br>
+<img src="/assets/images/read-nsq-source-code/illustration-23.png" alt="protocol_v2.go: IOLoop()" title="protocol_v2.go: IOLoop()" width="800" />
+使用ReadSlice的原因如下：
+To reduce socket IO syscalls, client net.Conn are wrapped with bufio.Reader and bufio.Writer. The Readerexposes ReadSlice(), which reuses its internal buffer. This nearly eliminates allocations while reading off the socket, greatly reducing GC pressure. This is possible because the data associated with most commands does not escape (in the edge cases where this is not true, the data is explicitly copied).</p></li>
+<li><p>Goroutine管理<br>
+NSQ的官方文档提到了管理goroutine的一些方法。通常会用一个exitchan来向goroutine发送退出信号，如有必要会使用sync.WaitGroup来等待goroutine的退出。
+另外对于NSQ来说，处理退出时的信息同步非常重要，官网给出的建议如下：</p>
+
+<ul>
+<li>Ideally the goroutine responsible for sending on a go-chan should also be responsible for closing it.</li>
+<li>If messages cannot be lost, ensure that pertinent go-chans are emptied (especially unbuffered ones!) to guarantee senders can make progress.</li>
+<li>Alternatively, if a message is no longer relevant, sends on a single go-chan should be converted to a select with the addition of an exit signal (as discussed above) to guarantee progress.</li>
+<li>  The general order should be:
+
+<ul>
+<li>  Stop accepting new connections (close listeners)</li>
+<li>  Signal exit to child goroutines (see above)</li>
+<li>  Wait on WaitGroup for goroutine exit (see above)</li>
+<li>  Recover buffered data-</li>
+<li>  Flush anything left to disk</li>
+</ul></li>
+</ul>
+
+<p>第一点很浅显易懂，一般是由生产者来关闭go-chan。第二点没能理解，在源码中我找不到例子来解释。第三点直接看代码：
+<img src="/assets/images/read-nsq-source-code/illustration-24.png" alt="channel.go: messagePump()" title="channel.go: messagePump()" width="800" />
+第四点NSQ总结了一个通用的顺序，我们先拿topic的代码来解释下。
+步骤1：［第319行］发送退出信号给child goroutine（topic没有维护和client的连接，因此无需关闭connection）
+步骤2：［第322行］等待child goroutine退出
+步骤3：［第347行］将数据写到缓冲区（backend）
+步骤4：［第348行］将缓冲区（backend）的数据写到磁盘
+<img src="/assets/images/read-nsq-source-code/illustration-25.png" alt="topic.go: exit()" title="topic.go: exit()" width="800" />
+再看看channel的例子。
+步骤1：［第173行］关闭client的连接
+步骤2：［第177行］发送退出信号给child goroutine
+步骤3：［第186行］将数据写到缓冲区（backend）
+步骤4：［第187行］将缓冲区（backend）的数据写到磁盘
+<img src="/assets/images/read-nsq-source-code/illustration-26.png" alt="channel.go: exit()" title="channel.go: exit()" width="800" />
+对比了channel和topic，会发现channel的exit()并没有等待child goroutine退出。这里为什么topic需要等待child goroutine结束呢？我猜测是因为child goroutinue有可能会写消息到topic下的channel，而可以看到在topic的exit()函数有关闭channel的操作，因此需要确保child goroutinue退出，不再有消息写入channel后，才执行关闭channel的操作。</p>
+
+<h1>心得体会</h1>
+
+<p>这次读NSQ的代码，最大的困难在于之前我对NSQ一点都不了解，没有使用过的经验。读源码之前看过官方的文档，但是文档的说明其实比较少。另外国内也几乎没有相关的资料可以参考。所以一开始读起来有点吃力。
+尝试过自顶（nsqd，protocol类）向下（topic，channel类）的顺序来读，也尝试过从自底向上的顺序来读。最后我个人感觉阅读的顺序应该是先从底部（topic，channel类）读起，这部分需要读的细致些。再往上一层层读（protocol，tcp，http，最后到nsqd），梳理好整个的架构。最后再自顶向下一层层画出架构图。
+另外一个非常大的感受是，要把自己的所得写成文章真是一件很不容易的事情。尤其是梳理架构／流程这一部分。想把自己理解的东西通俗易懂的表达出来是一门大学问，希望读者多多提出意见和批评，好让我不断学习和进步。
+结束语
+nsqd主要的精华在于golang的channel，读完能够更深入的掌握channel的用法和使用时机。之后如果有时间，我会继续阅读nsqlookup这个模块的代码，感兴趣的同学到时再一起探讨吧<sup>_^</sup></p></li>
+</ol>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/11/talk-about-ffmpeg/" title="link to FFmpeg浅析">FFmpeg浅析</a></h2>
+       <p class="excerpt">最近在做和转码有关的项目，接触到ffmpeg这个神器。从一开始简单的写脚本直接调用ffmpeg的可执行文件做些转码的工作，到后来需要写程序调用ffmpeg的API。虽然上网搜了别人的demo稍微改改顺利完成了工作，但是对于ffmpeg这个黑盒子，还是有些好奇心和担心，于是抽空翻了翻ffmpeg的源码，整理成文章给大家分享分享。由于我并非做音频出身，对于音频一窍不通。ffmpeg整个也非常庞大，所以这篇文章从ffmpeg提供的转码的demo开始，侧重于讲清楚整个输入-&gt;转码-&gt;输...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-11-28 11:03:18 +0800" class="post-list__meta--date date">2015-11-28</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2015/11/talk-about-ffmpeg/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/11/talk-about-protocol/" title="link to 谈谈前后台协议">谈谈前后台协议</a></h2>
+       <p class="excerpt">最近在做一款内容型的app，身为一枚后台开发童鞋，在开发新的功能的时候，初期总是需要制定和客户端的协议。在绕了不少弯路后，今天在这里总结一些经验，也算是一种沉淀。制定协议最主要就是灵活，通用。针对一款内容型的app，你可能会有很多个页面，展示很多种元素，每个元素会是不同的类型。我们拿一款fm的app来做示例：如果我们要开发上面这三个页面，你会怎么制定和客户端的协议？我们先来简单分析下。精选页有banner／新闻栏目／音乐栏目等。各个栏目下的元素是专辑，展现形式为一行三个专辑。电台页有地区／...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-11-03 16:07:58 +0800" class="post-list__meta--date date">2015-11-03</time> &#8226; <span class="post-list__meta--tags tags">后台开发</span><a class="btn-border-small" href=/2015/11/talk-about-protocol/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2015/11/read-nsq-source-code/";
+        this.page.identifier = "/2015/11/read-nsq-source-code/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>

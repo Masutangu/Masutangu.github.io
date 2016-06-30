@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Elric：Python实现的分布式任务调度系统</title>
+  <meta name="description" content="五月中的时候，我花了两周的业余时间，用python写了第一个github项目：Elric。Elric是一个简单的分布式任务调度系统。这里想分享下写这个项目的缘由，思路以及Elric架构演变。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Elric：Python实现的分布式任务调度系统">
+  <meta name="twitter:description" content="五月中的时候，我花了两周的业余时间，用python写了第一个github项目：Elric。Elric是一个简单的分布式任务调度系统。这里想分享下写这个项目的缘由，思路以及Elric架构演变。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Elric：Python实现的分布式任务调度系统">
+  <meta property="og:description" content="五月中的时候，我花了两周的业余时间，用python写了第一个github项目：Elric。Elric是一个简单的分布式任务调度系统。这里想分享下写这个项目的缘由，思路以及Elric架构演变。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.github.io//2015/08/elric-distributed-job-scheduler-by-python/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">长风破浪会有时</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="http://example.com" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-slate"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2015-08-01 16:07:58 +0800" itemprop="datePublished" class="post-meta__date date">2015-08-01</time> &#8226; <span class="post-meta__tags tags">个人项目</span>
+    </div>
+    <h1 class="post-title">Elric：Python实现的分布式任务调度系统</h1>
+  </header>
+
+  <section class="post">
+    <p>五月中的时候，我花了两周的业余时间，用python写了第一个github项目：<a href="https://github.com/Masutangu/Elric">Elric</a>。Elric是一个简单的分布式任务调度系统。这里想分享下写这个项目的缘由，思路以及Elric架构演变。</p>
+
+<h1>名字来源</h1>
+
+<p><img src="/assets/images/elric-distributed-job-scheduler-by-python/full_metal_alchemist.jpeg" alt="钢之炼金术师" title="钢之炼金术师" width="800" /></p>
+
+<p>这个项目的名字Elric，取自我非常喜欢的动漫：钢之炼金术师 里面主角的姓。强烈建议没看过的朋友一定要看看，这部动漫给我带来很大的影响。</p>
+
+<h1>背景</h1>
+
+<p>说起爬虫，相信很多人都会第一时间提起Scrapy。我第一次写爬虫的时候，也是用了Scrapy。但是Scrapy是单机部署，如果要抓取的网站比较大，只靠一台机器来抓取得花上比较长的时间。刚好之前工作上有个任务是要抓取一批网站，并且需要做到抓取效率快（例如每十五分钟抓取一次，更新记录）。于是我开始寻找分布式爬虫的方案。</p>
+
+<p>Google一把，发现已经有人基于Redis实现了一个scrapy插件：scrapy-redis。研究了一把，发现它其实是一个伪分布式的scrapy插件。只是在抓取的起始url采用redis分发一下，后续的页面解析出来的url还是由单机的scrapy进行抓取。当时由于时间紧迫，我就直接在这个插件上进行修改，新增了接口把页面解析得到的url塞回redis，通过redis再分发给不同机器上的scrapy程序抓取，算是完成了任务。</p>
+
+<h1>思考</h1>
+
+<p>虽然完成了任务。但是这并不是完美的解决方案。修改接口带来的后果是，同一个url有两种抛出的形式，一种是塞回redis，一种是直接交给自己的scheduler调度，自己处理（scrapy的原始模式）。这里在代码里必须显示指定要采用那种方式处理url，写起来就会比较凌乱。并且现在抓取过的url就有了两个存储的地方，一个是我新增的，一个是scrapy本身实现的。管理起来也非常不便。于是我寻思着，要不自己造个轮子（刚好年初给自己定的kpi是写一个开源项目，一直苦于不知道写什么）？其实分布式爬虫的思想在上面已经提到了：把解析到的url放到一个公共的地方做去重逻辑，再统一分发给不同的worker就可以了。</p>
+
+<h1>架构</h1>
+
+<p>既然有了目标，那就开始动手。第一步把这个目标做分解，要实现一个分布式爬虫，本质上需要的是一个分布式任务调度器，Master-Worker架构。master负责分发任务给worker，worker负责处理和提交任务。
+ <img src="/assets/images/elric-distributed-job-scheduler-by-python/elric_version_1.png" alt="Elric架构Version 1" title="Elric架构Version 1" width="800" /></p>
+
+<p>从上面的架构图可以看出，Elric有四个基本的模块：Master，Worker，Message Queue和RPC。Master的职责在于接受worker提交的任务，对任务做逻辑处理（去重等），并把任务push到Message Queue中。Worker则通过从Message Queue中pull任务回来处理，并把处理任务过程中产生的新任务（例如爬虫中解析一个页面产生的子链接）重新提交给Master。Messsage Queue主要负责存放序列化后的任务，而RPC主要用与Master和Worker之间的通信。</p>
+
+<p>简单的架构搭起来后，接下来的问题是：Worker如何并行处理任务？为了效率最大化，肯定需要一个进程池／线程池负责处理任务，再另开一个进程／线程从Message Queue中拉取新任务。</p>
+
+<p><img src="/assets/images/elric-distributed-job-scheduler-by-python/elric_version_2.png" alt="Elric架构Version 2" title="Elric架构Version 2" width="800" />
+这里我使用了Python的 <a href="https://docs.python.org/3.2/library/concurrent.futures.html#module-concurrent.futures">concurrent.futures</a>库提供的进程池用于执行Worker的任务。Worker每次从Message Queue中获取到新任务，就直接丢给进程池进行处理，避免任务执行时被阻塞。</p>
+
+<p>好了，接下来，我们希望有些任务可以定时执行。例如我要每十五分钟取抓取某网站，我可不想写个crontab每隔十五分钟向Master提交任务。我希望能把任务的周期信息也记录在任务里。刚好之前做另外一个需求的时候接触了一个Python实现的定时任务的库<a href="https://apscheduler.readthedocs.org/en/latest/">Apscheduler</a>，并且当初由于好奇，看过了一遍它的源码。因此打算参照它的代码，把这个能力集成到Elric中。
+<img src="/assets/images/elric-distributed-job-scheduler-by-python/elric_version_3.png" alt="Elric架构Version 3" title="Elric架构Version 3" width="800" />
+Apscheduler的原理很简单。文字描述起来比较麻烦，伪代码如下：
+<pre><code>
+while( True) {
+    next_run_time = getNextJobRunTime() //拿到所有任务下次执行的时间
+    min_wait_time = now()-max(next_run_time) //计算出等待的最短时间
+    wait(min_wait_time) //sleep一把，避免cpu空转
+    job = getJobFromJobStore(now()) //取出需要执行的任务
+    push_job_to_message_queue(job) //将任务塞入Message Queue中
+｝
+</code></pre></p>
+
+<p>搞定，这样Elric不仅能处理即时任务，也能处理周期任务。越来越强大了^ ^</p>
+
+<p>最后，我们要为爬虫定制一个特性：去重。我们希望能够指定哪些url只需要抓取一次（不会更新的页面）。这样能大大节省我们机器的开销。去重其实非常简单，最简单的做法就是用一个集合保存需要去重的任务，Master在接收到Worker提交的任务后，首先判断这个任务是否需要去重，如果需要的话，判断该任务是否已经存在于集合中，如果已经存在，则直接丢弃。下图为最终的架构图:</p>
+
+<p><img src="/assets/images/elric-distributed-job-scheduler-by-python/elric_version_4.png" alt="Elric架构Version 3" title="Elric架构Version 3" width="800" /></p>
+
+<p>Done! 一个非常简单的分布式任务调度器就完成了。</p>
+
+<h1>结束语</h1>
+
+<p>实现了Elric之后，我马上把之前的爬虫代码迁移到这上面，现在的接口清晰了很多，代码写起来也非常的清爽，感觉很Cool。在经过自己测试了没有问题之后，我开始鼓动同事也采用Elric来写爬虫，借此机会来发现代码中的不足和缺陷（例如其中有一个接口比较难理解，我打算在下次update 的时候改掉）。</p>
+
+<p>总的来说，这是我第一次尝试自己写一个工具，收获非常大。如果你有什么建议或者困惑，欢迎发邮件给我。如果喜欢这个项目，欢迎给我一颗Star鼓励鼓励^ ^</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2015/08/script-monitor-writen-in-600-lines-code/" title="link to 600行代码实现简单的任务分发监控器">600行代码实现简单的任务分发监控器</a></h2>
+       <p class="excerpt">写之前说些题外话，今晚认识了一位大神，聊了不到两个小时，被虐得体无完肤。觉得自己还有很长的路要走，现在做的东西还是比较小儿科。虽然这篇文章的内容比较低端，但是大神说了，要坚持写blog。所以我还是决定厚颜无耻的发出来，当作积累。很久很久之前Go写的一个任务分发和监控管理系统，最近重构了下代码，终于稍微能看。当然这只是1.0版本，还是很低端。同时作为我的Go处女作品，还没时间去读读其他优秀的Go代码，代码风格可能不太规范。项目地址请戳：SuperScripter。背景说说背景。最近在做一个模...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2015-08-02 16:07:58 +0800" class="post-list__meta--date date">2015-08-02</time> &#8226; <span class="post-list__meta--tags tags">个人项目</span><a class="btn-border-small" href=/2015/08/script-monitor-writen-in-600-lines-code/>继续阅读</a></div>
+   </div>
+   
+   
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.github.io//2015/08/elric-distributed-job-scheduler-by-python/";
+        this.page.identifier = "/2015/08/elric-distributed-job-scheduler-by-python/";
+    };
+
+    var disqus_shortname = 'vno-jekyll';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-06-30 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+    
+  </body>
+
+</html>
