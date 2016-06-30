@@ -442,9 +442,9 @@ hr {
   margin-left: 30px; }
 
 .cover-blue {
-  background-color: rgba(37, 104, 163, 0.6);
-  background-image: -webkit-linear-gradient(-410deg, rgba(37, 104, 163, 0.6) 20%, rgba(18, 51, 80, 0.8));
-  background-image: linear-gradient(140deg,rgba(37, 104, 163, 0.6) 20%, rgba(18, 51, 80, 0.8)); }
+  background-color: rgba(37, 104, 163, 0.2);
+  background-image: -webkit-linear-gradient(-410deg, rgba(37, 104, 163, 0.2) 10%, rgba(28, 77, 121, 0.9));
+  background-image: linear-gradient(140deg,rgba(37, 104, 163, 0.2) 10%, rgba(28, 77, 121, 0.9)); }
 
 .cover-green {
   background-color: rgba(21, 111, 120, 0.6);
@@ -468,8 +468,8 @@ hr {
 
 .cover-slate {
   background-color: rgba(61, 66, 96, 0.6);
-  background-image: -webkit-linear-gradient(-410deg, rgba(61, 66, 96, 0.6) 20%, rgba(21, 23, 34, 0.8));
-  background-image: linear-gradient(140deg,rgba(61, 66, 96, 0.6) 20%, rgba(21, 23, 34, 0.8)); }
+  background-image: -webkit-linear-gradient(-410deg, rgba(61, 66, 96, 0.6) 10%, rgba(41, 45, 65, 0.9));
+  background-image: linear-gradient(140deg,rgba(61, 66, 96, 0.6) 10%, rgba(41, 45, 65, 0.9)); }
 
 .cover-disabled {
   background: none; }

@@ -13,7 +13,7 @@ category: 读书笔记
 
 废话不多说，下面是第一期的内容：
 
-# Ten Entrepreneurship Rules for Building Massive Companies 
+## Ten Entrepreneurship Rules for Building Massive Companies 
 原文链接已经失效了，这里是转载的链接。文章中列举了Reid Hoffman总结的创造伟大公司的十大定律，其中下面这几条对我触动挺大：
 
 * **Maintain flexible persistence.**
@@ -28,7 +28,7 @@ category: 读书笔记
 * **Having a great product is important but having great product distribution is more important.**
 	这句话我觉得，不仅做产品是这样的道理，做事情也是这样的道理。“是金子总会发光，酒香不怕巷子深”的道理可能已经过时了。应该学会去推广自己的产品，推广自己的品牌。一流的产品重要，一流的推广方式更重要。
 
-# [How To Become a Better Programmer by Not Programming](http://blog.codinghorror.com/how-to-become-a-better-programmer-by-not-programming/)
+## [How To Become a Better Programmer by Not Programming](http://blog.codinghorror.com/how-to-become-a-better-programmer-by-not-programming/)
 
 
 Bill Gates认为，三四年的时间已经足以决定你是否是一名优秀的程序员。“The good developers always seem to have a natural knack for the stuff from the very beginning”。
@@ -44,7 +44,7 @@ Bill Gates认为，三四年的时间已经足以决定你是否是一名优秀�
 
 *注：原文还引用了不少好文章，之后会继续研读。*
 
-# [One Googler’s take on managing your time](https://medium.com/@googleforwork/one-googler-s-take-on-managing-your-time-b441537ae037#.udd797ipa)
+## [One Googler’s take on managing your time](https://medium.com/@googleforwork/one-googler-s-take-on-managing-your-time-b441537ae037#.udd797ipa)
 
 
 文章主要讲**how to protect our make time**。
@@ -61,14 +61,14 @@ The maker’s day is different. They need to make, to create, to build. But, bef
 
 周五：精疲力尽，适合做一些开放性的工作，制定些长期规划以及维护人际关系。
 
-# [Is it Time for You to Earn or to Learn?](https://bothsidesofthetable.com/is-it-time-for-you-to-earn-or-to-learn-34270acd2f4#.jj1aeq414)
+## [Is it Time for You to Earn or to Learn?](https://bothsidesofthetable.com/is-it-time-for-you-to-earn-or-to-learn-34270acd2f4#.jj1aeq414)
 
 
 文章主要讲面对不同的职业道路该如何选择。
 
 >You need to match your talents, age, skills, ambition and economic situation with your current reality. At a minimum be realistic about the outcomes. And make sure you ask yourself the question, “am I here to earn or to learn?”
 
-# [How to Read an Entire Book in a Single Day](http://lifehacker.com/how-to-read-an-entire-book-in-a-single-day-1749070044)
+## [How to Read an Entire Book in a Single Day](http://lifehacker.com/how-to-read-an-entire-book-in-a-single-day-1749070044)
 
 
 文章主要讲读书的技巧：
@@ -83,7 +83,7 @@ The maker’s day is different. They need to make, to create, to build. But, bef
 
 * 不便的时候可以听audiobook。（http://lifehacker.com/five-best-audiobook-services-1688572545）
 
-# [Five Years of Building Instagram Five Years of Building Instagram](https://backchannel.com/war-stories-3696d00207ff#.32uv4avzh)
+## [Five Years of Building Instagram Five Years of Building Instagram](https://backchannel.com/war-stories-3696d00207ff#.32uv4avzh)
 
 instragram创始人讲述了Instagram五年的历程。
 
@@ -120,7 +120,7 @@ code review最大的好处是social。当你知道你的代码会被cr的时候�
 
 * 花时间来做review，不要让你同事干等待。
 
-# [In Silicon Valley Now, It’s Almost Always Winner Takes All](http://www.newyorker.com/tech/elements/in-silicon-valley-now-its-almost-always-winner-takes-all)
+## [In Silicon Valley Now, It’s Almost Always Winner Takes All](http://www.newyorker.com/tech/elements/in-silicon-valley-now-its-almost-always-winner-takes-all)
 
 文章提了一个观点：互联网行业竞争激烈，普遍存在winner-takes-all的现象，做到行业第一往往就能形成垄断。而不像传统行业，百事能和可口可乐共存，各大航空公司／汽车厂商共存。
 
@@ -130,14 +130,14 @@ google设计了搜索的算法，并拥有自己的设施：“The infrastructur
 
 uber和google非常类似。google着重于提升用户搜索的速度，uber着重于提升用户叫车的速度。uber砸了巨资在开拓市场上面，随着越来越多人用uber，就有越来越多的用户数据，uber就能够利用这部分数据来优化自己的算法（路线规划），同时uber还可以在此基础上扩展更多的类似服务（ food delivery and courier services），可以看出，uber从原本的叫车软件已经逐渐演变成一家重新定义transportation的公司。
 
-# [Evernote’s 5% problem offers a cautionary lesson to tech companies](http://venturebeat.com/2016/01/05/evernotes-5-problem-offers-a-cautionary-lesson-to-tech-companies/)
+## [Evernote’s 5% problem offers a cautionary lesson to tech companies](http://venturebeat.com/2016/01/05/evernotes-5-problem-offers-a-cautionary-lesson-to-tech-companies/)
 
 
 evernote 的问题在于功能太杂，大部分用户只会用到其5％的功能，并且这5％的功能各不相同。就连evernote的ceo都很难描述evernote到底是一款什么样的产品。
 
 做好一款产品或者开一家公司，一定要有核心点。snapchat在这一点就做的很好，他们砍到了绝大部分奇奇怪怪的新功能，一款功能明确的产品也赢得了用户的口碑。Apple虽然发布了一系列新产品：Apple TV, Apple Watch, Apple Music，但是这一切都是围绕着iPhone这个核心点铺展开的，iPhone是Apple生态系统的核心，这一系列新产品都能显著提升iPhone和iOS的用户体验，因此Apple公司在这方面也做的不错。
 
-# [Why User Onboarding is the Most Important Part of the Customer](http://www.appcues.com/blog/why-user-onboarding-is-the-most-important-part-of-the-customer-journey-by-2.6x/)
+## [Why User Onboarding is the Most Important Part of the Customer](http://www.appcues.com/blog/why-user-onboarding-is-the-most-important-part-of-the-customer-journey-by-2.6x/)
 
 
 文章的主要观点：好的用户引导是提升用户留存率的关键。
@@ -205,7 +205,7 @@ It’s surprising, but one of the biggest determinators of where your churn flat
 
 注：附带资料http://cdn2.hubspot.net/hubfs/120299/SaaSFest_Presentations/SaaSFestPreso-Dan-RetentionIsKing.pdf?t=1450824188859
 
-# [Take on Your Competition with These Lessons from Google Maps](http://firstround.com/review/take-on-your-competition-with-these-lessons-from-google-maps/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29)
+## [Take on Your Competition with These Lessons from Google Maps](http://firstround.com/review/take-on-your-competition-with-these-lessons-from-google-maps/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29)
 
 文章主要讲Taylor关于行业后进者如何与领先者竞争的经验。
 
@@ -233,7 +233,7 @@ Taylor认为Ralph Waldo Emerson的观点：**“Product quality leads directly t
 
 > “In the past, I was always trying to make products familiar first and then figure out where to deviate. Now, I try to start by thinking how to make a product as uncomfortable and as different as possible, but still maintain a path for people to go on that journey with me.”
 
-# [Think Fast, Talk Smart: Communication Techniques](https://www.youtube.com/watch?v=HAnw168huqA)
+## [Think Fast, Talk Smart: Communication Techniques](https://www.youtube.com/watch?v=HAnw168huqA)
 
 Standard商学院的talk，关于如何做好即兴演讲。
 
@@ -255,7 +255,7 @@ Standard商学院的talk，关于如何做好即兴演讲。
 		* problem->solution->benefit
 		* what->so what->now what
 
-# 几勺鸡汤 
+## 几勺鸡汤 
 * **Eight hours of training is nothing compared to a second of losing.**   
    
    

@@ -7,7 +7,7 @@ category: 读书笔记
 
 > 不积跬步，无以至千里；不积小流，无以成江海
 
-# [Instagram Is the Best Social Network](http://www.theatlantic.com/technology/archive/2015/07/i-like-instagram/398834/)
+## [Instagram Is the Best Social Network](http://www.theatlantic.com/technology/archive/2015/07/i-like-instagram/398834/)
 
 作者谈他为何觉得Instagram是最好的社交应用，主要是以下三点：
 
@@ -28,7 +28,7 @@ Instagram的定位并不是密友社交。并顺带举了path失败的例子，�
 
 > You can skip inside jokes. You can miss subtext that pricks someone else’s hearts. You can savor the density of meaning in pictures from close friends and the surface beauty of posts from distant ones.
 
-# [How To Choose a Profitable Niche](http://www.trevormckendrick.com/how-to-choose-a-profitable-niche/)
+## [How To Choose a Profitable Niche](http://www.trevormckendrick.com/how-to-choose-a-profitable-niche/)
 
 作者提出具备好商机的app有下面三个条件：
 
@@ -43,7 +43,7 @@ Instagram的定位并不是密友社交。并顺带举了path失败的例子，�
 
 [How I Sold my Bible App Company](http://www.trevormckendrick.com/how-i-sold-my-bible-app-company/)
 
-# [9 daily habits of successful mobile app entrepreneurs](http://thenextweb.com/entrepreneur/2015/06/02/9-daily-habits-of-successful-mobile-app-entrepreneurs/)
+## [9 daily habits of successful mobile app entrepreneurs](http://thenextweb.com/entrepreneur/2015/06/02/9-daily-habits-of-successful-mobile-app-entrepreneurs/)
 
 如何做好一个app？可以参考下该文章提出的几个习惯：
 
@@ -56,7 +56,7 @@ Instagram的定位并不是密友社交。并顺带举了path失败的例子，�
 * Inbox Zero：及时回复邮件。
 * Keep a Journal：“I use journaling as a form of therapy and as a way for me to start each day with a clean slate.”
 
-# [Slack is the Operating System Slack is the Operating System](https://medium.com/@benbrown/slack-is-the-operating-system-6bae1a6c0291#.m8unpie2p)
+## [Slack is the Operating System Slack is the Operating System](https://medium.com/@benbrown/slack-is-the-operating-system-6bae1a6c0291#.m8unpie2p)
 
 对于大多数新的app来说，slack是一个操作系统。在slack上运作一个app，它是跨平台的，实时同步的，并且界面一致，对用户友好。
 
@@ -65,7 +65,7 @@ Instagram的定位并不是密友社交。并顺带举了path失败的例子，�
 > We’re going to call it Messaging Experience Design, or MXD.
 
 
-# [Messaging is the New Web](http://www.trenchant.org/daily/2015/6/3/)
+## [Messaging is the New Web](http://www.trenchant.org/daily/2015/6/3/)
 
 Web的优点在于易部署易扩展易分发。而在智能手机兴起的大背景下，Messaging应运而生。
 
@@ -75,11 +75,11 @@ Web的优点在于易部署易扩展易分发。而在智能手机兴起的大�
 
 > If integration with Slack is cheap and easy and provides additional distribution for business services, more services will be incentivized to offer it, which in turn makes Slack more valuable for its customers. And when Slack’s customers have a host of services integrated with their Slack instance, the more valuable Slack becomes to them
 
-# [The Future of Asynchronous IO in Python](https://medium.com/@paulcolomiets/the-future-of-asynchronous-io-in-python-ce200536d847#.tctyl610p)
+## [The Future of Asynchronous IO in Python](https://medium.com/@paulcolomiets/the-future-of-asynchronous-io-in-python-ce200536d847#.tctyl610p)
 
 这篇没怎么看懂，欢迎交流。
 
-# [Making sense of MVP (Minimum Viable Product) — and why I prefer Earliest Testable/Usable/Lovable](http://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp)
+## [Making sense of MVP (Minimum Viable Product) — and why I prefer Earliest Testable/Usable/Lovable](http://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp)
 
 深度好文！文章最后的总结如下：
 
@@ -101,14 +101,14 @@ Web的优点在于易部署易扩展易分发。而在智能手机兴起的大�
 
 > Early feedback from real users! Don’t just design the product and build the whole thing.
 
-# [Pleco: Building a Business, not an App](https://stratechery.com/2014/pleco-building-business-just-app/)
+## [Pleco: Building a Business, not an App](https://stratechery.com/2014/pleco-building-business-just-app/)
 
 > What stands out to me about Love’s approach was that from day one his differentiation was not based on design, ease-of-use, or some other attribute we usually glorify in developers. Rather, he focused on decidedly less sexy things like licensing. Sure, licensing is particularly pertinent to a dictionary app, but the broader point is that Love’s sustainable differentiation was not about his own code. Sustainable differentiation never is.
 
 > This is the critical point: developers all want to write an app for themselves, which means everyone has. That’s why there is no money to be made in something like an RSS reader. But there are whole swathes of people out there who have really interesting and specific needs — like Chinese language learning — just waiting for someone who can not only develop, but can also do market research, build a business model, and do all the messystuff upon which true differentiation — and sustainable businesses — are built.
 
 
-# [Architecting Backend for a Social Product](http://highscalability.com/blog/2015/7/22/architecting-backend-for-a-social-product.html)
+## [Architecting Backend for a Social Product](http://highscalability.com/blog/2015/7/22/architecting-backend-for-a-social-product.html)
 
 如何设计社交产品的后台架构？
 
@@ -153,7 +153,7 @@ Web的优点在于易部署易扩展易分发。而在智能手机兴起的大�
 	* Event Processor: 从ActiveMQ读取消息并通过notification engine生成push通知。
 	* Recommendation Engine: 根据用户操作，做些推荐相关的算法。
 
-# [How We Release So Frequently How We Release So Frequently](http://engineering.skybettingandgaming.com/2016/02/02/how-we-release-so-frequently/)
+## [How We Release So Frequently How We Release So Frequently](http://engineering.skybettingandgaming.com/2016/02/02/how-we-release-so-frequently/)
 如何快速发布？作者提了下面几个快速发布的准则：
 
 * Forward-only Migrations
