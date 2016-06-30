@@ -8,7 +8,6 @@ category: 源码阅读
 [tcpcopy](https://github.com/session-replay-tools/tcpcopy)是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
 由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。
 
-<!--more-->
 
 # 架构
 第一种架构：

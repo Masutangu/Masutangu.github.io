@@ -5,16 +5,14 @@
     <description>长风破浪会有时</description>
     <link>http://masutangu.github.io//</link>
     <atom:link href="http://masutangu.github.io//feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 30 Jun 2016 23:45:10 +0800</pubDate>
-    <lastBuildDate>Thu, 30 Jun 2016 23:45:10 +0800</lastBuildDate>
+    <pubDate>Thu, 30 Jun 2016 23:50:00 +0800</pubDate>
+    <lastBuildDate>Thu, 30 Jun 2016 23:50:00 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
         <title>Tcpcopy源码阅读</title>
         <description>&lt;p&gt;&lt;a href=&quot;https://github.com/session-replay-tools/tcpcopy&quot;&gt;tcpcopy&lt;/a&gt;是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
 由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。&lt;/p&gt;
-
-&lt;!--more--&gt;
 
 &lt;h1&gt;架构&lt;/h1&gt;
 
@@ -268,8 +266,7 @@ void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
     
       <item>
         <title>iOS初体验</title>
-        <description>&lt;p&gt;客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&amp;lt;iOS Programming The Big Nerd Ranch Guide&amp;gt;,最后写了个非常简单的App：&lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDo&lt;/a&gt;。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。
-&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+        <description>&lt;p&gt;客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&amp;lt;iOS Programming The Big Nerd Ranch Guide&amp;gt;,最后写了个非常简单的App：&lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDo&lt;/a&gt;。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。&lt;/p&gt;
 
 &lt;h1&gt;What’s in iOS?&lt;/h1&gt;
 
@@ -420,8 +417,7 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
         <title>Python 进程池的坑：Pickling Error!</title>
         <description>&lt;p&gt;前阵子在跑&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：&lt;/p&gt;
 
-&lt;p&gt;File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute lookup thread.lock failed
-&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+&lt;p&gt;File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute lookup thread.lock failed&lt;/p&gt;
 
 &lt;h1&gt;解决思路&lt;/h1&gt;
 
@@ -464,8 +460,7 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
     
       <item>
         <title>使用binlog实时监控Mysql数据更新</title>
-        <description>&lt;p&gt;上一篇文章《&lt;a href=&quot;http://masutangu.github.io/blog/2016/02/29/udftrigger%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7mysql%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0/&quot;&gt;UDF+Trigger实时监控Mysql数据更新&lt;/a&gt;》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。
-&amp;lt;!--more--&amp;gt;&lt;/p&gt;
+        <description>&lt;p&gt;上一篇文章《&lt;a href=&quot;http://masutangu.github.io/blog/2016/02/29/udftrigger%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7mysql%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0/&quot;&gt;UDF+Trigger实时监控Mysql数据更新&lt;/a&gt;》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。&lt;/p&gt;
 
 &lt;h1&gt;binlog 简介&lt;/h1&gt;
 
@@ -780,9 +775,9 @@ The more often we release, the smaller the releases can be. Smaller releases car
     
       <item>
         <title>UDF+Trigger实时监控Mysql数据更新</title>
-        <description>&lt;p&gt;最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：
-&amp;lt;!--more--&amp;gt;
-&lt;img src=&quot;/assets/images/using-udf-plus-trigger/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+        <description>&lt;p&gt;最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/using-udf-plus-trigger/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;大家都知道，缓存带来性能上的提高，然而却有数据不一致的可能。比方说修改了mysql的数据，但是用户读取到的缓存数据还未更新，这时就会有不一致的问题。&lt;/p&gt;
 

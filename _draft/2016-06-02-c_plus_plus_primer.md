@@ -109,9 +109,9 @@ char相当于 signed char 或者 unsigned char ，但是这取决于编译器的
     
 上面这个例子，打印出来变量a的值不相同。证明了const变量a在main.cpp文件和print.cpp文件中是不同的局部变量。因此const变量可以定义在头文件中，不会有重复定义的问题。
 验证一下，使用readelf -s main.o查看main.o文件的符号表，可以看到变量a为局部变量：
-<img src="/c_plus_plus_primer/illustration-1.png" width="800" />
+<img src="/assets/images/c_plus_plus_primer/illustration-1.png" width="800" />
 同理查看print.o文件的符号表，可以看到变量a同样是局部变量：
-<img src="/c_plus_plus_primer/illustration-2.png" width="800" />
+<img src="/assets/images/c_plus_plus_primer/illustration-2.png" width="800" />
 
 因此头文件可以定义const变量，不会引起重复定义的问题：
 > There are three exceptions to the rule that headers should not contain definitions: classes, const objects whose value is known at compile time, and inline functions

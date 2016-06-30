@@ -6,7 +6,7 @@ category: 数据库
 ---
 
 最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：
-<!--more-->
+
 <img src="/assets/images/using-udf-plus-trigger/illustration-1.png" alt="示例1" title="示例1" width="800" />
 
 大家都知道，缓存带来性能上的提高，然而却有数据不一致的可能。比方说修改了mysql的数据，但是用户读取到的缓存数据还未更新，这时就会有不一致的问题。
