@@ -3,11 +3,49 @@
   <channel>
     <title>Masutangu</title>
     <description>也許我這一生　始終在追逐那顆九號球</description>
-    <link>http://masutangu.github.io//</link>
-    <atom:link href="http://masutangu.github.io//feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 02 Jul 2016 09:37:23 +0800</pubDate>
-    <lastBuildDate>Sat, 02 Jul 2016 09:37:23 +0800</lastBuildDate>
+    <link>http://masutangu.com//</link>
+    <atom:link href="http://masutangu.com//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Mon, 04 Jul 2016 20:39:47 +0800</pubDate>
+    <lastBuildDate>Mon, 04 Jul 2016 20:39:47 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>matplotlib配置支持中文</title>
+        <description>&lt;p&gt;这篇文章介绍linux下如何配置matplot来支持中文显示。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;确定系统已有哪些支持中文字体&lt;/p&gt;
+
+&lt;p&gt;linux下运行 &lt;code&gt;fc-list :lang=zh&lt;/code&gt; 命令会输出所有支持中文的字体。
+如果为空，可以按如下步骤添加：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;  拷贝一份window &lt;code&gt;C:\windows\fonts\&lt;/code&gt; 目录下的任一中文字体文件，例如 &lt;code&gt;MSYH.ttc&lt;/code&gt; （微软雅黑）&lt;/li&gt;
+&lt;li&gt;  重命名为MSYH.ttf，并放到linux的 &lt;code&gt;/usr/share/fonts/chinese/&lt;/code&gt;目录下 &lt;/li&gt;
+&lt;li&gt;  linux下执行 &lt;code&gt;fc-cache /usr/share/fonts/chinese&lt;/code&gt; 清空字体缓存&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;修改matplotlibrc配置&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;  打开python安装目录下的 &lt;code&gt;lib/site-packages/matplotlib/mpl-data/matplotlibrc&lt;/code&gt; 文件，将 &lt;code&gt;font.family&lt;/code&gt; 和 &lt;code&gt;font.sans-serif&lt;/code&gt; 这两行开头的注释删掉，并在 &lt;code&gt;font.sans-serif&lt;/code&gt; 这行添加 &lt;code&gt;Microsoft YaHei&lt;/code&gt; (或系统支持的其他中文字体）&lt;/li&gt;
+&lt;li&gt;  删除 &lt;code&gt;~/.cache/matplotlib&lt;/code&gt; 缓存目录&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;修改python代码，指定使用中文字体&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    from matplotlib import rcParams
+    rcParams[&amp;#39;font.sans-serif&amp;#39;] = [&amp;#39;Microsoft YaHei&amp;#39;]  
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Done!&lt;/p&gt;
+</description>
+        <pubDate>Mon, 04 Jul 2016 08:06:35 +0800</pubDate>
+        <link>http://masutangu.com//2016/07/matplot-support-chinese/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/07/matplot-support-chinese/</guid>
+        
+        
+        <category>工作</category>
+        
+      </item>
     
       <item>
         <title>Tcpcopy源码阅读</title>
@@ -256,8 +294,8 @@ void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
         <pubDate>Thu, 05 May 2016 10:00:25 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/05/read-tcpcopy-source-code/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/05/read-tcpcopy-source-code/</guid>
+        <link>http://masutangu.com//2016/05/read-tcpcopy-source-code/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/05/read-tcpcopy-source-code/</guid>
         
         
         <category>源码阅读</category>
@@ -405,8 +443,8 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
 &lt;p&gt;iOS使用&lt;strong&gt;Automatic Reference Counting&lt;/strong&gt;来做内存管理。ARC在编译期会分析代码，确定对象的生命周期，在相应的位置自动加上retain和release。&lt;/p&gt;
 </description>
         <pubDate>Thu, 28 Apr 2016 23:10:00 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/04/ios-introduction/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/04/ios-introduction/</guid>
+        <link>http://masutangu.com//2016/04/ios-introduction/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/04/ios-introduction/</guid>
         
         
         <category>iOS</category>
@@ -450,8 +488,8 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
 &lt;p&gt;这次定位问题的手段太过简单粗暴，但自己也没想出更好的办法。幸好最终是确定了问题所在。如果大家对于解决该问题有什么建议，欢迎留言或发邮件提出。&lt;/p&gt;
 </description>
         <pubDate>Fri, 15 Apr 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/04/python-pickling-error/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/04/python-pickling-error/</guid>
+        <link>http://masutangu.com//2016/04/python-pickling-error/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/04/python-pickling-error/</guid>
         
         
         <category>编程语言</category>
@@ -531,8 +569,8 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
 &lt;p&gt;由于binlog是全库的log，如果需求是监听一两张表的数据更新，建议采用trigger＋udf的方式。而如果监听的表数量较多，那么建议使用binlog的方式。&lt;/p&gt;
 </description>
         <pubDate>Tue, 08 Mar 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/03/using-binlog/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/03/using-binlog/</guid>
+        <link>http://masutangu.com//2016/03/using-binlog/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/03/using-binlog/</guid>
         
         
         <category>数据库</category>
@@ -765,8 +803,8 @@ The more often we release, the smaller the releases can be. Smaller releases car
 &lt;/ul&gt;
 </description>
         <pubDate>Tue, 08 Mar 2016 12:42:43 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/03/dewdrop-note-3/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/03/dewdrop-note-3/</guid>
+        <link>http://masutangu.com//2016/03/dewdrop-note-3/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/03/dewdrop-note-3/</guid>
         
         
         <category>读书笔记</category>
@@ -822,8 +860,8 @@ The more often we release, the smaller the releases can be. Smaller releases car
 &lt;p&gt;相反的，如果我们把订阅数等和专辑信息表放在一起，由于订阅数经常会变，我们要么得写一个复杂的trigger监听某几个字段的更新（不清楚能否实现），要么需要在同步server做逻辑判断，非常的繁琐。&lt;/p&gt;
 </description>
         <pubDate>Mon, 29 Feb 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/02/using-udf-plus-trigger/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/02/using-udf-plus-trigger/</guid>
+        <link>http://masutangu.com//2016/02/using-udf-plus-trigger/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/02/using-udf-plus-trigger/</guid>
         
         
         <category>数据库</category>
@@ -885,8 +923,8 @@ The more often we release, the smaller the releases can be. Smaller releases car
 &lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&quot;&gt;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Wed, 03 Feb 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/02/elric-change-log-2/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/02/elric-change-log-2/</guid>
+        <link>http://masutangu.com//2016/02/elric-change-log-2/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/02/elric-change-log-2/</guid>
         
         
         <category>优化&amp;重构</category>
@@ -1149,8 +1187,8 @@ No matter what’s your job, you don’t have a significant contribution on the 
 &lt;p&gt;&lt;strong&gt;How do you know you are on the right path in your life? When you no longer hate Monday mornings.&lt;/strong&gt;&lt;/p&gt;
 </description>
         <pubDate>Tue, 26 Jan 2016 12:42:43 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/01/dewdrop-note-2/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/01/dewdrop-note-2/</guid>
+        <link>http://masutangu.com//2016/01/dewdrop-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/01/dewdrop-note-2/</guid>
         
         
         <category>读书笔记</category>
@@ -1232,59 +1270,11 @@ No matter what’s your job, you don’t have a significant contribution on the 
 &lt;p&gt;希望未来这一年，能够变得更强，更自信，更有把握。既要保持学生的心态，好奇好学，又要以职场的心态来看待问题。希望我能保持纯粹的心，一步步向前走，一步步逼近自己的梦想。&lt;/p&gt;
 </description>
         <pubDate>Tue, 26 Jan 2016 12:42:43 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/01/2015-review/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/01/2015-review/</guid>
+        <link>http://masutangu.com//2016/01/2015-review/</link>
+        <guid isPermaLink="true">http://masutangu.com//2016/01/2015-review/</guid>
         
         
         <category>随笔</category>
-        
-      </item>
-    
-      <item>
-        <title>设计模式之 控制反转</title>
-        <description>&lt;p&gt;今天重新设计了&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;的logging模块，接触到了Inversion of Control设计模式，记录下分享给大家。&lt;em&gt;注：本文定义介绍均取自wiki，代码样例取自&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
-
-&lt;h1&gt;定义&lt;/h1&gt;
-
-&lt;p&gt;&lt;strong&gt;控制反转&lt;/strong&gt;（Inversion of Control，缩写为IoC），是面向对象编程中的一种设计原则，可以用来减低计算机代码之间的耦合度。”&lt;/p&gt;
-
-&lt;h1&gt;实现方法&lt;/h1&gt;
-
-&lt;p&gt;实现控制反转主要有两种方式：&lt;strong&gt;依赖注入&lt;/strong&gt;和&lt;strong&gt;依赖查找&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;两者的区别在于，前者是被动的接收对象，在类A的实例创建过程中即创建了依赖的B对象，通过类型或名称来判断将不同的对象注入到不同的属性中，而后者是主动索取响应名称的对象，获得依赖对象的时间也可以在代码中自由控制。&lt;/p&gt;
-
-&lt;h1&gt;Demo&lt;/h1&gt;
-
-&lt;p&gt;这里用一个简单的例子来解释依赖注入的实现方式。以Elric为例，其包括了Master, Worker, Executor, JobQueue, JobStore等好几个模块。而这几个模块有相互依赖，比如说JobStore作为Master的一个成员变量，JobStore依赖到Master创建的logger对象来打印log。&lt;/p&gt;
-
-&lt;p&gt;一开始我的做法是，将Master的logger对象传给JobStore：
-&lt;img src=&quot;/assets/images/inversion-of-control/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;JobStore就可以将传进来的logger对象保存到自己的成员变量self.log中，之后就可以通过该成员变量打印log了。
-&lt;img src=&quot;/assets/images/inversion-of-control/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;那如果JobStore还需要依赖到Master其他的成员变量呢？也要一个一个通过构造函数传进来吗？又或者说JobStore还依赖Master的成员方法，这时应该怎么处理？有没有更好的方案呢？&lt;/p&gt;
-
-&lt;p&gt;当然有，很简单，把整个Master对象传进来就好啦！
-&lt;img src=&quot;/assets/images/inversion-of-control/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;相应的修改JobStore的构造函数：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/inversion-of-control/illustration-4.png&quot; alt=&quot;示例4&quot; title=&quot;示例4&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Done！之后JobStore如果需要用到Master的其他成员变量或者方法，就可以通过self.context来调用啦！&lt;/p&gt;
-
-&lt;h1&gt;总结&lt;/h1&gt;
-
-&lt;p&gt;在之前看nsq的代码，就看到过这种把A对象传到B对象的构造函数的做法，当初并不了解其中缘由。今天重新设计了Elric的logging模块，使用到IoC时，才恍然大悟，也算是有所收获～&lt;/p&gt;
-</description>
-        <pubDate>Tue, 12 Jan 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.github.io//2016/01/inversion-of-control/</link>
-        <guid isPermaLink="true">http://masutangu.github.io//2016/01/inversion-of-control/</guid>
-        
-        
-        <category>设计模式</category>
         
       </item>
     

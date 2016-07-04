@@ -24,8 +24,8 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://masutangu.github.io//">
-  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.github.io//feed.xml">
+  <link rel="canonical" href="http://masutangu.com//">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com//feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
   
@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-support-chinese/" title="访问 matplotlib配置支持中文">matplotlib配置支持中文</a></h2>
+      <p class="excerpt">这篇文章介绍linux下如何配置matplot来支持中文显示。确定系统已有哪些支持中文字体linux下运行 fc-list :lang=zh 命令会输出所有支持中文的字体。如果为空，可以按如下步骤添加：  拷贝一份window C:\windows\fonts\ 目录下的任一中文字体文件，例如 MSYH.ttc （微软雅黑）  重命名为MSYH.ttf，并放到linux的 /usr/share/fonts/chinese/目录下   linux下执行 fc-cache /usr/share...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2016-07-04 08:06:35 +0800" class="post-list__meta--date date">2016-07-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/matplot-support-chinese/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/05/read-tcpcopy-source-code/" title="访问 Tcpcopy源码阅读">Tcpcopy源码阅读</a></h2>
       <p class="excerpt">tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。架构第一种架构：实现原理：从数据链路层捕获客户端的请求包，修改目的IP地址为压测机器，再从IP层发送出去。从数据链路层捕获压测机器的响应包，保持tcp会话的状态（seq number，ack numb...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-05-05 10:00:25 +0800" class="post-list__meta--date date">2016-05-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/05/read-tcpcopy-source-code/>继续阅读</a></div>
@@ -190,13 +197,6 @@
       <hr class="post-list__divider" />
     </li>
     
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/01/inversion-of-control/" title="访问 设计模式之 控制反转">设计模式之 控制反转</a></h2>
-      <p class="excerpt">今天重新设计了Elric的logging模块，接触到了Inversion of Control设计模式，记录下分享给大家。注：本文定义介绍均取自wiki，代码样例取自Elric定义控制反转（Inversion of Control，缩写为IoC），是面向对象编程中的一种设计原则，可以用来减低计算机代码之间的耦合度。”实现方法实现控制反转主要有两种方式：依赖注入和依赖查找。两者的区别在于，前者是被动的接收对象，在类A的实例创建过程中即创建了依赖的B对象，通过类型或名称来判断将不同的对象注入到...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-01-12 16:07:58 +0800" class="post-list__meta--date date">2016-01-12</time> &#8226; <span class="post-list__meta--tags tags">设计模式</span><a class="btn-border-small" href=/2016/01/inversion-of-control/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
   </ol>
 
   <hr class="post-list__divider " />
@@ -215,7 +215,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-02 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-04 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
@@ -236,7 +236,7 @@
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    ga('create', 'UA-77236140-1', 'masutangu.github.io');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
     ga('send', 'pageview');
 </script>
 
