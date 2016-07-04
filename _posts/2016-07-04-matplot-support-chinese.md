@@ -5,7 +5,7 @@ title: matplotlib配置支持中文
 category: 工作
 ---
 
-这篇文章介绍linux下如何配置matplot来支持中文显示。
+这篇文章介绍linux下如何配置[matplot](http://matplotlib.org/)来支持中文显示。
 
 1. 确定系统已有哪些支持中文字体
 
