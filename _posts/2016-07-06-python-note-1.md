@@ -67,11 +67,9 @@ print time()-t
 * 当对字符串可以使用正则表达式或者内置函数来处理的时候，选择内置函数。如 str.isalpha()，str.isdigit()，str.startswith((‘x’, ‘yz’))，str.endswith((‘x’, ‘yz’))
 * 对字符进行格式化比直接串联读取要快，因此要
 
-    使用：
-        ```out = "<html>%s%s%s%s</html>" % (head, prologue, query, tail)```
+    使用：```out = "<html>%s%s%s%s</html>" % (head, prologue, query, tail)```
 
-    避免：
-        ```out = "<html>" + head + prologue + query + tail + "</html>"```
+    避免：```out = "<html>" + head + prologue + query + tail + "</html>"```
 
 ### 4. 使用列表解析和生成器表达式
 列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。

@@ -193,11 +193,9 @@ print time()-t
 <li>当对字符串可以使用正则表达式或者内置函数来处理的时候，选择内置函数。如 str.isalpha()，str.isdigit()，str.startswith((‘x’, ‘yz’))，str.endswith((‘x’, ‘yz’))</li>
 <li><p>对字符进行格式化比直接串联读取要快，因此要</p>
 
-<p>使用：
-    <code>out = &quot;&lt;html&gt;%s%s%s%s&lt;/html&gt;&quot; % (head, prologue, query, tail)</code></p>
+<p>使用：<code>out = &quot;&lt;html&gt;%s%s%s%s&lt;/html&gt;&quot; % (head, prologue, query, tail)</code></p>
 
-<p>避免：
-    <code>out = &quot;&lt;html&gt;&quot; + head + prologue + query + tail + &quot;&lt;/html&gt;&quot;</code></p></li>
+<p>避免：<code>out = &quot;&lt;html&gt;&quot; + head + prologue + query + tail + &quot;&lt;/html&gt;&quot;</code></p></li>
 </ul>
 
 <h3>4. 使用列表解析和生成器表达式</h3>

@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 06 Jul 2016 20:27:51 +0800</pubDate>
-    <lastBuildDate>Wed, 06 Jul 2016 20:27:51 +0800</lastBuildDate>
+    <pubDate>Wed, 06 Jul 2016 20:30:53 +0800</pubDate>
+    <lastBuildDate>Wed, 06 Jul 2016 20:30:53 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -72,11 +72,9 @@ print time()-t
 &lt;li&gt;当对字符串可以使用正则表达式或者内置函数来处理的时候，选择内置函数。如 str.isalpha()，str.isdigit()，str.startswith((‘x’, ‘yz’))，str.endswith((‘x’, ‘yz’))&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;对字符进行格式化比直接串联读取要快，因此要&lt;/p&gt;
 
-&lt;p&gt;使用：
-    &lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;%s%s%s%s&amp;lt;/html&amp;gt;&amp;quot; % (head, prologue, query, tail)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;使用：&lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;%s%s%s%s&amp;lt;/html&amp;gt;&amp;quot; % (head, prologue, query, tail)&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;避免：
-    &lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;&amp;quot; + head + prologue + query + tail + &amp;quot;&amp;lt;/html&amp;gt;&amp;quot;&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;p&gt;避免：&lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;&amp;quot; + head + prologue + query + tail + &amp;quot;&amp;lt;/html&amp;gt;&amp;quot;&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3&gt;4. 使用列表解析和生成器表达式&lt;/h3&gt;
