@@ -109,17 +109,17 @@ for i in range (1000000):
 
 不恰当的使用range，容易出bug：
 
-    ```
-    for i range(len(alist)):
-        print alist[i]
-    ```
+```
+for i range(len(alist)):
+    print alist[i]
+```
 
 正确的做法：
 
-    ```
-    for item in alist:
-        print item
-    ```
+```
+for item in alist:
+    print item
+```
 
 不恰当使用range的理由：
 

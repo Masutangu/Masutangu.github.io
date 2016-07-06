@@ -238,16 +238,12 @@ for i in range (1000000):
 <h3>1. range的使用</h3>
 
 <p>不恰当的使用range，容易出bug：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">```
-for i range(len(alist)):
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for i range(len(alist)):
     print alist[i]
-```
 </code></pre></figure>
 <p>正确的做法：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">```
-for item in alist:
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for item in alist:
     print item
-```
 </code></pre></figure>
 <p>不恰当使用range的理由：</p>
 
