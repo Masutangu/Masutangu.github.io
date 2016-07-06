@@ -5,9 +5,583 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 04 Jul 2016 20:59:57 +0800</pubDate>
-    <lastBuildDate>Mon, 04 Jul 2016 20:59:57 +0800</lastBuildDate>
+    <pubDate>Wed, 06 Jul 2016 20:09:40 +0800</pubDate>
+    <lastBuildDate>Wed, 06 Jul 2016 20:09:40 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Python笔记</title>
+        <description>&lt;p&gt;这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;注：本文内容整理自网上博客，《Python Cookbook》等，非原创。&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2&gt;性能优化&lt;/h2&gt;
+
+&lt;h3&gt;1. 字典和列表&lt;/h3&gt;
+
+&lt;p&gt;Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from time import time
+t = time()
+list = [&amp;#39;a&amp;#39;,&amp;#39;b&amp;#39;,&amp;#39;is&amp;#39;,&amp;#39;python&amp;#39;,&amp;#39;jason&amp;#39;,&amp;#39;hello&amp;#39;,&amp;#39;hill&amp;#39;,&amp;#39;with&amp;#39;,&amp;#39;phone&amp;#39;,&amp;#39;test&amp;#39;,
+&amp;#39;dfdf&amp;#39;,&amp;#39;apple&amp;#39;,&amp;#39;pddf&amp;#39;,&amp;#39;ind&amp;#39;,&amp;#39;basic&amp;#39;,&amp;#39;none&amp;#39;,&amp;#39;baecr&amp;#39;,&amp;#39;var&amp;#39;,&amp;#39;bana&amp;#39;,&amp;#39;dd&amp;#39;,&amp;#39;wrd&amp;#39;]
+#list = dict.fromkeys(list,True)
+print list
+filter = []
+for i in range (1000000):
+    for find in [&amp;#39;is&amp;#39;,&amp;#39;hat&amp;#39;,&amp;#39;new&amp;#39;,&amp;#39;list&amp;#39;,&amp;#39;old&amp;#39;,&amp;#39;.&amp;#39;]:
+        if find not in list:
+            filter.append(find)
+print &amp;quot;total run time:&amp;quot;
+print time()-t
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;将list转化为dict后速度提升了将近一半。&lt;/p&gt;
+
+&lt;h3&gt;2. 集合和列表&lt;/h3&gt;
+
+&lt;p&gt;set 的 union， intersection，difference 操作要比 list 的迭代要快。因此如果涉及到求 list 交集，并集或者差的问题可以转换为 set 来操作。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# 使用list：
+from time import time
+t = time()
+lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
+listb=[2,4,6,9,23]
+intersection=[]
+for i in range (1000000):
+for a in lista:
+    for b in listb:
+        if a == b:
+            intersection.append(a)
+
+print &amp;quot;total run time:&amp;quot;
+print time()-t
+
+# 使用set：
+from time import time
+t = time()
+lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
+listb=[2,4,6,9,23]
+intersection=[]
+for i in range (1000000):
+    list(set(lista)&amp;amp;set(listb))
+print &amp;quot;total run time:&amp;quot;
+print time()-t
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;3. 字符串的优化&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;在字符串连接的使用尽量使用 join() 而不是 +。&lt;/li&gt;
+&lt;li&gt;当对字符串可以使用正则表达式或者内置函数来处理的时候，选择内置函数。如 str.isalpha()，str.isdigit()，str.startswith((‘x’, ‘yz’))，str.endswith((‘x’, ‘yz’))&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;对字符进行格式化比直接串联读取要快，因此要&lt;/p&gt;
+
+&lt;p&gt;使用：
+    &lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;%s%s%s%s&amp;lt;/html&amp;gt;&amp;quot; % (head, prologue, query, tail)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;避免：
+    &lt;code&gt;out = &amp;quot;&amp;lt;html&amp;gt;&amp;quot; + head + prologue + query + tail + &amp;quot;&amp;lt;/html&amp;gt;&amp;quot;&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;4. 使用列表解析和生成器表达式&lt;/h3&gt;
+
+&lt;p&gt;列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from time import time
+t = time()
+list = [&amp;#39;a&amp;#39;,&amp;#39;b&amp;#39;,&amp;#39;is&amp;#39;,&amp;#39;python&amp;#39;,&amp;#39;jason&amp;#39;,&amp;#39;hello&amp;#39;,&amp;#39;hill&amp;#39;,&amp;#39;with&amp;#39;,&amp;#39;phone&amp;#39;,&amp;#39;test&amp;#39;,
+&amp;#39;dfdf&amp;#39;,&amp;#39;apple&amp;#39;,&amp;#39;pddf&amp;#39;,&amp;#39;ind&amp;#39;,&amp;#39;basic&amp;#39;,&amp;#39;none&amp;#39;,&amp;#39;baecr&amp;#39;,&amp;#39;var&amp;#39;,&amp;#39;bana&amp;#39;,&amp;#39;dd&amp;#39;,&amp;#39;wrd&amp;#39;]
+total=[]
+for i in range (1000000):
+for w in list:
+    total.append(w)
+print &amp;quot;total run time:&amp;quot;
+print time()-t
+
+# 使用列表解析：
+for i in range (1000000):
+    a = [w for w in list]
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;在上述例子上中代码 &lt;code&gt;a = [w for w in list]&lt;/code&gt; 修改为 &lt;code&gt;a = (w for w in list)&lt;/code&gt;，运行时间将进一步减少。&lt;/p&gt;
+
+&lt;h3&gt;5. 其他优化技巧&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;如果需要交换两个变量的值使用 a,b=b,a 而不是借助中间变量 t=a;a=b;b=t；&lt;/li&gt;
+&lt;li&gt;在循环的时候使用 xrange 而不是 range；使用 xrange 可以节省大量的系统内存，因为 xrange() 在序列中每次调用只产生一个整数元素。而 range() 將直接返回完整的元素列表，用于循环时会有不必要的开销。在 python3 中 xrange 不再存在，里面 range 提供一个可以遍历任意长度的范围的 iterator。&lt;/li&gt;
+&lt;li&gt;使用局部变量，避免”global” 关键字。python 访问局部变量会比全局变量要快得多，因 此可以利用这一特性提升性能。&lt;/li&gt;
+&lt;li&gt;if done is not None 比语句 if done != None 更快，读者可以自行验证；&lt;/li&gt;
+&lt;li&gt;在耗时较多的循环中，可以把函数的调用改为内联的方式；&lt;/li&gt;
+&lt;li&gt;使用级联比较 “x &amp;lt; y &amp;lt; z” 而不是 “x &amp;lt; y and y &amp;lt; z”；&lt;/li&gt;
+&lt;li&gt;while 1 要比 while True 更快（当然后者的可读性更好）；&lt;/li&gt;
+&lt;li&gt;build in 函数通常较快，add(a,b) 要优于 a+b。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;常见错误&lt;/h2&gt;
+
+&lt;h3&gt;1. range的使用&lt;/h3&gt;
+
+&lt;p&gt;不恰当的使用range，容易出bug：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;```
+for i range(len(alist)):
+    print alist[i]
+```
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;正确的做法：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;```
+for item in alist:
+    print item
+```
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;不恰当使用range的理由：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;需要在循环中使用索引：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for index, value in enumerate(alist):
+    print index, value
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;需要同时迭代两个循环：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for word, number in zip(words, numbers):
+    print word, number
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;需要迭代序列的一部分：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for word in words[1:]: # 不包括第一个元素
+    print word
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;range的正确用法是生成一个数字序列，而不是生成索引：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# Print foo(x) for 0&amp;lt;=x&amp;lt;5
+for x in range(5):
+    print foo(x)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;2. 变量泄漏&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;循环&lt;/p&gt;
+
+&lt;p&gt;错误的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for idx, value in enumerate(y):
+    if value &amp;gt; max_value:
+        break
+
+processList(y, idx)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;当y为空，processList将会抛出异常，原因是idx没有定义。&lt;/p&gt;
+
+&lt;p&gt;正确的处理方式：&lt;strong&gt;哨兵模式&lt;/strong&gt;，在循环前为idx设置一些特殊的值。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;idx ＝ None
+for idx, value in enumerate(y):
+    if value &amp;gt; max_value:
+        break
+
+if idex:
+    processList(y, idx)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;外作用域&lt;/p&gt;
+
+&lt;p&gt;错误的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;import sys
+
+# See the bug in the function declaration?
+def print_file(filenam):
+    &amp;quot;&amp;quot;&amp;quot;Print every line of a file.&amp;quot;&amp;quot;&amp;quot;
+    with open(filename) as input_file:
+        for line in input_file:
+            print line.strip()
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    filename = sys.argv[1]
+    print_file(filename)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;此时函数定义中的参数被错误的写为filenam，但是程序依然可以运行。因为print_file的外部作用域存在一个filename的变量。&lt;/p&gt;
+
+&lt;p&gt;正确的做法：&lt;strong&gt;外部作用域的全局变量命名要明显&lt;/strong&gt;，例如IN_ALL_CAPS。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;3. 循环的数据结构导致循环&lt;/h3&gt;
+
+&lt;p&gt;如果在一个对象中发现一个循环，python会输出一个[...]。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;mylist ＝ ［&amp;#39;test&amp;#39;]
+mylist.append(mylist)
+#此时会打印[&amp;#39;test&amp;#39;,[...]]
+print mylist
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;4. 赋值创建引用&lt;/h3&gt;
+
+&lt;p&gt;python中赋值语句不会创建对象副本,只会创建引用：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;arr = [1, 2, 3, 4]
+arr_cp = arr
+arr_cp[0] = 100
+#print打印出[100, 2, 3, 4]
+print arr
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;5. 静态识别局部变量&lt;/h3&gt;
+
+&lt;p&gt;python默认将一个在函数中赋值的变量名视为局部变量，存在于该函数的作用域并当函数运行时才存在。python是在编译def代码时去静态识别局部变量的。&lt;/p&gt;
+
+&lt;p&gt;错误的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;a ＝ 100
+
+＃你可能想先打印a的值，再对a的值进行修改
+def myfunc():
+    print a
+    a = 200
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;因为在预编译的时候python发现函数中对a有赋值，因此把a当作局部变量。而运行到‘print a’语句的时候，局部变量a尚未赋值，因此会报错。&lt;/p&gt;
+
+&lt;p&gt;正确的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;a ＝ 100
+
+def myfunc():
+    global a
+    print a
+    a = 200
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;更隐晦的错误代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;myVar = 1
+
+def myfunc():
+    myVar += 1
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;myVar += 1&lt;/code&gt;其实相当于&lt;code&gt;myVar = myVar + 1&lt;/code&gt;，python检测到myVar变量有赋值操作，因此将myVar添加到局部命名空间中。当执行到&lt;code&gt;myVar += 1&lt;/code&gt;时会读取myVar的值，此时该变量尚未有值关联，因此会报错。&lt;/p&gt;
+
+&lt;h3&gt;6. 默认参数&lt;/h3&gt;
+
+&lt;p&gt;在执行def语句时，默认参数的值只被解析并保存一次。因此在修改可变的默认变量时可能会出现意想不到的效果。&lt;/p&gt;
+
+&lt;p&gt;错误的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def saver(x=[]):
+    x.append(1)
+    print x
+
+saver() # 打印[1]
+saver() # 打印[1,1]
+saver() # 打印[1,1,1]
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;因为默认参数只被解析并保存一次。因此可变的默认参数在每次函数调用都会保存状态。&lt;/p&gt;
+
+&lt;p&gt;正确的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def saver(x=None):
+    if x is None: x = []
+    x.append(1)
+    print x
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;def是python中的可执行语句。默认参数在def的语句环境里被计算。如果你执行了def语句多次，每次它都将会创建一个新的函数对象。&lt;/p&gt;
+
+&lt;p&gt;看看stackoverflow的一个例子：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;flist = []
+
+for i in xrange(3):
+    def func(x): return x * i
+    flist.append(func)
+
+for f in flist:
+    print f(2) ＃expect 0 2 4 but print 4 4 4
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;我们可以借助默认参数的机制，在执行def时解析默认参数的值：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;flist=[]
+for i in xrange(3):
+    def func(x,i=i): return x*i
+    flist.append(func)
+
+for f in flist:
+    print f(2)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;默认参数还可以用来做缓存：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def calculate(a, b, c, memo={}):
+    try:
+        value = memo[a, b, c] # return already calculated value
+    except KeyError:
+        value = heavy_calculation(a, b, c)
+    memo[a, b, c] = value # update the memo dictionary
+    return value
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;牢记：当Python执行一条def语句时， 它会使用已经准备好的东西（包括函数的代码对象和函数的上下文属性），创建了一个新的函数对象。同时，计算了函数的默认参数值。&lt;/p&gt;
+
+&lt;h3&gt;7. 谨慎使用super()&lt;/h3&gt;
+
+&lt;p&gt;原文&lt;a href=&quot;https://fuhm.net/super-harmful/&quot;&gt;Python&amp;#39;s Super is nifty, but you can&amp;#39;t use it&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;作者提出两个观点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;People omit calls to super(...).&lt;strong&gt;init&lt;/strong&gt; if the only superclass is &amp;#39;object&amp;#39;, as, after all, object.&lt;strong&gt;init&lt;/strong&gt; doesn&amp;#39;t do anything! However, this is very incorrect. Doing so will cause other classes&amp;#39; &lt;strong&gt;init&lt;/strong&gt; methods to not be called.&lt;/li&gt;
+&lt;li&gt;People think they know what arguments their method will get, and what arguments they should pass along to super. This is also incorrect.
+先看第二点，比较好理解，代码如下：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class A(object):
+    def __init__(self):
+        print &amp;quot;A&amp;quot;
+        super(A, self).__init__()
+
+class B(object):
+    def __init__(self):
+        print &amp;quot;B&amp;quot;
+        super(B, self).__init__()
+
+class C(A):
+    def __init__(self, arg):
+        print &amp;quot;C&amp;quot;,&amp;quot;arg=&amp;quot;,arg
+        super(C, self).__init__()
+
+class D(B):
+    def __init__(self, arg):
+        print &amp;quot;D&amp;quot;, &amp;quot;arg=&amp;quot;,arg
+        super(D, self).__init__()
+
+class E(C,D):
+    def __init__(self, arg):
+        print &amp;quot;E&amp;quot;, &amp;quot;arg=&amp;quot;,arg
+        super(E, self).__init__(arg)
+
+print &amp;quot;MRO:&amp;quot;, [x.__name__ for x in E.__mro__]
+E(10)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;看着很正确，执行下报错：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
+E arg= 10
+C arg= 10
+A
+
+Traceback (most recent call last):
+File &amp;quot;C:\Users\mustangmo\Desktop\test1.py&amp;quot;, line 27, in &amp;lt;module&amp;gt;
+    E(10)
+File &amp;quot;C:\Users\mustangmo\Desktop\test1.py&amp;quot;, line 24, in __init__
+    super(E, self).__init__(arg)
+File &amp;quot;C:\Users\mustangmo\Desktop\test1.py&amp;quot;, line 14, in __init__
+    super(C, self).__init__()
+File &amp;quot;C:\Users\mustangmo\Desktop\test1.py&amp;quot;, line 4, in __init__
+    super(A, self).__init__()
+TypeError: __init__() takes exactly 2 arguments (1 given)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;原因是：MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]，A的下一个是D，因此super(A, self)方法调用的是D的&lt;strong&gt;init&lt;/strong&gt;方法，D的&lt;strong&gt;init&lt;/strong&gt;方法需要一个参数，因此报错了。&lt;/p&gt;
+
+&lt;p&gt;再看第一点，如果父类是object的话，不调用super().&lt;strong&gt;init&lt;/strong&gt;可能会导致问题，例子如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class A(object):
+    def __init__(self, *args, **kwargs):
+        print &amp;quot;A&amp;quot;
+        #super(A, self).__init__(*args, **kwargs) 注释掉
+
+class B(object):
+    def __init__(self, *args, **kwargs):
+        print &amp;quot;B&amp;quot;
+        #super(B, self).__init__(*args, **kwargs) 注释掉
+
+class C(A):
+    def __init__(self, arg, *args, **kwargs):
+        print &amp;quot;C&amp;quot;,&amp;quot;arg=&amp;quot;,arg
+        super(C, self).__init__(arg, *args, **kwargs)
+
+class D(B):
+    def __init__(self, arg, *args, **kwargs):
+        print &amp;quot;D&amp;quot;, &amp;quot;arg=&amp;quot;,arg
+        super(D, self).__init__(arg, *args, **kwargs)
+
+class E(C,D):
+    def __init__(self, arg, *args, **kwargs):
+        print &amp;quot;E&amp;quot;, &amp;quot;arg=&amp;quot;,arg
+        super(E, self).__init__(arg, *args, **kwargs)
+
+print &amp;quot;MRO:&amp;quot;, [x.__name__ for x in E.__mro__]
+E(10)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;输出结果：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
+E arg= 10
+C arg= 10
+A
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.&lt;strong&gt;init&lt;/strong&gt;()，会导致其他类（在本例中为D和B）的&lt;strong&gt;init&lt;/strong&gt;()不执行。按理来说，调用了类E的super.&lt;strong&gt;init&lt;/strong&gt;()函数，应该会同时调用E的父类C和D的&lt;strong&gt;init&lt;/strong&gt;()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
+总结：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;* 一定要调用父类为object的类的super.__init__()函数
+* 调用的super()返回不一定是父类，因此super调用最好保持参数一致
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;另附一篇也是关于super的文章&lt;a href=&quot;http://rhettinger.wordpress.com/2011/05/26/super-considered-super/&quot;&gt;Python’s super() considered super!&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3&gt;8. string转换为dict&lt;/h3&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;str = ‘{ &amp;quot;key&amp;quot; : null}&amp;#39;
+mydict = eval(str)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;eval 可能会报错，因为 json 的语义跟 Python 的 dict 不完全一样, 如果 json 串里面出现一个 null 就报错了.
+因此合适的方法是采用如下写法：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;json.loads()
+mydict = json.loads(str)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h2&gt;高级特性&lt;/h2&gt;
+
+&lt;h3&gt;1. 闭包&lt;/h3&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def return_func_that_prints_list(z):
+    def f():
+        print z
+    return f
+
+z = [1, 2]
+g = return_func_that_prints_list(z)
+g()  # print [1, 2]
+
+z.append(3)
+g()  # print [1, 2, 3]
+z = [1]
+g()  # print [1, 2, 3]
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;【译者】：z.append(3)时，g()内部的引用和z仍然指向一个变量，而z=[1]之后，两者就不再指向一个变量了。&lt;/p&gt;
+
+&lt;p&gt;关于闭包，stack overflow &lt;a href=&quot;http://stackoverflow.com/questions/4020419/closures-in-python&quot;&gt;http://stackoverflow.com/questions/4020419/closures-in-python&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3&gt;2. wraps&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;给decorator加上wraps以保留原有函数的名称和docstring：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from functools import wraps
+def my_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        print &amp;#39;Calling decorated function&amp;#39;
+        return f(*args, **kwds)
+    return wrapper
+
+
+@my_decorator
+def example():
+    &amp;quot;&amp;quot;&amp;quot;Docstring&amp;quot;&amp;quot;&amp;quot;
+    print &amp;#39;Called example function&amp;#39;
+
+example()  # print &amp;#39;Calling decorated function&amp;#39; &amp;#39;Called example function&amp;#39;
+example.__name__  # print &amp;#39;example&amp;#39;
+example.__doc__  # print &amp;#39;Docstring&amp;#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;Without the use of this decorator factory, the name of the example function would have been &amp;#39;wrapper&amp;#39;, and the docstring of the original example() would have been lost.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;3. class decorator&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;给类的所有函数添加decorator：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def logged(time_format, name_prefix=&amp;quot;&amp;quot;):
+    def decorator(func):
+        if hasattr(func, &amp;#39;_logged_decorator&amp;#39;) and func._logged_decorator:
+            return func
+
+        @wraps(func)
+        def decorated_func(*args, **kwargs):
+            start_time = time.time()
+            print &amp;quot;- Running &amp;#39;%s&amp;#39; on %s &amp;quot; % (
+                                            name_prefix + func.__name__,
+                                            time.strftime(time_format)
+                                )
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print &amp;quot;- Finished &amp;#39;%s&amp;#39;, execution time = %0.3fs &amp;quot; % (
+                                            name_prefix + func.__name__,
+                                            end_time - start_time
+                                )
+
+            return result
+        decorated_func._logged_decorator = True
+        return decorated_func
+    return decorator
+
+def log_method_calls(time_format):
+    def decorator(cls):
+        for attr in dir(cls):
+            if attr.startswith(&amp;#39;__’): #过滤掉以双下划线开头的attributes
+                continue
+            a = getattr(cls, attr)
+            if hasattr(a, &amp;#39;__call__’): #如果包含__call__属性，说明是函数
+                decorated_a = logged(time_format, cls.__name__ + &amp;quot;.&amp;quot;)(a)
+                setattr(cls, attr, decorated_a)
+        return cls
+    return decorator
+
+@log_method_calls(&amp;quot;%b %d %Y - %H:%M:%S&amp;quot;)
+class A(object):
+    def test1(self):
+        print &amp;quot;test1&amp;quot;
+
+@log_method_calls(&amp;quot;%b %d %Y - %H:%M:%S&amp;quot;)
+class B(A):
+    def test1(self):
+        super(B, self).test1()
+        print &amp;quot;child test1&amp;quot;
+
+    def test2(self):
+        print &amp;quot;test2&amp;quot;
+
+b = B()
+b.test1()
+b.test2()
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;输出如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;- Running &amp;#39;B.test1&amp;#39; on Jul 24 2013 - 14:15:03
+- Running &amp;#39;A.test1&amp;#39; on Jul 24 2013 - 14:15:03
+test1
+- Finished &amp;#39;A.test1&amp;#39;, execution time = 0.000s
+child test1
+- Finished &amp;#39;B.test1&amp;#39;, execution time = 1.001s
+- Running &amp;#39;B.test2&amp;#39; on Jul 24 2013 - 14:15:04
+test2
+- Finished &amp;#39;B.test2&amp;#39;, execution time = 2.001s
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;4. descriptor&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;用法1：Type Checking&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# Descriptor for a type-checked attribute
+class Typed:
+    def __init__(self, name, expected_type):
+        self.name = name
+        self.expected_type = expected_type
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            return instance.__dict__[self.name]
+    def __set__(self, instance, value):
+        if not isinstance(value, self.expected_type):
+            raise TypeError(&amp;#39;Expected &amp;#39; + str(self.expected_type))
+        instance.__dict__[self.name] = value
+
+    def __delete__(self, instance):
+        del instance.__dict__[self.name]
+
+
+# Class decorator that applies it to selected attributes
+def typeassert(**kwargs):
+    def decorate(cls):
+        for name, expected_type in kwargs.items():
+            # Attach a Typed descriptor to the class
+            setattr(cls, name, Typed(name, expected_type))
+        return cls
+    return decorate
+
+# Example use
+@typeassert(name=str, shares=int, price=float)
+class Stock:
+    def __init__(self, name, shares, price):
+        self.name = name
+        self.shares = shares
+        self.price = price
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;Finally, it should be stressed that you would probably not write a descriptor if you simply want to customize the access of a single attribute of a specific class. Descriptors are more useful in situations where there will be a lot of code reuse (i.e., you want to use the functionality provided by the descriptor in hundreds of places in your code or provide it as a library feature).&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;用法2：Lazily Computed Properties&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;If a descriptor only defines a &lt;strong&gt;get&lt;/strong&gt;() method, it has a much weaker binding than usual. In particular, the &lt;strong&gt;get&lt;/strong&gt;() method only fires if the attribute being accessed is not in the underlying instance dictionary.&lt;/p&gt;
+</description>
+        <pubDate>Wed, 06 Jul 2016 18:56:31 +0800</pubDate>
+        <link>http://masutangu.com/2016/07/python-note-1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/07/python-note-1/</guid>
+        
+        
+        <category>编程语言</category>
+        
+      </item>
     
       <item>
         <title>matplotlib配置支持中文</title>
@@ -1192,89 +1766,6 @@ No matter what’s your job, you don’t have a significant contribution on the 
         
         
         <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>回顾2015这一年</title>
-        <description>&lt;p&gt;时间飞逝，今天已是12月的中旬。还记得年初我给自己定下了详细的计划和目标，转眼一年时间就快过去了。刚好今天公司年会，心里特别有感触，所以就提前回顾和总结下这一年的点点滴滴。&lt;/p&gt;
-
-&lt;h1&gt;计划回顾&lt;/h1&gt;
-
-&lt;p&gt;首先来看看我年初给自己定的计划：
-&lt;img src=&quot;/assets/images/review-2015/plan-1.png&quot; alt=&quot;2015计划1&quot; title=&quot;2015计划1&quot; width=&quot;800&quot; /&gt;
-&lt;img src=&quot;/assets/images/review-2015/plan-2.png&quot; alt=&quot;2015计划2&quot; title=&quot;2015计划2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h1&gt;完成度&lt;/h1&gt;
-
-&lt;p&gt;&lt;strong&gt;［阅读计划：0％］&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;很惭愧，制定的阅读计划一本都没有读，这其实是有原因的。因为我发现自己的代码量远远不够，看书的话很有可能还是无法把理论和实践很好的结合起来。因此我决定改变策略，先从写代码／读源码做起，等有了一定的积累，再读相关的书籍，也许会事半功倍，感触和体会更深入。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;［新技术学习：50％］&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;语言：golang。&lt;/p&gt;
-
-&lt;p&gt;数据库：redis（半桶水）/mongodb（没怎么实践过）/influxdb（正准备实践）。&lt;/p&gt;
-
-&lt;p&gt;前端：发现自己在这方面实在没有天赋和兴趣，虽然我很渴望能够搭建一个自己的博客。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;［想完成的事情：40％］&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;coursera：看了两门课，后来觉得太浅，就没有继续看下去。&lt;/p&gt;
-
-&lt;p&gt;github项目：写了两个项目，Elric和SuperScripter。算是超额完成任务。&lt;/p&gt;
-
-&lt;p&gt;源码阅读：python方面读了apscheduler，golang读了nsq的nsqd模块，c/c++读了公司框架的部分代码和ffmpeg的部分代码。&lt;/p&gt;
-
-&lt;p&gt;播客&amp;amp;leetcode：没能坚持下去。&lt;/p&gt;
-
-&lt;p&gt;拿五星：没能达标。。＝ ＝&lt;/p&gt;
-
-&lt;p&gt;乐器：完全没有开始过。。&lt;/p&gt;
-
-&lt;p&gt;每周打球：最近开始一两周一次。&lt;/p&gt;
-
-&lt;h1&gt;时间轴&lt;/h1&gt;
-
-&lt;p&gt;&lt;strong&gt;1－3月&lt;/strong&gt;：主要完成coursera课程。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;4－5月&lt;/strong&gt;：读了python的apscheduler源码，借此原型自己写了Elric，并用在项目上。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;6－7月&lt;/strong&gt;：工作太忙，个人学习中断。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;8－9月&lt;/strong&gt;：速成golang，写了SuperScripter，同样用在项目上。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;10－11月&lt;/strong&gt;：读了nsq的nsqd模块，对golang的使用更加熟悉。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;11月－12月&lt;/strong&gt;：读了ffmpeg，能比较快的解决项目的问题。另外大招还在憋，最近有点忙，有点便秘，进度缓慢。&lt;/p&gt;
-
-&lt;h1&gt;半途而废的项目&lt;/h1&gt;
-
-&lt;p&gt;微博爬虫：想借此搞搞数据分析。因为想搞的事情实在太多，这个排不上号，不过个人感觉挺有意思，以后有时间会继续。&lt;/p&gt;
-
-&lt;p&gt;redis源码：期间工作太忙，没精力坚持下去，改明年完成。&lt;/p&gt;
-
-&lt;p&gt;成长，心得和不足 这一年技术上的成长我还是比较满意的。2015年的首要目标是广度，自己感兴趣的东西都会尽量找机会去了解。&lt;/p&gt;
-
-&lt;p&gt;对自己不满意的一点是我&lt;strong&gt;难以持续稳定的输出&lt;/strong&gt;。这可能和我不擅长控制情绪有关。有时我会觉得动力满满，有时则会有些消沉。希望接下来我可以坚持锻炼，合理安排好精力，以维持稳定和高效的输出。&lt;/p&gt;
-
-&lt;p&gt;在这一年的学习我也发现了自己的&lt;strong&gt;基本功并不扎实&lt;/strong&gt;。这可能是因为大学期间错误的学习方法导致的。大学只注重读书，没有注重实践。导致我的理论知识没有得到很好的理解和沉淀，学过很快就忘记。&lt;/p&gt;
-
-&lt;p&gt;工作上，自己对&lt;strong&gt;细节和整体的把控还是不够火候&lt;/strong&gt;，也挖了不少坑，花了很多时间填坑，因此也错过很多机会。真是不应该，还好从中能学到很多。&lt;/p&gt;
-
-&lt;p&gt;另外自己的视野还是太&lt;strong&gt;狭隘&lt;/strong&gt;，可能有点只关注技术方面而忽视了其他。nba的超级球星，不仅仅是身体劲爆技术出众，同时还需要具备极高的球商，极强的意识，而后两项往往是超巨和普通球员之间难以逾越差距。&lt;strong&gt;技术决定下限，而视野决定上限&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h1&gt;展望&lt;/h1&gt;
-
-&lt;p&gt;希望未来这一年，能够变得更强，更自信，更有把握。既要保持学生的心态，好奇好学，又要以职场的心态来看待问题。希望我能保持纯粹的心，一步步向前走，一步步逼近自己的梦想。&lt;/p&gt;
-</description>
-        <pubDate>Tue, 26 Jan 2016 12:42:43 +0800</pubDate>
-        <link>http://masutangu.com/2016/01/2015-review/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/01/2015-review/</guid>
-        
-        
-        <category>随笔</category>
         
       </item>
     

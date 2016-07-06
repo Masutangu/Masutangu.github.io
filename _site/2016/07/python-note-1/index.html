@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Python笔记</title>
+  <meta name="description" content="这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Python笔记">
+  <meta name="twitter:description" content="这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Python笔记">
+  <meta property="og:description" content="这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2016/07/python-note-1/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="https://github.com/Masutangu" target="_blank" title="My Projects">项目</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2016-07-06 18:56:31 +0800" itemprop="datePublished" class="post-meta__date date">2016-07-06</time> &#8226; <span class="post-meta__tags tags">编程语言</span>
+    </div>
+    <h1 class="post-title">Python笔记</h1>
+  </header>
+
+  <section class="post">
+    <p>这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。</p>
+
+<p><em>注：本文内容整理自网上博客，《Python Cookbook》等，非原创。</em></p>
+
+<h2>性能优化</h2>
+
+<h3>1. 字典和列表</h3>
+
+<p>Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">from time import time
+t = time()
+list = [&#39;a&#39;,&#39;b&#39;,&#39;is&#39;,&#39;python&#39;,&#39;jason&#39;,&#39;hello&#39;,&#39;hill&#39;,&#39;with&#39;,&#39;phone&#39;,&#39;test&#39;,
+&#39;dfdf&#39;,&#39;apple&#39;,&#39;pddf&#39;,&#39;ind&#39;,&#39;basic&#39;,&#39;none&#39;,&#39;baecr&#39;,&#39;var&#39;,&#39;bana&#39;,&#39;dd&#39;,&#39;wrd&#39;]
+#list = dict.fromkeys(list,True)
+print list
+filter = []
+for i in range (1000000):
+    for find in [&#39;is&#39;,&#39;hat&#39;,&#39;new&#39;,&#39;list&#39;,&#39;old&#39;,&#39;.&#39;]:
+        if find not in list:
+            filter.append(find)
+print &quot;total run time:&quot;
+print time()-t
+</code></pre></figure>
+<p>将list转化为dict后速度提升了将近一半。</p>
+
+<h3>2. 集合和列表</h3>
+
+<p>set 的 union， intersection，difference 操作要比 list 的迭代要快。因此如果涉及到求 list 交集，并集或者差的问题可以转换为 set 来操作。</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text"># 使用list：
+from time import time
+t = time()
+lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
+listb=[2,4,6,9,23]
+intersection=[]
+for i in range (1000000):
+for a in lista:
+    for b in listb:
+        if a == b:
+            intersection.append(a)
+
+print &quot;total run time:&quot;
+print time()-t
+
+# 使用set：
+from time import time
+t = time()
+lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
+listb=[2,4,6,9,23]
+intersection=[]
+for i in range (1000000):
+    list(set(lista)&amp;set(listb))
+print &quot;total run time:&quot;
+print time()-t
+</code></pre></figure>
+<h3>3. 字符串的优化</h3>
+
+<ul>
+<li>在字符串连接的使用尽量使用 join() 而不是 +。</li>
+<li>当对字符串可以使用正则表达式或者内置函数来处理的时候，选择内置函数。如 str.isalpha()，str.isdigit()，str.startswith((‘x’, ‘yz’))，str.endswith((‘x’, ‘yz’))</li>
+<li><p>对字符进行格式化比直接串联读取要快，因此要</p>
+
+<p>使用：
+    <code>out = &quot;&lt;html&gt;%s%s%s%s&lt;/html&gt;&quot; % (head, prologue, query, tail)</code></p>
+
+<p>避免：
+    <code>out = &quot;&lt;html&gt;&quot; + head + prologue + query + tail + &quot;&lt;/html&gt;&quot;</code></p></li>
+</ul>
+
+<h3>4. 使用列表解析和生成器表达式</h3>
+
+<p>列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">from time import time
+t = time()
+list = [&#39;a&#39;,&#39;b&#39;,&#39;is&#39;,&#39;python&#39;,&#39;jason&#39;,&#39;hello&#39;,&#39;hill&#39;,&#39;with&#39;,&#39;phone&#39;,&#39;test&#39;,
+&#39;dfdf&#39;,&#39;apple&#39;,&#39;pddf&#39;,&#39;ind&#39;,&#39;basic&#39;,&#39;none&#39;,&#39;baecr&#39;,&#39;var&#39;,&#39;bana&#39;,&#39;dd&#39;,&#39;wrd&#39;]
+total=[]
+for i in range (1000000):
+for w in list:
+    total.append(w)
+print &quot;total run time:&quot;
+print time()-t
+
+# 使用列表解析：
+for i in range (1000000):
+    a = [w for w in list]
+</code></pre></figure>
+<p>在上述例子上中代码 <code>a = [w for w in list]</code> 修改为 <code>a = (w for w in list)</code>，运行时间将进一步减少。</p>
+
+<h3>5. 其他优化技巧</h3>
+
+<ul>
+<li>如果需要交换两个变量的值使用 a,b=b,a 而不是借助中间变量 t=a;a=b;b=t；</li>
+<li>在循环的时候使用 xrange 而不是 range；使用 xrange 可以节省大量的系统内存，因为 xrange() 在序列中每次调用只产生一个整数元素。而 range() 將直接返回完整的元素列表，用于循环时会有不必要的开销。在 python3 中 xrange 不再存在，里面 range 提供一个可以遍历任意长度的范围的 iterator。</li>
+<li>使用局部变量，避免”global” 关键字。python 访问局部变量会比全局变量要快得多，因 此可以利用这一特性提升性能。</li>
+<li>if done is not None 比语句 if done != None 更快，读者可以自行验证；</li>
+<li>在耗时较多的循环中，可以把函数的调用改为内联的方式；</li>
+<li>使用级联比较 “x &lt; y &lt; z” 而不是 “x &lt; y and y &lt; z”；</li>
+<li>while 1 要比 while True 更快（当然后者的可读性更好）；</li>
+<li>build in 函数通常较快，add(a,b) 要优于 a+b。</li>
+</ul>
+
+<h2>常见错误</h2>
+
+<h3>1. range的使用</h3>
+
+<p>不恰当的使用range，容易出bug：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">```
+for i range(len(alist)):
+    print alist[i]
+```
+</code></pre></figure>
+<p>正确的做法：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">```
+for item in alist:
+    print item
+```
+</code></pre></figure>
+<p>不恰当使用range的理由：</p>
+
+<ul>
+<li><p>需要在循环中使用索引：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for index, value in enumerate(alist):
+    print index, value
+</code></pre></figure></li>
+<li><p>需要同时迭代两个循环：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for word, number in zip(words, numbers):
+    print word, number
+</code></pre></figure></li>
+<li><p>需要迭代序列的一部分：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for word in words[1:]: # 不包括第一个元素
+    print word
+</code></pre></figure>
+<p><strong>range的正确用法是生成一个数字序列，而不是生成索引：</strong></p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text"># Print foo(x) for 0&lt;=x&lt;5
+for x in range(5):
+    print foo(x)
+</code></pre></figure></li>
+</ul>
+
+<h3>2. 变量泄漏</h3>
+
+<ul>
+<li><p>循环</p>
+
+<p>错误的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">for idx, value in enumerate(y):
+    if value &gt; max_value:
+        break
+
+processList(y, idx)
+</code></pre></figure>
+<p>当y为空，processList将会抛出异常，原因是idx没有定义。</p>
+
+<p>正确的处理方式：<strong>哨兵模式</strong>，在循环前为idx设置一些特殊的值。</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">idx ＝ None
+for idx, value in enumerate(y):
+    if value &gt; max_value:
+        break
+
+if idex:
+    processList(y, idx)
+</code></pre></figure></li>
+<li><p>外作用域</p>
+
+<p>错误的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">import sys
+
+# See the bug in the function declaration?
+def print_file(filenam):
+    &quot;&quot;&quot;Print every line of a file.&quot;&quot;&quot;
+    with open(filename) as input_file:
+        for line in input_file:
+            print line.strip()
+
+if __name__ == &quot;__main__&quot;:
+    filename = sys.argv[1]
+    print_file(filename)
+</code></pre></figure>
+<p>此时函数定义中的参数被错误的写为filenam，但是程序依然可以运行。因为print_file的外部作用域存在一个filename的变量。</p>
+
+<p>正确的做法：<strong>外部作用域的全局变量命名要明显</strong>，例如IN_ALL_CAPS。</p></li>
+</ul>
+
+<h3>3. 循环的数据结构导致循环</h3>
+
+<p>如果在一个对象中发现一个循环，python会输出一个[...]。</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">mylist ＝ ［&#39;test&#39;]
+mylist.append(mylist)
+#此时会打印[&#39;test&#39;,[...]]
+print mylist
+</code></pre></figure>
+<h3>4. 赋值创建引用</h3>
+
+<p>python中赋值语句不会创建对象副本,只会创建引用：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">arr = [1, 2, 3, 4]
+arr_cp = arr
+arr_cp[0] = 100
+#print打印出[100, 2, 3, 4]
+print arr
+</code></pre></figure>
+<h3>5. 静态识别局部变量</h3>
+
+<p>python默认将一个在函数中赋值的变量名视为局部变量，存在于该函数的作用域并当函数运行时才存在。python是在编译def代码时去静态识别局部变量的。</p>
+
+<p>错误的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">a ＝ 100
+
+＃你可能想先打印a的值，再对a的值进行修改
+def myfunc():
+    print a
+    a = 200
+</code></pre></figure>
+<p>因为在预编译的时候python发现函数中对a有赋值，因此把a当作局部变量。而运行到‘print a’语句的时候，局部变量a尚未赋值，因此会报错。</p>
+
+<p>正确的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">a ＝ 100
+
+def myfunc():
+    global a
+    print a
+    a = 200
+</code></pre></figure>
+<p>更隐晦的错误代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">myVar = 1
+
+def myfunc():
+    myVar += 1
+</code></pre></figure>
+<p><code>myVar += 1</code>其实相当于<code>myVar = myVar + 1</code>，python检测到myVar变量有赋值操作，因此将myVar添加到局部命名空间中。当执行到<code>myVar += 1</code>时会读取myVar的值，此时该变量尚未有值关联，因此会报错。</p>
+
+<h3>6. 默认参数</h3>
+
+<p>在执行def语句时，默认参数的值只被解析并保存一次。因此在修改可变的默认变量时可能会出现意想不到的效果。</p>
+
+<p>错误的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">def saver(x=[]):
+    x.append(1)
+    print x
+
+saver() # 打印[1]
+saver() # 打印[1,1]
+saver() # 打印[1,1,1]
+</code></pre></figure>
+<p>因为默认参数只被解析并保存一次。因此可变的默认参数在每次函数调用都会保存状态。</p>
+
+<p>正确的代码：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">def saver(x=None):
+    if x is None: x = []
+    x.append(1)
+    print x
+</code></pre></figure>
+<p>def是python中的可执行语句。默认参数在def的语句环境里被计算。如果你执行了def语句多次，每次它都将会创建一个新的函数对象。</p>
+
+<p>看看stackoverflow的一个例子：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">flist = []
+
+for i in xrange(3):
+    def func(x): return x * i
+    flist.append(func)
+
+for f in flist:
+    print f(2) ＃expect 0 2 4 but print 4 4 4
+</code></pre></figure>
+<p>我们可以借助默认参数的机制，在执行def时解析默认参数的值：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">flist=[]
+for i in xrange(3):
+    def func(x,i=i): return x*i
+    flist.append(func)
+
+for f in flist:
+    print f(2)
+</code></pre></figure>
+<p>默认参数还可以用来做缓存：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">def calculate(a, b, c, memo={}):
+    try:
+        value = memo[a, b, c] # return already calculated value
+    except KeyError:
+        value = heavy_calculation(a, b, c)
+    memo[a, b, c] = value # update the memo dictionary
+    return value
+</code></pre></figure>
+<p>牢记：当Python执行一条def语句时， 它会使用已经准备好的东西（包括函数的代码对象和函数的上下文属性），创建了一个新的函数对象。同时，计算了函数的默认参数值。</p>
+
+<h3>7. 谨慎使用super()</h3>
+
+<p>原文<a href="https://fuhm.net/super-harmful/">Python&#39;s Super is nifty, but you can&#39;t use it</a></p>
+
+<p>作者提出两个观点：</p>
+
+<ul>
+<li>People omit calls to super(...).<strong>init</strong> if the only superclass is &#39;object&#39;, as, after all, object.<strong>init</strong> doesn&#39;t do anything! However, this is very incorrect. Doing so will cause other classes&#39; <strong>init</strong> methods to not be called.</li>
+<li>People think they know what arguments their method will get, and what arguments they should pass along to super. This is also incorrect.
+先看第二点，比较好理解，代码如下：</li>
+</ul>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">class A(object):
+    def __init__(self):
+        print &quot;A&quot;
+        super(A, self).__init__()
+
+class B(object):
+    def __init__(self):
+        print &quot;B&quot;
+        super(B, self).__init__()
+
+class C(A):
+    def __init__(self, arg):
+        print &quot;C&quot;,&quot;arg=&quot;,arg
+        super(C, self).__init__()
+
+class D(B):
+    def __init__(self, arg):
+        print &quot;D&quot;, &quot;arg=&quot;,arg
+        super(D, self).__init__()
+
+class E(C,D):
+    def __init__(self, arg):
+        print &quot;E&quot;, &quot;arg=&quot;,arg
+        super(E, self).__init__(arg)
+
+print &quot;MRO:&quot;, [x.__name__ for x in E.__mro__]
+E(10)
+</code></pre></figure>
+<p>看着很正确，执行下报错：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
+E arg= 10
+C arg= 10
+A
+
+Traceback (most recent call last):
+File &quot;C:\Users\mustangmo\Desktop\test1.py&quot;, line 27, in &lt;module&gt;
+    E(10)
+File &quot;C:\Users\mustangmo\Desktop\test1.py&quot;, line 24, in __init__
+    super(E, self).__init__(arg)
+File &quot;C:\Users\mustangmo\Desktop\test1.py&quot;, line 14, in __init__
+    super(C, self).__init__()
+File &quot;C:\Users\mustangmo\Desktop\test1.py&quot;, line 4, in __init__
+    super(A, self).__init__()
+TypeError: __init__() takes exactly 2 arguments (1 given)
+</code></pre></figure>
+<p>原因是：MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]，A的下一个是D，因此super(A, self)方法调用的是D的<strong>init</strong>方法，D的<strong>init</strong>方法需要一个参数，因此报错了。</p>
+
+<p>再看第一点，如果父类是object的话，不调用super().<strong>init</strong>可能会导致问题，例子如下：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">class A(object):
+    def __init__(self, *args, **kwargs):
+        print &quot;A&quot;
+        #super(A, self).__init__(*args, **kwargs) 注释掉
+
+class B(object):
+    def __init__(self, *args, **kwargs):
+        print &quot;B&quot;
+        #super(B, self).__init__(*args, **kwargs) 注释掉
+
+class C(A):
+    def __init__(self, arg, *args, **kwargs):
+        print &quot;C&quot;,&quot;arg=&quot;,arg
+        super(C, self).__init__(arg, *args, **kwargs)
+
+class D(B):
+    def __init__(self, arg, *args, **kwargs):
+        print &quot;D&quot;, &quot;arg=&quot;,arg
+        super(D, self).__init__(arg, *args, **kwargs)
+
+class E(C,D):
+    def __init__(self, arg, *args, **kwargs):
+        print &quot;E&quot;, &quot;arg=&quot;,arg
+        super(E, self).__init__(arg, *args, **kwargs)
+
+print &quot;MRO:&quot;, [x.__name__ for x in E.__mro__]
+E(10)
+</code></pre></figure>
+<p>输出结果：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
+E arg= 10
+C arg= 10
+A
+</code></pre></figure>
+<p>可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.<strong>init</strong>()，会导致其他类（在本例中为D和B）的<strong>init</strong>()不执行。按理来说，调用了类E的super.<strong>init</strong>()函数，应该会同时调用E的父类C和D的<strong>init</strong>()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
+总结：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">* 一定要调用父类为object的类的super.__init__()函数
+* 调用的super()返回不一定是父类，因此super调用最好保持参数一致
+</code></pre></figure>
+<p>另附一篇也是关于super的文章<a href="http://rhettinger.wordpress.com/2011/05/26/super-considered-super/">Python’s super() considered super!</a></p>
+
+<h3>8. string转换为dict</h3>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">str = ‘{ &quot;key&quot; : null}&#39;
+mydict = eval(str)
+</code></pre></figure>
+<p>eval 可能会报错，因为 json 的语义跟 Python 的 dict 不完全一样, 如果 json 串里面出现一个 null 就报错了.
+因此合适的方法是采用如下写法：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">json.loads()
+mydict = json.loads(str)
+</code></pre></figure>
+<h2>高级特性</h2>
+
+<h3>1. 闭包</h3>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">def return_func_that_prints_list(z):
+    def f():
+        print z
+    return f
+
+z = [1, 2]
+g = return_func_that_prints_list(z)
+g()  # print [1, 2]
+
+z.append(3)
+g()  # print [1, 2, 3]
+z = [1]
+g()  # print [1, 2, 3]
+</code></pre></figure>
+<p>【译者】：z.append(3)时，g()内部的引用和z仍然指向一个变量，而z=[1]之后，两者就不再指向一个变量了。</p>
+
+<p>关于闭包，stack overflow <a href="http://stackoverflow.com/questions/4020419/closures-in-python">http://stackoverflow.com/questions/4020419/closures-in-python</a></p>
+
+<h3>2. wraps</h3>
+
+<p><strong>给decorator加上wraps以保留原有函数的名称和docstring：</strong></p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">from functools import wraps
+def my_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        print &#39;Calling decorated function&#39;
+        return f(*args, **kwds)
+    return wrapper
+
+
+@my_decorator
+def example():
+    &quot;&quot;&quot;Docstring&quot;&quot;&quot;
+    print &#39;Called example function&#39;
+
+example()  # print &#39;Calling decorated function&#39; &#39;Called example function&#39;
+example.__name__  # print &#39;example&#39;
+example.__doc__  # print &#39;Docstring&#39;
+</code></pre></figure>
+<p><strong>Without the use of this decorator factory, the name of the example function would have been &#39;wrapper&#39;, and the docstring of the original example() would have been lost.</strong></p>
+
+<h3>3. class decorator</h3>
+
+<p><strong>给类的所有函数添加decorator：</strong></p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">def logged(time_format, name_prefix=&quot;&quot;):
+    def decorator(func):
+        if hasattr(func, &#39;_logged_decorator&#39;) and func._logged_decorator:
+            return func
+
+        @wraps(func)
+        def decorated_func(*args, **kwargs):
+            start_time = time.time()
+            print &quot;- Running &#39;%s&#39; on %s &quot; % (
+                                            name_prefix + func.__name__,
+                                            time.strftime(time_format)
+                                )
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print &quot;- Finished &#39;%s&#39;, execution time = %0.3fs &quot; % (
+                                            name_prefix + func.__name__,
+                                            end_time - start_time
+                                )
+
+            return result
+        decorated_func._logged_decorator = True
+        return decorated_func
+    return decorator
+
+def log_method_calls(time_format):
+    def decorator(cls):
+        for attr in dir(cls):
+            if attr.startswith(&#39;__’): #过滤掉以双下划线开头的attributes
+                continue
+            a = getattr(cls, attr)
+            if hasattr(a, &#39;__call__’): #如果包含__call__属性，说明是函数
+                decorated_a = logged(time_format, cls.__name__ + &quot;.&quot;)(a)
+                setattr(cls, attr, decorated_a)
+        return cls
+    return decorator
+
+@log_method_calls(&quot;%b %d %Y - %H:%M:%S&quot;)
+class A(object):
+    def test1(self):
+        print &quot;test1&quot;
+
+@log_method_calls(&quot;%b %d %Y - %H:%M:%S&quot;)
+class B(A):
+    def test1(self):
+        super(B, self).test1()
+        print &quot;child test1&quot;
+
+    def test2(self):
+        print &quot;test2&quot;
+
+b = B()
+b.test1()
+b.test2()
+</code></pre></figure>
+<p>输出如下：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">- Running &#39;B.test1&#39; on Jul 24 2013 - 14:15:03
+- Running &#39;A.test1&#39; on Jul 24 2013 - 14:15:03
+test1
+- Finished &#39;A.test1&#39;, execution time = 0.000s
+child test1
+- Finished &#39;B.test1&#39;, execution time = 1.001s
+- Running &#39;B.test2&#39; on Jul 24 2013 - 14:15:04
+test2
+- Finished &#39;B.test2&#39;, execution time = 2.001s
+</code></pre></figure>
+<h3>4. descriptor</h3>
+
+<ul>
+<li>用法1：Type Checking</li>
+</ul>
+<figure class="highlight"><pre><code class="language-text" data-lang="text"># Descriptor for a type-checked attribute
+class Typed:
+    def __init__(self, name, expected_type):
+        self.name = name
+        self.expected_type = expected_type
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            return instance.__dict__[self.name]
+    def __set__(self, instance, value):
+        if not isinstance(value, self.expected_type):
+            raise TypeError(&#39;Expected &#39; + str(self.expected_type))
+        instance.__dict__[self.name] = value
+
+    def __delete__(self, instance):
+        del instance.__dict__[self.name]
+
+
+# Class decorator that applies it to selected attributes
+def typeassert(**kwargs):
+    def decorate(cls):
+        for name, expected_type in kwargs.items():
+            # Attach a Typed descriptor to the class
+            setattr(cls, name, Typed(name, expected_type))
+        return cls
+    return decorate
+
+# Example use
+@typeassert(name=str, shares=int, price=float)
+class Stock:
+    def __init__(self, name, shares, price):
+        self.name = name
+        self.shares = shares
+        self.price = price
+</code></pre></figure>
+<p>Finally, it should be stressed that you would probably not write a descriptor if you simply want to customize the access of a single attribute of a specific class. Descriptors are more useful in situations where there will be a lot of code reuse (i.e., you want to use the functionality provided by the descriptor in hundreds of places in your code or provide it as a library feature).</p>
+
+<ul>
+<li>用法2：Lazily Computed Properties</li>
+</ul>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+</code></pre></figure>
+<p>If a descriptor only defines a <strong>get</strong>() method, it has a much weaker binding than usual. In particular, the <strong>get</strong>() method only fires if the attribute being accessed is not in the underlying instance dictionary.</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-support-chinese/" title="link to matplotlib配置支持中文">matplotlib配置支持中文</a></h2>
+       <p class="excerpt">这篇文章介绍linux下如何配置matplot来支持中文显示。确定系统已有哪些支持中文字体linux下运行 fc-list :lang=zh 命令会输出所有支持中文的字体。如果为空，可以按如下步骤添加：  拷贝一份window C:\windows\fonts\ 目录下的任一中文字体文件，例如 MSYH.ttc （微软雅黑）  重命名为MSYH.ttf，并放到linux的 /usr/share/fonts/chinese/目录下   linux下执行 fc-cache /usr/share...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-07-04 08:06:35 +0800" class="post-list__meta--date date">2016-07-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/matplot-support-chinese/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2016/07/python-note-1/";
+        this.page.identifier = "/2016/07/python-note-1/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-06 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

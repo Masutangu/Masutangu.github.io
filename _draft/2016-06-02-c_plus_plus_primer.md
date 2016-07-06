@@ -259,3 +259,16 @@ When we use iterators, there is no requirement that the container types be ident
 永远让比较函数对相等的值返回false。
 
 > Such a comparison function must always yield false when we compare a key with itself. Moreover, if we compare two keys, they cannot both be "less than" each other, and if k1 is "less than" k2 , which in turn is "less than" k3 , then k1 must be "less than" k3 .
+
+## 复制构造函数不应该声明为explicit
+摘自stackoverflow：
+> The explicit copy constructor means that the copy constructor will not be called implicitly, which is what happens in the expression:
+
+> ```CustomString s = CustomString("test");```
+> This expression literally means: create a temporary CustomString using the constructor that takes a const char*. Implicitly call the copy constructor of CustomString to copy from that temporary into s.
+
+> Now, if the code was correct (i.e. if the copy constructor was not explicit), the compiler would avoid the creation of the temporary and elide the copy by constructing s directly with the string literal. But the compiler must still check that the construction can be done and fails there.
+
+> You can call the copy constructor explicitly:
+
+> ```CustomString s( CustomString("test") );```
