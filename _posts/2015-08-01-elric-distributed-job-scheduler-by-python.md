@@ -58,5 +58,7 @@ Done! 一个非常简单的分布式任务调度器就完成了。
 总的来说，这是我第一次尝试自己写一个工具，收获非常大。如果你有什么建议或者困惑，欢迎发邮件给我。如果喜欢这个项目，欢迎给我一颗Star鼓励鼓励^ ^
 
 后续阅读：
+
 [Elric Change Log 1](http://masutangu.com/2015/10/elric-change-log-1/)
+
 [Elric Change Log 2](http://masutangu.com/2016/02/elric-change-log-2/)
