@@ -5,12 +5,12 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 07 Jul 2016 18:03:41 +0800</pubDate>
-    <lastBuildDate>Thu, 07 Jul 2016 18:03:41 +0800</lastBuildDate>
+    <pubDate>Thu, 07 Jul 2016 19:08:53 +0800</pubDate>
+    <lastBuildDate>Thu, 07 Jul 2016 19:08:53 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
-        <title>分布式任务框架Elric介绍文档</title>
+        <title>Elric 使用手册</title>
         <description>&lt;p&gt;这篇文章正式介绍下分布式任务框架 &lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;，包括其API，架构，周边能力以及实现细节。&lt;/p&gt;
 
 &lt;p&gt;读者可以先阅读之前的这篇文章《&lt;a href=&quot;http://masutangu.com/2015/08/elric-distributed-job-scheduler-by-python/&quot;&gt;Python实现的分布式任务调度系统&lt;/a&gt;》来了解Elric的起源和早期设计的思想。&lt;/p&gt;
@@ -78,6 +78,15 @@ rq_Worker.start()
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;h2&gt;去重&lt;/h2&gt;
+
+&lt;p&gt;Elric 支持任务去重，通常这个特性用于爬虫。当有需要对已完成的任务进行去重时，可以提供 filter_key 和 filter_value 这两个参数：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;album_id = 123
+rq_worker = RQWorker(name=&amp;#39;crawler&amp;#39;, listen_keys=[&amp;#39;crawl_album&amp;#39;, ])
+rq_worker.submit_job(crawl_album, &amp;#39;job2&amp;#39;, args=[album_id], filter_key=&amp;#39;crawl_album_filter&amp;#39;, filter_value=album_id)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;如果 crawl_album 任务执行成功，则 Master 会往名为 &amp;#39;crawl_album_filter&amp;#39; 这个集合里添加 album_id 这个值。之后如果 Master 再次接受到filter_key为 crawl_album_filter 的任务，会先检查该任务的 filter_value 是否已经存在于 filter_key 的集合里，如果存在则直接过滤该任务，不再下发。&lt;/p&gt;
+
 &lt;h2&gt;配置&lt;/h2&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://github.com/Masutangu/Elric/blob/master/settings.py&quot;&gt;settings.py&lt;/a&gt; 文件的配置信息如下：&lt;/p&gt;
@@ -111,22 +120,22 @@ def test_cron_job():
 
 if __name__ == &amp;#39;__main__&amp;#39;:
     # 初始化名字为 test 的 Worker ，监听 &amp;#39;job1&amp;#39; 和 &amp;#39;job2&amp;#39; 这两个任务队列
-    rq_Worker = RQWorker(name=&amp;#39;test&amp;#39;, listen_keys=[&amp;#39;job1&amp;#39;, &amp;#39;job2&amp;#39;])
+    rq_worker = RQWorker(name=&amp;#39;test&amp;#39;, listen_keys=[&amp;#39;job1&amp;#39;, &amp;#39;job2&amp;#39;])
 
     # 向 Master 提交任务，该任务将由 Master 在 2015-07-17 21:13:30 这个时间点通过 &amp;#39;job1&amp;#39; 任务队列下发给 Worker ，Worker 拿到后将执行 test_date_job 函数
-    rq_Worker.submit_job(test_date_job, &amp;#39;job1&amp;#39;, trigger=&amp;#39;date&amp;#39;, run_date=&amp;#39;2015-07-17 21:13:30&amp;#39;)
+    rq_worker.submit_job(test_date_job, &amp;#39;job1&amp;#39;, trigger=&amp;#39;date&amp;#39;, run_date=&amp;#39;2015-07-17 21:13:30&amp;#39;)
 
     # 向 Master 提交任务，该任务将每隔30秒由 Master 通过 &amp;#39;job1&amp;#39; 任务队列下发给 Worker ，Worker 拿到后将执行 wapper_job 函数
-    rq_Worker.submit_job(wapper_job, &amp;#39;job1&amp;#39;, trigger=&amp;#39;interval&amp;#39;, seconds=30)
+    rq_worker.submit_job(wapper_job, &amp;#39;job1&amp;#39;, trigger=&amp;#39;interval&amp;#39;, seconds=30)
 
     # 向 Master 提交任务，该任务为即时任务（没有提供trigger），将马上由Master 通过任务队列 &amp;#39;job2&amp;#39; 下发给 Worker ，Worker 拿到后将执行 test_job 函数
-    rq_Worker.submit_job(test_job, &amp;#39;job2&amp;#39;, kwargs={&amp;#39;language&amp;#39;: &amp;#39;python&amp;#39;})
+    rq_worker.submit_job(test_job, &amp;#39;job2&amp;#39;, kwargs={&amp;#39;language&amp;#39;: &amp;#39;python&amp;#39;})
 
     # 向 Master 提交任务，该任务将在每分钟的第7秒由 Master 通过 &amp;#39;job2&amp;#39; 任务队列下发给 Worker ，Worker 拿到后将执行 test_cron_job 函数
-    rq_Worker.submit_job(test_cron_job, &amp;#39;job2&amp;#39;, trigger=&amp;#39;cron&amp;#39;, second=7)
+    rq_worker.submit_job(test_cron_job, &amp;#39;job2&amp;#39;, trigger=&amp;#39;cron&amp;#39;, second=7)
 
     # 启动 Worker，如果 &amp;#39;job1&amp;#39; 或 &amp;#39;job2&amp;#39; 有任务则拉取下来执行
-    rq_Worker.start()
+    rq_worker.start()
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;完整的demo可见&lt;a href=&quot;https://github.com/Masutangu/Elric/tree/master/example&quot;&gt;https://github.com/Masutangu/Elric/tree/master/example&lt;/a&gt;&lt;/p&gt;
 
@@ -215,7 +224,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
 
 &lt;ul&gt;
 &lt;li&gt;配置规范化：目前我的配置文件 settings.py 的实现并不规范，后续希望参考 &lt;a href=&quot;https://www.djangoproject.com/&quot;&gt;Django&lt;/a&gt; 的做法来实现配置管理。 &lt;/li&gt;
-&lt;li&gt;接口简化：后续可能会把 filter_key，job_key 和 func 这三个参数进行合并，减少使用者的理解成本。&lt;/li&gt;
+&lt;li&gt;接口简化：后续可能会把 filter_key，job_key 和 func 这三个参数进行合并，把 filter_value 和 job_id 这两个参数进行合并，减少使用者的理解成本。&lt;/li&gt;
 &lt;li&gt;防雪崩机制优化：目前防雪崩机制比较简单，在任务队列满的时候 Master 会缓存一部分任务。后期改造成在下发的任务里带上任务的下发时间，Worker 取到任务后如果发现任务已经过期一段时间则直接抛弃。&lt;/li&gt;
 &lt;/ul&gt;
 </description>

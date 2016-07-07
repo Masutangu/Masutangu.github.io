@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2016-07-07T15:02:11+08:00
-title: 分布式任务框架Elric介绍文档
+title: Elric 使用手册
 category: 个人项目
 ---
 
@@ -72,6 +72,18 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
  * filter_key：用以任务去重的value，注意只有 Master 为 Spider 实例该参数才有效。
 
 
+## 去重
+Elric 支持任务去重，通常这个特性用于爬虫。当有需要对已完成的任务进行去重时，可以提供 filter_key 和 filter_value 这两个参数：
+
+```
+album_id = 123
+rq_worker = RQWorker(name='crawler', listen_keys=['crawl_album', ])
+rq_worker.submit_job(crawl_album, 'job2', args=[album_id], filter_key='crawl_album_filter', filter_value=album_id)
+```
+如果 crawl_album 任务执行成功，则 Master 会往名为 'crawl_album_filter' 这个集合里添加 album_id 这个值。之后如果 Master 再次接受到filter_key为 crawl_album_filter 的任务，会先检查该任务的 filter_value 是否已经存在于 filter_key 的集合里，如果存在则直接过滤该任务，不再下发。
+
+
+
 ## 配置
  [settings.py](https://github.com/Masutangu/Elric/blob/master/settings.py) 文件的配置信息如下：
 
@@ -104,22 +116,22 @@ def test_cron_job():
 
 if __name__ == '__main__':
     # 初始化名字为 test 的 Worker ，监听 'job1' 和 'job2' 这两个任务队列
-    rq_Worker = RQWorker(name='test', listen_keys=['job1', 'job2'])
+    rq_worker = RQWorker(name='test', listen_keys=['job1', 'job2'])
     
     # 向 Master 提交任务，该任务将由 Master 在 2015-07-17 21:13:30 这个时间点通过 'job1' 任务队列下发给 Worker ，Worker 拿到后将执行 test_date_job 函数
-    rq_Worker.submit_job(test_date_job, 'job1', trigger='date', run_date='2015-07-17 21:13:30')
+    rq_worker.submit_job(test_date_job, 'job1', trigger='date', run_date='2015-07-17 21:13:30')
     
     # 向 Master 提交任务，该任务将每隔30秒由 Master 通过 'job1' 任务队列下发给 Worker ，Worker 拿到后将执行 wapper_job 函数
-    rq_Worker.submit_job(wapper_job, 'job1', trigger='interval', seconds=30)
+    rq_worker.submit_job(wapper_job, 'job1', trigger='interval', seconds=30)
     
     # 向 Master 提交任务，该任务为即时任务（没有提供trigger），将马上由Master 通过任务队列 'job2' 下发给 Worker ，Worker 拿到后将执行 test_job 函数
-    rq_Worker.submit_job(test_job, 'job2', kwargs={'language': 'python'})
+    rq_worker.submit_job(test_job, 'job2', kwargs={'language': 'python'})
     
     # 向 Master 提交任务，该任务将在每分钟的第7秒由 Master 通过 'job2' 任务队列下发给 Worker ，Worker 拿到后将执行 test_cron_job 函数
-    rq_Worker.submit_job(test_cron_job, 'job2', trigger='cron', second=7)
+    rq_worker.submit_job(test_cron_job, 'job2', trigger='cron', second=7)
     
     # 启动 Worker，如果 'job1' 或 'job2' 有任务则拉取下来执行
-    rq_Worker.start()
+    rq_worker.start()
 ```
  完整的demo可见https://github.com/Masutangu/Elric/tree/master/example
 
@@ -209,5 +221,5 @@ with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
 Elric 目前来说还比较粗糙，后续有时间我希望对下面这几个方面做些优化：
 
 * 配置规范化：目前我的配置文件 settings.py 的实现并不规范，后续希望参考 [Django](https://www.djangoproject.com/) 的做法来实现配置管理。 
-* 接口简化：后续可能会把 filter_key，job_key 和 func 这三个参数进行合并，减少使用者的理解成本。
+* 接口简化：后续可能会把 filter_key，job_key 和 func 这三个参数进行合并，把 filter_value 和 job_id 这两个参数进行合并，减少使用者的理解成本。
 * 防雪崩机制优化：目前防雪崩机制比较简单，在任务队列满的时候 Master 会缓存一部分任务。后期改造成在下发的任务里带上任务的下发时间，Worker 取到任务后如果发现任务已经过期一段时间则直接抛弃。
