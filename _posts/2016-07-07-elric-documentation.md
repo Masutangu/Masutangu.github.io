@@ -5,7 +5,7 @@ title: Elric 使用手册
 category: 个人项目
 ---
 
-这篇文章正式介绍下分布式任务框架 [Elric](https://github.com/Masutangu/Elric)，包括其API，架构，周边能力以及实现细节。
+这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 [Elric](https://github.com/Masutangu/Elric)，包括其API，架构，周边能力以及实现细节。
 
 读者可以先阅读之前的这篇文章《[Python实现的分布式任务调度系统](http://masutangu.com/2015/08/elric-distributed-job-scheduler-by-python/)》来了解Elric的起源和早期设计的思想。
 
