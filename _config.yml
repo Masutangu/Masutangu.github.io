@@ -26,7 +26,7 @@ blog_button:
 
 # Navigation buttons in the front page.
 nav:
-    - {title: 项目, description: My Projects, url: 'https://github.com/Masutangu'}
+    - {title: 生活, description: Life, url: 'http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614'}
     - {title: 关于, description: About me, url: 'https://about.me/masutangu'}
 
 # Pagination
