@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 09 Jul 2016 17:01:50 +0800</pubDate>
-    <lastBuildDate>Sat, 09 Jul 2016 17:01:50 +0800</lastBuildDate>
+    <pubDate>Mon, 11 Jul 2016 17:09:30 +0800</pubDate>
+    <lastBuildDate>Mon, 11 Jul 2016 17:09:30 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -799,10 +799,20 @@ class Stock:
       </item>
     
       <item>
-        <title>matplotlib配置支持中文</title>
-        <description>&lt;p&gt;这篇文章介绍linux下如何配置&lt;a href=&quot;http://matplotlib.org/&quot;&gt;matplot&lt;/a&gt;来支持中文显示。&lt;/p&gt;
+        <title>matplotlib 笔记</title>
+        <description>&lt;p&gt;最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：&lt;/p&gt;
 
-&lt;ol&gt;
+&lt;ul&gt;
+&lt;li&gt;用&lt;a href=&quot;http://matplotlib.org/&quot;&gt;Matplotlib&lt;/a&gt;生成图表并保存成文件&lt;/li&gt;
+&lt;li&gt;将图片添加为邮件的附件&lt;/li&gt;
+&lt;li&gt;最后通过&lt;code&gt;src=&amp;quot;cid:0&amp;quot;&lt;/code&gt;的方式将图片嵌入到邮件正文中&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这篇文章主要对 Matplotlib 的使用做些总结，包括 Matplotlib 如何配置显示中文字体，折线图／柱状图／圆饼图相关介绍，matplot子图的概念。&lt;/p&gt;
+
+&lt;h1&gt;配置中文字体支持&lt;/h1&gt;
+
+&lt;ul&gt;
 &lt;li&gt;&lt;p&gt;确定系统已有哪些支持中文字体&lt;/p&gt;
 
 &lt;p&gt;linux下运行 &lt;code&gt;fc-list :lang=zh&lt;/code&gt; 命令会输出所有支持中文的字体。
@@ -823,13 +833,186 @@ class Stock:
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    from matplotlib import rcParams
     rcParams[&amp;#39;font.sans-serif&amp;#39;] = [&amp;#39;Microsoft YaHei&amp;#39;]  
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;Done!&lt;/p&gt;
+&lt;h1&gt;曲线图／柱状图／圆饼图介绍&lt;/h1&gt;
+
+&lt;h2&gt;柱状图&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Demo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://matplotlib.org/examples/api/barchart_demo.html&quot;&gt;官方 Demo&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;API 封装&lt;/p&gt;
+
+&lt;p&gt;下面是我对柱状图的一个封装，方便使用者直接调用：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def save_bar_fig(data, legends, x_labels, y_label, title, filename):
+    &amp;quot;&amp;quot;&amp;quot;
+        data: 柱状图输入数据，对应demo为：[(20, 35, 30, 35, 27), (25, 32, 34, 20, 25)]
+        legends: 图例，显示在柱状图的右上角，标记柱状图的数据信息，对应demo为：[&amp;#39;Men&amp;#39;, &amp;#39;Women&amp;#39;]
+        x_labels: x坐标的标签，对应demo为：[&amp;#39;G1&amp;#39;, &amp;#39;G2&amp;#39;, &amp;#39;G3&amp;#39;, &amp;#39;G4&amp;#39;, &amp;#39;G5&amp;#39;]
+        y_label: y坐标标签，对应demo为：&amp;#39;Scores&amp;#39;
+        title: 图表名称，对应demo为：&amp;#39;Scores by group and gender&amp;#39;
+        filename: 保存的图片文件名
+    &amp;quot;&amp;quot;&amp;quot;
+    width = 1.0  # 柱状图每个bar的展示宽度，为了方便这里hard code
+    num_of_labels = len(x_labels)
+    num_of_legends = len(legends)
+    ind = np.arange(0, num_of_labels * width * (num_of_legends + 1), width * (num_of_legends + 1))  # the x locations for the groups
+
+    # 彩虹配色，以此实现每个bar显示不同的颜色
+    colors = plt.cm.rainbow(np.linspace(0.9, 0, num_of_labels))
+
+    # figsize：图片的大小，越大图片展示越清晰
+    fig, ax = plt.subplots(figsize=(12, 8))
+    rects = []
+    pos = 0
+
+    for r, color in zip(data, colors):
+        rect = ax.bar(ind + pos, r, width, color=color)
+        pos += width
+        rects.append(rect)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel(y_label)
+    ax.set_title(title)
+
+    # set_xticks：设置x坐标标签的位置
+    ax.set_xticks(ind + (num_of_legends * width)/2)
+    ax.set_xticklabels(x_labels)
+
+    # 设置legend
+    ax.legend(rects, legends)
+
+    plt.savefig(filename)
+
+    # 注意每画完一个图，要清空plt的状态
+    plt.clf()
+    plt.cla()
+    plt.close()
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;折线图&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Demo&lt;/p&gt;
+
+&lt;p&gt;没找到合适的官方 Demo。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;API 封装&lt;/p&gt;
+
+&lt;p&gt;折线图的 api 和上面的柱状图差不多：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def save_line_fig(data, legends, x_labels, y_label, title, filename):
+    &amp;quot;&amp;quot;&amp;quot;
+        data: 折线图输入数据，例如：[(20, 35, 30, 35, 27), (25, 32, 34, 20, 25)]
+        legends: 图例，显示在折线图的右上角，标记折线图的数据信息，对应demo为：[&amp;#39;Men&amp;#39;, &amp;#39;Women&amp;#39;]
+        x_labels: x坐标的标签，例如：[&amp;#39;G1&amp;#39;, &amp;#39;G2&amp;#39;, &amp;#39;G3&amp;#39;, &amp;#39;G4&amp;#39;, &amp;#39;G5&amp;#39;]
+        y_label: y坐标标签，例如：&amp;#39;Scores&amp;#39;
+        title: 图表名称，例如：&amp;#39;Scores by group and gender&amp;#39;
+        filename: 保存的图片文件名
+    &amp;quot;&amp;quot;&amp;quot;
+    plt.figure(figsize=(12, 8))
+    data_len = len(data[0]) + 1
+    xAxis = range(1, data_len)  # Make x, y arrays for each graph
+    colors = plt.cm.rainbow(np.linspace(0.9, 0, len(legends)))
+    lines = []
+
+    for l, color in zip(data, colors):
+        line, = pl.plot(xAxis, l, c=color)
+        lines.append(line)
+
+    pl.legend(lines, legends)
+    pl.title(title)
+    pl.ylabel(y_label)
+    pl.xticks(xAxis, x_labels)
+    plt.savefig(filename)
+    plt.clf()
+    plt.cla()
+    plt.close()
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;饼状图&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Demo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://matplotlib.org/examples/pie_and_polar_charts/pie_demo_features.html&quot;&gt;官方 Demo&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;API 封装&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def save_pie_fig(data, labels, title, filename):
+    &amp;quot;&amp;quot;&amp;quot;
+        data: 饼状图输入数据，对应demo为：[15, 30, 45, 10]
+        labels: 饼状图的图例，对于demo为：[&amp;#39;Frogs&amp;#39;, &amp;#39;Hogs&amp;#39;, &amp;#39;Dogs&amp;#39;, &amp;#39;Logs&amp;#39;]
+        x_labels: x坐标的标签，例如：[&amp;#39;G1&amp;#39;, &amp;#39;G2&amp;#39;, &amp;#39;G3&amp;#39;, &amp;#39;G4&amp;#39;, &amp;#39;G5&amp;#39;]
+        y_label: y坐标标签，例如：&amp;#39;Scores&amp;#39;
+        title: 图表名称，例如：&amp;#39;Scores by group and gender&amp;#39;
+        filename: 保存的图片文件名
+    &amp;quot;&amp;quot;&amp;quot;
+    # make a square figure and axes
+    pl.figure(1, figsize=(12, 12))
+    num_of_labels = len(labels)
+    # 是否需要突出，例如 demo 中的 Hogs 
+    explode = [0 for _ in labels]
+    colors = plt.cm.rainbow(np.linspace(0.9, 0, num_of_labels))
+
+    pl.pie(data, explode=explode, labels=labels, colors=colors,
+                    autopct=&amp;#39;%1.1f%%&amp;#39;, shadow=True, startangle=90)
+
+    # x轴和y轴相等，绘制出来的饼状图是圆形
+    plt.axis(&amp;#39;equal&amp;#39;)
+    pl.title(title)
+    plt.savefig(filename)
+    plt.clf()
+    plt.cla()
+    plt.close()
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;子图&lt;/h1&gt;
+
+&lt;p&gt;matplot 支持绘制子图，相当于把一张图分隔成几个区块，每个区块是一个绘图区域。该特性通过 subplot 函数来实现。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Demo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://matplotlib.org/examples/subplots_axes_and_figures/subplot_demo.html&quot;&gt;官方 Demo&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;subplot 函数的签名为 subplot(m, n, k)。参数 m 表示划分的行数，n表示划分的列数，k表示使用第k个子图（从左到右、从上到下的顺序）。&lt;/p&gt;
+
+&lt;p&gt;demo 中第一次调用 &lt;code&gt;plt.subplot(2, 1, 1)&lt;/code&gt;，表示划分成两行（m = 2），使用第1个子图来绘制（k = 1）。之后再次调用&lt;code&gt;plt.subplot(2, 1, 2)&lt;/code&gt;，表示划分成两行（m = 2），使用第2个子图来绘制（k = 2）。因此最终效果是上下两个子图。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;其他效果&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;上一下二:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;代码&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;plt.subplot(2, 1, 1)  # 按照两行一列划分，使用第一个子图，即为第一行
+plt.subplot(2, 2, 3)  # 按照两行两列划分，使用第三个子图，即为四个网格的第三个（左下）
+plt.subplot(2, 2, 4)  # 按照两行两列划分，使用第四个子图，即为四个网格的第四个（右下）
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;图例&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/matplot-note/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;上二下一:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;代码&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;plt.subplot(2, 2, 1)  # 按照两行一列划分，使用第一个子图，即为第一行
+plt.subplot(2, 2, 2)  # 按照两行两列划分，使用第三个子图，即为四个网格的第三个（左下）
+plt.subplot(2, 1, 2)  # 按照两行两列划分，使用第四个子图，即为四个网格的第四个（右下）
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;图例&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/matplot-note/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         <pubDate>Mon, 04 Jul 2016 08:06:35 +0800</pubDate>
-        <link>http://masutangu.com/2016/07/matplot-support-chinese/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/07/matplot-support-chinese/</guid>
+        <link>http://masutangu.com/2016/07/matplot-note/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/07/matplot-note/</guid>
         
         
         <category>工作</category>
