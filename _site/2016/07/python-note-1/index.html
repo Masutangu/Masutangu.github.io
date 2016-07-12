@@ -141,7 +141,7 @@
 <h3>1. 字典和列表</h3>
 
 <p>Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">from time import time
+<figure class="highlight"><pre><code class="language-python" data-lang="python">from time import time
 t = time()
 list = [&#39;a&#39;,&#39;b&#39;,&#39;is&#39;,&#39;python&#39;,&#39;jason&#39;,&#39;hello&#39;,&#39;hill&#39;,&#39;with&#39;,&#39;phone&#39;,&#39;test&#39;,
 &#39;dfdf&#39;,&#39;apple&#39;,&#39;pddf&#39;,&#39;ind&#39;,&#39;basic&#39;,&#39;none&#39;,&#39;baecr&#39;,&#39;var&#39;,&#39;bana&#39;,&#39;dd&#39;,&#39;wrd&#39;]
@@ -160,7 +160,7 @@ print time()-t
 <h3>2. 集合和列表</h3>
 
 <p>set 的 union， intersection，difference 操作要比 list 的迭代要快。因此如果涉及到求 list 交集，并集或者差的问题可以转换为 set 来操作。</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text"># 使用list：
+<figure class="highlight"><pre><code class="language-python" data-lang="python"># 使用list：
 from time import time
 t = time()
 lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
@@ -201,7 +201,7 @@ print time()-t
 <h3>4. 使用列表解析和生成器表达式</h3>
 
 <p>列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">from time import time
+<figure class="highlight"><pre><code class="language-python" data-lang="python">from time import time
 t = time()
 list = [&#39;a&#39;,&#39;b&#39;,&#39;is&#39;,&#39;python&#39;,&#39;jason&#39;,&#39;hello&#39;,&#39;hill&#39;,&#39;with&#39;,&#39;phone&#39;,&#39;test&#39;,
 &#39;dfdf&#39;,&#39;apple&#39;,&#39;pddf&#39;,&#39;ind&#39;,&#39;basic&#39;,&#39;none&#39;,&#39;baecr&#39;,&#39;var&#39;,&#39;bana&#39;,&#39;dd&#39;,&#39;wrd&#39;]
@@ -236,30 +236,30 @@ for i in range (1000000):
 <h3>1. range的使用</h3>
 
 <p>不恰当的使用range，容易出bug：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for i range(len(alist)):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for i range(len(alist)):
     print alist[i]
 </code></pre></figure>
 <p>正确的做法：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for item in alist:
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for item in alist:
     print item
 </code></pre></figure>
 <p>不恰当使用range的理由：</p>
 
 <ul>
 <li><p>需要在循环中使用索引：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for index, value in enumerate(alist):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for index, value in enumerate(alist):
     print index, value
 </code></pre></figure></li>
 <li><p>需要同时迭代两个循环：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for word, number in zip(words, numbers):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for word, number in zip(words, numbers):
     print word, number
 </code></pre></figure></li>
 <li><p>需要迭代序列的一部分：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for word in words[1:]: # 不包括第一个元素
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for word in words[1:]: # 不包括第一个元素
     print word
 </code></pre></figure>
 <p><strong>range的正确用法是生成一个数字序列，而不是生成索引：</strong></p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text"># Print foo(x) for 0&lt;=x&lt;5
+<figure class="highlight"><pre><code class="language-python" data-lang="python"># Print foo(x) for 0&lt;=x&lt;5
 for x in range(5):
     print foo(x)
 </code></pre></figure></li>
@@ -271,7 +271,7 @@ for x in range(5):
 <li><p>循环</p>
 
 <p>错误的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for idx, value in enumerate(y):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for idx, value in enumerate(y):
     if value &gt; max_value:
         break
 
@@ -280,7 +280,7 @@ processList(y, idx)
 <p>当y为空，processList将会抛出异常，原因是idx没有定义。</p>
 
 <p>正确的处理方式：<strong>哨兵模式</strong>，在循环前为idx设置一些特殊的值。</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">idx ＝ None
+<figure class="highlight"><pre><code class="language-python" data-lang="python">idx ＝ None
 for idx, value in enumerate(y):
     if value &gt; max_value:
         break
@@ -291,7 +291,7 @@ if idex:
 <li><p>外作用域</p>
 
 <p>错误的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">import sys
+<figure class="highlight"><pre><code class="language-python" data-lang="python">import sys
 
 # See the bug in the function declaration?
 def print_file(filenam):
@@ -312,7 +312,7 @@ if __name__ == &quot;__main__&quot;:
 <h3>3. 循环的数据结构导致循环</h3>
 
 <p>如果在一个对象中发现一个循环，python会输出一个[...]。</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">mylist ＝ ［&#39;test&#39;]
+<figure class="highlight"><pre><code class="language-python" data-lang="python">mylist ＝ ［&#39;test&#39;]
 mylist.append(mylist)
 #此时会打印[&#39;test&#39;,[...]]
 print mylist
@@ -320,7 +320,7 @@ print mylist
 <h3>4. 赋值创建引用</h3>
 
 <p>python中赋值语句不会创建对象副本,只会创建引用：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">arr = [1, 2, 3, 4]
+<figure class="highlight"><pre><code class="language-python" data-lang="python">arr = [1, 2, 3, 4]
 arr_cp = arr
 arr_cp[0] = 100
 #print打印出[100, 2, 3, 4]
@@ -331,7 +331,7 @@ print arr
 <p>python默认将一个在函数中赋值的变量名视为局部变量，存在于该函数的作用域并当函数运行时才存在。python是在编译def代码时去静态识别局部变量的。</p>
 
 <p>错误的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">a ＝ 100
+<figure class="highlight"><pre><code class="language-python" data-lang="python">a ＝ 100
 
 ＃你可能想先打印a的值，再对a的值进行修改
 def myfunc():
@@ -341,7 +341,7 @@ def myfunc():
 <p>因为在预编译的时候python发现函数中对a有赋值，因此把a当作局部变量。而运行到‘print a’语句的时候，局部变量a尚未赋值，因此会报错。</p>
 
 <p>正确的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">a ＝ 100
+<figure class="highlight"><pre><code class="language-python" data-lang="python">a ＝ 100
 
 def myfunc():
     global a
@@ -349,7 +349,7 @@ def myfunc():
     a = 200
 </code></pre></figure>
 <p>更隐晦的错误代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">myVar = 1
+<figure class="highlight"><pre><code class="language-python" data-lang="python">myVar = 1
 
 def myfunc():
     myVar += 1
@@ -361,7 +361,7 @@ def myfunc():
 <p>在执行def语句时，默认参数的值只被解析并保存一次。因此在修改可变的默认变量时可能会出现意想不到的效果。</p>
 
 <p>错误的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def saver(x=[]):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def saver(x=[]):
     x.append(1)
     print x
 
@@ -372,7 +372,7 @@ saver() # 打印[1,1,1]
 <p>因为默认参数只被解析并保存一次。因此可变的默认参数在每次函数调用都会保存状态。</p>
 
 <p>正确的代码：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def saver(x=None):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def saver(x=None):
     if x is None: x = []
     x.append(1)
     print x
@@ -380,7 +380,7 @@ saver() # 打印[1,1,1]
 <p>def是python中的可执行语句。默认参数在def的语句环境里被计算。如果你执行了def语句多次，每次它都将会创建一个新的函数对象。</p>
 
 <p>看看stackoverflow的一个例子：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">flist = []
+<figure class="highlight"><pre><code class="language-python" data-lang="python">flist = []
 
 for i in xrange(3):
     def func(x): return x * i
@@ -390,7 +390,7 @@ for f in flist:
     print f(2) ＃expect 0 2 4 but print 4 4 4
 </code></pre></figure>
 <p>我们可以借助默认参数的机制，在执行def时解析默认参数的值：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">flist=[]
+<figure class="highlight"><pre><code class="language-python" data-lang="python">flist=[]
 for i in xrange(3):
     def func(x,i=i): return x*i
     flist.append(func)
@@ -399,7 +399,7 @@ for f in flist:
     print f(2)
 </code></pre></figure>
 <p>默认参数还可以用来做缓存：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def calculate(a, b, c, memo={}):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def calculate(a, b, c, memo={}):
     try:
         value = memo[a, b, c] # return already calculated value
     except KeyError:
@@ -420,7 +420,7 @@ for f in flist:
 <li>People think they know what arguments their method will get, and what arguments they should pass along to super. This is also incorrect.
 先看第二点，比较好理解，代码如下：</li>
 </ul>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">class A(object):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">class A(object):
     def __init__(self):
         print &quot;A&quot;
         super(A, self).__init__()
@@ -449,7 +449,7 @@ print &quot;MRO:&quot;, [x.__name__ for x in E.__mro__]
 E(10)
 </code></pre></figure>
 <p>看着很正确，执行下报错：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
+<figure class="highlight"><pre><code class="language-python" data-lang="python">MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
 E arg= 10
 C arg= 10
 A
@@ -468,7 +468,7 @@ TypeError: __init__() takes exactly 2 arguments (1 given)
 <p>原因是：MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]，A的下一个是D，因此super(A, self)方法调用的是D的<strong>init</strong>方法，D的<strong>init</strong>方法需要一个参数，因此报错了。</p>
 
 <p>再看第一点，如果父类是object的话，不调用super().<strong>init</strong>可能会导致问题，例子如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">class A(object):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">class A(object):
     def __init__(self, *args, **kwargs):
         print &quot;A&quot;
         #super(A, self).__init__(*args, **kwargs) 注释掉
@@ -495,33 +495,38 @@ class E(C,D):
 
 print &quot;MRO:&quot;, [x.__name__ for x in E.__mro__]
 E(10)
+```python
+输出结果：
+
 </code></pre></figure>
-<p>输出结果：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
+<p>MRO: [&#39;E&#39;, &#39;C&#39;, &#39;A&#39;, &#39;D&#39;, &#39;B&#39;, &#39;object&#39;]
 E arg= 10
 C arg= 10
 A
-</code></pre></figure>
-<p>可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.<strong>init</strong>()，会导致其他类（在本例中为D和B）的<strong>init</strong>()不执行。按理来说，调用了类E的super.<strong>init</strong>()函数，应该会同时调用E的父类C和D的<strong>init</strong>()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
+```
+可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.<strong>init</strong>()，会导致其他类（在本例中为D和B）的<strong>init</strong>()不执行。按理来说，调用了类E的super.<strong>init</strong>()函数，应该会同时调用E的父类C和D的<strong>init</strong>()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
 总结：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">* 一定要调用父类为object的类的super.__init__()函数
-* 调用的super()返回不一定是父类，因此super调用最好保持参数一致
-</code></pre></figure>
+
+<ul>
+<li>一定要调用父类为object的类的super.<strong>init</strong>()函数</li>
+<li>调用的super()返回不一定是父类，因此super调用最好保持参数一致</li>
+</ul>
+
 <p>另附一篇也是关于super的文章<a href="http://rhettinger.wordpress.com/2011/05/26/super-considered-super/">Python’s super() considered super!</a></p>
 
 <h3>8. string转换为dict</h3>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">str = ‘{ &quot;key&quot; : null}&#39;
+<figure class="highlight"><pre><code class="language-python" data-lang="python">str = ‘{ &quot;key&quot; : null}&#39;
 mydict = eval(str)
 </code></pre></figure>
 <p>eval 可能会报错，因为 json 的语义跟 Python 的 dict 不完全一样, 如果 json 串里面出现一个 null 就报错了.
 因此合适的方法是采用如下写法：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">json.loads()
+<figure class="highlight"><pre><code class="language-python" data-lang="python">json.loads()
 mydict = json.loads(str)
 </code></pre></figure>
 <h2>高级特性</h2>
 
 <h3>1. 闭包</h3>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def return_func_that_prints_list(z):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def return_func_that_prints_list(z):
     def f():
         print z
     return f
@@ -542,7 +547,7 @@ g()  # print [1, 2, 3]
 <h3>2. wraps</h3>
 
 <p><strong>给decorator加上wraps以保留原有函数的名称和docstring：</strong></p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">from functools import wraps
+<figure class="highlight"><pre><code class="language-python" data-lang="python">from functools import wraps
 def my_decorator(f):
     @wraps(f)
     def wrapper(*args, **kwds):
@@ -565,7 +570,7 @@ example.__doc__  # print &#39;Docstring&#39;
 <h3>3. class decorator</h3>
 
 <p><strong>给类的所有函数添加decorator：</strong></p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def logged(time_format, name_prefix=&quot;&quot;):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def logged(time_format, name_prefix=&quot;&quot;):
     def decorator(func):
         if hasattr(func, &#39;_logged_decorator&#39;) and func._logged_decorator:
             return func
@@ -620,7 +625,7 @@ b.test1()
 b.test2()
 </code></pre></figure>
 <p>输出如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">- Running &#39;B.test1&#39; on Jul 24 2013 - 14:15:03
+<figure class="highlight"><pre><code class="language-python" data-lang="python">- Running &#39;B.test1&#39; on Jul 24 2013 - 14:15:03
 - Running &#39;A.test1&#39; on Jul 24 2013 - 14:15:03
 test1
 - Finished &#39;A.test1&#39;, execution time = 0.000s
@@ -635,7 +640,7 @@ test2
 <ul>
 <li>用法1：Type Checking</li>
 </ul>
-<figure class="highlight"><pre><code class="language-text" data-lang="text"># Descriptor for a type-checked attribute
+<figure class="highlight"><pre><code class="language-python" data-lang="python"># Descriptor for a type-checked attribute
 class Typed:
     def __init__(self, name, expected_type):
         self.name = name
@@ -676,7 +681,7 @@ class Stock:
 <ul>
 <li>用法2：Lazily Computed Properties</li>
 </ul>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">class lazyproperty:
+<figure class="highlight"><pre><code class="language-python" data-lang="python">class lazyproperty:
     def __init__(self, func):
         self.func = func
     def __get__(self, instance, cls):
@@ -707,7 +712,7 @@ class Stock:
    
    <div class="read-more-item">
        <span class="read-more-item-dim">更早的文章</span>
-       <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-note/" title="link to matplotlib 笔记">matplotlib 笔记</a></h2>
+       <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-note/" title="link to Matplotlib 笔记">Matplotlib 笔记</a></h2>
        <p class="excerpt">最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：用Matplotlib生成图表并保存成文件将图片添加为邮件的附件最后通过src=&quot;cid:0&quot;的方式将图片嵌入到邮件正文中这篇文章主要对 Matplotlib 的使用做些总结，包括 Matplotlib 如何配置显示中文字体，折线图／柱状图／圆饼图相关介绍，matplot子图的概念。配置中文字体支持确定系统已有哪些支持中文字体linux下运行 fc-list :lang=zh 命令会输出所...&hellip;</p>
        <div class="post-list__meta"><time datetime="2016-07-04 08:06:35 +0800" class="post-list__meta--date date">2016-07-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/matplot-note/>继续阅读</a></div>
    </div>
@@ -745,7 +750,7 @@ class Stock:
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

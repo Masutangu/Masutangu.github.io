@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 11 Jul 2016 17:09:30 +0800</pubDate>
-    <lastBuildDate>Mon, 11 Jul 2016 17:09:30 +0800</lastBuildDate>
+    <pubDate>Tue, 12 Jul 2016 19:55:13 +0800</pubDate>
+    <lastBuildDate>Tue, 12 Jul 2016 19:55:13 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -28,7 +28,11 @@
 &lt;li&gt;&lt;p&gt;初始化和启动 Master&lt;/p&gt;
 
 &lt;p&gt;启动 Master 很简单，样例代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;rom master.rqextend import RQMasterExtend
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;import os
+os.environ.setdefault(&amp;#39;ELRIC_SETTINGS_MODULE&amp;#39;, &amp;#39;settings&amp;#39;)  # 设置 settings.py
+
+from elric.master.rqextend import RQMasterExtend
+
 rq_Master = RQMasterExtend()
 rq_Master.start()
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
@@ -40,7 +44,7 @@ rq_Master.start()
 &lt;li&gt;&lt;p&gt;初始化和启动 Worker&lt;/p&gt;
 
 &lt;p&gt;Worker 的构造函数稍微复杂一些：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def __init__(self, name, listen_keys=None, Worker_num=2, timezone=None, logger_name=&amp;#39;elric.Worker&amp;#39;)
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def __init__(self, name, listen_keys=None, Worker_num=2, timezone=None, logger_name=&amp;#39;elric.Worker&amp;#39;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;ul&gt;
 &lt;li&gt;name：Worker 的名字，不同用途的 Worker 应该取不同的名字。&lt;/li&gt;
@@ -50,7 +54,11 @@ rq_Master.start()
 &lt;/ul&gt;
 
 &lt;p&gt;启动 Worker 将会开始从监听的任务队列里取任务来执行，初始化和启动 Worker 的样例代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from Worker.rqueue import RQWorker
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;import os
+os.environ.setdefault(&amp;#39;ELRIC_SETTINGS_MODULE&amp;#39;, &amp;#39;settings&amp;#39;)  # 设置 settings.py
+
+from elric.worker.rqueue import RQWorker
+
 rq_Worker = RQWorker(name=&amp;#39;test&amp;#39;, listen_keys=[&amp;#39;job1&amp;#39;, &amp;#39;job2&amp;#39;])
 rq_Worker.start()
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
@@ -58,7 +66,7 @@ rq_Worker.start()
 &lt;li&gt;&lt;p&gt;提交任务&lt;/p&gt;
 
 &lt;p&gt;提交任务的接口如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def submit_job(self, func, job_key, args=None, kwargs=None, trigger=None, job_id=None,
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def submit_job(self, func, job_key, args=None, kwargs=None, trigger=None, job_id=None,
                replace_exist=False, need_filter=False, **trigger_args)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;ul&gt;
@@ -75,7 +83,7 @@ rq_Worker.start()
 &lt;h2&gt;去重&lt;/h2&gt;
 
 &lt;p&gt;Elric 支持任务去重，通常这个特性用于爬虫，比如爬取过的页面无需再次爬取时，可以通过设置 need_filter 为 True 来实现：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;blog_url = &amp;#39;http://masutangu.com/&amp;#39;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;blog_url = &amp;#39;http://masutangu.com/&amp;#39;
 rq_worker = RQWorker(name=&amp;#39;crawler&amp;#39;, listen_keys=[&amp;#39;crawl_blog&amp;#39;, ])
 rq_worker.submit_job(crawl_blog, &amp;#39;crawl_blog&amp;#39;, args=[blog_url], job_id=blog_url)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
@@ -93,8 +101,13 @@ rq_worker.submit_job(crawl_blog, &amp;#39;crawl_blog&amp;#39;, args=[blog_url], 
 &lt;li&gt;LOGGINGF_CONFIG：日志的相关配置。&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;p&gt;配置由环境变量设置，可以在代码中使用&lt;code&gt;os.environ.setdefault(&amp;#39;ELRIC_SETTINGS_MODULE&amp;#39;, &amp;#39;settings&amp;#39;)&lt;/code&gt;，或通过命令行设置环境变量&lt;code&gt;export ELRIC_SETTINGS_MODULE=settings&lt;/code&gt;来指定使用的settings.py，方便管理。&lt;/p&gt;
+
 &lt;h2&gt;样例代码&lt;/h2&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from Worker.rqueue import RQWorker
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;import os
+os.environ.setdefault(&amp;#39;ELRIC_SETTINGS_MODULE&amp;#39;, &amp;#39;settings&amp;#39;)  # 设置 settings.py
+
+from elric.worker.rqueue import RQWorker
 
 def wapper_job():
     print &amp;#39;run first job&amp;#39;
@@ -167,7 +180,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
 &lt;h2&gt;Master的分布式锁&lt;/h2&gt;
 
 &lt;p&gt;为了支持多机器部署Master，在某些操作需要有锁的机制来保证原子性，比如在查询 jobstore 并取出到期任务下发时，简化代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
     # 将任务下发到任务队列
     self._enqueue_job(job_key, serialized_job)
 
@@ -180,7 +193,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
 &lt;p&gt;如果在这个操作没有加锁保证原子性，将有可能下发重复的任务。这里我采用了redis实现的分布式锁来解决这个问题。其原理利用了 redis 的 setnx 命令，详细可以查看这篇文章《&lt;a href=&quot;http://redis.io/topics/distlock&quot;&gt;Distributed locks with Redis&lt;/a&gt;》。&lt;/p&gt;
 
 &lt;p&gt;我把分布式锁封装成 Context Managers 的形式：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class distributed_lock(object):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;class distributed_lock(object):
     def __init__(self, **config):
         self.config = config
         self.dlm = redlock.Redlock([config[&amp;#39;server&amp;#39;], ],
@@ -201,7 +214,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
         self.dlm_lock = None
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;这样就可以使用 with statement 来管理：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
     for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
         # 将任务下发到任务队列
         self._enqueue_job(job_key, serialized_job)
@@ -241,7 +254,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
 &lt;h3&gt;1. 字典和列表&lt;/h3&gt;
 
 &lt;p&gt;Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from time import time
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;from time import time
 t = time()
 list = [&amp;#39;a&amp;#39;,&amp;#39;b&amp;#39;,&amp;#39;is&amp;#39;,&amp;#39;python&amp;#39;,&amp;#39;jason&amp;#39;,&amp;#39;hello&amp;#39;,&amp;#39;hill&amp;#39;,&amp;#39;with&amp;#39;,&amp;#39;phone&amp;#39;,&amp;#39;test&amp;#39;,
 &amp;#39;dfdf&amp;#39;,&amp;#39;apple&amp;#39;,&amp;#39;pddf&amp;#39;,&amp;#39;ind&amp;#39;,&amp;#39;basic&amp;#39;,&amp;#39;none&amp;#39;,&amp;#39;baecr&amp;#39;,&amp;#39;var&amp;#39;,&amp;#39;bana&amp;#39;,&amp;#39;dd&amp;#39;,&amp;#39;wrd&amp;#39;]
@@ -260,7 +273,7 @@ print time()-t
 &lt;h3&gt;2. 集合和列表&lt;/h3&gt;
 
 &lt;p&gt;set 的 union， intersection，difference 操作要比 list 的迭代要快。因此如果涉及到求 list 交集，并集或者差的问题可以转换为 set 来操作。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# 使用list：
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;# 使用list：
 from time import time
 t = time()
 lista=[1,2,3,4,5,6,7,8,9,13,34,53,42,44]
@@ -301,7 +314,7 @@ print time()-t
 &lt;h3&gt;4. 使用列表解析和生成器表达式&lt;/h3&gt;
 
 &lt;p&gt;列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from time import time
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;from time import time
 t = time()
 list = [&amp;#39;a&amp;#39;,&amp;#39;b&amp;#39;,&amp;#39;is&amp;#39;,&amp;#39;python&amp;#39;,&amp;#39;jason&amp;#39;,&amp;#39;hello&amp;#39;,&amp;#39;hill&amp;#39;,&amp;#39;with&amp;#39;,&amp;#39;phone&amp;#39;,&amp;#39;test&amp;#39;,
 &amp;#39;dfdf&amp;#39;,&amp;#39;apple&amp;#39;,&amp;#39;pddf&amp;#39;,&amp;#39;ind&amp;#39;,&amp;#39;basic&amp;#39;,&amp;#39;none&amp;#39;,&amp;#39;baecr&amp;#39;,&amp;#39;var&amp;#39;,&amp;#39;bana&amp;#39;,&amp;#39;dd&amp;#39;,&amp;#39;wrd&amp;#39;]
@@ -336,30 +349,30 @@ for i in range (1000000):
 &lt;h3&gt;1. range的使用&lt;/h3&gt;
 
 &lt;p&gt;不恰当的使用range，容易出bug：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for i range(len(alist)):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for i range(len(alist)):
     print alist[i]
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;正确的做法：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for item in alist:
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for item in alist:
     print item
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;不恰当使用range的理由：&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;p&gt;需要在循环中使用索引：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for index, value in enumerate(alist):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for index, value in enumerate(alist):
     print index, value
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;需要同时迭代两个循环：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for word, number in zip(words, numbers):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for word, number in zip(words, numbers):
     print word, number
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;需要迭代序列的一部分：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for word in words[1:]: # 不包括第一个元素
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for word in words[1:]: # 不包括第一个元素
     print word
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;&lt;strong&gt;range的正确用法是生成一个数字序列，而不是生成索引：&lt;/strong&gt;&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# Print foo(x) for 0&amp;lt;=x&amp;lt;5
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;# Print foo(x) for 0&amp;lt;=x&amp;lt;5
 for x in range(5):
     print foo(x)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
@@ -371,7 +384,7 @@ for x in range(5):
 &lt;li&gt;&lt;p&gt;循环&lt;/p&gt;
 
 &lt;p&gt;错误的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;for idx, value in enumerate(y):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;for idx, value in enumerate(y):
     if value &amp;gt; max_value:
         break
 
@@ -380,7 +393,7 @@ processList(y, idx)
 &lt;p&gt;当y为空，processList将会抛出异常，原因是idx没有定义。&lt;/p&gt;
 
 &lt;p&gt;正确的处理方式：&lt;strong&gt;哨兵模式&lt;/strong&gt;，在循环前为idx设置一些特殊的值。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;idx ＝ None
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;idx ＝ None
 for idx, value in enumerate(y):
     if value &amp;gt; max_value:
         break
@@ -391,7 +404,7 @@ if idex:
 &lt;li&gt;&lt;p&gt;外作用域&lt;/p&gt;
 
 &lt;p&gt;错误的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;import sys
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;import sys
 
 # See the bug in the function declaration?
 def print_file(filenam):
@@ -412,7 +425,7 @@ if __name__ == &amp;quot;__main__&amp;quot;:
 &lt;h3&gt;3. 循环的数据结构导致循环&lt;/h3&gt;
 
 &lt;p&gt;如果在一个对象中发现一个循环，python会输出一个[...]。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;mylist ＝ ［&amp;#39;test&amp;#39;]
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;mylist ＝ ［&amp;#39;test&amp;#39;]
 mylist.append(mylist)
 #此时会打印[&amp;#39;test&amp;#39;,[...]]
 print mylist
@@ -420,7 +433,7 @@ print mylist
 &lt;h3&gt;4. 赋值创建引用&lt;/h3&gt;
 
 &lt;p&gt;python中赋值语句不会创建对象副本,只会创建引用：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;arr = [1, 2, 3, 4]
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;arr = [1, 2, 3, 4]
 arr_cp = arr
 arr_cp[0] = 100
 #print打印出[100, 2, 3, 4]
@@ -431,7 +444,7 @@ print arr
 &lt;p&gt;python默认将一个在函数中赋值的变量名视为局部变量，存在于该函数的作用域并当函数运行时才存在。python是在编译def代码时去静态识别局部变量的。&lt;/p&gt;
 
 &lt;p&gt;错误的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;a ＝ 100
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;a ＝ 100
 
 ＃你可能想先打印a的值，再对a的值进行修改
 def myfunc():
@@ -441,7 +454,7 @@ def myfunc():
 &lt;p&gt;因为在预编译的时候python发现函数中对a有赋值，因此把a当作局部变量。而运行到‘print a’语句的时候，局部变量a尚未赋值，因此会报错。&lt;/p&gt;
 
 &lt;p&gt;正确的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;a ＝ 100
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;a ＝ 100
 
 def myfunc():
     global a
@@ -449,7 +462,7 @@ def myfunc():
     a = 200
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;更隐晦的错误代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;myVar = 1
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;myVar = 1
 
 def myfunc():
     myVar += 1
@@ -461,7 +474,7 @@ def myfunc():
 &lt;p&gt;在执行def语句时，默认参数的值只被解析并保存一次。因此在修改可变的默认变量时可能会出现意想不到的效果。&lt;/p&gt;
 
 &lt;p&gt;错误的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def saver(x=[]):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def saver(x=[]):
     x.append(1)
     print x
 
@@ -472,7 +485,7 @@ saver() # 打印[1,1,1]
 &lt;p&gt;因为默认参数只被解析并保存一次。因此可变的默认参数在每次函数调用都会保存状态。&lt;/p&gt;
 
 &lt;p&gt;正确的代码：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def saver(x=None):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def saver(x=None):
     if x is None: x = []
     x.append(1)
     print x
@@ -480,7 +493,7 @@ saver() # 打印[1,1,1]
 &lt;p&gt;def是python中的可执行语句。默认参数在def的语句环境里被计算。如果你执行了def语句多次，每次它都将会创建一个新的函数对象。&lt;/p&gt;
 
 &lt;p&gt;看看stackoverflow的一个例子：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;flist = []
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;flist = []
 
 for i in xrange(3):
     def func(x): return x * i
@@ -490,7 +503,7 @@ for f in flist:
     print f(2) ＃expect 0 2 4 but print 4 4 4
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;我们可以借助默认参数的机制，在执行def时解析默认参数的值：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;flist=[]
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;flist=[]
 for i in xrange(3):
     def func(x,i=i): return x*i
     flist.append(func)
@@ -499,7 +512,7 @@ for f in flist:
     print f(2)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;默认参数还可以用来做缓存：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def calculate(a, b, c, memo={}):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def calculate(a, b, c, memo={}):
     try:
         value = memo[a, b, c] # return already calculated value
     except KeyError:
@@ -520,7 +533,7 @@ for f in flist:
 &lt;li&gt;People think they know what arguments their method will get, and what arguments they should pass along to super. This is also incorrect.
 先看第二点，比较好理解，代码如下：&lt;/li&gt;
 &lt;/ul&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class A(object):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;class A(object):
     def __init__(self):
         print &amp;quot;A&amp;quot;
         super(A, self).__init__()
@@ -549,7 +562,7 @@ print &amp;quot;MRO:&amp;quot;, [x.__name__ for x in E.__mro__]
 E(10)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;看着很正确，执行下报错：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
 E arg= 10
 C arg= 10
 A
@@ -568,7 +581,7 @@ TypeError: __init__() takes exactly 2 arguments (1 given)
 &lt;p&gt;原因是：MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]，A的下一个是D，因此super(A, self)方法调用的是D的&lt;strong&gt;init&lt;/strong&gt;方法，D的&lt;strong&gt;init&lt;/strong&gt;方法需要一个参数，因此报错了。&lt;/p&gt;
 
 &lt;p&gt;再看第一点，如果父类是object的话，不调用super().&lt;strong&gt;init&lt;/strong&gt;可能会导致问题，例子如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class A(object):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;class A(object):
     def __init__(self, *args, **kwargs):
         print &amp;quot;A&amp;quot;
         #super(A, self).__init__(*args, **kwargs) 注释掉
@@ -595,33 +608,38 @@ class E(C,D):
 
 print &amp;quot;MRO:&amp;quot;, [x.__name__ for x in E.__mro__]
 E(10)
+```python
+输出结果：
+
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
+&lt;p&gt;MRO: [&amp;#39;E&amp;#39;, &amp;#39;C&amp;#39;, &amp;#39;A&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;B&amp;#39;, &amp;#39;object&amp;#39;]
 E arg= 10
 C arg= 10
 A
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.&lt;strong&gt;init&lt;/strong&gt;()，会导致其他类（在本例中为D和B）的&lt;strong&gt;init&lt;/strong&gt;()不执行。按理来说，调用了类E的super.&lt;strong&gt;init&lt;/strong&gt;()函数，应该会同时调用E的父类C和D的&lt;strong&gt;init&lt;/strong&gt;()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
+```
+可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.&lt;strong&gt;init&lt;/strong&gt;()，会导致其他类（在本例中为D和B）的&lt;strong&gt;init&lt;/strong&gt;()不执行。按理来说，调用了类E的super.&lt;strong&gt;init&lt;/strong&gt;()函数，应该会同时调用E的父类C和D的&lt;strong&gt;init&lt;/strong&gt;()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
 总结：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;* 一定要调用父类为object的类的super.__init__()函数
-* 调用的super()返回不一定是父类，因此super调用最好保持参数一致
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+&lt;li&gt;一定要调用父类为object的类的super.&lt;strong&gt;init&lt;/strong&gt;()函数&lt;/li&gt;
+&lt;li&gt;调用的super()返回不一定是父类，因此super调用最好保持参数一致&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;p&gt;另附一篇也是关于super的文章&lt;a href=&quot;http://rhettinger.wordpress.com/2011/05/26/super-considered-super/&quot;&gt;Python’s super() considered super!&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3&gt;8. string转换为dict&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;str = ‘{ &amp;quot;key&amp;quot; : null}&amp;#39;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;str = ‘{ &amp;quot;key&amp;quot; : null}&amp;#39;
 mydict = eval(str)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;eval 可能会报错，因为 json 的语义跟 Python 的 dict 不完全一样, 如果 json 串里面出现一个 null 就报错了.
 因此合适的方法是采用如下写法：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;json.loads()
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;json.loads()
 mydict = json.loads(str)
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h2&gt;高级特性&lt;/h2&gt;
 
 &lt;h3&gt;1. 闭包&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def return_func_that_prints_list(z):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def return_func_that_prints_list(z):
     def f():
         print z
     return f
@@ -642,7 +660,7 @@ g()  # print [1, 2, 3]
 &lt;h3&gt;2. wraps&lt;/h3&gt;
 
 &lt;p&gt;&lt;strong&gt;给decorator加上wraps以保留原有函数的名称和docstring：&lt;/strong&gt;&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from functools import wraps
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;from functools import wraps
 def my_decorator(f):
     @wraps(f)
     def wrapper(*args, **kwds):
@@ -665,7 +683,7 @@ example.__doc__  # print &amp;#39;Docstring&amp;#39;
 &lt;h3&gt;3. class decorator&lt;/h3&gt;
 
 &lt;p&gt;&lt;strong&gt;给类的所有函数添加decorator：&lt;/strong&gt;&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;def logged(time_format, name_prefix=&amp;quot;&amp;quot;):
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;def logged(time_format, name_prefix=&amp;quot;&amp;quot;):
     def decorator(func):
         if hasattr(func, &amp;#39;_logged_decorator&amp;#39;) and func._logged_decorator:
             return func
@@ -720,7 +738,7 @@ b.test1()
 b.test2()
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;输出如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;- Running &amp;#39;B.test1&amp;#39; on Jul 24 2013 - 14:15:03
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;- Running &amp;#39;B.test1&amp;#39; on Jul 24 2013 - 14:15:03
 - Running &amp;#39;A.test1&amp;#39; on Jul 24 2013 - 14:15:03
 test1
 - Finished &amp;#39;A.test1&amp;#39;, execution time = 0.000s
@@ -735,7 +753,7 @@ test2
 &lt;ul&gt;
 &lt;li&gt;用法1：Type Checking&lt;/li&gt;
 &lt;/ul&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;# Descriptor for a type-checked attribute
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;# Descriptor for a type-checked attribute
 class Typed:
     def __init__(self, name, expected_type):
         self.name = name
@@ -776,7 +794,7 @@ class Stock:
 &lt;ul&gt;
 &lt;li&gt;用法2：Lazily Computed Properties&lt;/li&gt;
 &lt;/ul&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;class lazyproperty:
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;class lazyproperty:
     def __init__(self, func):
         self.func = func
     def __get__(self, instance, cls):
@@ -799,7 +817,7 @@ class Stock:
       </item>
     
       <item>
-        <title>matplotlib 笔记</title>
+        <title>Matplotlib 笔记</title>
         <description>&lt;p&gt;最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：&lt;/p&gt;
 
 &lt;ul&gt;
@@ -830,7 +848,7 @@ class Stock:
 &lt;li&gt;  删除 &lt;code&gt;~/.cache/matplotlib&lt;/code&gt; 缓存目录&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;修改python代码，指定使用中文字体&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    from matplotlib import rcParams
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;    from matplotlib import rcParams
     rcParams[&amp;#39;font.sans-serif&amp;#39;] = [&amp;#39;Microsoft YaHei&amp;#39;]  
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -999,9 +1017,9 @@ plt.subplot(2, 2, 4)  # 按照两行两列划分，使用第四个子图，即�
 
 &lt;ul&gt;
 &lt;li&gt;&lt;p&gt;代码&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;plt.subplot(2, 2, 1)  # 按照两行一列划分，使用第一个子图，即为第一行
-plt.subplot(2, 2, 2)  # 按照两行两列划分，使用第三个子图，即为四个网格的第三个（左下）
-plt.subplot(2, 1, 2)  # 按照两行两列划分，使用第四个子图，即为四个网格的第四个（右下）
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;plt.subplot(2, 2, 1)  # 按照两行两列划分，使用第一个子图，即为四个网格的第一个（左上）
+plt.subplot(2, 2, 2)  # 按照两行两列划分，使用第三个子图，即为四个网格的第二个（右上）
+plt.subplot(2, 1, 2)  # 按照两行一列划分，使用第二个子图，即为第二行
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;图例&lt;/p&gt;
 
@@ -1069,7 +1087,7 @@ plt.subplot(2, 1, 2)  # 按照两行两列划分，使用第四个子图，即�
 &lt;/ol&gt;
 
 &lt;h1&gt;源码细节&lt;/h1&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;struct session_st {
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-C++&quot; data-lang=&quot;C++&quot;&gt;struct session_st {
     uint32_t virtual_next_sequence; //下个要发送的segment的ack sequence number
     uint32_t virtual_ack; //收到segment的ack sequence number
     uint16_t virtual_status; //当前状态：Client Fin, Server Fin, SYN_CONFIRM, SYN_SENT
@@ -1092,9 +1110,9 @@ int main(int argc ,char **argv)
     send_init();
     while(1)
     {
-      //在链路层捕获到客户端请求包或压测机器的回包时，由process函数处理
-      int recv_len = recvfrom(sock,recvbuf,2000,0,NULL,NULL);
-      process(recvbuf,recv_len);
+        //在链路层捕获到客户端请求包或压测机器的回包时，由process函数处理
+        int recv_len = recvfrom(sock,recvbuf,2000,0,NULL,NULL);
+        process(recvbuf,recv_len);
     }
     return 0;
 }
@@ -1105,13 +1123,13 @@ void process(char *packet,int len)
     ...
     //判断以太网报文的类型是不是IP
     if(ntohs(ether-&amp;gt;type) != 0x800){
-      return;
+        return;
     }
     ip_header = (struct iphdr*)(packet+sizeof(struct etharp_frame ) );
     //判断是不是TCP
     if(ip_header-&amp;gt;protocol != IPPROTO_TCP)
     {
-      return ;
+        return ;
     }
 
     size_ip = ip_header-&amp;gt;ihl*4; //获取ip头部的大小
@@ -1128,7 +1146,7 @@ void process(char *packet,int len)
             iter-&amp;gt;second.update_virtual_status(ip_header,tcp_header);
             if( iter-&amp;gt;second.is_over())
             {
-              sessions.erase(iter);
+                sessions.erase(iter);
             }
         }
     }
@@ -1137,7 +1155,7 @@ void process(char *packet,int len)
         //如果是客户端请求包，由process_recv函数处理
         if(tcp_header-&amp;gt;syn)
         {
-          sessions[get_ip_port_value(ip_header-&amp;gt;saddr,tcp_header-&amp;gt;source)].process_recv(ip_header,tcp_header);
+            sessions[get_ip_port_value(ip_header-&amp;gt;saddr,tcp_header-&amp;gt;source)].process_recv(ip_header,tcp_header);
         }
         else
         {
@@ -1171,10 +1189,10 @@ void session_st::update_virtual_status(struct iphdr *ip_header,struct tcphdr* tc
         //如果缓存队列有未发送的包，则转发到压测机器
         while(! unsend.empty())
         {
-          unsigned char *data = unsend.front();
-          send_ip_package(data, virtual_next_sequence);
-          free(data);
-          unsend.pop_front();
+            unsigned char *data = unsend.front();
+            send_ip_package(data, virtual_next_sequence);
+            free(data);
+            unsend.pop_front();
         }
         return;
     }
@@ -1231,8 +1249,8 @@ void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
     //syn包
     if(tcp_header-&amp;gt;syn)
     {
-      send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
-      return;
+        send_ip_package((unsigned char *)ip_header,virtual_next_sequence);
+        return;
     }
     //fin包
     if(tcp_header-&amp;gt;fin)
@@ -1426,9 +1444,8 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
       <item>
         <title>Python 进程池的坑：Pickling Error!</title>
         <description>&lt;p&gt;前阵子在跑&lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：&lt;/p&gt;
-
-&lt;p&gt;File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute lookup thread.lock failed&lt;/p&gt;
-
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &amp;lt;type ‘thread.lock’&amp;gt;: attribute lookup thread.lock failed
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h1&gt;解决思路&lt;/h1&gt;
 
 &lt;p&gt;接下来就是艰辛的定位问题之旅：&lt;/p&gt;

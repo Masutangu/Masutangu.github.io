@@ -19,8 +19,13 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 
     启动 Master 很简单，样例代码如下：
 
-    ```
-    rom master.rqextend import RQMasterExtend
+    ```python
+    import os
+    os.environ.setdefault('ELRIC_SETTINGS_MODULE', 'settings')  # 设置 settings.py
+
+    from elric.master.rqextend import RQMasterExtend
+
+
     rq_Master = RQMasterExtend()
     rq_Master.start()
     ```
@@ -30,7 +35,7 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 
     Worker 的构造函数稍微复杂一些：
 
-    ```
+    ```python
     def __init__(self, name, listen_keys=None, Worker_num=2, timezone=None, logger_name='elric.Worker')
     ```
  * name：Worker 的名字，不同用途的 Worker 应该取不同的名字。
@@ -40,8 +45,13 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 
     启动 Worker 将会开始从监听的任务队列里取任务来执行，初始化和启动 Worker 的样例代码如下：
 
-    ```
-    from Worker.rqueue import RQWorker
+    ```python
+    import os
+    os.environ.setdefault('ELRIC_SETTINGS_MODULE', 'settings')  # 设置 settings.py
+
+    from elric.worker.rqueue import RQWorker
+
+
     rq_Worker = RQWorker(name='test', listen_keys=['job1', 'job2'])
     rq_Worker.start()
     ```
@@ -51,7 +61,7 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 
     提交任务的接口如下：
 
-    ```   
+    ```python
     def submit_job(self, func, job_key, args=None, kwargs=None, trigger=None, job_id=None,
                    replace_exist=False, need_filter=False, **trigger_args)
     ```
@@ -66,7 +76,7 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 ## 去重
 Elric 支持任务去重，通常这个特性用于爬虫，比如爬取过的页面无需再次爬取时，可以通过设置 need_filter 为 True 来实现：
 
-```
+```python
 blog_url = 'http://masutangu.com/'
 rq_worker = RQWorker(name='crawler', listen_keys=['crawl_blog', ])
 rq_worker.submit_job(crawl_blog, 'crawl_blog', args=[blog_url], job_id=blog_url)
@@ -82,10 +92,18 @@ rq_worker.submit_job(crawl_blog, 'crawl_blog', args=[blog_url], job_id=blog_url)
  * JOB_STORE_CONFIG：任务存储的相关配置。
  * LOGGINGF_CONFIG：日志的相关配置。
 
+ 配置由环境变量设置，可以在代码中使用```os.environ.setdefault('ELRIC_SETTINGS_MODULE', 'settings')```，或通过命令行设置环境变量```export ELRIC_SETTINGS_MODULE=settings```来指定使用的settings.py，方便管理。
+ 
+
+
+
 ## 样例代码
     
-```
-from Worker.rqueue import RQWorker
+```python
+import os
+os.environ.setdefault('ELRIC_SETTINGS_MODULE', 'settings')  # 设置 settings.py
+
+from elric.worker.rqueue import RQWorker
 
 def wapper_job():
     print 'run first job'
@@ -155,7 +173,7 @@ Elric 架构图如下：
 ## Master的分布式锁
 为了支持多机器部署Master，在某些操作需要有锁的机制来保证原子性，比如在查询 jobstore 并取出到期任务下发时，简化代码如下：
 
-```
+```python
 for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
     # 将任务下发到任务队列
     self._enqueue_job(job_key, serialized_job)
@@ -170,7 +188,7 @@ for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
 
 我把分布式锁封装成 Context Managers 的形式：
 
-```
+```python
 class distributed_lock(object):
     def __init__(self, **config):
         self.config = config
@@ -193,7 +211,7 @@ class distributed_lock(object):
 ```
 这样就可以使用 with statement 来管理：
 
-```
+```python
 with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
     for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
         # 将任务下发到任务队列

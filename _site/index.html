@@ -142,7 +142,7 @@
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-note/" title="访问 matplotlib 笔记">matplotlib 笔记</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-note/" title="访问 Matplotlib 笔记">Matplotlib 笔记</a></h2>
       <p class="excerpt">最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：用Matplotlib生成图表并保存成文件将图片添加为邮件的附件最后通过src=&quot;cid:0&quot;的方式将图片嵌入到邮件正文中这篇文章主要对 Matplotlib 的使用做些总结，包括 Matplotlib 如何配置显示中文字体，折线图／柱状图／圆饼图相关介绍，matplot子图的概念。配置中文字体支持确定系统已有哪些支持中文字体linux下运行 fc-list :lang=zh 命令会输出所...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-07-04 08:06:35 +0800" class="post-list__meta--date date">2016-07-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/matplot-note/>继续阅读</a></div>
       <hr class="post-list__divider" />
@@ -164,7 +164,7 @@
     
     <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/04/python-pickling-error/" title="访问 Python 进程池的坑：Pickling Error!">Python 进程池的坑：Pickling Error!</a></h2>
-      <p class="excerpt">前阵子在跑Elric下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle : attribute lookup thread.lock failed...&hellip;</p>
+      <p class="excerpt">前阵子在跑Elric下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-04-15 16:07:58 +0800" class="post-list__meta--date date">2016-04-15</time> &#8226; <span class="post-list__meta--tags tags">编程语言</span><a class="btn-border-small" href=/2016/04/python-pickling-error/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
@@ -215,7 +215,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

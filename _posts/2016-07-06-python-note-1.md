@@ -14,7 +14,7 @@ category: 编程语言
 
 Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。
 
-```
+```python
 from time import time
 t = time()
 list = ['a','b','is','python','jason','hello','hill','with','phone','test',
@@ -34,7 +34,7 @@ print time()-t
 ### 2. 集合和列表
 set 的 union， intersection，difference 操作要比 list 的迭代要快。因此如果涉及到求 list 交集，并集或者差的问题可以转换为 set 来操作。
 
-```
+```python
 # 使用list：
 from time import time
 t = time()
@@ -74,7 +74,7 @@ print time()-t
 ### 4. 使用列表解析和生成器表达式
 列表解析要比在循环中重新构建一个新的 list 更为高效，因此我们可以利用这一特性来提高运行的效率。
 
-```
+```python
 from time import time
 t = time()
 list = ['a','b','is','python','jason','hello','hill','with','phone','test',
@@ -107,14 +107,14 @@ for i in range (1000000):
 
 不恰当的使用range，容易出bug：
 
-```
+```python
 for i range(len(alist)):
     print alist[i]
 ```
 
 正确的做法：
 
-```
+```python
 for item in alist:
     print item
 ```
@@ -123,25 +123,25 @@ for item in alist:
 
 * 需要在循环中使用索引：
 
-    ```
+    ```python
     for index, value in enumerate(alist):
         print index, value
     ```
 * 需要同时迭代两个循环：
 
-    ```
+    ```python
     for word, number in zip(words, numbers):
         print word, number
     ```
 * 需要迭代序列的一部分：
 
-    ```
+    ```python
     for word in words[1:]: # 不包括第一个元素
         print word
     ```
 **range的正确用法是生成一个数字序列，而不是生成索引：**
 
-    ```
+    ```python
     # Print foo(x) for 0<=x<5
     for x in range(5):
         print foo(x)
@@ -152,7 +152,7 @@ for item in alist:
 
     错误的代码：
 
-    ```
+    ```python
     for idx, value in enumerate(y):
         if value > max_value:
             break
@@ -163,7 +163,7 @@ for item in alist:
 
     正确的处理方式：**哨兵模式**，在循环前为idx设置一些特殊的值。
 
-    ```
+    ```python
     idx ＝ None
     for idx, value in enumerate(y):
         if value > max_value:
@@ -176,7 +176,7 @@ for item in alist:
 
     错误的代码：
 
-    ```
+    ```python
     import sys
 
     # See the bug in the function declaration?
@@ -198,7 +198,7 @@ for item in alist:
 
 如果在一个对象中发现一个循环，python会输出一个[...]。
 
-```
+```python
 mylist ＝ ［'test']
 mylist.append(mylist)
 #此时会打印['test',[...]]
@@ -209,7 +209,7 @@ print mylist
 
 python中赋值语句不会创建对象副本,只会创建引用：
 
-```
+```python
 arr = [1, 2, 3, 4]
 arr_cp = arr
 arr_cp[0] = 100
@@ -223,7 +223,7 @@ python默认将一个在函数中赋值的变量名视为局部变量，存在�
 
 错误的代码：
 
-```
+```python
 a ＝ 100
 
 ＃你可能想先打印a的值，再对a的值进行修改
@@ -236,7 +236,7 @@ def myfunc():
 
 正确的代码：
 
-```
+```python
 a ＝ 100
 
 def myfunc():
@@ -246,7 +246,7 @@ def myfunc():
 ```
 更隐晦的错误代码：
 
-```
+```python
 myVar = 1
 
 def myfunc():
@@ -260,7 +260,7 @@ def myfunc():
 
 错误的代码：
 
-```
+```python
 def saver(x=[]):
     x.append(1)
     print x
@@ -273,7 +273,7 @@ saver() # 打印[1,1,1]
 
 正确的代码：
 
-```
+```python
 def saver(x=None):
     if x is None: x = []
     x.append(1)
@@ -284,7 +284,7 @@ def是python中的可执行语句。默认参数在def的语句环境里被计�
 
 看看stackoverflow的一个例子：
 
-```
+```python
 flist = []
 
 for i in xrange(3):
@@ -297,7 +297,7 @@ for f in flist:
 
 我们可以借助默认参数的机制，在执行def时解析默认参数的值：
 
-```
+```python
 flist=[]
 for i in xrange(3):
     def func(x,i=i): return x*i
@@ -309,7 +309,7 @@ for f in flist:
 
 默认参数还可以用来做缓存：
 
-```
+```python
 def calculate(a, b, c, memo={}):
     try:
         value = memo[a, b, c] # return already calculated value
@@ -331,7 +331,7 @@ def calculate(a, b, c, memo={}):
 * People think they know what arguments their method will get, and what arguments they should pass along to super. This is also incorrect.
 先看第二点，比较好理解，代码如下：
 
-```
+```python
 class A(object):
     def __init__(self):
         print "A"
@@ -362,7 +362,7 @@ E(10)
 ```
 看着很正确，执行下报错：
 
-```
+```python
 MRO: ['E', 'C', 'A', 'D', 'B', 'object']
 E arg= 10
 C arg= 10
@@ -384,7 +384,7 @@ TypeError: __init__() takes exactly 2 arguments (1 given)
 
 再看第一点，如果父类是object的话，不调用super().__init__可能会导致问题，例子如下：
 
-```
+```python
 class A(object):
     def __init__(self, *args, **kwargs):
         print "A"
@@ -412,7 +412,7 @@ class E(C,D):
 
 print "MRO:", [x.__name__ for x in E.__mro__]
 E(10)
-```
+```python
 输出结果：
 
 ```
@@ -424,21 +424,21 @@ A
 可以发现D和B都没有输出，也就是说如果没有调用父类为object类的super.__init__()，会导致其他类（在本例中为D和B）的__init__()不执行。按理来说，调用了类E的super.__init__()函数，应该会同时调用E的父类C和D的__init__()函数。但是由于MRO是以super()调用来驱动的，上诉例子中，执行到A时，由于没有调用super的init()函数了，因此整个链路就停了。
 总结：
 
-    * 一定要调用父类为object的类的super.__init__()函数
-    * 调用的super()返回不一定是父类，因此super调用最好保持参数一致
+* 一定要调用父类为object的类的super.__init__()函数
+* 调用的super()返回不一定是父类，因此super调用最好保持参数一致
 
 另附一篇也是关于super的文章[Python’s super() considered super!](http://rhettinger.wordpress.com/2011/05/26/super-considered-super/)
 
 ### 8. string转换为dict
 
-```
+```python
 str = ‘{ "key" : null}'
 mydict = eval(str)
 ```
 eval 可能会报错，因为 json 的语义跟 Python 的 dict 不完全一样, 如果 json 串里面出现一个 null 就报错了.
 因此合适的方法是采用如下写法：
 
-```
+```python
 json.loads()
 mydict = json.loads(str)
 ```
@@ -447,7 +447,7 @@ mydict = json.loads(str)
 
 ### 1. 闭包
 
-```
+```python
 def return_func_that_prints_list(z):
     def f():
         print z
@@ -471,7 +471,7 @@ g()  # print [1, 2, 3]
 
 **给decorator加上wraps以保留原有函数的名称和docstring：**
 
-```
+```python
 from functools import wraps
 def my_decorator(f):
     @wraps(f)
@@ -497,7 +497,7 @@ example.__doc__  # print 'Docstring'
 
 **给类的所有函数添加decorator：**
 
-```
+```python
 def logged(time_format, name_prefix=""):
     def decorator(func):
         if hasattr(func, '_logged_decorator') and func._logged_decorator:
@@ -555,7 +555,7 @@ b.test2()
 
 输出如下：
 
-```
+```python
 - Running 'B.test1' on Jul 24 2013 - 14:15:03
 - Running 'A.test1' on Jul 24 2013 - 14:15:03
 test1
@@ -571,7 +571,7 @@ test2
 
 * 用法1：Type Checking
 
-```
+```python
 # Descriptor for a type-checked attribute
 class Typed:
     def __init__(self, name, expected_type):
@@ -612,7 +612,7 @@ Finally, it should be stressed that you would probably not write a descriptor if
 
 * 用法2：Lazily Computed Properties
 
-```
+```python
 class lazyproperty:
     def __init__(self, func):
         self.func = func

@@ -149,7 +149,11 @@
 <li><p>初始化和启动 Master</p>
 
 <p>启动 Master 很简单，样例代码如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">rom master.rqextend import RQMasterExtend
+<figure class="highlight"><pre><code class="language-python" data-lang="python">import os
+os.environ.setdefault(&#39;ELRIC_SETTINGS_MODULE&#39;, &#39;settings&#39;)  # 设置 settings.py
+
+from elric.master.rqextend import RQMasterExtend
+
 rq_Master = RQMasterExtend()
 rq_Master.start()
 </code></pre></figure></li>
@@ -161,7 +165,7 @@ rq_Master.start()
 <li><p>初始化和启动 Worker</p>
 
 <p>Worker 的构造函数稍微复杂一些：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def __init__(self, name, listen_keys=None, Worker_num=2, timezone=None, logger_name=&#39;elric.Worker&#39;)
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def __init__(self, name, listen_keys=None, Worker_num=2, timezone=None, logger_name=&#39;elric.Worker&#39;)
 </code></pre></figure>
 <ul>
 <li>name：Worker 的名字，不同用途的 Worker 应该取不同的名字。</li>
@@ -171,7 +175,11 @@ rq_Master.start()
 </ul>
 
 <p>启动 Worker 将会开始从监听的任务队列里取任务来执行，初始化和启动 Worker 的样例代码如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">from Worker.rqueue import RQWorker
+<figure class="highlight"><pre><code class="language-python" data-lang="python">import os
+os.environ.setdefault(&#39;ELRIC_SETTINGS_MODULE&#39;, &#39;settings&#39;)  # 设置 settings.py
+
+from elric.worker.rqueue import RQWorker
+
 rq_Worker = RQWorker(name=&#39;test&#39;, listen_keys=[&#39;job1&#39;, &#39;job2&#39;])
 rq_Worker.start()
 </code></pre></figure>
@@ -179,7 +187,7 @@ rq_Worker.start()
 <li><p>提交任务</p>
 
 <p>提交任务的接口如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">def submit_job(self, func, job_key, args=None, kwargs=None, trigger=None, job_id=None,
+<figure class="highlight"><pre><code class="language-python" data-lang="python">def submit_job(self, func, job_key, args=None, kwargs=None, trigger=None, job_id=None,
                replace_exist=False, need_filter=False, **trigger_args)
 </code></pre></figure>
 <ul>
@@ -196,7 +204,7 @@ rq_Worker.start()
 <h2>去重</h2>
 
 <p>Elric 支持任务去重，通常这个特性用于爬虫，比如爬取过的页面无需再次爬取时，可以通过设置 need_filter 为 True 来实现：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">blog_url = &#39;http://masutangu.com/&#39;
+<figure class="highlight"><pre><code class="language-python" data-lang="python">blog_url = &#39;http://masutangu.com/&#39;
 rq_worker = RQWorker(name=&#39;crawler&#39;, listen_keys=[&#39;crawl_blog&#39;, ])
 rq_worker.submit_job(crawl_blog, &#39;crawl_blog&#39;, args=[blog_url], job_id=blog_url)
 </code></pre></figure>
@@ -214,8 +222,13 @@ rq_worker.submit_job(crawl_blog, &#39;crawl_blog&#39;, args=[blog_url], job_id=b
 <li>LOGGINGF_CONFIG：日志的相关配置。</li>
 </ul>
 
+<p>配置由环境变量设置，可以在代码中使用<code>os.environ.setdefault(&#39;ELRIC_SETTINGS_MODULE&#39;, &#39;settings&#39;)</code>，或通过命令行设置环境变量<code>export ELRIC_SETTINGS_MODULE=settings</code>来指定使用的settings.py，方便管理。</p>
+
 <h2>样例代码</h2>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">from Worker.rqueue import RQWorker
+<figure class="highlight"><pre><code class="language-python" data-lang="python">import os
+os.environ.setdefault(&#39;ELRIC_SETTINGS_MODULE&#39;, &#39;settings&#39;)  # 设置 settings.py
+
+from elric.worker.rqueue import RQWorker
 
 def wapper_job():
     print &#39;run first job&#39;
@@ -288,7 +301,7 @@ if __name__ == &#39;__main__&#39;:
 <h2>Master的分布式锁</h2>
 
 <p>为了支持多机器部署Master，在某些操作需要有锁的机制来保证原子性，比如在查询 jobstore 并取出到期任务下发时，简化代码如下：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
     # 将任务下发到任务队列
     self._enqueue_job(job_key, serialized_job)
 
@@ -301,7 +314,7 @@ if __name__ == &#39;__main__&#39;:
 <p>如果在这个操作没有加锁保证原子性，将有可能下发重复的任务。这里我采用了redis实现的分布式锁来解决这个问题。其原理利用了 redis 的 setnx 命令，详细可以查看这篇文章《<a href="http://redis.io/topics/distlock">Distributed locks with Redis</a>》。</p>
 
 <p>我把分布式锁封装成 Context Managers 的形式：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">class distributed_lock(object):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">class distributed_lock(object):
     def __init__(self, **config):
         self.config = config
         self.dlm = redlock.Redlock([config[&#39;server&#39;], ],
@@ -322,7 +335,7 @@ if __name__ == &#39;__main__&#39;:
         self.dlm_lock = None
 </code></pre></figure>
 <p>这样就可以使用 with statement 来管理：</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
+<figure class="highlight"><pre><code class="language-python" data-lang="python">with distributed_lock(**DISTRIBUTED_LOCK_CONFIG):
     for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
         # 将任务下发到任务队列
         self._enqueue_job(job_key, serialized_job)
@@ -390,7 +403,7 @@ if __name__ == &#39;__main__&#39;:
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

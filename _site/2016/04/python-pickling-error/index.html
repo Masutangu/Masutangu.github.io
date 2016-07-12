@@ -133,9 +133,8 @@
 
   <section class="post">
     <p>前阵子在跑<a href="https://github.com/Masutangu/Elric">Elric</a>下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：</p>
-
-<p>File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle <type ‘thread.lock’>: attribute lookup thread.lock failed</p>
-
+<figure class="highlight"><pre><code class="language-text" data-lang="text">File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute lookup thread.lock failed
+</code></pre></figure>
 <h1>解决思路</h1>
 
 <p>接下来就是艰辛的定位问题之旅：</p>
@@ -222,7 +221,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

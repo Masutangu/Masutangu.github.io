@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2016-07-04T08:06:35+08:00
-title: matplotlib 笔记
+title: Matplotlib 笔记
 category: 工作
 ---
 
@@ -29,7 +29,7 @@ category: 工作
 
 * 修改python代码，指定使用中文字体
 
-    ```
+    ```python
         from matplotlib import rcParams
         rcParams['font.sans-serif'] = ['Microsoft YaHei']  
     ``` 

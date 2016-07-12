@@ -6,16 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>matplotlib 笔记</title>
+  <title>Matplotlib 笔记</title>
   <meta name="description" content="最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="matplotlib 笔记">
+  <meta name="twitter:title" content="Matplotlib 笔记">
   <meta name="twitter:description" content="最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="matplotlib 笔记">
+  <meta property="og:title" content="Matplotlib 笔记">
   <meta property="og:description" content="最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
@@ -128,7 +128,7 @@
     <div class="post-meta">
       <time datetime="2016-07-04 08:06:35 +0800" itemprop="datePublished" class="post-meta__date date">2016-07-04</time> &#8226; <span class="post-meta__tags tags">工作</span>
     </div>
-    <h1 class="post-title">matplotlib 笔记</h1>
+    <h1 class="post-title">Matplotlib 笔记</h1>
   </header>
 
   <section class="post">
@@ -162,7 +162,7 @@
 <li>  删除 <code>~/.cache/matplotlib</code> 缓存目录</li>
 </ul></li>
 <li><p>修改python代码，指定使用中文字体</p>
-<figure class="highlight"><pre><code class="language-text" data-lang="text">    from matplotlib import rcParams
+<figure class="highlight"><pre><code class="language-python" data-lang="python">    from matplotlib import rcParams
     rcParams[&#39;font.sans-serif&#39;] = [&#39;Microsoft YaHei&#39;]  
 </code></pre></figure></li>
 </ul>
@@ -331,9 +331,9 @@ plt.subplot(2, 2, 4)  # 按照两行两列划分，使用第四个子图，即�
 
 <ul>
 <li><p>代码</p>
-<figure class="highlight"><pre><code class="language-python" data-lang="python">plt.subplot(2, 2, 1)  # 按照两行一列划分，使用第一个子图，即为第一行
-plt.subplot(2, 2, 2)  # 按照两行两列划分，使用第三个子图，即为四个网格的第三个（左下）
-plt.subplot(2, 1, 2)  # 按照两行两列划分，使用第四个子图，即为四个网格的第四个（右下）
+<figure class="highlight"><pre><code class="language-python" data-lang="python">plt.subplot(2, 2, 1)  # 按照两行两列划分，使用第一个子图，即为四个网格的第一个（左上）
+plt.subplot(2, 2, 2)  # 按照两行两列划分，使用第三个子图，即为四个网格的第二个（右上）
+plt.subplot(2, 1, 2)  # 按照两行一列划分，使用第二个子图，即为第二行
 </code></pre></figure></li>
 <li><p>图例</p>
 
@@ -398,7 +398,7 @@ plt.subplot(2, 1, 2)  # 按照两行两列划分，使用第四个子图，即�
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
