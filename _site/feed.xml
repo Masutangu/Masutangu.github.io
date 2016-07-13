@@ -5,9 +5,46 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 12 Jul 2016 19:55:13 +0800</pubDate>
-    <lastBuildDate>Tue, 12 Jul 2016 19:55:13 +0800</lastBuildDate>
+    <pubDate>Wed, 13 Jul 2016 22:22:07 +0800</pubDate>
+    <lastBuildDate>Wed, 13 Jul 2016 22:22:07 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>工作两年记</title>
+        <description>&lt;p&gt;转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。&lt;/p&gt;
+
+&lt;p&gt;回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一些简单的成果。之后又熟悉了 Django，了解 MVC。之后再尝试空闲时间读一些库的源码，并最终自己用 Python 写了一个开源项目 &lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;（基于 Apscheduler ）。这些经历极大得提升了我的自信心，也锻炼了我的代码能力和少部分的架构能力。&lt;/p&gt;
+
+&lt;p&gt;第二年的时候，我给自己的计划是多学习新的知识点，重在求广。因此我学了 Golang，写了个小项目 &lt;a href=&quot;https://github.com/Masutangu/SuperScripter&quot;&gt;SuperScripter&lt;/a&gt; 练手（最终这个项目的进化版用在了工作中）；学习了 iOS，写了一个简单的 &lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDoList&lt;/a&gt;, 对客户端有了些了解。读了 NSQ 的源码，大致了解消息队列的实现。还读了一段时间的非技术类的文章（读书笔记：&lt;a href=&quot;http://masutangu.com/2015/12/dewdrop-note-1/&quot;&gt;水滴石穿&lt;/a&gt;），希望自己的思维可以更宽广，可惜后来没坚持下去。&lt;/p&gt;
+
+&lt;p&gt;到了今年的年初，我感觉自己在技术上到了一个瓶颈，对于职业发展也有些迷茫。总会觉得自己在原地踏步，会的更熟练，不会的还是不会，让我有些急躁，心情也不是特别好。有一阵子我每天一闲下来就会想：“到底怎么做才能更进一步？”。&lt;/p&gt;
+
+&lt;p&gt;后来我发现想要驱除内心的恐慌，取得让自己满意的进步，唯一的方法就是花时间做一些更深入的研究，而不是浮在表面。浮在表面让我非常没有安全感，如果你很快就能学会的，别人也可以。所以我不再把重心放在新知识上，打算打牢基础，并在自己感兴趣的领域做些探索。&lt;/p&gt;
+
+&lt;p&gt;想清楚后，我规划了接下来这一年的学习路线：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;回归语言的本质&lt;/p&gt;
+
+&lt;p&gt;学再多语言，不深入思考的话，也只是学到皮毛。不应该止步于会用，而是要深入到编程语言的设计哲学。我希望之后在这方面有一些理解。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;网络框架读源码，造轮子&lt;/p&gt;
+
+&lt;p&gt;在公司工作，都有了现成的框架。就算自己做项目，也有很多开源框架可以使用。和编程语言类似，我希望自己能够再深入些，比如读读协程／异步／同步框架的代码，比较他们的适用场景，最好是能够自己造一些轻量级的轮子加深理解。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;巩固操作系统/编译原理/网络基础&lt;/p&gt;
+
+&lt;p&gt;看书＋造轮子。也许工作中 90% 的情况下不需要这些知识，但总会有 10% 的概率会出各种奇奇怪怪的问题，这时就是考验基本功的时候了。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我觉得第两年到第三年，是一个关键点。这一年，我希望兑现全部潜力，大幅度提升自己的能力，不仅是代码能力、架构能力，还有工程素养。我希望三年级的我，可以扛起重任。就像 NBA 的球员一样，经历了两年的磨砺，三年级，也该去争取进入全明星，争取一阵，争取属于自己的总冠军了！&lt;/p&gt;
+</description>
+        <pubDate>Wed, 13 Jul 2016 21:24:34 +0800</pubDate>
+        <link>http://masutangu.com/2016/07/conclusion-of-two-years/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/07/conclusion-of-two-years/</guid>
+        
+        
+        <category>工作</category>
+        
+      </item>
     
       <item>
         <title>Elric 使用手册</title>
@@ -1854,69 +1891,6 @@ The more often we release, the smaller the releases can be. Smaller releases car
         
         
         <category>数据库</category>
-        
-      </item>
-    
-      <item>
-        <title>Elric Change Log II</title>
-        <description>&lt;p&gt;最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。&lt;/p&gt;
-
-&lt;h1&gt;优化Worker拉取任务逻辑&lt;/h1&gt;
-
-&lt;p&gt;之前的逻辑是从任务队列里拉取任务后就塞给进程池，会导致worker不断从任务队列里取任务，然后在进程池里等待执行。这样的话，Worker不是按需取任务，而是揽一大堆活然后一直积压在手里做不完，而后续拉起空闲的Worker则取不到任务。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-1.png&quot; alt=&quot;示例1&quot; title=&quot;示例1&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;之前的逻辑，拉取任务后直接塞给进程池这里我对取任务的逻辑做了优化，使用Queue来统计正在执行中的任务。初始化一个Queue，其最大长度等于Worker的进程池大小。拉取任务前，往Queue里put一个控制符。任务执行完时，从Queue里get一个控制符。当进程池的进程都在执行任务的时候，此时Queue是满的，put操作会阻塞，因此Worker阻塞到Queue有空间的时候（有进程完成任务了，从Queue里get走了一个控制符，也意味着有空闲的进程了），才会到任务队列里拉取任务。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-2.png&quot; alt=&quot;示例2&quot; title=&quot;示例2&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;拉取任务前，尝试往queue里put一个控制符，如果queue已满（没有空闲进程），则一直阻塞&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-3.png&quot; alt=&quot;示例3&quot; title=&quot;示例3&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;任务执行完，从queue里get一个控制符&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/e84d359b2082e97f4aa8b400f2b8e1651506fae3&quot;&gt;https://github.com/Masutangu/Elric/commit/e84d359b2082e97f4aa8b400f2b8e1651506fae3&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1&gt;限制任务队列的长度&lt;/h1&gt;
-
-&lt;p&gt;之前Master会一直往任务队列里提交任务，并不关心任务队列积压的任务数。这样如果Worker挂掉一段时间后再拉起的时候，就会一直执行积压的过期任务。&lt;/p&gt;
-
-&lt;p&gt;于是我希望给Master提供一个控制队列长度的能力。首先给任务队列新增一个接口is_full()，返回True表示任务队列已满。在Master提交任务到任务队列前，先检查任务队列是否已满。如果队列已经满了，则把该任务写到Buffer Queue里，在另外的线程里去做定期重试写入任务队列的逻辑。&lt;/p&gt;
-
-&lt;p&gt;这里其实是参考了nsq的做法。只不过我把Python的Queue当成Golang的channel来使用。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-4.png&quot; alt=&quot;示例4&quot; title=&quot;示例4&quot; width=&quot;800&quot; /&gt;
-&lt;em&gt;新增is_full()接口&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-5.png&quot; alt=&quot;示例5&quot; title=&quot;示例5&quot; width=&quot;800&quot; /&gt;
-&lt;em&gt;提交任务前检查下任务队列是否已满，如果是，则写到buffer_queue里&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-6.png&quot; alt=&quot;示例6&quot; title=&quot;示例6&quot; width=&quot;800&quot; /&gt;
-&lt;em&gt;start_process_buffer_job线程处理buffer_queue的任务，定期尝试写入到任务队列里，如果任务队列已满，则再次放回buffer_queue。如果超过一定时间都没有提交成功，则将任务丢弃&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/592e6756725bf2e138d2e1f1de1c9f7d579a4324&quot;&gt;https://github.com/Masutangu/Elric/commit/592e6756725bf2e138d2e1f1de1c9f7d579a4324&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1&gt;提供任务存储的mongodb支持&lt;/h1&gt;
-
-&lt;p&gt;之前的任务存储是基于内存，为了使master有更高的可用性，这里我新增了mongodb的支持。&lt;/p&gt;
-
-&lt;p&gt;同时为了更好的监控任务的执行情况，需要有存储来记录每个任务执行是否成功，失败则记录Exception的信息。如果是循环任务，则只需要记录近N次的执行结果。&lt;/p&gt;
-
-&lt;p&gt;Mongodb的Array类型提供了限制大小的能力，非常符合我仅记录近N次执行结果的需求。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/elric-change-log-2/illustration-7.png&quot; alt=&quot;示例7&quot; title=&quot;示例7&quot; width=&quot;800&quot; /&gt;
-&lt;em&gt;slice用与限制array的大小&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;commit：&lt;a href=&quot;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&quot;&gt;https://github.com/Masutangu/Elric/commit/c87fd9c227359ca5ce31f19c2be05154c96a45f0&lt;/a&gt;&lt;/p&gt;
-</description>
-        <pubDate>Wed, 03 Feb 2016 16:07:58 +0800</pubDate>
-        <link>http://masutangu.com/2016/02/elric-change-log-2/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/02/elric-change-log-2/</guid>
-        
-        
-        <category>优化&amp;重构</category>
         
       </item>
     

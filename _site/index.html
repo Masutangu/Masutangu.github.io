@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2016/07/conclusion-of-two-years/" title="访问 工作两年记">工作两年记</a></h2>
+      <p class="excerpt">转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一些简单的成果。之后又熟悉了 Django，了解 MVC。之后再尝试空闲时间读一些库的源码，并最终自己用 ...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2016-07-13 21:24:34 +0800" class="post-list__meta--date date">2016-07-13</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/conclusion-of-two-years/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/07/elric-documentation/" title="访问 Elric 使用手册">Elric 使用手册</a></h2>
       <p class="excerpt">这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 Elric，包括其API，架构，周边能力以及实现细节。读者可以先阅读之前的这篇文章《Python实现的分布式任务调度系统》来了解Elric的起源和早期设计的思想。一. 简介Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker 架构，Worker 向 Master 提交任务和执行 Master 下发的任务。支持多种任务类型：即时任务，周期任务，crontab 任务和定时任务。其实现参考了 Ap...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-07-07 15:02:11 +0800" class="post-list__meta--date date">2016-07-07</time> &#8226; <span class="post-list__meta--tags tags">个人项目</span><a class="btn-border-small" href=/2016/07/elric-documentation/>继续阅读</a></div>
@@ -190,13 +197,6 @@
       <hr class="post-list__divider" />
     </li>
     
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/02/elric-change-log-2/" title="访问 Elric Change Log II">Elric Change Log II</a></h2>
-      <p class="excerpt">最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。优化Worker拉取任务逻辑之前的逻辑是从任务队列里拉取任务后就塞给进程池，会导致worker不断从任务队列里取任务，然后在进程池里等待执行。这样的话，Worker不是按需取任务，而是揽一大堆活然后一直积压在手里做不完，而后续拉起空闲的Worker则取不到任务。之前的逻辑，拉取任务后直接塞给进程池这里我对取任务的逻辑做了优化，使用Queue来统计正在执行中的任务。初始化一个Queue，其最大长度等于W...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-02-03 16:07:58 +0800" class="post-list__meta--date date">2016-02-03</time> &#8226; <span class="post-list__meta--tags tags">优化&重构</span><a class="btn-border-small" href=/2016/02/elric-change-log-2/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
   </ol>
 
   <hr class="post-list__divider " />
@@ -215,7 +215,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-12 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-07-13 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
