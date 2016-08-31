@@ -179,10 +179,10 @@ p2是常量，指向一块连续的内存。因此p2指向的内容可以变，�
 
 同理，p2是常量，始终指向&p2\[0\]，因此不能自增。
 
-## c_str() 
+### c_str() 
 As long as the string isn't destroyed or modified, using c_str() is OK. If the string is modified using a previously returned c_str() is implementation defined.
     
-## static_cast，dynamic_cast，const_cast，reinterpret_cast
+### static_cast，dynamic_cast，const_cast，reinterpret_cast
 
 * static_cast: 可以实现C++中内置基本数据类型之间的相互转换，但只能在有相互联系的类型中进行相互转换。
 * const_cast: 可以使一个本来不是const类型的数据转换成const类型的，或者把const属性去掉。
@@ -195,7 +195,7 @@ As long as the string isn't destroyed or modified, using c_str() is OK. If the s
     * 在类的转换时，在类层次间进行上行转换时，dynamic_cast和static_cast的 效果是一样的。在进行下行转换时，dynamic_cast具有类型检查的功能，比 static_cast 更安全。向下转换即将父类指针转化子类指针。向下转换的成功与否与将要转换的类型有关，即要转换的指针指向的对象的实际类型与转换以后的对象类型一定要相同，否则转换失败。
 
 
-## 初始化
+### 初始化
 内置类型：
 > Variables defined outside any function body are initialized to zero. Variables of built-in type defined inside the body of a function are uninitialized .
 
@@ -215,7 +215,7 @@ As long as the string isn't destroyed or modified, using c_str() is OK. If the s
 当类只包括类成员时，合成构造函数才有作用。
 > The synthesized default constructor often suffices for classes that contain only members of class type. Classes with members of built- in or compound type should usually define their own default constructors to initialize those members.
 
-## const 函数参数
+### const 函数参数
 const非引用参数会被编译器忽略。
 > What may be surprising, is that although the parameter is a const inside the function, the compiler otherwise treats the definition of fcn as if we had defined the parameter as a plain int
 > When the parameter is copied, whether the parameter is const is irrelevantthe function executes on a copy. Nothing the function does can change the argument. As a result, we can pass a const object to either a const or nonconst parameter. The two parameters are indistinguishable.
@@ -236,7 +236,7 @@ const非引用参数会被编译器忽略。
     
 可以参照const和非const引用初始化的不同（const引用允许类型隐式转换）。
 
-## 作用域
+### 作用域
 局部变量会覆盖外层的函数名：
 
 > A name declared local to a function hides the same name declared in the global scope. The same is true for function names as for variable names.
@@ -246,7 +246,7 @@ const非引用参数会被编译器忽略。
 > Normal scoping rules apply to names of overloaded functions. If we declare a function locally, that function hides rather than overloads the same function declared in an outer scope. As a consequence, declarations for every version of an overloaded function must appear in the same scope.
 
 
-## 容器的初始化方式
+### 容器的初始化方式
 
 * Intializing a Container as a Copy of Another Container
 When we copy one container into another, the types must match exactly: The container type and element type must be the same.
@@ -256,12 +256,12 @@ When we copy one container into another, the types must match exactly: The conta
 When we use iterators, there is no requirement that the container types be identical. The element types in the containers can differ as long as they are compatible.
 不需要是相同的容器类型，元素类型要求是可以转换的。
 
-## 关联容器的 strict weak ordering
+### 关联容器的 strict weak ordering
 永远让比较函数对相等的值返回false。
 
 > Such a comparison function must always yield false when we compare a key with itself. Moreover, if we compare two keys, they cannot both be "less than" each other, and if k1 is "less than" k2 , which in turn is "less than" k3 , then k1 must be "less than" k3 .
 
-## 复制构造函数不应该声明为explicit
+### 复制构造函数不应该声明为explicit
 摘自stackoverflow：
 > The explicit copy constructor means that the copy constructor will not be called implicitly, which is what happens in the expression:
 
@@ -273,3 +273,78 @@ When we use iterators, there is no requirement that the container types be ident
 > You can call the copy constructor explicitly:
 
 > ```CustomString s( CustomString("test") );```
+
+### friend
+
+http://stackoverflow.com/questions/32175304/is-the-friend-declaration-a-real-declaration/32175596
+
+```C++
+#include <iostream>
+using namespace std;
+
+class Tmp {
+    friend void p() { cout << "p()" << endl; }
+};
+
+int main() {
+    p();
+}
+```
+
+```
+example_32.cpp:10:5: error: use of undeclared identifier 'p'
+    p();
+```
+
+下面的例子可以，因为 ADL 即关联参数查找，编译器会查找与函数的参数相关联的作用域：
+
+```
+#include <iostream>
+
+using namespace std;
+
+class Tmp {
+    friend void p(Tmp) { cout << "p()" << endl; }
+};
+
+int main() {
+    Tmp t;   
+    p(t);
+}
+```
+
+但这里和书上给出的例子不一样：
+A friend declaration introduces the named class or nonmember function into the surrounding scope. Moreover, a friend function may be defined inside the class. The scope of the function is exported to the scope enclosing the class definition.
+
+Class names and functions (definitions or declarations) introduced in a friend can be used as if they had been previously declared:
+``` C++
+class X {
+    friend class Y;
+    friend void f() { /* ok to define friend function in the class body */ } 
+};
+class Z {
+    Y *ymem; // ok: declaration for class Y introduced by friend in X
+    void g() { return ::f(); } // ok: declaration of f introduced by X
+};
+```
+
+因此感觉 c++ primer 这段描述有误，友元声明不会引入到外部作用域。这块取决于编译器的实现。
+
+### Slice
+http://stackoverflow.com/questions/274626/what-is-object-slicing#274636
+这个例子很有意义：
+
+> The treacherous case
+>
+> ```B b1;
+> B b2;
+> A& a_ref = b2;
+> a_ref = b1; //b_2 now contains a mixture of b1 and b2!
+
+> You might think that b2 will be a copy of b1 afterwards. But, alas, it's not! If you inspect it, you'll discover that b2 is a Frankensteinian creature, made from some chunks of b1 (the chunks that B inherits from A), and some chunks of b2 (the chunks that only B contains). Ouch!
+
+> What happened? Well, C++ by default doesn't treat assignment operators as virtual. Thus, the line a_ref = b1 will call the assignment operator of A, not that of B. This is because for non-virtual functions, the declared type (which is A&) determines which function is called, as opposed to the  actual type (which would be B, since a_ref references an instance of B). Now, A's assignment operator obviously knows only about the members declared in A, so it will copy only those, leaving the members added in B unchanged.
+
+## 虚函数与默认参数
+**虚函数是动态绑定而缺省参数值是静态绑定的。**
+如果一个调用省略了具有默认值的参数，则参数的值由调用该函数的类型定义，与对象的实际类型无关，如果是通过基类的引用或指针调用虚函数，则参数值为在**基类**虚函数声明中指定的值，如果是通过派生类的引用或指针高用虚函数，则参数值为在**派生类**虚函数声明中指定的值，即虚函数的默认参数是在编译时静态绑定的。所以应该**避免给虚函数声明不同的默认参数**。
