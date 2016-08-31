@@ -7,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <title>简单异步应用框架的实现</title>
-  <meta name="description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
+  <meta name="description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="简单异步应用框架的实现">
-  <meta name="twitter:description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
+  <meta name="twitter:description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
   
   <meta property="og:type" content="article">
   <meta property="og:title" content="简单异步应用框架的实现">
-  <meta property="og:description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
+  <meta property="og:description" content="两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
   <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -132,7 +132,7 @@
   </header>
 
   <section class="post">
-    <p>两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。</p>
+    <p>两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。</p>
 
 <h1>异步框架设计思想</h1>
 
@@ -529,7 +529,7 @@ public:
 </code></pre></figure>
 <h1>总结</h1>
 
-<p>由于时间有限，saf 目前来说非常简陋，也没有经过严格的测试。对于一个框架来说，要做的事情还有很多，比如日志模块的完善、性能分析和优化。</p>
+<p>由于时间和能力有限，saf 目前来说非常简陋，也没有经过严格的测试。对于一个框架来说，要做的事情还有很多，比如日志模块的完善、性能分析和优化。不过，<strong>done is better than perfect</strong>. 最后，如有问题或意见，欢迎留言或者 email 我，也欢迎转载分享～</p>
 
   </section>
 </article>
@@ -579,7 +579,7 @@ public:
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-08-31 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-09-01 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

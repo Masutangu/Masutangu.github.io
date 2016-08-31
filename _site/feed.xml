@@ -5,13 +5,13 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 31 Aug 2016 23:49:32 +0800</pubDate>
-    <lastBuildDate>Wed, 31 Aug 2016 23:49:32 +0800</lastBuildDate>
+    <pubDate>Thu, 01 Sep 2016 00:04:36 +0800</pubDate>
+    <lastBuildDate>Thu, 01 Sep 2016 00:04:36 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
         <title>简单异步应用框架的实现</title>
-        <description>&lt;p&gt;两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。&lt;/p&gt;
+        <description>&lt;p&gt;两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。&lt;/p&gt;
 
 &lt;h1&gt;异步框架设计思想&lt;/h1&gt;
 
@@ -408,7 +408,7 @@ public:
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h1&gt;总结&lt;/h1&gt;
 
-&lt;p&gt;由于时间有限，saf 目前来说非常简陋，也没有经过严格的测试。对于一个框架来说，要做的事情还有很多，比如日志模块的完善、性能分析和优化。&lt;/p&gt;
+&lt;p&gt;由于时间和能力有限，saf 目前来说非常简陋，也没有经过严格的测试。对于一个框架来说，要做的事情还有很多，比如日志模块的完善、性能分析和优化。不过，&lt;strong&gt;done is better than perfect&lt;/strong&gt;. 最后，如有问题或意见，欢迎留言或者 email 我，也欢迎转载分享～&lt;/p&gt;
 </description>
         <pubDate>Tue, 30 Aug 2016 08:14:24 +0800</pubDate>
         <link>http://masutangu.com/2016/08/simple-async-framework/</link>
