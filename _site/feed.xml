@@ -5,13 +5,13 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 01 Sep 2016 00:04:36 +0800</pubDate>
-    <lastBuildDate>Thu, 01 Sep 2016 00:04:36 +0800</lastBuildDate>
+    <pubDate>Thu, 01 Sep 2016 09:52:11 +0800</pubDate>
+    <lastBuildDate>Thu, 01 Sep 2016 09:52:11 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
         <title>简单异步应用框架的实现</title>
-        <description>&lt;p&gt;两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。&lt;/p&gt;
+        <description>&lt;p&gt;两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 &lt;a href=&quot;https://github.com/Masutangu/SAF&quot;&gt;saf (Simple Async Framework)&lt;/a&gt;，趁此机会和大家聊聊异步框架的设计思想和实现。&lt;/p&gt;
 
 &lt;h1&gt;异步框架设计思想&lt;/h1&gt;
 
@@ -82,41 +82,15 @@ saf 是基于 libuv 的，因此我使用 libuv 的 handle 结构体的 data 字
 
 &lt;h2&gt;消息透传&lt;/h2&gt;
 
-&lt;p&gt;既然各个状态是有依赖关系的，那就得有一个消息（message）实体贯穿整个处理流程。通过这个消息实体来传递各个状态所需要的信息。这也是为什么 saf 中 action 和 state 的接口都有一个 msg 参数的原因：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    // state.h
-    /*
-     * 执行 state 包含的 action 前, 框架会调用该函数, 在该方法添加相应的 action
-     * 返回 0 表示成功
-     * 返回 != 0 表示失败
-     */
-    virtual int prepareProcess(Msg* msg) { return 0; };
-    /*
-     * state 包含的 action 都执行完时, 框架会调用该函数,可以做一些后续处理工作
-     * 返回 0 表示成功
-     * 返回 != 0 表示失败
-     */
-    virtual int afterProcess(Msg* msg) { return 0; };
+&lt;p&gt;既然各个状态是有依赖关系的，那就得有一个消息（message）实体贯穿整个处理流程。通过这个消息实体来传递各个状态所需要的信息。这也是为什么 saf 中 action 和 state 的接口都有一个 msg 参数的原因（见下节&lt;strong&gt;接口设计&lt;/strong&gt;）。&lt;/p&gt;
 
-    // action.h
-    /*
-     * 打包 Action 请求包到输入 buf 中, len 为输入 buf 的长度
-     * 返回 0 表示打包成功, len 为实际需要的 buf 长度
-     * 返回 &amp;gt; 表示 buf 不够, len 为实际需要的 buf 长度
-     * 返回 &amp;lt; 0 表示失败
-     */
-    virtual int prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) = 0;
+&lt;h2&gt;接口设计&lt;/h2&gt;
 
-    /*
-     * 解析 Action 回包
-     * 返回 0 表示解析回包成功
-     * 返回 &amp;lt; 0 表示出错
-     * 返回 &amp;gt; 0 表示收包未完整
-     */
-    virtual int afterProcess(char* buf, unsigned int len, Msg* msg) = 0;
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;接口介绍&lt;/h2&gt;
+&lt;p&gt;封装一个异步框架，意味着对于框架使用者来说其无需关心网络收发包的细节，只需关心自身业务逻辑的实现。那我们在设计接口上就需要屏蔽这些细节。&lt;/p&gt;
 
-&lt;p&gt;saf 目前来说还是一个很简单粗糙的框架，这里先介绍下目前的接口的使用，最后面会附上简单的 demo，帮助大家理解。&lt;/p&gt;
+&lt;p&gt;既然要对使用者屏蔽收发包细节，表明收包和发包的回调都由框架来控制。因此我们只需要暴露打包请求包和解包回包的接口给使用者去实现。框架调用使用者实现的打包接口后，将打好的 buffer 发送出去，在收到回包之后，再调用使用者实现的解包接口来处理回包。&lt;/p&gt;
+
+&lt;p&gt;在 saf 的接口设计中，我尽量保持接口命名的统一，&lt;code&gt;prepareProcess&lt;/code&gt; 表示在执行前的预处理工作，&lt;code&gt;afterProcess&lt;/code&gt; 表示执行完后的后续处理工作。下面可以看到在不同的模块中，&lt;code&gt;prepareProcess&lt;/code&gt; 和 &lt;code&gt;afterProcess&lt;/code&gt; 的功能略有不同。&lt;/p&gt;
 
 &lt;h3&gt;消息类&lt;/h3&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;//msg.h
@@ -152,13 +126,15 @@ public:
      */
     virtual Msg* createMsg() = 0;
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;Handler 类对应客户端请求的处理流程。业务继承 Handler 基类，实现请求包和回包的打解包接口以及创建业务消息的接口。业务在 Handler 的构造函数添加该 Handler 包含的 State。&lt;/p&gt;
+&lt;p&gt;Handler 类对应客户端请求的处理流程。业务继承 Handler 基类，实现请求包和回包的打解包接口以及创建业务消息的接口。&lt;/p&gt;
+
+&lt;p&gt;在 Handler 的构造函数添加该 Handler 包含的 State。在收到客户端请求后，框架调用相应的 Handler 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口对客户端请求进行解包。然后依次执行各个 State，全部 State 执行完成后，框架调用该 Handler 的 &lt;code&gt;afterProcess&lt;/code&gt; 将回包打包到传入的 buffer 参数，再由框架将该 buffer 发送回客户端。&lt;/p&gt;
 
 &lt;h3&gt;State 类&lt;/h3&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    // state.h
 
     /*
-     * 执行 state 包含的 action 前, 框架会调用该函数, 在该方法添加相应的 action
+     * 执行 state 包含的 action 前, 框架会调用该函数, 可以做预处理工作
      * 返回 0 表示成功
      * 返回 != 0 表示失败
      */
@@ -172,6 +148,8 @@ public:
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;State 类对应上面&lt;strong&gt;模型抽象化&lt;/strong&gt;小节的&lt;strong&gt;状态&lt;/strong&gt;。&lt;/p&gt;
 
+&lt;p&gt;在 State 的构造函数添加该 State 包含的 Action。State 执行前，框架调用该 State 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口，使用者可以在该接口做些预处理工作。当 State 执行完成后，框架调用该 State 的 &lt;code&gt;afterProcess&lt;/code&gt; 接口。&lt;/p&gt;
+
 &lt;h3&gt;Action 类&lt;/h3&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //action.h 
 
@@ -179,6 +157,11 @@ public:
      * 设置 action 的目的 ip，端口和通信协议（目前只支持tcp） 
      */
     void setActionInfo(const std::string&amp;amp; ip, int port, int protocol);
+
+    /*
+     * 设置 action 的超时时间，单位为毫秒。 &amp;lt;=0 为永不超时
+     */
+    void setTimeout(unsigned int timeout) { m_timeout = timeout; }  
 
     /*
      * 打包 Action 请求包到输入 buf 中, len 为输入 buf 的长度
@@ -198,13 +181,15 @@ public:
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;Action 类对应上面&lt;strong&gt;模型抽象化&lt;/strong&gt;小节的&lt;strong&gt;动作&lt;/strong&gt;。&lt;/p&gt;
 
+&lt;p&gt;Action 执行前，框架调用该 Action 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口，将 Action 的请求包打包到传入的 buffer 参数，当收到 Action 的回包后，框架会调用 Action 的 &lt;code&gt;afterProcess&lt;/code&gt; 接口，将回包解包。&lt;/p&gt;
+
 &lt;h3&gt;REGISTER_HEADER_PARSER&lt;/h3&gt;
 
-&lt;p&gt;REGISTER_HEADER_PARSER 宏用于注册解析请求包头函数。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;REGISTER_HEADER_PARSER&lt;/code&gt; 宏用于注册解析请求包头函数。&lt;/p&gt;
 
 &lt;h3&gt;REGISTER_HANDLER&lt;/h3&gt;
 
-&lt;p&gt;REGISTER_HANDLER 宏用于注册请求对应的 handler 类&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;REGISTER_HANDLER&lt;/code&gt; 宏用于注册请求对应的 handler 类&lt;/p&gt;
 
 &lt;h2&gt;状态机逻辑&lt;/h2&gt;
 
@@ -297,114 +282,111 @@ public:
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h2&gt;样例&lt;/h2&gt;
 
-&lt;p&gt;以下是 saf 的一个简单的 demo。代码仅说明用，所以比较简单粗暴。该 server 的所有请求都由 myHandler 来处理，myHandler 包含一个状态 myState1。myState1 包含一个 Action, 该 Action 将客户端请求包拷贝并通过 tcp 发送给 127.0.0.1:7000 的服务，接收到回包后再把回包原样发回给客户端。  &lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //
-    // Created by Masutangu on 16/8/9.
-    //
+&lt;p&gt;以下是 saf 的一个简单的 &lt;a href=&quot;https://github.com/Masutangu/SAF/blob/master/sample.cpp&quot;&gt;demo&lt;/a&gt;。代码仅说明用，所以比较简单粗暴。该 server 的所有请求都由 myHandler 来处理，myHandler 包含一个状态 myState1。myState1 包含一个 Action, 该 Action 将客户端请求包拷贝并通过 tcp 发送给 127.0.0.1:7000 的服务，接收到回包后再把回包原样发回给客户端。  &lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;//
+// Created by Masutangu on 16/8/9.
+//
 
-    #include &amp;quot;saf/header.h&amp;quot;
+#include &amp;quot;saf/header.h&amp;quot;
 
-    #include &amp;lt;cstring&amp;gt;
+#include &amp;lt;cstring&amp;gt;
 
-    using namespace saf; 
+using namespace saf;
 
-    const int BUF_SIZE = 1024;
+const int BUF_SIZE = 1024;
 
-    class myMsg: public Msg {
-    public:
-        char readbuf[BUF_SIZE];
-        char writebuf[BUF_SIZE];
-    };
+class myMsg: public Msg {
+public:
+    char readbuf[BUF_SIZE];
+    char writebuf[BUF_SIZE];
+};
 
-    class myAction: public Action {
-    public:
-        int prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
-        int afterProcess(char* buf, unsigned int len, Msg* msg);
-    };
+class myAction: public Action {
+public:
+    int prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
+    int afterProcess(char* buf, unsigned int len, Msg* msg);
+};
 
-    int myAction::prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
-        myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-        printf(&amp;quot;myAction prepareProcess, data: %s\n&amp;quot;, my_msg-&amp;gt;readbuf);
-        if (len &amp;gt;= BUF_SIZE) {
-            memcpy(buf, my_msg-&amp;gt;readbuf, BUF_SIZE);
-            return 0;
-        } else {
-            len = BUF_SIZE;
-            return BUF_SIZE;
-        }
-
-    }
-
-    int myAction::afterProcess(char* buf, unsigned int len, Msg* msg) {
-        printf(&amp;quot;myAction afterProcess: %s\n&amp;quot;, buf);
-        myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-        memcpy(my_msg-&amp;gt;writebuf, buf, len &amp;lt; BUF_SIZE ? len:BUF_SIZE);
+int myAction::prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
+    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
+    printf(&amp;quot;myAction prepareProcess, data: %s\n&amp;quot;, my_msg-&amp;gt;readbuf);
+    if (len &amp;gt;= BUF_SIZE) {
+        memcpy(buf, my_msg-&amp;gt;readbuf, BUF_SIZE);
         return 0;
+    } else {
+        len = BUF_SIZE;
+        return BUF_SIZE;
     }
 
-    class myState1: public State {
-    public:
-        int prepareProcess(Msg* msg);
-    };
+}
 
-    int myState1::prepareProcess(Msg* msg) {
-        printf(&amp;quot;myState 1 prepareProcess\n&amp;quot;);
-        myAction* action = new myAction;
-        action-&amp;gt;setActionInfo(&amp;quot;127.0.0.1&amp;quot;, 7000, 0); //设置action的ip和端口
-        addAction(action);
+int myAction::afterProcess(char* buf, unsigned int len, Msg* msg) {
+    printf(&amp;quot;myAction afterProcess: %s\n&amp;quot;, buf);
+    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
+    memcpy(my_msg-&amp;gt;writebuf, buf, len &amp;lt; BUF_SIZE ? len:BUF_SIZE);
+    return 0;
+}
+
+class myState1: public State {
+public:
+    myState1();
+};
+
+myState1::myState1() {
+    myAction* action = new myAction;
+    action-&amp;gt;setActionInfo(&amp;quot;127.0.0.1&amp;quot;, 7000, 0); //设置action的ip和端口
+    addAction(action);
+}
+
+class myHandler: public Handler {
+public:
+    myHandler();
+    Msg* createMsg();
+    int prepareProcess(char* buf, unsigned int len, Msg* msg);
+    int afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
+
+};
+
+Msg* myHandler::createMsg() {
+    return new myMsg();
+}
+
+myHandler::myHandler() {
+    myState1* state1 = new myState1();
+    addState(state1);
+
+}
+
+int myHandler::prepareProcess(char* buf, unsigned int len, Msg* msg) {
+    printf(&amp;quot;handler: prepareProcess len=%d\n&amp;quot;, len);
+    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
+    memcpy(my_msg-&amp;gt;readbuf, buf, len);
+    return 0;
+}
+
+int myHandler::afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
+    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
+    if (len &amp;gt;= 1024) {
+        memcpy(buf, my_msg-&amp;gt;writebuf, 1024);
         return 0;
+    } else {
+        len = 1024;
+        return 1;
     }
+}
 
+int parseReq(char* buf, unsigned int len) {
+    return 1; // 该请求的类型为 1，由 myHandler 处理
+}
 
-    class myHandler: public Handler {
-    public:
-        myHandler();
-        Msg* createMsg();
-        int prepareProcess(char* buf, unsigned int len, Msg* msg);
-        int afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
+int main() {
+    REGISTER_HANDLER(1, myHandler);  // 请求类型为 1 的由 myHandler 类处理
+    REGISTER_HEADER_PARSER(parseReq); // 请求包头由 parseReq 函数解析
 
-    };
-
-    Msg* myHandler::createMsg() {
-        return new myMsg();
-    }
-
-    myHandler::myHandler() {
-        myState1* state1 = new myState1();
-        addState(state1);
-
-    }
-
-    int myHandler::prepareProcess(char* buf, unsigned int len, Msg* msg) {
-        printf(&amp;quot;handler: prepareProcess len=%d\n&amp;quot;, len);
-        myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-        memcpy(my_msg-&amp;gt;readbuf, buf, len);
-        return 0;
-    }
-
-    int myHandler::afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
-        myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-        if (len &amp;gt;= 1024) {
-            memcpy(buf, my_msg-&amp;gt;writebuf, 1024);
-            return 0;
-        } else {
-            len = 1024;
-            return 1;
-        }
-    }
-
-    int parseReq(char* buf, unsigned int len) {
-        return 1; // 该请求的类型为 1，由 myHandler 处理
-    }
-
-    int main() {
-        REGISTER_HANDLER(1, myHandler);  // 请求类型为 1 的由 myHandler 类处理
-        REGISTER_HEADER_PARSER(parseReq); // 请求包头由 parseReq 函数解析
-
-        AsyncServer server = AsyncServer();
-        server.setBindAddress(&amp;quot;0.0.0.0&amp;quot;, 8000); // 监听 8000 端口
-        server.run();
-    }
+    AsyncServer server = AsyncServer();
+    server.setBindAddress(&amp;quot;0.0.0.0&amp;quot;, 8000); // 监听 8000 端口
+    server.run();
+}
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h1&gt;总结&lt;/h1&gt;
 
