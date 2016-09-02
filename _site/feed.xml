@@ -5,9 +5,157 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 01 Sep 2016 09:52:11 +0800</pubDate>
-    <lastBuildDate>Thu, 01 Sep 2016 09:52:11 +0800</lastBuildDate>
+    <pubDate>Sat, 03 Sep 2016 00:56:50 +0800</pubDate>
+    <lastBuildDate>Sat, 03 Sep 2016 00:56:50 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Protobuf 编码原理</title>
+        <description>&lt;p&gt;最近项目组有在用 protobuf，于是抽空读了些 protobuf 的相关资料。本文总结 protobuf 的编码原理，重点在于其如何实现版本兼容。文中样例及说明都参考了 protobuf 的&lt;a href=&quot;https://developers.google.com/protocol-buffers/docs/encoding&quot;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2&gt;编码方法的介绍&lt;/h2&gt;
+
+&lt;p&gt;要了解 protobuf 的编码方式，首先介绍下 Varint 和 ZigZag 这两种编码。&lt;/p&gt;
+
+&lt;h3&gt;Varint&lt;/h3&gt;
+
+&lt;p&gt;Varint 编码的优势在于值越小的数字，占用的字节更少。一般 int32 的数字都需要占用 4 个字节。使用 Varint 进行编码则有可能缩减到 1 个字节。反过来，如果是比较大的数字，则可能需要占用 5 个字节。
+理解了 Varint 的目的（节省空间），来看看其原理：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Each byte in a varint, except the last byte, has the &lt;strong&gt;most significant bit (msb)&lt;/strong&gt; set – this indicates that there are further bytes to come. The lower 7 bits of each byte are used to store the two&amp;#39;s complement representation of the number in groups of 7 bits, &lt;strong&gt;least significant group first&lt;/strong&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;即是说，Varint 中的每个字节的最高位 bit 有特殊的含义，该位为 1 表示后续的字节也是该数字的一部分，如果该位为 0 则是最后一个字节。其他的 7 个bit都用来表示数字，从最低有效字节开始。&lt;/p&gt;
+
+&lt;p&gt;举个例子，1 的二进制表示为 0000 0001。通过 Varint 编码后的二进制表示为 0000 0001，过程如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;再举个例子，300 的二进制表示为 100101100，通过 Varint 编码后的二进制表示为 10101100 00000010，详细过程如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h3&gt;ZigZag&lt;/h3&gt;
+
+&lt;p&gt;上节介绍了 Varints，我们知道 Varint 在处理小数值的数字很有效，而在处理值较大的数字则占用了多一个子节。对于负数来说，二进制最高有效位为 1，如果用 varint 来编码，无疑要占用比较多的子节。因此我们可以搭配 zigzag 来编码。&lt;/p&gt;
+
+&lt;p&gt;ZigZag 编码将有符整型转化成无符的整型，公式如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;32 位整型：(n &amp;lt;&amp;lt; 1) ^ (n &amp;gt;&amp;gt; 31)&lt;/li&gt;
+&lt;li&gt;64 位整型：(n &amp;lt;&amp;lt; 1) ^ (n &amp;gt;&amp;gt; 63)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Note that the second shift – the (n &amp;gt;&amp;gt; 31) part – is an arithmetic shift. So, in other words, the result of the shift is either a number that is all zero bits (if n is positive) or all one bits (if n is negative).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;注意这里的位移操作符。如果在位移运算符左边的变量是有符号数，编译产生的汇编指令是&lt;strong&gt;算术位移指令&lt;/strong&gt;，如果该变量是无符号数，编译产生的汇编指令则是&lt;strong&gt;逻辑位移指令&lt;/strong&gt;。对于左移，它们都一样，整个二进制右移，低位补 0；右移则有所区分，&lt;strong&gt;算数右移左边补最高符号位，逻辑位移左边补 0&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;举个例子，-2 经过 ZigZag 编码后为 3，过程如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h2&gt;Protobuf 的编码原理&lt;/h2&gt;
+
+&lt;h3&gt;版本兼容&lt;/h3&gt;
+
+&lt;p&gt;Protobuf 支持向前向后兼容。向后兼容即升级的解码程序能够正确解析旧版本协议的数据，向前兼容则指旧版本的解码程序能够正确解析新版本协议的数据。如果新的协议新增了字段，旧版本的解析程序是如何自动跳过新字段的呢？&lt;/p&gt;
+
+&lt;p&gt;协议，即通信双方约定好的规则。收到数据时，可以根据约定好的规则进行解包。假设我们使用简单粗暴的编解码方法，将结构体定义的成员按类型依此打解包。如下图，我们约定好的协议包括三个字段，类型都为 int32，那解码函数将从接收到的字节流中依次取出 4 个字节并按整型解析。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果发送方升级了协议，如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;很明显，如果旧的解码程序还是按照依次取出 3 个 int32 去解析的话，毫无疑问是错误的（会把结构体 old_message 的成员 d 的值解析成 0x1a )。如果有办法能跳过新增字段，就可以做到兼容，即旧的解码程序能正确解析出旧协议定义的字段，新增字段一律忽略。&lt;/p&gt;
+
+&lt;p&gt;Protobuf 采用的方法很简单也很实用，把 tag 和其类型一起打进去字节流，解码程序只要解析出不认识的 tag，就能知道该字段是新协议定义的，再通过其类型可以推断出该字段内容的长度，就能正确的跳过这部分 buffer，继续解析下一个字段。如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/talk-about-protobuf/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;当旧的解码程序解析到 tag 为 3 时，发现在旧协议里找不到该 tag，又从其类型 int 64 知道该 tag 的值占了 8 个字节，于是他跳过这 8 个字节，继续解析剩下的字节流。&lt;/p&gt;
+
+&lt;h3&gt;实现&lt;/h3&gt;
+
+&lt;p&gt;Protobuf 的实现中，将每个字段的 key 设为 varint 编码后的 &lt;code&gt;(tag number &amp;lt;&amp;lt; 3) | wire_type&lt;/code&gt;。即 key 的最低三位表示字段类型，将 key 右移三位后的值表示 tag number。wire_type 如下表格所示：&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;Meaning&lt;/th&gt;
+&lt;th&gt;Used For&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;Varint&lt;/td&gt;
+&lt;td&gt;int32, int64, uint32, uint64, sint32, sint64, bool, enum&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;64-bit&lt;/td&gt;
+&lt;td&gt;fixed64, sfixed64, double&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;Length-delimited&lt;/td&gt;
+&lt;td&gt;string, bytes, embedded messages, packed repeated fields&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;Start group&lt;/td&gt;
+&lt;td&gt;groups (deprecated)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;End group&lt;/td&gt;
+&lt;td&gt;groups (deprecated)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;32-bit&lt;/td&gt;
+&lt;td&gt;fixed32, sfixed32, float&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;如果是 Length-delimited Type，意味着长度不定，这时还需要在 key 后面多写入长度信息（用 varint 编码）。&lt;/p&gt;
+
+&lt;p&gt;举个例子：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;message Test2 {
+  required string b = 2;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;将 b 的值设为 &amp;quot;testing&amp;quot;，protobuf 编码后的字节流为&lt;code&gt;12 07 74 65 73 74 69 6e 67&lt;/code&gt; key 为 0x12，可以算出 tag 值为 2（0x12 &amp;gt;&amp;gt; 3), type 为 2 ( 0x12 取最低三位)。下个字节为 0x07 ，该字节表示长度，即长度为 7，因此后续的 7 个字节都为该 tag 的值。&lt;/p&gt;
+
+&lt;p&gt;另外 protobuf 还定义了 sint32/sint64 类型。sint32/sin64 类型专门用于编码负数。如果使用 int32/int64 来编码负数， 通过 varint 编码后的 buffer 长达 5/10 个字节。（int32 时占用5个字节，int64时占用10个字节，因为负数的最高位为1，会被当作非常大的整数处理）。&lt;/p&gt;
+
+&lt;p&gt;而 sint32/sint64 类型的值会先经过 zigzag 编码，转换成无符号整数，再采用 varint 编码，可以大大减少编码后占用的字节数。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;If you use int32 or int64 as the type for a negative number, the resulting varint is always ten bytes long – it is, effectively, treated like a very large unsigned integer. If you use one of the signed types, the resulting varint uses ZigZag encoding, which is much more efficient.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3&gt;使用建议&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;常用消息字段(尤其是 repeated 字段)的 tag number 尽量分配在 1 ~ 15 之间。tag number 超过 16，key 的编码将占用多一个字节&lt;/li&gt;
+&lt;li&gt;尽可能多的（全部）使用 optional 字段&lt;/li&gt;
+&lt;li&gt;不能修改字段的 tag number&lt;/li&gt;
+&lt;li&gt;不能增删任何 required 字段&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sat, 03 Sep 2016 00:44:24 +0800</pubDate>
+        <link>http://masutangu.com/2016/09/talk-about-protobuf/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/09/talk-about-protobuf/</guid>
+        
+        
+        <category>协议设计</category>
+        
+      </item>
     
       <item>
         <title>简单异步应用框架的实现</title>
@@ -1990,240 +2138,6 @@ Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 
         
         
         <category>数据库</category>
-        
-      </item>
-    
-      <item>
-        <title>水滴石穿－第三期</title>
-        <description>&lt;blockquote&gt;
-&lt;p&gt;不积跬步，无以至千里；不积小流，无以成江海&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://www.theatlantic.com/technology/archive/2015/07/i-like-instagram/398834/&quot;&gt;Instagram Is the Best Social Network&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;作者谈他为何觉得Instagram是最好的社交应用，主要是以下三点：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;简单
-
-&lt;ul&gt;
-&lt;li&gt;信息简单：Instagram以纯图片的方式传递，没有超链接，没有一大段文字&lt;/li&gt;
-&lt;li&gt;操作简单：点赞或者只是浏览。&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;安静
-不打扰用户，用户用完即走。这和之前张小龙演讲提到的观点是一致的。&lt;/li&gt;
-&lt;li&gt;无限制社交&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Instagram的定位并不是密友社交。并顺带举了path失败的例子，密友社交不是需求，真正的密友社交是一对一的，而不是一个密友圈。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;People like social networks because they’re an efficient way of communicating with many others, but, as he said, “efficiency is the enemy of intimacy.”&lt;/p&gt;
-
-&lt;p&gt;“Real intimacy can never, ever be broadcast. It must be either one-to-one or one-off,”&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;所以你在Instagram上看到不同圈子的照片，你可以有自己的解读：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;You can skip inside jokes. You can miss subtext that pricks someone else’s hearts. You can savor the density of meaning in pictures from close friends and the surface beauty of posts from distant ones.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://www.trevormckendrick.com/how-to-choose-a-profitable-niche/&quot;&gt;How To Choose a Profitable Niche&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;作者提出具备好商机的app有下面三个条件：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Is profitable
-如何确定是否有潜在的利润？作者这块分析的结论没看出来。&lt;/li&gt;
-&lt;li&gt; Can be found via App Store search
-找到用户搜索的热词，了解用户需求。&lt;/li&gt;
-&lt;li&gt;Has crappy competitors
-竞争对手比较烂。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;延伸阅读：&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://www.trevormckendrick.com/how-i-sold-my-bible-app-company/&quot;&gt;How I Sold my Bible App Company&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://thenextweb.com/entrepreneur/2015/06/02/9-daily-habits-of-successful-mobile-app-entrepreneurs/&quot;&gt;9 daily habits of successful mobile app entrepreneurs&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;如何做好一个app？可以参考下该文章提出的几个习惯：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Study the App Store：了解用户的评价，排名趋势和排序算法。&lt;/li&gt;
-&lt;li&gt;Learn From The Horrible Apps：分析优秀的app和糟糕的app之间的差别。&lt;/li&gt;
-&lt;li&gt;Answer Support Calls &amp;amp; Emails (Even as a CEO)：回复咨询电话和邮件：每天花部分时间亲自回复用户的咨询，即使你是ceo。&lt;/li&gt;
-&lt;li&gt;Consume Something Inspirational：读些motivational的书，听听ted talk，保持积极向上的心态。&lt;/li&gt;
-&lt;li&gt;Write EVERYTHING Down：好记性不如烂笔头。&lt;/li&gt;
-&lt;li&gt;Benchmark Your Data：紧盯数据趋势（评分，用户评价等），确保走在正确的方向上。&lt;/li&gt;
-&lt;li&gt;Inbox Zero：及时回复邮件。&lt;/li&gt;
-&lt;li&gt;Keep a Journal：“I use journaling as a form of therapy and as a way for me to start each day with a clean slate.”&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;&lt;a href=&quot;https://medium.com/@benbrown/slack-is-the-operating-system-6bae1a6c0291#.m8unpie2p&quot;&gt;Slack is the Operating System Slack is the Operating System&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;对于大多数新的app来说，slack是一个操作系统。在slack上运作一个app，它是跨平台的，实时同步的，并且界面一致，对用户友好。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Designing for messaging will become a discipline as important as responsive design, and will incorporate skills as diverse as copy writing, business analytics and API programming.&lt;/p&gt;
-
-&lt;p&gt;We’re going to call it Messaging Experience Design, or MXD.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://www.trenchant.org/daily/2015/6/3/&quot;&gt;Messaging is the New Web&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;Web的优点在于易部署易扩展易分发。而在智能手机兴起的大背景下，Messaging应运而生。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Messaging (in a very broad sense including SMS, texting apps, and things like Slack) present a similar challenge and opportunity today in the context of smartphones.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;回复信息/文本会话相比起app来说要轻量得多，比起打开浏览器，输入url再等待页面展示也更近方便。同时登陆认证对于用户来说是透明的，用户不需要额外申请账户，也不需要额外学习新的操作界面。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;If integration with Slack is cheap and easy and provides additional distribution for business services, more services will be incentivized to offer it, which in turn makes Slack more valuable for its customers. And when Slack’s customers have a host of services integrated with their Slack instance, the more valuable Slack becomes to them&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;https://medium.com/@paulcolomiets/the-future-of-asynchronous-io-in-python-ce200536d847#.tctyl610p&quot;&gt;The Future of Asynchronous IO in Python&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;这篇没怎么看懂，欢迎交流。&lt;/p&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp&quot;&gt;Making sense of MVP (Minimum Viable Product) — and why I prefer Earliest Testable/Usable/Lovable&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;深度好文！文章最后的总结如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Avoid Big Bang delivery for complex, innovative product development. Do it iteratively and incrementally. You knew that already. But are you actually doing it?&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Start by identifying your skateboard — the earliest testable product. Aim for the clouds, but swallow your pride and start by delivering the skateboard.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Avoid the term MVP. Be more explicit about what you’re actually talking about. Earliest testable/usable/lovable is just one example, use whatever terms are least confusing to your stakeholders..&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;以下是精华摘抄：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;We start with the same context — the customer ordered a car. But this time we don’t just build a car. Instead we focus on the underlying need the customer wants fulfilled. Turns out that his underlying need is “I need to get from A to B faster”, and Car is just one possible solution to that.&lt;/p&gt;
-
-&lt;p&gt;We might learn some really surprising things. Suppose the customer says he hates the skateboard, we ask why, and he says “I hate the color”. We’re like “uh…. the color? That’s all?”. And the customer says “Yeah, make it blue! Other than that, it’s fine!”. You just saved &lt;em&gt;alot&lt;/em&gt; of money not building the car! Not likely, but who knows?&lt;/p&gt;
-
-&lt;p&gt;The key question is “What is the cheapest and fastest way we can start learning?” Can we deliver something even earlier than a skateboard? How about a bus ticket?&lt;/p&gt;
-
-&lt;p&gt;In most real-life product development scenarios I’ve seen, no matter how much up-front analysis you do, you’re still surprised when you put the first real release into the hands of a real user, and many of your assumptions turn out to be way off.&lt;/p&gt;
-
-&lt;p&gt;Early feedback from real users! Don’t just design the product and build the whole thing.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;https://stratechery.com/2014/pleco-building-business-just-app/&quot;&gt;Pleco: Building a Business, not an App&lt;/a&gt;&lt;/h2&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;What stands out to me about Love’s approach was that from day one his differentiation was not based on design, ease-of-use, or some other attribute we usually glorify in developers. Rather, he focused on decidedly less sexy things like licensing. Sure, licensing is particularly pertinent to a dictionary app, but the broader point is that Love’s sustainable differentiation was not about his own code. Sustainable differentiation never is.&lt;/p&gt;
-
-&lt;p&gt;This is the critical point: developers all want to write an app for themselves, which means everyone has. That’s why there is no money to be made in something like an RSS reader. But there are whole swathes of people out there who have really interesting and specific needs — like Chinese language learning — just waiting for someone who can not only develop, but can also do market research, build a business model, and do all the messystuff upon which true differentiation — and sustainable businesses — are built.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://highscalability.com/blog/2015/7/22/architecting-backend-for-a-social-product.html&quot;&gt;Architecting Backend for a Social Product&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;如何设计社交产品的后台架构？&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;存储
-
-&lt;ul&gt;
-&lt;li&gt;Master Data or Static Form of Data Like User Profile
-选择document based storage，推荐mongodb。优点：分布式／高可用／可分库分表。&lt;/li&gt;
-&lt;li&gt;Connected or Relational Data 
-选择图数据库，推荐Neo4j，但是其不支持分库分表。其他选择：FlockDB, AllegroGraph 和InfiniteGraph。&lt;/li&gt;
-&lt;li&gt;Binary data (UGC)
-推荐Amazon S3&lt;/li&gt;
-&lt;li&gt;Session Data&lt;/li&gt;
-&lt;li&gt;用户相关，推荐redis。&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;索引
-Apache Storm用于实时生成索引。Lucene（性能不够）或SolrCloud做索引系统。&lt;/li&gt;
-&lt;li&gt;Queuing &amp;amp; Push Notifications
-使用ActiveMQ做队列，push通知可以采用pyapns, CommandIQ 或App Booster。&lt;/li&gt;
-&lt;li&gt;缓存策略
-
-&lt;ul&gt;
-&lt;li&gt;Application Level Caching (Content Cache)
-redis。&lt;/li&gt;
-&lt;li&gt;Proxy Cache
-Nginx 或ATS。&lt;/li&gt;
-&lt;li&gt;Second Level Cache (Code Level Caching)
-EhCache。&lt;/li&gt;
-&lt;li&gt;Client Cache
-客户端做缓存。&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;传输协议
-http客户端采用OkHttp，消息传输采用MQTT。&lt;/li&gt;
-&lt;li&gt;安全
-All our user data must be encrypted
-&amp;gt; MongoDB and Neo4j already supports Storage Encryption. On case basis we can decide to encrypt key user information. Transport Encryption must be enabled for all DB related calls.
-
-&lt;ul&gt;
-&lt;li&gt;Secure Socket Layer
-SSL&lt;/li&gt;
-&lt;li&gt;All our api endpoints should be run on non default ports and should implement Oauth without fail&lt;/li&gt;
-&lt;li&gt;All reads from DB should happen through rest endpoints always&lt;/li&gt;
-&lt;li&gt;The configuration which holds password must be dealt specially&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;模块
-整个后台架构包括以下模块：
-
-&lt;ul&gt;
-&lt;li&gt;Load Balancer：负载均衡&lt;/li&gt;
-&lt;li&gt;Proxy Server：处理http请求，包括cache策略&lt;/li&gt;
-&lt;li&gt;Ingestion Engine：处理输入数据，包括缓存，转码，压缩&lt;/li&gt;
-&lt;li&gt;REST Server: 访问db&lt;/li&gt;
-&lt;li&gt;Event Processor: 从ActiveMQ读取消息并通过notification engine生成push通知。&lt;/li&gt;
-&lt;li&gt;Recommendation Engine: 根据用户操作，做些推荐相关的算法。&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;&lt;a href=&quot;http://engineering.skybettingandgaming.com/2016/02/02/how-we-release-so-frequently/&quot;&gt;How We Release So Frequently How We Release So Frequently&lt;/a&gt;&lt;/h2&gt;
-
-&lt;p&gt;如何快速发布？作者提了下面几个快速发布的准则：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Forward-only Migrations
-不允许回滚数据库的Migrations。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Take dropping a column as an example; how do you release that change? Easy:
-Release a version of the code that doesn’t use that column; ensure it is stable / won’t be rolled back.
-Do a second release that has a migration to remove the column.&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;New Code != New Features
-用户应该对你代码的发布无感知。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;It’s a really bad experience for customers to see a new feature appear, start using it, and then have it disappear a few minutes later as a release is rolled back — possibly for unrelated reasons&lt;/p&gt;
-
-&lt;p&gt;Every new feature is first released in a hidden state, ready to be turned on with a ‘feature toggle’.&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;There are some really strong plus points to this approach:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;We don’t have to roll back a whole release (which may contain several changes) just because a single new feature isn’t working&lt;/li&gt;
-&lt;li&gt;We can fully test new features in an environment that has the exact hardware, software and data we need&lt;/li&gt;
-&lt;li&gt;We can release new features to customers gradually&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;文中介绍了利用session和cookie来实现灰度升级，有兴趣可以仔细阅读下。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Small Releases
-The more often we release, the smaller the releases can be. Smaller releases carry less risk, letting us release even more often.&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-        <pubDate>Tue, 08 Mar 2016 12:42:43 +0800</pubDate>
-        <link>http://masutangu.com/2016/03/dewdrop-note-3/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/03/dewdrop-note-3/</guid>
-        
-        
-        <category>读书笔记</category>
         
       </item>
     
