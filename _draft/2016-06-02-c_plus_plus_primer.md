@@ -44,6 +44,20 @@ char相当于 signed char 或者 unsigned char ，但是这取决于编译器的
     
 如果希望写出的代码在不同环境下有同样的效果，需要显式指明使用 signed char 或 unsigned char 的其中一种。
 
+### 字符数组和字符串指针
+字符数组是一个数组，每个元素的值都可以改变。而字符串指针指向的是一个常量字符串，它被存放在程序的静态数据区，一旦定义就不能改变。这是最重要的区别。
+```c++
+#include <stdio.h>
+int main(){
+    char str1[] = "C Language";
+    char *str2 = "C Language";
+    str1[1] = '-';
+    *(str2+1) = '-';  // error 不能改变字符串常量的值
+    printf("str1 = %s\n", str1);
+    return 0;
+}
+```
+
 ### const 变量
 
 > There are three exceptions to the rule that headers should not contain definitions: classes, const objects whose value is known at compile time, and inline functions
