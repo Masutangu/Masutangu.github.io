@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>libuv 源码阅读</title>
+  <meta name="description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="libuv 源码阅读">
+  <meta name="twitter:description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="libuv 源码阅读">
+  <meta property="og:description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2016/10/libuv-source-code/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2016-10-10 20:39:11 +0800" itemprop="datePublished" class="post-meta__date date">2016-10-10</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">libuv 源码阅读</h1>
+  </header>
+
+  <section class="post">
+    <p>花了几天时间读了下 libuv 的源码，整理成这篇文章。<a href = #section_1>第一节</a>是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。<a href = #section_2>第二节</a>解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。</p>
+
+<h1><span id="section_1">概念</span></h1>
+
+<h2>handles 和 requests</h2>
+
+<p>libuv 提供了两个抽象：handles 和 requests。handles 是 long－lived 的，会在其 active 的时候做特定的操作。requests 则为 short-lived 操作，request 可以独自执行或被 handle 调用执行。</p>
+
+<h2>I/O loop</h2>
+
+<p>I/O loop（或 event loop）是 libuv 的核心。每个 I/O loop 绑定单一的线程。</p>
+
+<blockquote>
+<p>The libuv event loop (or any other API involving the loop or handles, for that matter) is not thread-safe except where stated otherwise.</p>
+</blockquote>
+
+<p>event loop 采用单线程异步 IO 的形式：所有网络操作都使用 non-blocking 套接字，并使用各个平台上性能最好的 poll 机制例如 linux 上的 epoll，OSX 的 kqueue 等等。</p>
+
+<p><img src="/assets/images/libuv-source-code/illustration-1.png" width="800" /></p>
+
+<p>I/O loop 的流程：</p>
+
+<ul>
+<li>event loop 在每次循环周期开始前都会缓存当前时间，以减少时间相关的系统调用</li>
+<li>执行到期定时器的 callback </li>
+<li>执行上一轮循环推迟的 I/O callback </li>
+<li>执行 Idle handle 的 callback </li>
+<li>执行 Prepare handle 的 callback</li>
+<li>计算 poll timeout</li>
+<li>阻塞处理 I/O，超时时间为上一步计算的 poll timeout </li>
+<li>执行 Check handle 的 callback</li>
+<li>执行 Close callback</li>
+</ul>
+
+<blockquote>
+<p>libuv uses a thread pool to make asynchronous file I/O operations possible, but network I/O is always performed in a single thread, each loop’s thread.</p>
+</blockquote>
+
+<h2>File I/O</h2>
+
+<p>libuv 的异步文件 I/O 是通过线程池实现的。</p>
+
+<blockquote>
+<p>libuv provides a threadpool which can be used to run user code and get notified in the loop thread. <strong>This thread pool is internally used to run all filesystem operations</strong>, as well as getaddrinfo and getnameinfo requests.</p>
+
+<p>The threadpool is global and shared across all event loops. When a particular function makes use of the threadpool (i.e. when using <code>uv_queue_work()</code>) libuv preallocates and initializes the maximum number of threads allowed by UV_THREADPOOL_SIZE.</p>
+
+<p>libuv currently uses a global thread pool on which all loops can queue work on. 3 types of operations are currently run on this pool:</p>
+
+<ul>
+<li>Filesystem operations</li>
+<li>DNS functions (getaddrinfo and getnameinfo)</li>
+<li>User specified code via uv_queue_work()</li>
+</ul>
+</blockquote>
+
+<h2>主要结构体</h2>
+
+<h3>uv_loop_t</h3>
+
+<blockquote>
+<p>The event loop is the central part of libuv’s functionality. It takes care of polling for i/o and scheduling callbacks to be run based on different sources of events.</p>
+</blockquote>
+
+<p>uv_loop_t 执行的三种模式</p>
+
+<ul>
+<li><p><strong>UV_RUN_DEFAULT</strong></p>
+
+<p>Runs the event loop until there are no more active and referenced handles or requests. Returns non-zero if uv_stop() was called and there are still active handles or requests. Returns zero in all other cases.</p></li>
+<li><p><strong>UV_RUN_ONCE</strong></p>
+
+<p>Poll for i/o once. Note that this function blocks if there are no pending callbacks. Returns zero when done (no active handles or requests left), or non-zero if more callbacks are expected (meaning you should run the event loop again sometime in the future).</p></li>
+<li><p><strong>UV_RUN_NOWAIT</strong></p>
+
+<p>Poll for i/o once but don’t block if there are no pending callbacks. Returns zero if done (no active handles or requests left), or non-zero if more callbacks are expected (meaning you should run the event loop again sometime in the future).</p></li>
+</ul>
+
+<h3>uv_handle_t</h3>
+
+<blockquote>
+<p>uv_handle_t is the base type for all libuv handle types.</p>
+
+<p>Structures are aligned so that any libuv handle can be cast to uv_handle_t. All API functions defined here work with any handle type.</p>
+</blockquote>
+
+<ul>
+<li><p><code>void uv_ref(uv_handle_t* handle)</code></p>
+
+<p>Reference the given handle. References are idempotent, that is, if a handle is already referenced calling this function again will have no effect.</p></li>
+<li><p><code>void uv_unref(uv_handle_t* handle)</code></p>
+
+<p>Un-reference the given handle. References are idempotent, that is, if a handle is not referenced calling this function again will have no effect.</p></li>
+</ul>
+
+<p>uv_unref 主要用于计时器。<a href="https://nikhilm.github.io/uvbook/utilities.html#reference-count">例子在此</a>，摘抄如下：</p>
+
+<blockquote>
+<p>These functions can be used to allow a loop to exit even when a watcher is active or to use custom objects to keep the loop alive.</p>
+
+<p>The latter can be used with interval timers. You might have a garbage collector which runs every X seconds, or your network service might send a heartbeat to others periodically, but you don’t want to have to stop them along all clean exit paths or error scenarios. Or you want the program to exit when all your other watchers are done. In that case just unref the timer immediately after creation so that if it is the only watcher running then uv_run will still exit.</p>
+</blockquote>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">uv_loop_t *loop;
+uv_timer_t gc_req;
+uv_timer_t fake_job_req;
+
+int main() {
+    loop = uv_default_loop();
+
+    uv_timer_init(loop, &amp;gc_req);
+    uv_unref((uv_handle_t*) &amp;gc_req);
+
+    uv_timer_start(&amp;gc_req, gc, 0, 2000);
+
+    // could actually be a TCP download or something
+    uv_timer_init(loop, &amp;fake_job_req);
+    uv_timer_start(&amp;fake_job_req, fake_job, 9000, 0);
+    return uv_run(loop, UV_RUN_DEFAULT);
+}
+</code></pre></figure>
+<blockquote>
+<p>We initialize the garbage collector timer, then immediately unref it. Observe how after 9 seconds, when the fake job is done, the program automatically exits, even though the garbage collector is still running.</p>
+</blockquote>
+
+<h3>uv_req_t</h3>
+
+<blockquote>
+<p>uv_req_t is the base type for all libuv request types.</p>
+</blockquote>
+
+<h1><span id="section_2">代码解读</span></h1>
+
+<h2>队列</h2>
+
+<p>libuv 的队列是循环双向链表，队列在 libuv 中用到的地方很多，例如 event loop 用队列来存储 handle（handle_queue)，待监听的io事件（watcher_queue）等等。</p>
+
+<h3>定义</h3>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">typedef void *QUEUE[2];
+#define QUEUE_NEXT(q)       (*(QUEUE **) &amp;((*(q))[0]))
+#define QUEUE_PREV(q)       (*(QUEUE **) &amp;((*(q))[1]))
+#define QUEUE_PREV_NEXT(q)  (QUEUE_NEXT(QUEUE_PREV(q)))
+#define QUEUE_NEXT_PREV(q)  (QUEUE_PREV(QUEUE_NEXT(q)))
+
+#define QUEUE_INIT(q)                                                         \
+  do {                                                                        \
+    QUEUE_NEXT(q) = (q);                                                      \
+    QUEUE_PREV(q) = (q);                                                      \
+  }                                                                           \
+  while (0)
+</code></pre></figure>
+<p>这段定义了 QUEUE 是元素类型为 void* 的数组，数组长度为 2。
+如果按下面这样定义：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">#define QUEUE_NEXT(q)       ((QUEUE *) ((*(q))[0]))
+#define QUEUE_PREV(q)       ((QUEUE *) ((*(q))[1]))
+</code></pre></figure>
+<p>返回值不是左值，在 QUEUE_INIT 函数中对 QUEUE_NEXT 和 QUEUE_PREV 的赋值会编译失败。
+C/C++ 中类型转换有可能会返回左值（可以看 <a href="http://stackoverflow.com/questions/26508609/is-the-result-of-a-cast-an-rvalue">stackoverflow</a> 的讲解)：</p>
+
+<blockquote>
+<p>The result of the expression (T) cast-expression is of type T. The result is an lvalue if T is an lvalue reference type or an rvalue reference to function type and an xvalue if T is an rvalue reference to object type; <strong>otherwise the result is a prvalue.</strong>[ Note: if T is a non-class type that is cv-qualified, the cv-qualifiers are ignored when determining the type of the resulting prvalue; see 3.10. —end note ]</p>
+</blockquote>
+
+<p>因此需要先将 ((*(q))[0])) 取址再解引用（解引用返回左值）。</p>
+
+<h3>接口</h3>
+
+<p>下面是 QUEUE 几个重要的接口：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">
+// 取出数据，具体例子可参考：https://gist.github.com/bodokaiser/5657156
+#define QUEUE_DATA(ptr, type, field)                                          \
+  ((type *) ((char *) (ptr) - offsetof(type, field)))
+
+// 将 n 队列的元素添加到 h 队列，保留 h 队列原先的元素。注意操作后 n 队列的结构被破坏，不能在遍历 n 队列
+#define QUEUE_ADD(h, n)                                                       \
+  do {                                                                        \
+    QUEUE_PREV_NEXT(h) = QUEUE_NEXT(n);                                       \
+    QUEUE_NEXT_PREV(n) = QUEUE_PREV(h);                                       \
+    QUEUE_PREV(h) = QUEUE_PREV(n);                                            \
+    QUEUE_PREV_NEXT(h) = (h);                                                 \
+  }                                                                           \
+  while (0)
+
+// QUEUE_MOVE 的 helper 函数
+#define QUEUE_SPLIT(h, q, n)                                                  \
+  do {                                                                        \
+    QUEUE_PREV(n) = QUEUE_PREV(h);                                            \
+    QUEUE_PREV_NEXT(n) = (n);                                                 \
+    QUEUE_NEXT(n) = (q);                                                      \
+    QUEUE_PREV(h) = QUEUE_PREV(q);                                            \
+    QUEUE_PREV_NEXT(h) = (h);                                                 \
+    QUEUE_PREV(q) = (n);                                                      \
+  }                                                                           \
+  while (0)
+
+// 将 h 队列的元素添加到 n 队列， h 队列被清空，n 队列原先的元素也被清空
+#define QUEUE_MOVE(h, n)                                                      \
+  do {                                                                        \
+    if (QUEUE_EMPTY(h))                                                       \
+      QUEUE_INIT(n);                                                          \
+    else {                                                                    \
+      QUEUE* q = QUEUE_HEAD(h);                                               \
+      QUEUE_SPLIT(h, q, n);                                                   \
+    }                                                                         \
+  }                                                                           \
+  while (0)
+
+// 添加元素 q 到 h 队列的尾部，QUEUE_PREV(h) 为原先队列的 tail 节点
+#define QUEUE_INSERT_TAIL(h, q)                                               \
+  do {                                                                        \
+    QUEUE_NEXT(q) = (h);                                                      \
+    QUEUE_PREV(q) = QUEUE_PREV(h);                                            \
+    QUEUE_PREV_NEXT(q) = (q);                                                 \
+    QUEUE_PREV(h) = (q);                                                      \
+  }                                                                           \
+  while (0)
+</code></pre></figure>
+<p>上面提到了 QUEUE 是一个循环链表。定义 h 为队列的哨兵节点，则 QUEUE_NEXT(h) 指向队列的 head 节点，QUEUE_PREV(h) 指向队列的 tail 节点。</p>
+
+<p>结合图例来看看 QUEUE_INSERT_TAIL 的实现。</p>
+
+<p>原队列，因为只有一个元素（h节点为哨兵节点，不算在内），因此其即是 head 也是 tail：
+<img src="/assets/images/libuv-source-code/illustration-2.png" width="800" /></p>
+
+<p>新增一个新元素后如下所示：
+<img src="/assets/images/libuv-source-code/illustration-3.png" width="800" /></p>
+
+<p>下面是 QUEUE_MOVE 的图例。
+h 队列 和 n 队列 QUEUE_MOVE 操作前如下图：
+<img src="/assets/images/libuv-source-code/illustration-4.png" width="800" /></p>
+
+<p>QUEUE_MOVE 后，h 队列被清空，n 队列的哨兵节点连接到原 h 队列的 head 和 tail：
+<img src="/assets/images/libuv-source-code/illustration-5.png" width="800" /></p>
+
+<p>最后是 QUEUE_ADD 的图例，原理就是将 n 队列的 head 和 h 队列的 tail 相连，并把 h 队列的 tail 重置指向 n 队列的 tail：
+<img src="/assets/images/libuv-source-code/illustration-6.png" width="800" /></p>
+
+<h2>epoll 事件管理</h2>
+
+<p>IO 事件都会调用 <code>uv__io_start</code> 函数，该函数将需要监听的事件保存到 event loop 的 watcher_queue 队列中：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
+  ...
+
+  if (QUEUE_EMPTY(&amp;w-&gt;watcher_queue))
+    QUEUE_INSERT_TAIL(&amp;loop-&gt;watcher_queue, &amp;w-&gt;watcher_queue);  // 添加到 loop-&gt;watcher_queue 队列
+
+  ...
+}
+</code></pre></figure>
+<p>然后在 event loop 的循环中，会调用 <code>uv__io_poll</code>。该函数将 loop-&gt;watcher_queue 队列中的事件取出，添加到 epoll 进行监听：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">void uv__io_poll(uv_loop_t* loop, int timeout) {
+  ...
+  uv__io_t* w;
+
+  while (!QUEUE_EMPTY(&amp;loop-&gt;watcher_queue)) {  // 遍历取出 loop-&gt;watcher_queue 队列中待监听的事件，直至队列为空
+    q = QUEUE_HEAD(&amp;loop-&gt;watcher_queue);
+    QUEUE_REMOVE(q);
+    QUEUE_INIT(q);
+
+    w = QUEUE_DATA(q, uv__io_t, watcher_queue);  // 取出 uv__io_t 结构，该结构保存了用户注册的回调函数
+
+    e.events = w-&gt;pevents;
+    e.data = w-&gt;fd;
+
+    if (w-&gt;events == 0)
+      op = UV__EPOLL_CTL_ADD;
+    else
+      op = UV__EPOLL_CTL_MOD;
+
+    /* XXX Future optimization: do EPOLL_CTL_MOD lazily if we stop watching
+     * events, skip the syscall and squelch the events after epoll_wait().
+     */
+    if (uv__epoll_ctl(loop-&gt;backend_fd, op, w-&gt;fd, &amp;e)) {  // 添加到 epoll
+      if (errno != EEXIST)
+        abort();
+
+      assert(op == UV__EPOLL_CTL_ADD);
+
+      /* We&#39;ve reactivated a file descriptor that&#39;s been watched before. */
+      if (uv__epoll_ctl(loop-&gt;backend_fd, UV__EPOLL_CTL_MOD, w-&gt;fd, &amp;e))
+        abort();
+    }
+
+    w-&gt;events = w-&gt;pevents;
+  }
+
+  ... 
+
+
+  // 阻塞等待 epoll 返回直到超时
+  for (;;) {
+    if (no_epoll_wait != 0 || (sigmask != 0 &amp;&amp; no_epoll_pwait == 0)) {
+      nfds = uv__epoll_pwait(loop-&gt;backend_fd,
+                             events,
+                             ARRAY_SIZE(events),
+                             timeout,
+                             sigmask);
+      if (nfds == -1 &amp;&amp; errno == ENOSYS)
+        no_epoll_pwait = 1;
+    } else {
+      nfds = uv__epoll_wait(loop-&gt;backend_fd,
+                            events,
+                            ARRAY_SIZE(events),
+                            timeout);
+      if (nfds == -1 &amp;&amp; errno == ENOSYS)
+        no_epoll_wait = 1;
+    }
+    ...
+
+    loop-&gt;watchers[loop-&gt;nwatchers] = (void*) events;  // 将 events 保存在 loop-&gt;watchers，为了在 uv__io_close 中可以将对应 fd 的 event 删掉
+    loop-&gt;watchers[loop-&gt;nwatchers + 1] = (void*) (uintptr_t) nfds;
+    for (i = 0; i &lt; nfds; i++) {
+      pe = events + i;
+      fd = pe-&gt;data;
+
+      /* Skip invalidated events, see uv__platform_invalidate_fd */
+      if (fd == -1)
+        continue;
+
+      assert(fd &gt;= 0);
+      assert((unsigned) fd &lt; loop-&gt;nwatchers);
+
+      w = loop-&gt;watchers[fd];
+
+      if (w == NULL) {
+        /* File descriptor that we&#39;ve stopped watching, disarm it.
+         *
+         * Ignore all errors because we may be racing with another thread
+         * when the file descriptor is closed.
+         */
+        uv__epoll_ctl(loop-&gt;backend_fd, UV__EPOLL_CTL_DEL, fd, pe);
+        continue;
+      }
+
+      /* Give users only events they&#39;re interested in. Prevents spurious
+       * callbacks when previous callback invocation in this loop has stopped
+       * the current watcher. Also, filters out events that users has not
+       * requested us to watch.
+       */
+      pe-&gt;events &amp;= w-&gt;pevents | POLLERR | POLLHUP;
+
+      /* Work around an epoll quirk where it sometimes reports just the
+       * EPOLLERR or EPOLLHUP event.  In order to force the event loop to
+       * move forward, we merge in the read/write events that the watcher
+       * is interested in; uv__read() and uv__write() will then deal with
+       * the error or hangup in the usual fashion.
+       *
+       * Note to self: happens when epoll reports EPOLLIN|EPOLLHUP, the user
+       * reads the available data, calls uv_read_stop(), then sometime later
+       * calls uv_read_start() again.  By then, libuv has forgotten about the
+       * hangup and the kernel won&#39;t report EPOLLIN again because there&#39;s
+       * nothing left to read.  If anything, libuv is to blame here.  The
+       * current hack is just a quick bandaid; to properly fix it, libuv
+       * needs to remember the error/hangup event.  We should get that for
+       * free when we switch over to edge-triggered I/O.
+       */
+      if (pe-&gt;events == POLLERR || pe-&gt;events == POLLHUP)
+        pe-&gt;events |= w-&gt;pevents &amp; (POLLIN | POLLOUT);
+
+      if (pe-&gt;events != 0) {
+        /* Run signal watchers last.  This also affects child process watchers
+         * because those are implemented in terms of signal watchers.
+         */
+        if (w == &amp;loop-&gt;signal_io_watcher)
+          have_signals = 1;
+        else
+          w-&gt;cb(loop, w, pe-&gt;events);  // 调用用户注册的回调
+
+        nevents++;
+      }
+    }
+
+    loop-&gt;watchers[loop-&gt;nwatchers] = NULL;
+    loop-&gt;watchers[loop-&gt;nwatchers + 1] = NULL;
+
+    ...
+  }
+}
+</code></pre></figure>
+<h2>线程池实现异步文件 IO</h2>
+
+<p>libuv 中文件操作的异步 IO 是通过线程池实现的。原理是将文件操作由工作线程来完成，当操作完成后工作线程通过 fd 通知主线程（该 fd 同样由 epoll 管理），主线程监听该 fd，当有 epoll 事件时根据层层回调，最终会调用到用户注册的回调函数。</p>
+
+<p>下面看看这块逻辑，所有文件操作都调用了 POST 定义的宏。POST 判断是否注册了回调，如果有则表示该操作为异步调用，此时调用 <code>uv__work_submit</code> 向线程池提交任务。                                            </p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">#define POST                                                                  \
+  do {                                                                        \
+    if (cb != NULL) {                                                         \
+      uv__work_submit(loop, &amp;req-&gt;work_req, uv__fs_work, uv__fs_done);        \
+      return 0;                                                               \
+    }                                                                         \
+    else {                                                                    \
+      // 回调为 null 是同步调用                                                  \
+      uv__fs_work(&amp;req-&gt;work_req);                                            \
+      return req-&gt;result;                                                     \
+    }                                                                         \
+  }                                                                           \
+  while (0)
+
+// 操作完成后的回调函数
+static void uv__fs_done(struct uv__work* w, int status) {
+  uv_fs_t* req;
+
+  req = container_of(w, uv_fs_t, work_req);
+  uv__req_unregister(req-&gt;loop, req);
+
+  if (status == -ECANCELED) {
+    assert(req-&gt;result == 0);
+    req-&gt;result = -ECANCELED;
+  }
+
+  req-&gt;cb(req);  // 调用用户注册的回调
+}
+</code></pre></figure>
+<p><code>uv__work_submit</code> 先调用 <code>init_once</code> 初始化工作线程池，再调用 <code>post</code> 提交任务给工作线程：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">void uv__work_submit(uv_loop_t* loop,
+                     struct uv__work* w,
+                     void (*work)(struct uv__work* w),
+                     void (*done)(struct uv__work* w, int status)) {
+  uv_once(&amp;once, init_once);
+  w-&gt;loop = loop;
+  w-&gt;work = work;
+  w-&gt;done = done;
+  post(&amp;w-&gt;wq);
+}
+
+
+static void init_once(void) {
+  unsigned int i;
+  const char* val;
+
+  nthreads = ARRAY_SIZE(default_threads);
+  val = getenv(&quot;UV_THREADPOOL_SIZE&quot;);
+  if (val != NULL)
+    nthreads = atoi(val);
+  if (nthreads == 0)
+    nthreads = 1;
+  if (nthreads &gt; MAX_THREADPOOL_SIZE)
+    nthreads = MAX_THREADPOOL_SIZE;
+
+  threads = default_threads;
+  if (nthreads &gt; ARRAY_SIZE(default_threads)) {
+    threads = uv__malloc(nthreads * sizeof(threads[0]));
+    if (threads == NULL) {
+      nthreads = ARRAY_SIZE(default_threads);
+      threads = default_threads;
+    }
+  }
+
+  if (uv_cond_init(&amp;cond))  // 初始化条件变量
+    abort();
+
+  if (uv_mutex_init(&amp;mutex))  // 初始化互斥锁
+    abort();
+
+  QUEUE_INIT(&amp;wq);
+
+  for (i = 0; i &lt; nthreads; i++)
+    if (uv_thread_create(threads + i, worker, NULL))  // 创建工作线程
+      abort();
+
+  initialized = 1;
+}
+
+// 工作线程
+static void worker(void* arg) {
+  struct uv__work* w;
+  QUEUE* q;
+
+  (void) arg;
+
+  for (;;) {
+    uv_mutex_lock(&amp;mutex);
+
+    while (QUEUE_EMPTY(&amp;wq)) {
+      idle_threads += 1;
+      uv_cond_wait(&amp;cond, &amp;mutex);   // wq 保存任务队列，当 wq 为空时阻塞等待任务，有新任务提交就会唤醒该 worker
+      idle_threads -= 1;
+    }
+
+    q = QUEUE_HEAD(&amp;wq);
+
+    if (q == &amp;exit_message)
+      uv_cond_signal(&amp;cond);  
+    else {
+      QUEUE_REMOVE(q);
+      QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
+                             executing. */
+    }
+
+    uv_mutex_unlock(&amp;mutex);
+
+    if (q == &amp;exit_message)
+      break;
+
+    w = QUEUE_DATA(q, struct uv__work, wq);
+    w-&gt;work(w);   // work 执行文件操作
+
+    uv_mutex_lock(&amp;w-&gt;loop-&gt;wq_mutex);
+    w-&gt;work = NULL;  /* Signal uv_cancel() that the work req is done
+                        executing. */
+    QUEUE_INSERT_TAIL(&amp;w-&gt;loop-&gt;wq, &amp;w-&gt;wq);  // 将已完成的 uv__work 添加到 loop-&gt;wq 队列
+    uv_async_send(&amp;w-&gt;loop-&gt;wq_async);  // 通知主线程该任务已经执行完成
+    uv_mutex_unlock(&amp;w-&gt;loop-&gt;wq_mutex);
+  }
+}
+
+// 提交任务 
+static void post(QUEUE* q) {
+  uv_mutex_lock(&amp;mutex);
+  QUEUE_INSERT_TAIL(&amp;wq, q);  // 将任务提交到 wq 队列
+  if (idle_threads &gt; 0)
+    uv_cond_signal(&amp;cond);  // 有空闲工作线程时就唤醒 worker
+  uv_mutex_unlock(&amp;mutex);
+}
+</code></pre></figure>
+<p>最后看看工作线程和主线程的通信，在文件操作完成后，工作线程调用 <code>uv__async_send</code> ，该函数会往 wa-&gt;wfd 或 wa-&gt;io_watcher.fd 写一个空子节：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">int uv_async_send(uv_async_t* handle) {
+  /* Do a cheap read first. */
+  if (ACCESS_ONCE(int, handle-&gt;pending) != 0)
+    return 0;
+
+  if (cmpxchgi(&amp;handle-&gt;pending, 0, 1) == 0)
+    uv__async_send(&amp;handle-&gt;loop-&gt;async_watcher);
+
+  return 0;
+}
+
+void uv__async_send(struct uv__async* wa) {
+  const void* buf;
+  ssize_t len;
+  int fd;
+  int r;
+
+  buf = &quot;&quot;;
+  len = 1;
+  fd = wa-&gt;wfd;
+
+#if defined(__linux__)
+  if (fd == -1) {
+    static const uint64_t val = 1;
+    buf = &amp;val;
+    len = sizeof(val);
+    fd = wa-&gt;io_watcher.fd;  /* eventfd */
+  }
+#endif
+
+  do
+    r = write(fd, buf, len);
+  while (r == -1 &amp;&amp; errno == EINTR);
+
+  if (r == len)
+    return;
+
+  if (r == -1)
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return;
+
+  abort();
+}
+</code></pre></figure>
+<p>主线程监听 io_watcher.fd，当有 epoll 事件时回调的顺序如下：</p>
+
+<p>调用 uv__io_t 的 cb 即 <code>uv__async_io</code> --&gt; 调用 uv__async 的 cb 即 <code>uv__async_event</code>  --&gt; 调用 uv_async_t 的 cb 即 <code>uv__work_done</code> --&gt; 调用 uv__work 的 done 即用户提交的回调函数。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">int uv_loop_init(uv_loop_t* loop) {
+  ...
+  err = uv_async_init(loop, &amp;loop-&gt;wq_async, uv__work_done);  // 初始化 async 
+  ...
+}
+
+void uv__work_done(uv_async_t* handle) {
+  struct uv__work* w;
+  uv_loop_t* loop;
+  QUEUE* q;
+  QUEUE wq;
+  int err;
+
+  loop = container_of(handle, uv_loop_t, wq_async);
+  uv_mutex_lock(&amp;loop-&gt;wq_mutex);
+  QUEUE_MOVE(&amp;loop-&gt;wq, &amp;wq);  // 因为访问 loop-&gt;wq 需要锁，为了避免长时间锁，所以拷贝一份副本出来，下面的遍历直接操作该副本
+  uv_mutex_unlock(&amp;loop-&gt;wq_mutex);
+
+  while (!QUEUE_EMPTY(&amp;wq)) {  // 遍历 loop-&gt;wq 的副本
+    q = QUEUE_HEAD(&amp;wq);
+    QUEUE_REMOVE(q);
+
+    w = container_of(q, struct uv__work, wq);
+    err = (w-&gt;work == uv__cancelled) ? UV_ECANCELED : 0;
+    w-&gt;done(w, err);  // 调用 done，即 uv__fs_done 函数，最终会调用用户注册的回调
+  }
+}
+
+//  uv__async_start 函数会调用 uv__io_start，监听 wa-&gt;io_watcher.fd
+int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
+  int err;
+
+  err = uv__async_start(loop, &amp;loop-&gt;async_watcher, uv__async_event);
+  if (err)
+    return err;
+
+  uv__handle_init(loop, (uv_handle_t*)handle, UV_ASYNC);
+  handle-&gt;async_cb = async_cb;
+  handle-&gt;pending = 0;
+
+  QUEUE_INSERT_TAIL(&amp;loop-&gt;async_handles, &amp;handle-&gt;queue);
+  uv__handle_start(handle);
+
+  return 0;
+}
+
+// 创建 wa-&gt;io_watcher.fd 
+int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
+  int pipefd[2];
+  int err;
+
+  if (wa-&gt;io_watcher.fd != -1)
+    return 0;
+
+  // 下面一大段是创建 io_watcher.fd 的逻辑
+  err = uv__async_eventfd();
+  if (err &gt;= 0) {
+    pipefd[0] = err;
+    pipefd[1] = -1;
+  }
+  else if (err == -ENOSYS) {
+    err = uv__make_pipe(pipefd, UV__F_NONBLOCK);
+#if defined(__linux__)
+    /* Save a file descriptor by opening one of the pipe descriptors as
+     * read/write through the procfs.  That file descriptor can then
+     * function as both ends of the pipe.
+     */
+    if (err == 0) {
+      char buf[32];
+      int fd;
+
+      snprintf(buf, sizeof(buf), &quot;/proc/self/fd/%d&quot;, pipefd[0]);
+      fd = uv__open_cloexec(buf, O_RDWR);
+      if (fd &gt;= 0) {
+        uv__close(pipefd[0]);
+        uv__close(pipefd[1]);
+        pipefd[0] = fd;
+        pipefd[1] = fd;
+      }
+    }
+#endif
+  }
+
+  if (err &lt; 0)
+    return err;
+
+  uv__io_init(&amp;wa-&gt;io_watcher, uv__async_io, pipefd[0]);  // 注册 async io 事件的 callback 为 uv__async_io
+  uv__io_start(loop, &amp;wa-&gt;io_watcher, POLLIN);  // 将该 io_watcher 添加到 loop-&gt;watcher_queue，参考上文的 uv__io_start 
+  wa-&gt;wfd = pipefd[1];
+  wa-&gt;cb = cb;  // 注册 uv__async 的 cb 为 uv__async_event
+
+  return 0;
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="link to 浅读 libco">浅读 libco</a></h2>
+       <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2016/10/libuv-source-code/";
+        this.page.identifier = "/2016/10/libuv-source-code/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-13 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>
