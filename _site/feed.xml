@@ -5,12 +5,12 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 13 Oct 2016 15:49:19 +0800</pubDate>
-    <lastBuildDate>Thu, 13 Oct 2016 15:49:19 +0800</lastBuildDate>
+    <pubDate>Sat, 22 Oct 2016 09:35:16 +0800</pubDate>
+    <lastBuildDate>Sat, 22 Oct 2016 09:35:16 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
-        <title>libuv 源码阅读</title>
+        <title>Libuv 源码阅读</title>
         <description>&lt;p&gt;花了几天时间读了下 libuv 的源码，整理成这篇文章。&lt;a href = #section_1&gt;第一节&lt;/a&gt;是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。&lt;a href = #section_2&gt;第二节&lt;/a&gt;解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。&lt;/p&gt;
 
 &lt;h1&gt;&lt;span id=&quot;section_1&quot;&gt;概念&lt;/span&gt;&lt;/h1&gt;
@@ -667,7 +667,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
   return 0;
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Mon, 10 Oct 2016 20:39:11 +0800</pubDate>
+        <pubDate>Thu, 13 Oct 2016 15:56:27 +0800</pubDate>
         <link>http://masutangu.com/2016/10/libuv-source-code/</link>
         <guid isPermaLink="true">http://masutangu.com/2016/10/libuv-source-code/</guid>
         
@@ -677,7 +677,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
       </item>
     
       <item>
-        <title>浅读 libco</title>
+        <title>浅读 Libco</title>
         <description>&lt;p&gt;今天花了一天时间，学习了下微信的开源协程库 &lt;a href=&quot;https://github.com/tencent-wechat/libco&quot;&gt;libco&lt;/a&gt;的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。&lt;/p&gt;
 
 &lt;h2&gt;协程的原理&lt;/h2&gt;
@@ -1787,7 +1787,7 @@ if __name__ == &amp;#39;__main__&amp;#39;:
       </item>
     
       <item>
-        <title>Python笔记</title>
+        <title>Python 笔记</title>
         <description>&lt;p&gt;这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。&lt;/p&gt;
 
 &lt;p&gt;&lt;em&gt;注：本文内容整理自网上博客，《Python Cookbook》等，非原创。&lt;/em&gt;&lt;/p&gt;
@@ -2581,7 +2581,7 @@ plt.subplot(2, 1, 2)  # 按照两行一列划分，使用第二个子图，即�
       </item>
     
       <item>
-        <title>Tcpcopy源码阅读</title>
+        <title>Tcpcopy 源码阅读</title>
         <description>&lt;p&gt;&lt;a href=&quot;https://github.com/session-replay-tools/tcpcopy&quot;&gt;tcpcopy&lt;/a&gt;是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
 由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。&lt;/p&gt;
 
@@ -2836,7 +2836,7 @@ void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
       </item>
     
       <item>
-        <title>iOS初体验</title>
+        <title>iOS 初体验</title>
         <description>&lt;p&gt;客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&amp;lt;iOS Programming The Big Nerd Ranch Guide&amp;gt;,最后写了个非常简单的App：&lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDo&lt;/a&gt;。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。&lt;/p&gt;
 
 &lt;h1&gt;What’s in iOS?&lt;/h1&gt;

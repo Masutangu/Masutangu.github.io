@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2015-08-02T16:07:58+08:00
-title: 谈谈我对Golang的理解
+title: 谈谈我对 Golang 的理解
 category: 编程语言
 ---
 

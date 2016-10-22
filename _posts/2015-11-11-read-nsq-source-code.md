@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2015-11-11T16:07:58+08:00
-title: NSQ源码解读 NSQD篇
+title: NSQ 源码解读之 NSQD 篇
 category: 源码阅读
 ---
 

@@ -281,7 +281,7 @@
    
    <div class="read-more-item">
        <span class="read-more-item-dim">最近的文章</span>
-       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="link to 浅读 libco">浅读 libco</a></h2>
+       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="link to 浅读 Libco">浅读 Libco</a></h2>
        <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
        <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
    </div>
@@ -329,7 +329,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-13 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-22 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

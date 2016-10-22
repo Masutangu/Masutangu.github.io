@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2016-02-29T16:07:58+08:00
-title: UDF+Trigger实时监控Mysql数据更新
+title: UDF + Trigger 实时监控 Mysql 数据更新
 category: 数据库
 ---
 

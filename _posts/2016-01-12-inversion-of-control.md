@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2016-01-12T16:07:58+08:00
-title: 设计模式之 控制反转
+title: 设计模式之控制反转
 category: 设计模式
 ---
 

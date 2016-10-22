@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2016-07-06T18:56:31+08:00
-title: Python笔记
+title: Python 笔记
 category: 编程语言
 ---
 

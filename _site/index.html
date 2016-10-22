@@ -128,14 +128,14 @@
   <ol class="post-list">
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/10/libuv-source-code/" title="访问 libuv 源码阅读">libuv 源码阅读</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/10/libuv-source-code/" title="访问 Libuv 源码阅读">Libuv 源码阅读</a></h2>
       <p class="excerpt">花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。概念handles 和 requestslibuv 提供了两个抽象：handles 和 requests。handles 是 long－lived 的，会在其 active 的时候做特定的操作。requests 则为 short-lived 操作，request 可以独自执行或被...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-10-10 20:39:11 +0800" class="post-list__meta--date date">2016-10-10</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/libuv-source-code/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2016-10-13 15:56:27 +0800" class="post-list__meta--date date">2016-10-13</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/libuv-source-code/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="访问 浅读 libco">浅读 libco</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="访问 浅读 Libco">浅读 Libco</a></h2>
       <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
       <hr class="post-list__divider" />
@@ -170,7 +170,7 @@
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/07/python-note-1/" title="访问 Python笔记">Python笔记</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/07/python-note-1/" title="访问 Python 笔记">Python 笔记</a></h2>
       <p class="excerpt">这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。注：本文内容整理自网上博客，《Python Cookbook》等，非原创。性能优化1. 字典和列表Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典要比 list 更快。from time import timet = time()list = [&#39;a&...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-07-06 18:56:31 +0800" class="post-list__meta--date date">2016-07-06</time> &#8226; <span class="post-list__meta--tags tags">编程语言</span><a class="btn-border-small" href=/2016/07/python-note-1/>继续阅读</a></div>
       <hr class="post-list__divider" />
@@ -184,14 +184,14 @@
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/05/read-tcpcopy-source-code/" title="访问 Tcpcopy源码阅读">Tcpcopy源码阅读</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/05/read-tcpcopy-source-code/" title="访问 Tcpcopy 源码阅读">Tcpcopy 源码阅读</a></h2>
       <p class="excerpt">tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。架构第一种架构：实现原理：从数据链路层捕获客户端的请求包，修改目的IP地址为压测机器，再从IP层发送出去。从数据链路层捕获压测机器的响应包，保持tcp会话的状态（seq number，ack numb...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-05-05 10:00:25 +0800" class="post-list__meta--date date">2016-05-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/05/read-tcpcopy-source-code/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/04/ios-introduction/" title="访问 iOS初体验">iOS初体验</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2016/04/ios-introduction/" title="访问 iOS 初体验">iOS 初体验</a></h2>
       <p class="excerpt">客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：ToDo。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。What’s in iOS?iOS处于底层硬件和...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-04-28 23:10:00 +0800" class="post-list__meta--date date">2016-04-28</time> &#8226; <span class="post-list__meta--tags tags">iOS</span><a class="btn-border-small" href=/2016/04/ios-introduction/>继续阅读</a></div>
       <hr class="post-list__divider" />
@@ -215,7 +215,7 @@
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-13 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-22 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>

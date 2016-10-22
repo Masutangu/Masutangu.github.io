@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2015-11-28T11:03:18+08:00
-title: FFmpeg浅析
+title: FFmpeg 浅析
 category: 源码阅读
 ---
 

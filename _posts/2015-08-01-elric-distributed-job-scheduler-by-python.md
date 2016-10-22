@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2015-08-01T16:07:58+08:00
-title: Elric：Python实现的分布式任务调度系统
+title: Elric：Python 实现的分布式任务调度系统
 category: 个人项目
 ---
 

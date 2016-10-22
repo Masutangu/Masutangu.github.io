@@ -6,16 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>libuv 源码阅读</title>
+  <title>Libuv 源码阅读</title>
   <meta name="description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="libuv 源码阅读">
+  <meta name="twitter:title" content="Libuv 源码阅读">
   <meta name="twitter:description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="libuv 源码阅读">
+  <meta property="og:title" content="Libuv 源码阅读">
   <meta property="og:description" content="花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
@@ -126,9 +126,9 @@
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="2016-10-10 20:39:11 +0800" itemprop="datePublished" class="post-meta__date date">2016-10-10</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+      <time datetime="2016-10-13 15:56:27 +0800" itemprop="datePublished" class="post-meta__date date">2016-10-13</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
     </div>
-    <h1 class="post-title">libuv 源码阅读</h1>
+    <h1 class="post-title">Libuv 源码阅读</h1>
   </header>
 
   <section class="post">
@@ -798,7 +798,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
    
    <div class="read-more-item">
        <span class="read-more-item-dim">更早的文章</span>
-       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="link to 浅读 libco">浅读 libco</a></h2>
+       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="link to 浅读 Libco">浅读 Libco</a></h2>
        <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
        <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
    </div>
@@ -836,7 +836,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-13 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-10-22 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
