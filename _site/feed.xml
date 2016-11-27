@@ -5,9 +5,1081 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 22 Oct 2016 09:35:16 +0800</pubDate>
-    <lastBuildDate>Sat, 22 Oct 2016 09:35:16 +0800</lastBuildDate>
+    <pubDate>Sun, 27 Nov 2016 13:49:58 +0800</pubDate>
+    <lastBuildDate>Sun, 27 Nov 2016 13:49:58 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Linux 内核系列－进程</title>
+        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
+
+&lt;h1&gt;概念&lt;/h1&gt;
+
+&lt;p&gt;进程即处于运行中的程序，除了程序的代码外，还包括打开的文件、挂起的信号、进程状态、内存地址空间以及用以存储全局变量的数据段等。&lt;/p&gt;
+
+&lt;p&gt;执行线程，简称线程，是在进程中活动的对象。每个线程都拥有独立的程序计数器、进程栈和一组进程寄存器。内核的调度对象是线程，而不是进程。&lt;/p&gt;
+
+&lt;p&gt;在现代操作系统中，进程提供两种虚拟机制：虚拟处理器和虚拟内存。虚拟处理器提供给进程独享处理器的假象，虚拟内存则提供进程独占内存资源的假象。线程之间可以共享虚拟内存，但拥有各自的虚拟处理器。&lt;/p&gt;
+
+&lt;h2&gt;创建&lt;/h2&gt;
+
+&lt;p&gt;在 UNIX 系统中，只有系统调用 fork 可以创建新进程。&lt;/p&gt;
+
+&lt;h2&gt;终止&lt;/h2&gt;
+
+&lt;p&gt;进程终止通常由以下条件引起：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;正常退出&lt;/li&gt;
+&lt;li&gt;出错退出&lt;/li&gt;
+&lt;li&gt;严重错误&lt;/li&gt;
+&lt;li&gt;被其他进程杀死&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;层次结构&lt;/h2&gt;
+
+&lt;p&gt;在 UNIX 中，进程和其子进程共同组成一个进程组。整个系统中，所有进程都属于以 init 为根的一棵树。&lt;/p&gt;
+
+&lt;h2&gt;状态&lt;/h2&gt;
+
+&lt;p&gt;进程有以下三种状态：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;运行态：占用 CPU&lt;/li&gt;
+&lt;li&gt;就绪态：可以执行，等待其他进程执行完&lt;/li&gt;
+&lt;li&gt;阻塞态：需要外部事件触发&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;进程表&lt;/h2&gt;
+
+&lt;p&gt;操作系统维护一张进程表，每个进程占用一个表项。该表项包含了进程状态的重要信息。包括程序计数器、堆栈指针、内存分配状况、所打开的文件指针、账号和调度信息，以及其他在进程由运行态转换到就绪态或阻塞态时必须保存的信息，以保证进程随后能再次启动。&lt;/p&gt;
+
+&lt;p&gt;下图为一个典型系统中进程表项的关键字段：&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;进程管理&lt;/th&gt;
+&lt;th&gt;存储管理&lt;/th&gt;
+&lt;th&gt;文件管理&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;寄存器&lt;/td&gt;
+&lt;td&gt;正文段指针&lt;/td&gt;
+&lt;td&gt;根目录&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;程序计数器&lt;/td&gt;
+&lt;td&gt;数据段指针&lt;/td&gt;
+&lt;td&gt;工作目录&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;程序状态字&lt;/td&gt;
+&lt;td&gt;堆栈段指针&lt;/td&gt;
+&lt;td&gt;文件描述符&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;进程状态&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;优先级&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;调度参数&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;进程id&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;父进程&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;进程组&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;信号&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;进程开始的时间&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;使用cpu的时间&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;子进程的cpu时间&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;下次alarm的时间&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;h2&gt;中断&lt;/h2&gt;
+
+&lt;p&gt;中断的处理和调度过程如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;硬件将程序计数器等压入堆栈&lt;/li&gt;
+&lt;li&gt;硬件从中断向量中加载新的程序计数器&lt;/li&gt;
+&lt;li&gt;汇编语言写的 procedure 保存堆栈中的寄存器等信息，并移除该信息&lt;/li&gt;
+&lt;li&gt;汇编语言写的 procedure 设置新的堆栈&lt;/li&gt;
+&lt;li&gt;c 中断服务例程开始执行&lt;/li&gt;
+&lt;li&gt;处理完后，调度程序决定下一个执行的进程&lt;/li&gt;
+&lt;li&gt;返回至汇编代码，恢复即将执行的进程的寄存器等信息，并启动该进程&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;线程&lt;/h2&gt;
+
+&lt;p&gt;线程提供共享同一地址空间和数据的能力，并且比进程更加轻量级。&lt;/p&gt;
+
+&lt;p&gt;如果多个线程都是 CPU 密集型的，那么并不能得到性能上的增强。但如果存在大量的计算和 IO 处理，那么多线程运行这些活动彼此重叠进行，从而加快应用程序的执行速度。&lt;/p&gt;
+
+&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
+
+&lt;h2&gt;进程及进程表&lt;/h2&gt;
+
+&lt;p&gt;内核把进程的列表存放在名为任务队列（task list）的双向循环链表中。链表中的每一项类型都为 task_struct ，称为进程描述符（process descriptor）。task_struct 在 32 位机器上大概占用 1.7 KB。&lt;/p&gt;
+
+&lt;p&gt;进程描述符包含了进程的所有信息，包括打开的文件，进程地址空间，挂起的信号，进程的状态等等。&lt;/p&gt;
+
+&lt;p&gt;task_struct 结构体如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct task_struct {
+    volatile long state;    /* -1 unrunnable, 0 runnable, &amp;gt;0 stopped */
+    void *stack;
+    atomic_t usage;
+    unsigned int flags; /* per process flags, defined below */
+
+    int prio, static_prio, normal_prio;
+    unsigned int rt_priority;
+    const struct sched_class *sched_class;
+    struct sched_entity se;
+    struct sched_rt_entity rt;
+
+    unsigned int policy;
+    int nr_cpus_allowed;
+    cpumask_t cpus_allowed;
+
+    struct list_head tasks;  // 进程链表
+    struct mm_struct *mm, *active_mm;
+
+    /* task state */
+    int exit_state;
+    int exit_code, exit_signal;
+    int pdeath_signal;  /*  The signal sent when the parent dies  */
+
+    pid_t pid;
+    pid_t tgid;
+
+    /* 
+     * pointers to (original) parent process, youngest child, younger sibling,
+     * older sibling, respectively.  (p-&amp;gt;father can be replaced with 
+     * p-&amp;gt;real_parent-&amp;gt;pid)
+     */
+    struct task_struct *real_parent; /* real parent process */
+    struct task_struct *parent; /* recipient of SIGCHLD, wait4() reports */
+    /*
+     * children/sibling forms the list of my natural children
+     */
+    struct list_head children;  /* list of my children */
+    struct list_head sibling;   /* linkage in my parent&amp;#39;s children list */
+    struct task_struct *group_leader;   /* threadgroup leader */
+
+    /* PID/PID hash table linkage. */
+    struct pid_link pids[PIDTYPE_MAX];
+
+    /* file system info */
+    struct nameidata *nameidata;
+    /* filesystem information */
+    struct fs_struct *fs;
+    /* open file information */
+    struct files_struct *files;
+
+    /* signal handlers */
+    struct signal_struct *signal;
+    struct sighand_struct *sighand;
+
+    sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
+    struct sigpending pending;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;在内核 2.6 之前，task_struct 结构被存储于每个进程的内核栈的底部。2.6 之后，thread_info 结构体存储于内核栈的底部，而 task_struct 为该结构体的成员:&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct thread_info {
+    struct task_struct      *task;          /* main task structure */
+    struct exec_domain      *exec_domain;   /* execution domain */
+    __u32                   flags;          /* low level flags */
+    __u32                   status;         /* thread synchronous flags */
+    __u32                   cpu;            /* current CPU */
+    int                     preempt_count;  /* 0 =&amp;gt; preemptable,  &amp;lt;0 =&amp;gt; BUG */
+    mm_segment_t            addr_limit;
+    struct restart_block    restart_block;
+    void __user             *sysenter_return;
+#ifdef CONFIG_X86_32
+    unsigned long           previous_esp;   /* ESP of the previous stack in case of nested (IRQ) stacks */
+    __u8                    supervisor_stack[0];
+#endif
+    int                     uaccess_err;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;PID 是进程的唯一标志，其类型为 pid_t。内核将进程的 PID 存放在各自的 task_struct 结构体中。&lt;/p&gt;
+
+&lt;p&gt;注：PID 在内核态和用户态是不同的概念。Linux 中的线程都有各自的 PID，而 getpid() 返回的其实不是 PID，而是 TGID。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://stackoverflow.com/questions/9154671/distinction-between-processes-and-threads-in-linux&quot;&gt;stackoverflow&lt;/a&gt; 上的解释：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The first and most important thing to realize is that &amp;quot;PID&amp;quot; means different things in kernel space and user space. What the kernel calls PIDs are actually kernel-level thread ids (often called TIDs), not to be confused with pthread_t which is a separate identifier. Each thread on the system, whether in the same process or a different one, has a unique TID (or &amp;quot;PID&amp;quot; in the kernel&amp;#39;s terminology). What&amp;#39;s considered a PID in the POSIX sense of &amp;quot;process&amp;quot;, on the other hand, is called a &amp;quot;thread group ID&amp;quot; or &amp;quot;TGID&amp;quot; in the kernel. Each process consists of one or more threads (kernel processes) each with their own TID (kernel PID), but all sharing the same TGID, which is equal to the TID (kernel PID) of the initial thread in which main runs.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;current 宏用于快速定位当前执行的进程的进程描述符，current_thread_info() 的 C 语言实现如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;static inline struct thread_info *current_thread_info(void) __attribute_const__;
+
+static inline struct thread_info *current_thread_info(void)
+{
+    return (struct thread_info *)
+        (current_stack_pointer &amp;amp; ~(THREAD_SIZE - 1));   // 按照 THREAD\_SIZE 对齐
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;调用 current_thread_info()-&amp;gt;task 返回 task_struct。&lt;/p&gt;
+
+&lt;p&gt;进程的当前状态由 task_struct 的 state 字段来表示，分别有以下几种情况：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linux-kernel-serial-1/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;TASK_RUNNING：进程正在执行或处于可运行的就绪状态。&lt;/li&gt;
+&lt;li&gt;TASK_INTERRUPTIBLE：进程正在休眠，等待某个条件发生。当收到信号时进程也会被唤醒。&lt;/li&gt;
+&lt;li&gt;TASK_UNINTERRUPTIBLE：和 TASK_INTERRUPTIBLE 类似，但收到信号时进程不会被唤醒。&lt;/li&gt;
+&lt;li&gt;__TASK_STOPPED：进程终止，通常发生于进程收到 SIGSTOP, SIGTSTP, SIGTTIN 或 SIGTTOU 信号。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;当进程执行了系统调用或触发了异常，它就陷入了内核空间，此时内核“代表进程执行”并处于进程的上下文中。在此上下文中 current 宏是有效的（处于中断上下文的情况下，系统不代表进程执行，此时不存在进程上下文，current 宏也是无效的）。&lt;/p&gt;
+
+&lt;p&gt;task_struct 的 parent 字段指向其父进程 task_struct，children 字段为其子进程的链表。因此可以通过下面代码得到父进程的进程描述符：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct task_struct *my_parent = current-&amp;gt;parent;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;同样，以下代码可以依次访问子进程：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct task_struct *task; 
+struct list_head *list;
+
+list_for_each(list, &amp;amp;current-&amp;gt;children) {
+    task = list_entry(list, struct task_struct, sibling); 
+    /* task now points to one of current’s children */
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;任务队列是双向循环链表，下面代码可以获取链表中的下一个进程：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;list_entry(task-&amp;gt;tasks.next, struct task_struct, tasks)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;获取前一个进程：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;list_entry(task-&amp;gt;tasks.prev, struct task_struct, tasks)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;fork() 通过拷贝当前进程来创建一个子进程。子进程和父进程的区别仅仅在于 PID、PPID 和某些资源和统计量（例如挂起的信号）。exec() 函数负责读取可执行文件并将其载入地址空间开始运行。&lt;/p&gt;
+
+&lt;p&gt;Linux 通过 clone() 系统调用实现 fork()。这个调用通过一系列参数标志来指明父子进程需要共享的资源。fork()、vfork() 和 __clone() 库函数都根据各自需要的参数标志去调用 clone()，然后由 clone() 去调用 do_fork()。&lt;/p&gt;
+
+&lt;p&gt;do_fork() 完成创建进程中的大部分工作，该函数调用 copy_process() 函数，然后让进程开始运行。copy_process() 的步骤如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;调用 dup_task_struct() 为新进程创建一个内核栈、thread_info 结构和 task_struct。这些值与当前进程相同，此时父子进程的描述符完全相同。&lt;/li&gt;
+&lt;li&gt;检查当前用户所拥有的进程数没有超出资源限制。&lt;/li&gt;
+&lt;li&gt;子进程开始与父进程区别开来，将进程描述符里的大多数成员重新初始化。&lt;/li&gt;
+&lt;li&gt;将子进程的状态置为 TASK_UNINTERRUPTIBLE。（没有找到对应的代码）&lt;/li&gt;
+&lt;li&gt;copy_process() 调用 copy_flags() 以更新 task_struct 的 flags 成员，重置 PF_SUPERPRIV 标志位，并设置 PF_FORKNOEXEC 标志位。&lt;/li&gt;
+&lt;li&gt;根据不同的 clone_flags 参数，拷贝或共享打开的文件、文件系统信息、信号处理函数、进程地址空间和命名空间等。一般情况下，同一个进程内的线程共享这些信息。&lt;/li&gt;
+&lt;li&gt;调用 alloc_pid() 为新进程分配一个有效的 PID。&lt;/li&gt;
+&lt;li&gt;最后，copy_process() 做扫尾工作并返回指向子进程的指针。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;回到 do_fork() 函数，如果 copy_process() 返回成功，唤醒新创建的子进程并让其投入运行。内核有意选择子进程先执行，如果子进程马上调用 exec() 函数可以避免写时拷贝的额外开销。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;long do_fork(unsigned long clone_flags,
+          unsigned long stack_start,
+          struct pt_regs *regs,
+          unsigned long stack_size,
+          int __user *parent_tidptr,
+          int __user *child_tidptr)
+{
+    struct task_struct *p;
+
+    p = copy_process(clone_flags, stack_start, regs, stack_size,
+             child_tidptr, NULL, trace);
+
+    /*
+     * Do this prior waking up the new thread - the thread pointer
+     * might get invalid after that point, if the thread exits quickly.
+     */
+    if (!IS_ERR(p)) {
+        struct completion vfork;
+
+        trace_sched_process_fork(current, p);
+
+        if (clone_flags &amp;amp; CLONE_VFORK) {
+            p-&amp;gt;vfork_done = &amp;amp;vfork;
+            init_completion(&amp;amp;vfork);
+        }
+
+        /*
+         * We set PF_STARTING at creation in case tracing wants to
+         * use this to distinguish a fully live task from one that
+         * hasn&amp;#39;t gotten to tracehook_report_clone() yet.  Now we
+         * clear it and set the child going.
+         */
+        p-&amp;gt;flags &amp;amp;= ~PF_STARTING;
+
+        if (unlikely(clone_flags &amp;amp; CLONE_STOPPED)) {
+            /*
+             * We&amp;#39;ll start up with an immediate SIGSTOP.
+             */
+            sigaddset(&amp;amp;p-&amp;gt;pending.signal, SIGSTOP);
+            set_tsk_thread_flag(p, TIF_SIGPENDING);
+            __set_task_state(p, TASK_STOPPED);
+        } else {
+            wake_up_new_task(p, clone_flags);
+        }
+
+        if (clone_flags &amp;amp; CLONE_VFORK) {
+            wait_for_completion(&amp;amp;vfork);
+        }
+    } else {
+        nr = PTR_ERR(p);
+    }
+    return nr;
+}
+
+static struct task_struct *copy_process(unsigned long clone_flags,
+                    unsigned long stack_start,
+                    struct pt_regs *regs,
+                    unsigned long stack_size,
+                    int __user *child_tidptr,
+                    struct pid *pid,
+                    int trace)
+{
+    int retval;
+    struct task_struct *p;
+
+    p = dup_task_struct(current);
+
+    if (atomic_read(&amp;amp;p-&amp;gt;real_cred-&amp;gt;user-&amp;gt;processes) &amp;gt;=
+            task_rlimit(p, RLIMIT_NPROC)) {
+        if (!capable(CAP_SYS_ADMIN) &amp;amp;&amp;amp; !capable(CAP_SYS_RESOURCE) &amp;amp;&amp;amp;
+            p-&amp;gt;real_cred-&amp;gt;user != INIT_USER)
+            goto bad_fork_free;
+    }
+
+    p-&amp;gt;did_exec = 0;
+    delayacct_tsk_init(p);  /* Must remain after dup_task_struct() */
+    copy_flags(clone_flags, p);
+    INIT_LIST_HEAD(&amp;amp;p-&amp;gt;children);
+    INIT_LIST_HEAD(&amp;amp;p-&amp;gt;sibling);
+    rcu_copy_process(p);
+    p-&amp;gt;vfork_done = NULL;
+    spin_lock_init(&amp;amp;p-&amp;gt;alloc_lock);
+
+    init_sigpending(&amp;amp;p-&amp;gt;pending);
+
+    p-&amp;gt;utime = cputime_zero;
+    p-&amp;gt;stime = cputime_zero;
+    p-&amp;gt;gtime = cputime_zero;
+    p-&amp;gt;utimescaled = cputime_zero;
+    p-&amp;gt;stimescaled = cputime_zero;
+#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+    p-&amp;gt;prev_utime = cputime_zero;
+    p-&amp;gt;prev_stime = cputime_zero;
+#endif
+
+    /* copy all the process information */
+    if ((retval = copy_semundo(clone_flags, p)))
+        goto bad_fork_cleanup_audit;
+    if ((retval = copy_files(clone_flags, p)))
+        goto bad_fork_cleanup_semundo;
+    if ((retval = copy_fs(clone_flags, p)))
+        goto bad_fork_cleanup_files;
+    if ((retval = copy_sighand(clone_flags, p)))
+        goto bad_fork_cleanup_fs;
+    if ((retval = copy_signal(clone_flags, p)))
+        goto bad_fork_cleanup_sighand;
+    if ((retval = copy_mm(clone_flags, p)))
+        goto bad_fork_cleanup_signal;
+    if ((retval = copy_namespaces(clone_flags, p)))
+        goto bad_fork_cleanup_mm;
+    if ((retval = copy_io(clone_flags, p)))
+        goto bad_fork_cleanup_namespaces;
+    retval = copy_thread(clone_flags, stack_start, stack_size, p, regs);
+    if (retval)
+        goto bad_fork_cleanup_io;
+
+    if (pid != &amp;amp;init_struct_pid) {
+        retval = -ENOMEM;
+        pid = alloc_pid(p-&amp;gt;nsproxy-&amp;gt;pid_ns);
+        if (!pid)
+            goto bad_fork_cleanup_io;
+
+        if (clone_flags &amp;amp; CLONE_NEWPID) {
+            retval = pid_ns_prepare_proc(p-&amp;gt;nsproxy-&amp;gt;pid_ns);
+            if (retval &amp;lt; 0)
+                goto bad_fork_free_pid;
+        }
+    }
+
+    p-&amp;gt;pid = pid_nr(pid);
+    p-&amp;gt;tgid = p-&amp;gt;pid;
+    if (clone_flags &amp;amp; CLONE_THREAD)
+        p-&amp;gt;tgid = current-&amp;gt;tgid;  // 同一进程内的所有线程的 tgid 相同
+
+
+    /* ok, now we should be set up.. */
+    p-&amp;gt;exit_signal = (clone_flags &amp;amp; CLONE_THREAD) ? -1 : (clone_flags &amp;amp; CSIGNAL);
+    p-&amp;gt;pdeath_signal = 0;
+    p-&amp;gt;exit_state = 0;
+
+    /*
+     * Ok, make it visible to the rest of the system.
+     * We dont wake it up yet.
+     */
+    p-&amp;gt;group_leader = p;
+    INIT_LIST_HEAD(&amp;amp;p-&amp;gt;thread_group);
+
+    /* CLONE_PARENT re-uses the old parent */
+    if (clone_flags &amp;amp; (CLONE_PARENT|CLONE_THREAD)) {
+        p-&amp;gt;real_parent = current-&amp;gt;real_parent;
+        p-&amp;gt;parent_exec_id = current-&amp;gt;parent_exec_id;
+    } else {
+        p-&amp;gt;real_parent = current;
+        p-&amp;gt;parent_exec_id = current-&amp;gt;self_exec_id;
+    }
+
+    return p;
+}
+
+
+
+static struct task_struct *dup_task_struct(struct task_struct *orig)
+{
+    struct task_struct *tsk;
+    struct thread_info *ti;
+    unsigned long *stackend;
+
+    int err;
+
+    prepare_to_copy(orig);
+
+    tsk = alloc_task_struct();
+    if (!tsk)
+        return NULL;
+
+    ti = alloc_thread_info(tsk);
+    if (!ti) {
+        free_task_struct(tsk);
+        return NULL;
+    }
+
+    err = arch_dup_task_struct(tsk, orig);
+    if (err)
+        goto out;
+
+    tsk-&amp;gt;stack = ti;
+
+    setup_thread_stack(tsk, orig);
+    stackend = end_of_stack(tsk);
+    *stackend = STACK_END_MAGIC;    /* for overflow detection */
+
+    /* One for us, one for whoever does the &amp;quot;release_task()&amp;quot; (usually parent) */
+    atomic_set(&amp;amp;tsk-&amp;gt;usage,2);
+    atomic_set(&amp;amp;tsk-&amp;gt;fs_excl, 0);
+
+    return tsk;
+}
+
+// x86 下的实现
+int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
+{
+    *dst = *src;
+    if (src-&amp;gt;thread.xstate) {
+        dst-&amp;gt;thread.xstate = kmem_cache_alloc(task_xstate_cachep,
+                              GFP_KERNEL);
+        if (!dst-&amp;gt;thread.xstate)
+            return -ENOMEM;
+        WARN_ON((unsigned long)dst-&amp;gt;thread.xstate &amp;amp; 15);
+        memcpy(dst-&amp;gt;thread.xstate, src-&amp;gt;thread.xstate, xstate_size);
+    }
+    return 0;
+}
+
+#define task_thread_info(task)  ((struct thread_info *)(task)-&amp;gt;stack)
+
+#define setup_thread_stack(p, org) \
+    *task_thread_info(p) = *task_thread_info(org); \
+    task_thread_info(p)-&amp;gt;task = (p);
+
+static void copy_flags(unsigned long clone_flags, struct task_struct *p)
+{
+    unsigned long new_flags = p-&amp;gt;flags;
+
+    new_flags &amp;amp;= ~PF_SUPERPRIV;
+    new_flags |= PF_FORKNOEXEC;
+    new_flags |= PF_STARTING;
+    p-&amp;gt;flags = new_flags;
+    clear_freeze_flag(p);
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;vfork() 的实现是通过向 clone() 传递一个特殊标志 CLONE_VFORK 来进行的：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;在调用 copy_process() 时，task_struct 的 vfork_done 成员被设置为 NULL。&lt;/li&gt;
+&lt;li&gt;在执行 do_fork() 时，如果指定了 CLONE_VFORK 标志位，则 vfork_done 会被设置为指向一个特定地址。&lt;/li&gt;
+&lt;li&gt;子进程先开始执行后，父进程会一直等待，直到子进程通过 vfork_done 指针向他发送信号。&lt;/li&gt;
+&lt;li&gt;进程退出内存地址空间时会调用 mm_release() 函数，该函数会检查 vfork_done 是非为空，如果非空，则向父进程发送信号。&lt;/li&gt;
+&lt;li&gt;返回到 do_fork()，父进程被唤醒并继续执行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+{
+    struct completion *vfork_done = tsk-&amp;gt;vfork_done;
+
+    /* notify parent sleeping on vfork() */
+    if (vfork_done) {
+        tsk-&amp;gt;vfork_done = NULL;
+        complete(vfork_done);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;Linux 把所有线程都当做进程来实现，每个线程都有唯一隶属于自己的 task_struct，所以在内核中，它看起来就像是一个普通的进程。&lt;/p&gt;
+
+&lt;p&gt;线程的创建和普通进程类似，只不过调用 clone() 的时候需要传递参数来指明需要共享的资源：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND, 0);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;下表列举了参数标志及其作用：&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Flag&lt;/th&gt;
+&lt;th&gt;Meaning&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_FILES&lt;/td&gt;
+&lt;td&gt;Parent and child share open files&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_FS&lt;/td&gt;
+&lt;td&gt;Parent and child share filesystem information&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_IDLETASK&lt;/td&gt;
+&lt;td&gt;Set PID to zero (used only by the idle tasks)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_NEWNS&lt;/td&gt;
+&lt;td&gt;Create a new namespace for the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_PARENT&lt;/td&gt;
+&lt;td&gt;Child is to have same parent as its parent&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_PTRACE&lt;/td&gt;
+&lt;td&gt;Continue tracing child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_SETTID&lt;/td&gt;
+&lt;td&gt;Write the TID back to user-space&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_SETTLS&lt;/td&gt;
+&lt;td&gt;Create a new TLS for the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_SIGHAND&lt;/td&gt;
+&lt;td&gt;Parent and child share signal handlers and blocked signals&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_SYSVSEM&lt;/td&gt;
+&lt;td&gt;Parent and child share System V SEM_UNDO semantics&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_THREAD&lt;/td&gt;
+&lt;td&gt;Parent and child are in the same thread group&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_VFORK&lt;/td&gt;
+&lt;td&gt;vfork() was used and the parent will sleep until the child wakes it&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_UNTRACED&lt;/td&gt;
+&lt;td&gt;Do not let the tracing process force CLONE_PTRACE on the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_STOP&lt;/td&gt;
+&lt;td&gt;Start process in the TASK_STOPPED state&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_SETTLS&lt;/td&gt;
+&lt;td&gt;Create a new TLS (thread-local storage) for the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_CHILD_CLEARTID&lt;/td&gt;
+&lt;td&gt;Clear the TID in the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_CHILD_SETTID&lt;/td&gt;
+&lt;td&gt;Set the TID in the child&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_PARENT_SETTID&lt;/td&gt;
+&lt;td&gt;Set the TID in the parent&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CLONE_VM&lt;/td&gt;
+&lt;td&gt;Parent and child share address space&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;内核经常需要在后台执行一些操作，这通过内核线程来完成。内核线程和普通进程间的区别在于内核线程没有独立的地址空间（指向地址空间的 mm 指针被设置为 NULL）。内核线程只在内核空间运行，从来不切换到用户空间。内核线程和普通进程一样可以被调度和抢占。&lt;/p&gt;
+
+&lt;p&gt;进程终止可以由自身调用 exit() 系统调用引起，或接收到不能处理或不能忽略的信号或异常时。进程终止由 do_exit() 完成大部分工作：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;将 task_struct 中的标志成员设置为 PF_EXITING。&lt;/li&gt;
+&lt;li&gt;调用 del_timer_sync() 删除内核定时器，确保没有定时器在排队也没有定时器处理程序在运行。&lt;/li&gt;
+&lt;li&gt;调用 acct_update_intergrals() 来输出记账信息。&lt;/li&gt;
+&lt;li&gt;调用 exit_mm() 函数释放进程占用的 mm_struct。如果该地址空间没有被共享，则彻底释放它们。&lt;/li&gt;
+&lt;li&gt;设置 exit_code 成员为由 exit() 提供的退出代码。&lt;/li&gt;
+&lt;li&gt;接下来调用 exit_sem() 函数，如果该进程正在排队等候 IPC 信号，则 dequeue。&lt;/li&gt;
+&lt;li&gt;调用 exit_files() 和 exit_fs()，分别递减文件描述符、文件系统数据的引用计数。如果引用计数降为零，则释放资源。&lt;/li&gt;
+&lt;li&gt;调用 exit_notify() 向父进程发送信号，给其子进程重新找养父，并把进程状态设置为 EXIT_ZOMBIE。&lt;/li&gt;
+&lt;li&gt;do_exit() 调用 schedule() 函数切换到新的进程。由于处于 EXIT_ZOMBIE 状态的进程不会再被调度，所以 do_exit() 永不返回。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;至此，与进程相关的所有资源都被释放，进程不可运行并处于 EXIT_ZOMBIE 状态。它占用的内存就是内核栈、thread_info 结构和 task_struct 结构。此时进程存在的唯一目的就是向父进程提供信息。父进程检索到信息或通知内核那是无关信息后，进程所持有的剩余内存将被释放。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;NORET_TYPE void do_exit(long code)
+{
+    struct task_struct *tsk = current;
+    int group_dead;
+
+    /*
+     * We&amp;#39;re taking recursive faults here in do_exit. Safest is to just
+     * leave this task alone and wait for reboot.
+     */
+    if (unlikely(tsk-&amp;gt;flags &amp;amp; PF_EXITING)) {
+        printk(KERN_ALERT
+            &amp;quot;Fixing recursive fault but reboot is needed!\n&amp;quot;);
+        /*
+         * We can do this unlocked here. The futex code uses
+         * this flag just to verify whether the pi state
+         * cleanup has been done or not. In the worst case it
+         * loops once more. We pretend that the cleanup was
+         * done as there is no way to return. Either the
+         * OWNER_DIED bit is set by now or we push the blocked
+         * task into the wait for ever nirwana as well.
+         */
+        tsk-&amp;gt;flags |= PF_EXITPIDONE;
+        set_current_state(TASK_UNINTERRUPTIBLE);
+        schedule();
+    }
+
+    exit_signals(tsk);  /* sets PF_EXITING */
+
+    acct_update_integrals(tsk);
+
+    group_dead = atomic_dec_and_test(&amp;amp;tsk-&amp;gt;signal-&amp;gt;live);
+
+    tsk-&amp;gt;exit_code = code;
+
+    exit_mm(tsk);
+
+    exit_sem(tsk);
+    exit_files(tsk);
+    exit_fs(tsk);
+    check_stack_usage();
+    exit_thread();
+    cgroup_exit(tsk, 1);
+
+    exit_notify(tsk, group_dead);
+
+    /*
+     * We can do this unlocked here. The futex code uses this flag
+     * just to verify whether the pi state cleanup has been done
+     * or not. In the worst case it loops once more.
+     */
+    tsk-&amp;gt;flags |= PF_EXITPIDONE;
+    preempt_disable();
+    exit_rcu();
+    /* causes final put_task_struct in finish_task_switch(). */
+    tsk-&amp;gt;state = TASK_DEAD;
+    schedule();
+}
+
+
+/*
+ * release all the mappings made in a process&amp;#39;s VM space
+ */
+void exit_mmap(struct mm_struct *mm)
+{
+    struct vm_area_struct *vma;
+
+    if (!mm)
+        return;
+
+    kenter(&amp;quot;&amp;quot;);
+
+    mm-&amp;gt;total_vm = 0;
+
+    while ((vma = mm-&amp;gt;mmap)) {
+        mm-&amp;gt;mmap = vma-&amp;gt;vm_next;
+        delete_vma_from_mm(vma);
+        delete_vma(mm, vma);
+    }
+    kleave(&amp;quot;&amp;quot;);
+}
+
+
+/*
+ * Send signals to all our closest relatives so that they know
+ * to properly mourn us..
+ */
+static void exit_notify(struct task_struct *tsk, int group_dead)
+{
+    int signal;
+    void *cookie;
+
+    /*
+     * This does two things:
+     *
+     * A.  Make init inherit all the child processes
+     * B.  Check to see if any process groups have become orphaned
+     *  as a result of our exiting, and if they have any stopped
+     *  jobs, send them a SIGHUP and then a SIGCONT.  (POSIX 3.2.2.2)
+     */
+    forget_original_parent(tsk);
+    exit_task_namespaces(tsk);
+
+    write_lock_irq(&amp;amp;tasklist_lock);
+    if (group_dead)
+        kill_orphaned_pgrp(tsk-&amp;gt;group_leader, NULL);
+
+    /* Let father know we died
+     *
+     * Thread signals are configurable, but you aren&amp;#39;t going to use
+     * that to send signals to arbitary processes.
+     * That stops right now.
+     *
+     * If the parent exec id doesn&amp;#39;t match the exec id we saved
+     * when we started then we know the parent has changed security
+     * domain.
+     *
+     * If our self_exec id doesn&amp;#39;t match our parent_exec_id then
+     * we have changed execution domain as these two values started
+     * the same after a fork.
+     */
+    if (tsk-&amp;gt;exit_signal != SIGCHLD &amp;amp;&amp;amp; !task_detached(tsk) &amp;amp;&amp;amp;
+        (tsk-&amp;gt;parent_exec_id != tsk-&amp;gt;real_parent-&amp;gt;self_exec_id ||
+         tsk-&amp;gt;self_exec_id != tsk-&amp;gt;parent_exec_id))
+        tsk-&amp;gt;exit_signal = SIGCHLD;
+
+    signal = tracehook_notify_death(tsk, &amp;amp;cookie, group_dead);
+    if (signal &amp;gt;= 0)
+        signal = do_notify_parent(tsk, signal);
+
+    tsk-&amp;gt;exit_state = signal == DEATH_REAP ? EXIT_DEAD : EXIT_ZOMBIE;
+
+    /* mt-exec, de_thread() is waiting for us */
+    if (thread_group_leader(tsk) &amp;amp;&amp;amp;
+        tsk-&amp;gt;signal-&amp;gt;group_exit_task &amp;amp;&amp;amp;
+        tsk-&amp;gt;signal-&amp;gt;notify_count &amp;lt; 0)
+        wake_up_process(tsk-&amp;gt;signal-&amp;gt;group_exit_task);
+
+    write_unlock_irq(&amp;amp;tasklist_lock);
+
+    tracehook_report_death(tsk, signal, cookie, group_dead);
+
+    /* If the process is dead, release it - nobody will wait for it */
+    if (signal == DEATH_REAP)
+        release_task(tsk);
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;wait() 这一组函数都是通过唯一的系统调用 wait4() 来实现。它的标准动作是挂起调用它的进程，直到其中一个子进程退出。此时函数会返回该子进程的 PID。此外，调用该函数时提供的指针会包含子进程退出时的退出码。&lt;/p&gt;
+
+&lt;p&gt;当最终需要释放进程描述符时，release_task() 会被调用，用以完成以下工作：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;调用 __exit_signal()，进行最终统计，并调用 _unhash_process()，后者又会调用 detach_pid() 从 pidhash 上删除该进程，同时也从任务列表中删除该进程。&lt;/li&gt;
+&lt;li&gt;__exit_signal() 释放僵死进程所占用的剩余资源。&lt;/li&gt;
+&lt;li&gt;如果该进程是线程组的最后一个进程，并且领头进程已经死掉，那么release_task() 就得通知僵死的领头进程的父进程。&lt;/li&gt;
+&lt;li&gt;release_task() 调用 put_task_struct() 释放进程内核栈和 thread_info 结构所占的页，并释放 task_struct 所占的 slab 高速缓存。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;
+void release_task(struct task_struct * p)
+{
+    struct task_struct *leader;
+    int zap_leader;
+
+repeat:
+    __exit_signal(p);
+    zap_leader = 0;
+    leader = p-&amp;gt;group_leader;
+    if (leader != p &amp;amp;&amp;amp; thread_group_empty(leader) &amp;amp;&amp;amp; leader-&amp;gt;exit_state == EXIT_ZOMBIE) {
+        BUG_ON(task_detached(leader));
+        do_notify_parent(leader, leader-&amp;gt;exit_signal);
+        /*
+         * If we were the last child thread and the leader has
+         * exited already, and the leader&amp;#39;s parent ignores SIGCHLD,
+         * then we are the one who should release the leader.
+         *
+         * do_notify_parent() will have marked it self-reaping in
+         * that case.
+         */
+        zap_leader = task_detached(leader);
+
+        /*
+         * This maintains the invariant that release_task()
+         * only runs on a task in EXIT_DEAD, just for sanity.
+         */
+        if (zap_leader)
+            leader-&amp;gt;exit_state = EXIT_DEAD;
+    }
+
+    write_unlock_irq(&amp;amp;tasklist_lock);
+    release_thread(p);
+    call_rcu(&amp;amp;p-&amp;gt;rcu, delayed_put_task_struct);
+
+    p = leader;
+    if (unlikely(zap_leader))
+        goto repeat;
+}
+
+
+/*
+ * This function expects the tasklist_lock write-locked.
+ */
+static void __exit_signal(struct task_struct *tsk)
+{
+    struct signal_struct *sig = tsk-&amp;gt;signal;
+    struct sighand_struct *sighand;
+
+    BUG_ON(!sig);
+    BUG_ON(!atomic_read(&amp;amp;sig-&amp;gt;count));
+
+
+    posix_cpu_timers_exit(tsk);
+    if (atomic_dec_and_test(&amp;amp;sig-&amp;gt;count))
+        posix_cpu_timers_exit_group(tsk);
+    else {
+        /*
+         * If there is any task waiting for the group exit
+         * then notify it:
+         */
+        if (sig-&amp;gt;group_exit_task &amp;amp;&amp;amp; atomic_read(&amp;amp;sig-&amp;gt;count) == sig-&amp;gt;notify_count)
+            wake_up_process(sig-&amp;gt;group_exit_task);
+
+        if (tsk == sig-&amp;gt;curr_target)
+            sig-&amp;gt;curr_target = next_thread(tsk);
+        /*
+         * Accumulate here the counters for all threads but the
+         * group leader as they die, so they can be added into
+         * the process-wide totals when those are taken.
+         * The group leader stays around as a zombie as long
+         * as there are other threads.  When it gets reaped,
+         * the exit.c code will add its counts into these totals.
+         * We won&amp;#39;t ever get here for the group leader, since it
+         * will have been the last reference on the signal_struct.
+         */
+        sig-&amp;gt;utime = cputime_add(sig-&amp;gt;utime, tsk-&amp;gt;utime);
+        sig-&amp;gt;stime = cputime_add(sig-&amp;gt;stime, tsk-&amp;gt;stime);
+        sig-&amp;gt;gtime = cputime_add(sig-&amp;gt;gtime, tsk-&amp;gt;gtime);
+        sig-&amp;gt;min_flt += tsk-&amp;gt;min_flt;
+        sig-&amp;gt;maj_flt += tsk-&amp;gt;maj_flt;
+        sig-&amp;gt;nvcsw += tsk-&amp;gt;nvcsw;
+        sig-&amp;gt;nivcsw += tsk-&amp;gt;nivcsw;
+        sig-&amp;gt;inblock += task_io_get_inblock(tsk);
+        sig-&amp;gt;oublock += task_io_get_oublock(tsk);
+        task_io_accounting_add(&amp;amp;sig-&amp;gt;ioac, &amp;amp;tsk-&amp;gt;ioac);
+        sig-&amp;gt;sum_sched_runtime += tsk-&amp;gt;se.sum_exec_runtime;
+        sig = NULL; /* Marker for below. */
+    }
+
+    __unhash_process(tsk);
+
+    /*
+     * Do this under -&amp;gt;siglock, we can race with another thread
+     * doing sigqueue_free() if we have SIGQUEUE_PREALLOC signals.
+     */
+    flush_sigqueue(&amp;amp;tsk-&amp;gt;pending);
+
+    tsk-&amp;gt;signal = NULL;
+    tsk-&amp;gt;sighand = NULL;
+    spin_unlock(&amp;amp;sighand-&amp;gt;siglock);
+
+    __cleanup_sighand(sighand);
+    clear_tsk_thread_flag(tsk,TIF_SIGPENDING);
+    if (sig) {
+        flush_sigqueue(&amp;amp;sig-&amp;gt;shared_pending);
+        taskstats_tgid_free(sig);
+        /*
+         * Make sure -&amp;gt;signal can&amp;#39;t go away under rq-&amp;gt;lock,
+         * see account_group_exec_runtime().
+         */
+        task_rq_unlock_wait(tsk);
+        __cleanup_signal(sig);
+    }
+}
+
+static void __unhash_process(struct task_struct *p)
+{
+    nr_threads--;
+    detach_pid(p, PIDTYPE_PID);
+    if (thread_group_leader(p)) {
+        detach_pid(p, PIDTYPE_PGID);
+        detach_pid(p, PIDTYPE_SID);
+
+        list_del_rcu(&amp;amp;p-&amp;gt;tasks);  // 没理解 为什么需要是 group_header 才从 tasks_list 上删掉？
+        list_del_init(&amp;amp;p-&amp;gt;sibling);
+        __get_cpu_var(process_counts)--;
+    }
+    list_del_rcu(&amp;amp;p-&amp;gt;thread_group);
+}
+
+
+void release_task(struct task_struct *p)
+{
+    struct task_struct *leader;
+
+    __exit_signal(p);
+
+    zap_leader = 0;
+    leader = p-&amp;gt;group_leader;
+    if (leader != p &amp;amp;&amp;amp; thread_group_empty(leader)
+            &amp;amp;&amp;amp; leader-&amp;gt;exit_state == EXIT_ZOMBIE) {
+        /*
+         * If we were the last child thread and the leader has
+         * exited already, and the leader&amp;#39;s parent ignores SIGCHLD,
+         * then we are the one who should release the leader.
+         */
+        zap_leader = do_notify_parent(leader, leader-&amp;gt;exit_signal);
+        if (zap_leader)
+            leader-&amp;gt;exit_state = EXIT_DEAD;
+    }
+
+    release_thread(p);
+}
+
+void detach_pid(struct task_struct *task, enum pid_type type)
+{
+    __change_pid(task, type, NULL);
+}
+
+static void __change_pid(struct task_struct *task, enum pid_type type,
+            struct pid *new)
+{
+    struct pid_link *link;
+    struct pid *pid;
+    int tmp;
+
+    link = &amp;amp;task-&amp;gt;pids[type];
+    pid = link-&amp;gt;pid;
+
+    hlist_del_rcu(&amp;amp;link-&amp;gt;node);
+    link-&amp;gt;pid = new;
+
+    for (tmp = PIDTYPE_MAX; --tmp &amp;gt;= 0; )
+        if (!hlist_empty(&amp;amp;pid-&amp;gt;tasks[tmp]))
+            return;
+
+    free_pid(pid);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;如果父进程在子进程之前退出，需要给子进程在当前的线程组内找一个进程作为父亲，如果失败，则让 init 做子进程的父进程。forget_original_parent() 调用 find_new_reaper() 来执行寻父过程：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;
+static void forget_original_parent(struct task_struct *father)
+{
+    struct task_struct *p, *n, *reaper;
+    LIST_HEAD(dead_children);
+
+    exit_ptrace(father);
+
+    write_lock_irq(&amp;amp;tasklist_lock);
+    reaper = find_new_reaper(father);
+
+    list_for_each_entry_safe(p, n, &amp;amp;father-&amp;gt;children, sibling) {
+        struct task_struct *t = p;
+        do {
+            t-&amp;gt;real_parent = reaper;
+            if (t-&amp;gt;parent == father) {
+                BUG_ON(task_ptrace(t));
+                t-&amp;gt;parent = t-&amp;gt;real_parent;
+            }
+        } while_each_thread(p, t);
+        reparent_leader(father, p, &amp;amp;dead_children);
+    }
+    write_unlock_irq(&amp;amp;tasklist_lock);
+
+    BUG_ON(!list_empty(&amp;amp;father-&amp;gt;children));
+
+    list_for_each_entry_safe(p, n, &amp;amp;dead_children, sibling) {
+        list_del_init(&amp;amp;p-&amp;gt;sibling);
+        release_task(p);
+    }
+}
+
+static struct task_struct *find_new_reaper(struct task_struct *father)
+{
+    struct pid_namespace *pid_ns = task_active_pid_ns(father);
+    struct task_struct *thread;
+
+    thread = father;
+    while_each_thread(father, thread) {
+        if (thread-&amp;gt;flags &amp;amp; PF_EXITING)
+            continue;
+        if (unlikely(pid_ns-&amp;gt;child_reaper == father))
+            pid_ns-&amp;gt;child_reaper = thread;
+        return thread;
+    }
+
+    if (unlikely(pid_ns-&amp;gt;child_reaper == father)) {
+        write_unlock_irq(&amp;amp;tasklist_lock);
+        if (unlikely(pid_ns == &amp;amp;init_pid_ns))
+            panic(&amp;quot;Attempted to kill init!&amp;quot;);
+
+        zap_pid_ns_processes(pid_ns);
+        write_lock_irq(&amp;amp;tasklist_lock);
+        /*
+         * We can not clear -&amp;gt;child_reaper or leave it alone.
+         * There may by stealth EXIT_DEAD tasks on -&amp;gt;children,
+         * forget_original_parent() must move them somewhere.
+         */
+        pid_ns-&amp;gt;child_reaper = init_pid_ns.child_reaper;
+    }
+
+    return pid_ns-&amp;gt;child_reaper;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
+        <pubDate>Sun, 27 Nov 2016 13:49:16 +0800</pubDate>
+        <link>http://masutangu.com/2016/11/linux-kernel-serial-1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/11/linux-kernel-serial-1/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>Libuv 源码阅读</title>
@@ -2832,155 +3904,6 @@ void session_st::process_recv(struct iphdr *ip_header,struct tcphdr *tcp_header)
         
         
         <category>源码阅读</category>
-        
-      </item>
-    
-      <item>
-        <title>iOS 初体验</title>
-        <description>&lt;p&gt;客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&amp;lt;iOS Programming The Big Nerd Ranch Guide&amp;gt;,最后写了个非常简单的App：&lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDo&lt;/a&gt;。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。&lt;/p&gt;
-
-&lt;h1&gt;What’s in iOS?&lt;/h1&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-1.png&quot; alt=&quot;iOS架构图&quot; title=&quot;iOS架构图&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;iOS处于底层硬件和app的中间。iOS的整体架构可以划分为四层：Core OS, Core Services, Media, Cocoa Touch&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Core OS: Contains the low-level features that most other technologies are built upon. Include：OSX Kernel, Mach 3.0, BSD, Sockets, Security, Power Management, Keychain Access, Certificates, File System, Bonjour&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Core Services: Contains fundamental system services for apps. This layer also contains individual technologies to support features such as location, iCloud, social media, and networking. Include：Collections, Address Book, Networking, File Access, SQLite, Core Location, Net Services, Threading, Preferences, URL Utilities. 我理解是在Core OS基础上封装了一层接口。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Media: Contains the graphics, audio, and video technologies you use to implement multimedia experiences in your apps. Include：Core Audio，OpenAL, Audio Mixing, Audio Recording, Video Playback, OpenGL ES, Core Animation.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Cocoa Touch: Contains key frameworks for building iOS apps. These frameworks define the appearance of your app. They also provide the basic app infrastructure and support for key technologies such as multitasking, touch-based input, push notifications, and many high-level system services. Include: Multi-Touch, Core Motion, View Hierarchy, Localization, Controls, Alerts, Web View, Map Kit, Image Picker, Camera.&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;MVC&lt;/h1&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-2.png&quot; alt=&quot;MVC&quot; title=&quot;MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Model&lt;/strong&gt;: What your application is (but not how it is displayed)&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Controller&lt;/strong&gt;: How your Model is presented to the user (UI logic)&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;View&lt;/strong&gt;:  Your Controller’s minions&lt;br&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;应用程序的逻辑应该放在Model而不是Controller，因为&lt;strong&gt;Model = What your application is&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;MVC之间的关系&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-3.png&quot; alt=&quot;MVC关系&quot; title=&quot;MVC关系&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Controller可以直接访问Model和View（outlet）&lt;/li&gt;
-&lt;li&gt;Model和View是完全隔离开的&lt;/li&gt;
-&lt;li&gt;View通过protocol的方式（blind and structured）访问Controller，包括：&lt;strong&gt;target-action&lt;/strong&gt;方式，&lt;strong&gt;delegate&lt;/strong&gt;方式和&lt;strong&gt;data source&lt;/strong&gt;方式。&lt;/li&gt;
-&lt;li&gt;Model通过&lt;strong&gt;notification&amp;amp;KVO（Key Value Observing）&lt;/strong&gt;将变化通知给Controller&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;多个MVC的组织&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/ios-introduction/illustration-4.png&quot; alt=&quot;错误方式组织多个MVC&quot; title=&quot;错误方式组织多个MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;错误的做法：不同模块的communication非常杂乱，难以维护。&lt;/em&gt;
-&lt;img src=&quot;/assets/images/ios-introduction/illustration-5.png&quot; alt=&quot;正确方式组织多个MVC&quot; title=&quot;正确方式组织多个MVC&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;正确的做法：Using MVC as part of the view of another MVC。划分好模块，不同模块间的communication非常少。&lt;/em&gt;&lt;/p&gt;
-
-&lt;h1&gt;Objective-C&lt;/h1&gt;
-
-&lt;p&gt;面向对象编程的三个原则是：&lt;strong&gt;基于消息传递机制&lt;/strong&gt;，&lt;strong&gt;对象分离&lt;/strong&gt;和&lt;strong&gt;多态&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Category&lt;/strong&gt;
-给已存在的类新增新的方法。
-&lt;pre&gt;&lt;code&gt;
-//NSObject+HelloWorld.h
-@interface NSObject (HelloWorld)&lt;br&gt;
--(void)HelloWorld;&lt;br&gt;
-@end&lt;br&gt;
-//NSObject+HelloWorld.m
-#import &amp;quot;NSObject+HelloWorld.h&amp;quot;&lt;br&gt;
-@implementation NSObject (HelloWorld)&lt;br&gt;
--(void)HelloWorld{&lt;br&gt;
-    NSLog(@&amp;quot;Hello World!&amp;quot;);&lt;br&gt;
-}&lt;br&gt;
-@end&lt;br&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Category vs Inheritance&lt;/strong&gt;:
-Category用于给一个类新增一个功能，Inheritance用于修改父类的功能。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Category vs Extension&lt;/strong&gt;:
-Extension一般用来隐藏类的私有信息，需要有类的源码才能添加Extension。另外Extension可以添加成员变量，而Category不允许。&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;动态绑定&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Introspection&lt;/strong&gt;: Asking at runtime what class an object is or what messages can be sent to it. 
-&lt;pre&gt;&lt;code&gt;
-&lt;strong&gt;isKindOfClass&lt;/strong&gt;: returns whether an object is that kind of class (inheritance included) 
-&lt;strong&gt;isMemberOfClass&lt;/strong&gt;: returns whether an object is that kind of class (no inheritance) 
-&lt;strong&gt;respondsToSelector&lt;/strong&gt;: returns whether an object responds to a given method
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Protocols&lt;/strong&gt;: A syntax that is “in between” id and static typing. Does not specify the class of an object pointed to, but does specify what methods it implements.
-&lt;pre&gt;&lt;code&gt;
-//definition file
-@protocol Foo
--(void)someMethod;
--(void)methodWithArgument:(BOOL)argument;
-@property (readonly) int readonlyProperty; // getter (only) is part of this protocol
-@property NSString &lt;em&gt;readwriteProperty; // getter and setter are both in the protocol 
--(int)methodThatReturnsSomething;
-@end
-//example file
-id &lt;Foo&gt; obj = [[MyClass alloc] init];
-&lt;/code&gt;&lt;/pre&gt;
-Protocols在iOS中的应用包括&lt;/em&gt;&lt;em&gt;delegates&lt;/em&gt;* 和 &lt;strong&gt;dataSources&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;设计模式&lt;/h1&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Target-Action&lt;/strong&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Cocoa uses the &lt;strong&gt;target-action&lt;/strong&gt; mechanism for communication between a &lt;strong&gt;control&lt;/strong&gt; and another object.  The receiving object—typically an instance of a custom class—is called the &lt;strong&gt;target&lt;/strong&gt;. The &lt;strong&gt;action&lt;/strong&gt; is the message that the control sends to the target.   &lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Delegation&lt;/strong&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Delegation&lt;/strong&gt; is a simple and powerful pattern in which one object in a program acts on behalf of, or in coordination with, another object. The delegating object keeps a reference to the other object—the delegate—and at the appropriate time sends a message to it.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Date Source&lt;/strong&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;A data source&lt;/strong&gt; is almost identical to a &lt;strong&gt;delegate&lt;/strong&gt;. The difference is in the relationship with the delegating object. Instead of being delegated control of the user interface, a data source is &lt;strong&gt;delegated control of data&lt;/strong&gt;. The delegating object, typically a view object such as a table view, holds a reference to its data source and occasionally asks it for the data it should display.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;KVO&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Key-value observing&lt;/strong&gt; is a mechanism that enables an object to be notified directly when a property of another object changes.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1&gt;内存管理&lt;/h1&gt;
-
-&lt;p&gt;iOS使用&lt;strong&gt;Automatic Reference Counting&lt;/strong&gt;来做内存管理。ARC在编译期会分析代码，确定对象的生命周期，在相应的位置自动加上retain和release。&lt;/p&gt;
-</description>
-        <pubDate>Thu, 28 Apr 2016 23:10:00 +0800</pubDate>
-        <link>http://masutangu.com/2016/04/ios-introduction/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/04/ios-introduction/</guid>
-        
-        
-        <category>iOS</category>
         
       </item>
     
