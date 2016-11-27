@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 27 Nov 2016 13:59:43 +0800</pubDate>
-    <lastBuildDate>Sun, 27 Nov 2016 13:59:43 +0800</lastBuildDate>
+    <pubDate>Sun, 27 Nov 2016 15:29:42 +0800</pubDate>
+    <lastBuildDate>Sun, 27 Nov 2016 15:29:42 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -154,6 +154,29 @@
 &lt;p&gt;线程提供共享同一地址空间和数据的能力，并且比进程更加轻量级。&lt;/p&gt;
 
 &lt;p&gt;如果多个线程都是 CPU 密集型的，那么并不能得到性能上的增强。但如果存在大量的计算和 IO 处理，那么多线程运行这些活动彼此重叠进行，从而加快应用程序的执行速度。&lt;/p&gt;
+
+&lt;p&gt;进程模型基于两种独立的概念：&lt;strong&gt;资源分组处理&lt;/strong&gt;和&lt;strong&gt;执行&lt;/strong&gt;。而线程的引入即是对这两种概念的区分。理解进程的一个角度是，用某种方法把相关资源集中在一起，将资源放在进程中可以更容易的管理。另一个概念是，进程有一个执行线程，通常简写为线程。线程拥有程序计数器用以记录执行的下一条指令，寄存器用以保存当前的工作变量，堆栈用以记录执行历史，其中每一帧保存了一个已调用但还没返回的函数。&lt;strong&gt;进程用于把资源集中到一起，而线程则是在 CPU 上被调度执行的实体。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;线程有两种主要的实现方法：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linux-kernel-serial-1/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;用户空间：&lt;/p&gt;
+
+&lt;p&gt;把整个线程包放在用户空间中，内核对线程一无所知。从内核的角度即单线程进程。这类实现有同样的通用结构，线程在一个运行时系统之上运行，运行时系统是管理线程的函数集合（pthread_create, pthread_exit, pthread_join 和 pthread_yield 等），如上图左图。&lt;/p&gt;
+
+&lt;p&gt;在用户空间管理线程时，每个进程需要有专用的线程表，用以跟踪该进程中的线程。线程表记录了线程的属性，如程序计数器、堆栈、寄存器和状态等。该线程表由运行时系统管理。&lt;/p&gt;
+
+&lt;p&gt;用户级线程的优点在于保存线程状态和调度都是本地过程，比内核调用更有效率，另外不需要陷阱，不需要上下文切换，也不需要对内存高速缓存进行刷新。&lt;/p&gt;
+
+&lt;p&gt;用户级线程还允许每个进程定制自己的调度算法。&lt;/p&gt;
+
+&lt;p&gt;用户级线程的问题在于难以实现阻塞系统调用，page faults 引发阻塞，以及没有时钟中断，需要依赖线程自动放弃 CPU。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;内核空间：&lt;/p&gt;
+
+&lt;p&gt;内核实现线程的管理，此时便不再需要运行时系统了，如上图右图。在内核中有专门的线程表记录所有线程。与用户级线程类似，内核的线程表保存线程的信息。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h1&gt;Linux 中的实现&lt;/h1&gt;
 
@@ -734,29 +757,29 @@ static void copy_flags(unsigned long clone_flags, struct task_struct *p)
     schedule();
 }
 
-
-/*
- * release all the mappings made in a process&amp;#39;s VM space
- */
-void exit_mmap(struct mm_struct *mm)
+static void exit_mm(struct task_struct * tsk)
 {
-    struct vm_area_struct *vma;
+    struct mm_struct *mm = tsk-&amp;gt;mm;
+    struct core_state *core_state;
 
+    mm_release(tsk, mm);
     if (!mm)
         return;
 
-    kenter(&amp;quot;&amp;quot;);
-
-    mm-&amp;gt;total_vm = 0;
-
-    while ((vma = mm-&amp;gt;mmap)) {
-        mm-&amp;gt;mmap = vma-&amp;gt;vm_next;
-        delete_vma_from_mm(vma);
-        delete_vma(mm, vma);
-    }
-    kleave(&amp;quot;&amp;quot;);
+    down_read(&amp;amp;mm-&amp;gt;mmap_sem);
+    atomic_inc(&amp;amp;mm-&amp;gt;mm_count);
+    BUG_ON(mm != tsk-&amp;gt;active_mm);
+    /* more a memory barrier than a real lock */
+    task_lock(tsk);
+    tsk-&amp;gt;mm = NULL;
+    up_read(&amp;amp;mm-&amp;gt;mmap_sem);
+    enter_lazy_tlb(mm, current);
+    /* We don&amp;#39;t want this task to be frozen prematurely */
+    clear_freeze_flag(tsk);
+    task_unlock(tsk);
+    mm_update_next_owner(mm);
+    mmput(mm);
 }
-
 
 /*
  * Send signals to all our closest relatives so that they know
@@ -823,6 +846,8 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 }
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;调用 do_exit() 之后，其进程描述符依然被保留。在其父进程获得退出信息或通知内核它并不关注后，子进程的 task_struct 才被释放。&lt;/p&gt;
+
 &lt;p&gt;wait() 这一组函数都是通过唯一的系统调用 wait4() 来实现。它的标准动作是挂起调用它的进程，直到其中一个子进程退出。此时函数会返回该子进程的 PID。此外，调用该函数时提供的指针会包含子进程退出时的退出码。&lt;/p&gt;
 
 &lt;p&gt;当最终需要释放进程描述符时，release_task() 会被调用，用以完成以下工作：&lt;/p&gt;
