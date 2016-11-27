@@ -80,7 +80,7 @@ category: 读书笔记
 
 # Linux 中的实现
 
-## 进程及进程表
+## 进程描述符及任务结构
 
 内核把进程的列表存放在名为任务队列（task list）的双向循环链表中。链表中的每一项类型都为 task\_struct ，称为进程描述符（process descriptor）。task\_struct 在 32 位机器上大概占用 1.7 KB。
 
@@ -232,6 +232,8 @@ list_entry(task->tasks.next, struct task_struct, tasks)
 ```c
 list_entry(task->tasks.prev, struct task_struct, tasks)
 ```
+
+## 进程创建
 
 fork() 通过拷贝当前进程来创建一个子进程。子进程和父进程的区别仅仅在于 PID、PPID 和某些资源和统计量（例如挂起的信号）。exec() 函数负责读取可执行文件并将其载入地址空间开始运行。
 
@@ -507,6 +509,8 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 }
 ```
 
+## 线程
+
 Linux 把所有线程都当做进程来实现，每个线程都有唯一隶属于自己的 task\_struct，所以在内核中，它看起来就像是一个普通的进程。
 
 线程的创建和普通进程类似，只不过调用 clone() 的时候需要传递参数来指明需要共享的资源：
@@ -543,6 +547,8 @@ clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND, 0);
 
 内核经常需要在后台执行一些操作，这通过内核线程来完成。内核线程和普通进程间的区别在于内核线程没有独立的地址空间（指向地址空间的 mm 指针被设置为 NULL）。内核线程只在内核空间运行，从来不切换到用户空间。内核线程和普通进程一样可以被调度和抢占。
 
+
+## 进程终止
 
 进程终止可以由自身调用 exit() 系统调用引起，或接收到不能处理或不能忽略的信号或异常时。进程终止由 do_exit() 完成大部分工作：
 
