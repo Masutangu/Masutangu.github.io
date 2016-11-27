@@ -623,29 +623,29 @@ NORET_TYPE void do_exit(long code)
 	schedule();
 }
 
-
-/*
- * release all the mappings made in a process's VM space
- */
-void exit_mmap(struct mm_struct *mm)
+static void exit_mm(struct task_struct * tsk)
 {
-	struct vm_area_struct *vma;
+	struct mm_struct *mm = tsk->mm;
+	struct core_state *core_state;
 
+	mm_release(tsk, mm);
 	if (!mm)
 		return;
-
-	kenter("");
-
-	mm->total_vm = 0;
-
-	while ((vma = mm->mmap)) {
-		mm->mmap = vma->vm_next;
-		delete_vma_from_mm(vma);
-		delete_vma(mm, vma);
-	}
-	kleave("");
+	
+	down_read(&mm->mmap_sem);
+	atomic_inc(&mm->mm_count);
+	BUG_ON(mm != tsk->active_mm);
+	/* more a memory barrier than a real lock */
+	task_lock(tsk);
+	tsk->mm = NULL;
+	up_read(&mm->mmap_sem);
+	enter_lazy_tlb(mm, current);
+	/* We don't want this task to be frozen prematurely */
+	clear_freeze_flag(tsk);
+	task_unlock(tsk);
+	mm_update_next_owner(mm);
+	mmput(mm);
 }
-
 
 /*
  * Send signals to all our closest relatives so that they know
@@ -713,11 +713,13 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 
 ```
 
+调用 do\_exit() 之后，其进程描述符依然被保留。在其父进程获得退出信息或通知内核它并不关注后，子进程的 task_struct 才被释放。
+
 wait() 这一组函数都是通过唯一的系统调用 wait4() 来实现。它的标准动作是挂起调用它的进程，直到其中一个子进程退出。此时函数会返回该子进程的 PID。此外，调用该函数时提供的指针会包含子进程退出时的退出码。
 
 当最终需要释放进程描述符时，release\_task() 会被调用，用以完成以下工作：
 
-* 调用 \_\_exit\_signal()，进行最终统计，并调用 _unhash_process()，后者又会调用 detach_pid() 从 pidhash 上删除该进程，同时也从任务列表中删除该进程。
+* 调用 \_\_exit\_signal()，进行最终统计，并调用 \_unhash\_process()，后者又会调用 detach\_pid() 从 pidhash 上删除该进程，同时也从任务列表中删除该进程。
 * \_\_exit\_signal() 释放僵死进程所占用的剩余资源。
 * 如果该进程是线程组的最后一个进程，并且领头进程已经死掉，那么release_task() 就得通知僵死的领头进程的父进程。
 * release_task() 调用 put_task_struct() 释放进程内核栈和 thread_info 结构所占的页，并释放 task_struct 所占的 slab 高速缓存。
