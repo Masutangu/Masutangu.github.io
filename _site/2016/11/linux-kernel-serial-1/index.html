@@ -7,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <title>Linux 内核系列－进程</title>
-  <meta name="description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  <meta name="description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Linux 内核系列－进程">
-  <meta name="twitter:description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  <meta name="twitter:description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
   
   <meta property="og:type" content="article">
   <meta property="og:title" content="Linux 内核系列－进程">
-  <meta property="og:description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  <meta property="og:description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
   <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -132,7 +132,7 @@
   </header>
 
   <section class="post">
-    <p>本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。</p>
+    <p>本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。</p>
 
 <h1>概念</h1>
 
@@ -146,6 +146,38 @@
 
 <p>在 UNIX 系统中，只有系统调用 fork 可以创建新进程。</p>
 
+<p>使用 fork 创建新进程，子进程从父进程继承了如下属性：</p>
+
+<ul>
+<li>实际用户 ID、实际组 ID、有效用户 ID、有效组 ID</li>
+<li>附属组 ID</li>
+<li>进程组 ID</li>
+<li>会话 ID</li>
+<li>控制终端</li>
+<li>设置用户 ID 标志和设置组 ID 标志</li>
+<li>打开的文件描述符（相当于调用了 dup 函数）</li>
+<li>当前工作目录</li>
+<li>根目录</li>
+<li>文件模式创建屏蔽字</li>
+<li>信号屏蔽和处理函数</li>
+<li>close-on-exec 标志</li>
+<li>环境</li>
+<li>共享存储段</li>
+<li>存储映射</li>
+<li>资源限制</li>
+</ul>
+
+<p>父子进程区别如下：</p>
+
+<ul>
+<li>fork 返回值</li>
+<li>进程 ID 和父进程 ID</li>
+<li>子进程的 tms_utime、tms_stime、tms_cutime、tms_ustime 的值设置为 0</li>
+<li>子进程不继承父进程设置的文件锁</li>
+<li>子进程未处理的 alarm 被清除</li>
+<li>子进程未处理的信号集被置空</li>
+</ul>
+
 <h2>终止</h2>
 
 <p>进程终止通常由以下条件引起：</p>
@@ -157,9 +189,25 @@
 <li>被其他进程杀死</li>
 </ul>
 
+<p>当进程终止时，内核会向其父进程发送 SIGCHLD 信号。</p>
+
 <h2>层次结构</h2>
 
 <p>在 UNIX 中，进程和其子进程共同组成一个进程组。整个系统中，所有进程都属于以 init 为根的一棵树。</p>
+
+<p>进程组是一个或多个进程的集合，通常是在同一个作业中结合起来的。同一个进程组中的各进程接收来自同一终端的各种信号。每个进程组有一个唯一的进程组 ID。每个进程组有一个组长进程，组长进程的进程组 ID 等于其进程 ID。只要进程组中还有进程存在，该进程组就存在。一个进程只能为自己或其子进程设置进程组 ID，在子进程调用了 exec 后，它就无法再更改子进程的进程组 ID。</p>
+
+<p>会话是一个或多个进程组的集合。一个会话可以有一个控制终端，建立与控制终端连接的会话首进程（session leader）被称为控制进程（controlling process）。会话可以有一个前台进程组和多个后台进程组。终端产生的信号都将发送给前台进程组，调制解调器断开连接时，挂断信号将发给控制进程。</p>
+
+<p>孤儿进程组定义为：该组中每个成员的父进程要么是该组的一个成员，要么不是该组所属会话的成员。换句话说，如果该组有一个进程的父进程属于同一会话的另一个组，则该组不是孤儿进程组。POSIX.1 要求向孤儿进程组中处于停止状态的进程发送 SIGHUP 信号，系统对于这种信号的默认处理是终止进程。</p>
+
+<p>为什么需要孤儿进程组的概念：</p>
+
+<blockquote>
+<p>When a controlling process terminates, its terminal becomes free and a new session can be established on it. (In fact, another user could log in on the terminal.) This could cause a problem if any processes from the old session are still trying to use that terminal.</p>
+
+<p>To prevent problems, process groups that continue running even after the session leader has terminated are marked as orphaned process groups. When a process group becomes an orphan, its processes are sent a SIGHUP signal. Ordinarily, this causes the processes to terminate. However, if a program ignores this signal or establishes a handler for it, it can continue running as in the orphan process group even after its controlling process terminates; but it still cannot access the terminal any more.</p>
+</blockquote>
 
 <h2>状态</h2>
 
@@ -298,6 +346,40 @@
 
 <p>内核实现线程的管理，此时便不再需要运行时系统了，如上图右图。在内核中有专门的线程表记录所有线程。与用户级线程类似，内核的线程表保存线程的信息。</p></li>
 </ul>
+
+<h1>系统调用及库函数</h1>
+
+<h2>进程终止</h2>
+
+<p>正常终止包括以下方式：</p>
+
+<ul>
+<li>从 main 函数返回</li>
+<li>调用 exit</li>
+<li>调用 _exit 或 _Exit</li>
+<li>最后一个线程从其启动例程中返回</li>
+<li>从最后一个线程调用 pthread_exit</li>
+</ul>
+
+<p>异常退出有以下方式：</p>
+
+<ul>
+<li>调用 abort</li>
+<li>接收到一个信号</li>
+<li>最后一个线程对取消请求做出回应</li>
+</ul>
+
+<h3>退出函数</h3>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">#include &lt;stdlib.h&gt;
+void exit(int status);
+void _Exit(int status);
+
+#include &lt;unistd.h&gt;
+void _exit(int status);
+</code></pre></figure>
+<p>_exit 和 _Exit 立即进入内核，而 exit 会先执行些清理工作（exit 函数总执行一个标准 I/O 库的清理关闭操作：对所有打开流调用 fclose 函数，造成输出缓冲区中数据被冲洗）。</p>
+
+<p>三个退出函数都带有一个整型参数，称为终止状态。</p>
 
 <h1>Linux 中的实现</h1>
 
@@ -616,8 +698,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
     return p;
 }
 
-
-
 static struct task_struct *dup_task_struct(struct task_struct *orig)
 {
     struct task_struct *tsk;
@@ -685,6 +765,60 @@ static void copy_flags(unsigned long clone_flags, struct task_struct *p)
     new_flags |= PF_STARTING;
     p-&gt;flags = new_flags;
     clear_freeze_flag(p);
+}
+
+void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+{
+    unsigned long flags;
+    struct rq *rq;
+    int cpu __maybe_unused = get_cpu();
+
+#ifdef CONFIG_SMP
+    /*
+     * Fork balancing, do it here and not earlier because:
+     *  - cpus_allowed can change in the fork path
+     *  - any previously selected cpu might disappear through hotplug
+     *
+     * We still have TASK_WAKING but PF_STARTING is gone now, meaning
+     * -&gt;cpus_allowed is stable, we have preemption disabled, meaning
+     * cpu_online_mask is stable.
+     */
+    cpu = select_task_rq(p, SD_BALANCE_FORK, 0);
+    set_task_cpu(p, cpu);
+#endif
+
+    /*
+     * Since the task is not on the rq and we still have TASK_WAKING set
+     * nobody else will migrate this task.
+     */
+    rq = cpu_rq(cpu);
+    raw_spin_lock_irqsave(&amp;rq-&gt;lock, flags);
+
+    BUG_ON(p-&gt;state != TASK_WAKING);
+    p-&gt;state = TASK_RUNNING;  // 设置成TASK_RUNNING状态  
+    update_rq_clock(rq);
+    activate_task(rq, p, 0);  // activate_task 会把该 task 放入 cpu 的 runqueue
+    trace_sched_wakeup_new(rq, p, 1);
+    check_preempt_curr(rq, p, WF_FORK);
+#ifdef CONFIG_SMP
+    if (p-&gt;sched_class-&gt;task_woken)
+        p-&gt;sched_class-&gt;task_woken(rq, p);
+#endif
+    task_rq_unlock(rq, &amp;flags);
+    put_cpu();
+}
+
+
+/*
+ * activate_task - move a task to the runqueue.
+ */
+static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
+{
+    if (task_contributes_to_load(p))
+        rq-&gt;nr_uninterruptible--;
+
+    enqueue_task(rq, p, wakeup, false);  // 放入 runqueue
+    inc_nr_running(rq);
 }
 
 </code></pre></figure>
@@ -947,9 +1081,9 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 
     signal = tracehook_notify_death(tsk, &amp;cookie, group_dead);
     if (signal &gt;= 0)
-        signal = do_notify_parent(tsk, signal);
+        signal = do_notify_parent(tsk, signal);  // 给父进程发信号。如果父进程处理 SIGCHLD 信号，返回 DEATH_REAP
 
-    tsk-&gt;exit_state = signal == DEATH_REAP ? EXIT_DEAD : EXIT_ZOMBIE;
+    tsk-&gt;exit_state = signal == DEATH_REAP ? EXIT_DEAD : EXIT_ZOMBIE;  
 
     /* mt-exec, de_thread() is waiting for us */
     if (thread_group_leader(tsk) &amp;&amp;
@@ -971,7 +1105,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 
 <p>wait() 这一组函数都是通过唯一的系统调用 wait4() 来实现。它的标准动作是挂起调用它的进程，直到其中一个子进程退出。此时函数会返回该子进程的 PID。此外，调用该函数时提供的指针会包含子进程退出时的退出码。</p>
 
-<p>当最终需要释放进程描述符时，release_task() 会被调用，用以完成以下工作：</p>
+<p>wait 系统调用会调用 do_wait() 函数，其将调用 do_wait_thread() -&gt; wait_consider_task() -&gt; wait_task_zombie() -&gt; release_task()。release_task() 会释放进程描述符，完成以下工作：</p>
 
 <ul>
 <li>调用 __exit_signal()，进行最终统计，并调用 _unhash_process()，后者又会调用 detach_pid() 从 pidhash 上删除该进程，同时也从任务列表中删除该进程。</li>
@@ -1272,7 +1406,7 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-11-27 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-12-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
