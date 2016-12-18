@@ -1364,6 +1364,14 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-2/" title="link to Linux 内核系列－进程通信和同步">Linux 内核系列－进程通信和同步</a></h2>
+       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念竞争条件多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。忙等待的互斥几种实现互斥的方案：屏蔽中断在单处理器系统中，最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，包括时钟中断。CPU 只有在发生中断的时候才会进行进程切换，这样在中断被屏蔽后 CPU 将不会被切换到其他进程...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-2/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">
@@ -1406,7 +1414,7 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
             <section class="footer">
     <footer>
     	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
-        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-12-11 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
+        <span class="footer__copyright">由 <a href="https://jekyllrb.com">Jekyll</a> 于 2016-12-18 生成，感谢 <a href="https://www.digitalocean.com/?refcode=30ed2d146762">Digital Ocean</a> 为本站提供稳定的 VPS 服务</span>
         <span class="footer__copyright">本站由 <a href="http://onev.cat">@onevcat</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/onevcat/OneV-s-Den">本站源码</a> - &copy; 2016</span>
     </footer>
 </section>
