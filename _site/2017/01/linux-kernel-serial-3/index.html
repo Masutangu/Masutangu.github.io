@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Linux 内核系列－进程调度</title>
+  <meta name="description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Linux 内核系列－进程调度">
+  <meta name="twitter:description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Linux 内核系列－进程调度">
+  <meta property="og:description" content="本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/01/linux-kernel-serial-3/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-01-22 16:40:36 +0800" itemprop="datePublished" class="post-meta__date date">2017-01-22</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">Linux 内核系列－进程调度</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。</p>
+
+<h1>概念</h1>
+
+<p>许多适用于进程调度的处理方法同样适用于线程调度。当内核管理线程的时候，调度经常是按照线程级别的，与线程所属的进程基本没有关联。</p>
+
+<p>调度需要考虑 CPU 的利用率，因为进程切换的代价比较高，进程需要从用户态切换到内核态，保存当前状态，包括在进程表中存储寄存器以便之后加载。接着，调度算法选定一个新进程，将新进程的内存映像载入 MMU。除此之外，进程切换会使整个内存高速缓存失效，强迫缓存从内存中动态重新载入两次。</p>
+
+<h1>Linux 中的实现</h1>
+
+<p>Linux 提供了抢占式的多任务模式。进程调度策略通常要在两个矛盾的目标中间寻找平衡：<strong>进程响应迅速（响应时间短）</strong> 和 <strong>最大系统利用率（高吞吐量）</strong>。</p>
+
+<p>进程调度的常用策略如下：</p>
+
+<ul>
+<li><p>进程优先级</p>
+
+<p>基于优先级的调度是最基本的一类调度算法。优先级高的先运行，相同优先级的进程按轮转方式进行调度。</p>
+
+<p>Linux 中采用了两种不同的优先级范围。第一种是用 nice 值，他的范围是从 -20 到 +19，默认为 0。越大的 nice 值意味着更低的优先级。Linux 中，nice 值代表时间片比例。可以通过 ps-el 命令来查看，NI 标记位表示进程的 nice 值。第二种是实时优先级，默认情况下变化范围从 0 到 99。越高的实时优先级值意味着进程优先级越高。任何实时进程的优先级都高于普通进程。可以通过 ps-eo 指定 rtprio 查看进程的实时优先级。显示 “-” 表示该进程不是实时进程。</p></li>
+<li><p>时间片</p>
+
+<p>时间片表示进程在被抢占前可以持续运行的时间。Linux 的 CFS 调度器并不是直接分配时间片到进程，而是将处理器的使用比例分给进程，这个比例还会受 nice 值的影响。Linux 的 CFS 调度器，抢占时机取决于新进程消耗的处理器使用比，如果消耗的使用比比当前进程小，则新进程立刻投入运行，抢占当前进程。否则将推迟运行。</p></li>
+</ul>
+
+<h2>Linux 调度算法</h2>
+
+<p>Linux 调度器是以模块方式提供的，这种模块化结构被称为<strong>调度器类</strong>。每个调度器都有一个优先级，基础的调度器代码定义在 kernel/sched.c 文件中，其会按照优先级顺序遍历调度类，拥有一个可执行进程的最高优先级的调度器类胜出，由其选择下一个执行的程序。</p>
+
+<p>完全公平调度（CFS）是一个针对普通进程的调度类，在 Linux 中称为 SCHED_NORMAL，CFS 算法实现定义在 kernel/sched_fair.c 中。</p>
+
+<p>CFS 基于一个简单的理念：进程调度的效果应如同系统具备一个理想的多进程任务处理器，每个进程都能获得 1/n 的处理器时间（n是指可运行进程的数量）。同时，我们可以调度给他们无限小的时间周期，所以在任何可测量周期内，我们给予 n 个进程中每个进程同样多的运行时间。</p>
+
+<p>CFS 的做法是允许每个进程运行一段时间、循环轮转、选择运行最少的进程做为下一个运行进程，而不再采用分配给每个进程时间片的做法了。CFS 在所有可运行进程总数的基础上计算出一个进程应该运行多久，而不是依靠 nice 值来计算时间片。nice 值在 CFS 中被作为进程获得处理器运行比的权重。CFS 为完美多任务中的无限小周期的近似值设立了一个小目标。而这个目标称为“目标延迟”。CFS 还引入每个进程获得的时间片底线，称为最小粒度，默认值为 1ms。任何进程获得的处理器时间是由自己和其他可运行所有可运行进程 nice 值的相对差值决定的。nice 值对时间片的作用是几何加权，nice 值对应的绝对时间是处理器的使用比。</p>
+
+<h2>Linux 调度的实现</h2>
+
+<h3>时间记账</h3>
+
+<p>每次系统时钟节拍发送时，时间片都会被减少一个节拍。当进程的时间片被减少到 0 时，它就会被另一个时间片尚未为 0 的可运行进程抢占。</p>
+
+<ul>
+<li><p>调度器结构</p>
+
+<p>CFS 使用调度器结构（定义在<linux/sched.h> 的 <code>struct sched_entity</code> 中）来追踪进程运行记账。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">struct sched_entity {
+    struct load_weight  load;       /* for load-balancing */
+    struct rb_node      run_node;
+    struct list_head    group_node;
+    unsigned int        on_rq;
+
+    u64         exec_start;
+    u64         sum_exec_runtime;
+    u64         vruntime;
+    u64         prev_sum_exec_runtime;
+
+    u64         last_wakeup;
+    u64         avg_overlap;
+
+    u64         nr_migrations;
+
+    u64         start_runtime;
+    u64         avg_wakeup;
+}
+</code></pre></figure>
+<p>进程描述符 <code>struct task_struct</code> 的成员变量 se 即为 <code>sched_entity</code> 类型。</p>
+
+<p>vruntime 变量存放进程的虚拟运行时间，该运行时间的计算经过了所有可运行进程总数的标准化。虚拟时间是以 ns 为单位的，所以 vruntime 和定时器节拍不再相关。定义在 kernel/sched_fair.c 文件的 <code>update_curr()</code> 函数实现了记账功能：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/* cpu runqueue to which this cfs_rq is attached */
+static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+{
+    return cfs_rq-&gt;rq;
+}
+
+static void update_curr(struct cfs_rq *cfs_rq)
+{
+    struct sched_entity *curr = cfs_rq-&gt;curr;
+    u64 now = rq_of(cfs_rq)-&gt;clock;
+    unsigned long delta_exec;
+
+    if (unlikely(!curr))
+        return;
+
+    /*
+    * Get the amount of time the current task was running
+    * since the last time we changed load (this cannot
+    * overflow on 32 bits):
+    */
+    delta_exec = (unsigned long)(now - curr-&gt;exec_start);
+    if (!delta_exec)
+        return;
+
+    __update_curr(cfs_rq, curr, delta_exec);
+    curr-&gt;exec_start = now;
+}
+</code></pre></figure>
+<p><code>update_curr()</code> 计算了当前进程的执行时间，保存在变量 <code>delta_exec</code> 中，然后又将其传给 <code>__update_curr()</code> 进行加权计算，最后将权重值与当前运行进程的 vruntime 相加。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/*
+* Update the current task&#39;s runtime statistics. Skip current tasks that
+* are not in our scheduling class.
+*/
+static inline void
+__update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
+        unsigned long delta_exec)
+{
+    unsigned long delta_exec_weighted;
+
+    schedstat_set(curr-&gt;exec_max, max((u64)delta_exec, curr-&gt;exec_max));
+
+    curr-&gt;sum_exec_runtime += delta_exec;
+    schedstat_add(cfs_rq, exec_clock, delta_exec);
+    delta_exec_weighted = calc_delta_fair(delta_exec, curr);
+
+    curr-&gt;vruntime += delta_exec_weighted;
+    update_min_vruntime(cfs_rq);
+}
+
+static void update_min_vruntime(struct cfs_rq *cfs_rq)
+{
+    u64 vruntime = cfs_rq-&gt;min_vruntime;
+
+    if (cfs_rq-&gt;curr)
+        vruntime = cfs_rq-&gt;curr-&gt;vruntime;
+
+    if (cfs_rq-&gt;rb_leftmost) {
+        struct sched_entity *se = rb_entry(cfs_rq-&gt;rb_leftmost,
+                        struct sched_entity,
+                        run_node);
+
+        if (!cfs_rq-&gt;curr)
+            vruntime = se-&gt;vruntime;
+        else
+            vruntime = min_vruntime(vruntime, se-&gt;vruntime);
+    }
+
+    cfs_rq-&gt;min_vruntime = max_vruntime(cfs_rq-&gt;min_vruntime, vruntime);
+}
+</code></pre></figure>
+<p><code>update_curr()</code> 是由系统定时器周期性调用的，无论是在进程处于可运行状态还是阻塞处于不可运行状态。</p></li>
+</ul>
+
+<h3>进程选择</h3>
+
+<p>当 CFS 需要选择下一个运行进程时，它会挑选一个具有最小 vruntime 的进程。CFS 使用红黑树来组织可运行进程队列，其节点的键值是可运行进程的 vruntime。</p>
+
+<ul>
+<li><p>挑选下一个任务</p>
+
+<p>CFS 选择 vruntime 最小的那个，对应的就是树中最左侧的叶子节点。实现这一过程的函数是 <code>__pick_next_entity()</code>，定义在 <code>kernel/sched_fair.c</code> 中：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+{
+    struct rb_node *left = cfs_rq-&gt;rb_leftmost;
+
+    if (!left)
+        return NULL;
+
+    return rb_entry(left, struct sched_entity, run_node);
+}
+</code></pre></figure>
+<p>注意 <code>__pick_next_entity()</code> 函数并不会遍历数找到最左叶子节点，该值已经缓存在 <code>rb_leftmost</code> 字段中。如果该函数返回 NULL，表示没有可运行进程，CFS 调度器选择 idle 任务运行。</p></li>
+<li><p>添加进程</p>
+
+<p>添加进程和缓存最左叶子节点，发生在进程变成可运行状态（被唤醒）或者通过 <code>fork()</code> 调用第一次创建进程时，由调用 <code>enqueue_entity()</code> 实现：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">static void enqueue_entity(
+    struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+{
+    /*
+    * Update the normalized vruntime before updating min_vruntime
+    * through callig update_curr().
+    */
+    if (!(flags &amp; ENQUEUE_WAKEUP) || (flags &amp; ENQUEUE_MIGRATE))
+        se-&gt;vruntime += cfs_rq-&gt;min_vruntime;  // 这里在下文有解释
+
+    /*
+    * Update run-time statistics of the &#39;current&#39;.
+    */
+    update_curr(cfs_rq);
+    account_entity_enqueue(cfs_rq, se);
+
+    if (flags &amp; ENQUEUE_WAKEUP) {
+        place_entity(cfs_rq, se, 0);
+        enqueue_sleeper(cfs_rq, se);
+    }
+
+    update_stats_enqueue(cfs_rq, se);
+    check_spread(cfs_rq, se);
+    if (se != cfs_rq-&gt;curr)
+        __enqueue_entity(cfs_rq, se);
+}
+
+static void
+place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+{
+    u64 vruntime = cfs_rq-&gt;min_vruntime;
+
+    /*
+    * The &#39;current&#39; period is already promised to the current tasks,
+    * however the extra weight of the new task will slow them down a
+    * little, place the new task so that it fits in the slot that
+    * stays open at the end.
+    */
+    if (initial &amp;&amp; sched_feat(START_DEBIT))
+        vruntime += sched_vslice(cfs_rq, se);
+
+    /* sleeps up to a single latency don&#39;t count. */
+    if (!initial &amp;&amp; sched_feat(FAIR_SLEEPERS)) {
+        unsigned long thresh = sysctl_sched_latency;
+
+        /*
+        * Convert the sleeper threshold into virtual time.
+        * SCHED_IDLE is a special sub-class.  We care about
+        * fairness only relative to other SCHED_IDLE tasks,
+        * all of which have the same weight.
+        */
+        if (sched_feat(NORMALIZED_SLEEPER) &amp;&amp; (!entity_is_task(se) ||
+                task_of(se)-&gt;policy != SCHED_IDLE))
+            thresh = calc_delta_fair(thresh, se);
+
+        /*
+        * Halve their sleep time&#39;s effect, to allow
+        * for a gentler effect of sleepers:
+        */
+        if (sched_feat(GENTLE_FAIR_SLEEPERS))
+            thresh &gt;&gt;= 1;  // /* 补偿减为调度周期的一半 */
+
+        vruntime -= thresh;
+    }
+
+    /* ensure we never gain time by being placed backwards. */
+    vruntime = max_vruntime(se-&gt;vruntime, vruntime);
+
+    se-&gt;vruntime = vruntime;
+}
+
+</code></pre></figure>
+<p>enqueue_entity 更新运行时间和一些统计数据，然后调用 <code>__enqueue_entity()</code> 进行插入操作。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/*
+* Enqueue an entity into the rb-tree:
+*/
+static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+{
+    struct rb_node **link = &amp;cfs_rq-&gt;tasks_timeline.rb_node;
+    struct rb_node *parent = NULL;
+    struct sched_entity *entry;
+    s64 key = entity_key(cfs_rq, se);
+    int leftmost = 1;
+
+    /*
+    * Find the right place in the rbtree:
+    */
+    while (*link) {
+        parent = *link;
+        entry = rb_entry(parent, struct sched_entity, run_node);
+        /*
+        * We dont care about collisions. Nodes with
+        * the same key stay together.
+        */
+        if (key &lt; entity_key(cfs_rq, entry)) {
+            link = &amp;parent-&gt;rb_left;
+        } else {
+            link = &amp;parent-&gt;rb_right;
+            leftmost = 0;
+        }
+    }
+
+    /*
+    * Maintain a cache of leftmost tree entries (it is frequently
+    * used):
+    */
+    if (leftmost)
+        cfs_rq-&gt;rb_leftmost = &amp;se-&gt;run_node;
+
+    rb_link_node(&amp;se-&gt;run_node, parent, link);
+    rb_insert_color(&amp;se-&gt;run_node, &amp;cfs_rq-&gt;tasks_timeline);
+}
+</code></pre></figure>
+<blockquote>
+<p>如果新进程的 vruntime 初值为 0 的话，那么它在相当长的时间内都会保持抢占CPU的优势，老的进程就会饿死，因此 CFS 在每个 CPU 的运行队列 cfs_rq 都维护一个 min_vruntime 字段，记录该运行队列中所有进程的 vruntime 最小值，新进程的初始 vruntime 值就以它所在运行队列的 min_vruntime 为基础来设置，与老进程保持在合理的差距范围内。</p>
+
+<p>如果休眠进程的 vruntime 保持不变，而其他运行进程的 vruntime 一直在增加，那么等到休眠进程被唤醒的时候，它的 vruntime 比别人小很多，会使其长时间拥有抢占 CPU 的优势。因此 CFS 在休眠进程被唤醒时重新设置 vruntime 值，以 min_vruntime 值为基础，给予一定的补偿，但不能补偿太多。</p>
+
+<p>在多 CPU 的系统上，不同的CPU的负载不一样，有的 CPU 更忙一些，而每个 CPU 都有自己的运行队列，每个队列中的进程的 vruntime 也走得有快有慢。如果一个进程从 min_vruntime 更小的 CPU A上迁移到 min_vruntime 更大的 CPU B 上，可能就会占便宜了，因为 CPU B 的运行队列中进程的 vruntime 普遍比较大，迁移过来的进程就会获得更多的 CPU 时间片。为了避免这种场景，当进程从一个 CPU 的运行队列中出来 (调用 <code>dequeue_entity</code>) 的时候，它的 vruntime 要减去队列的 min_vruntime 值；而当进程加入另一个CPU的运行队列 (调用 <code>enqueue_entity</code>) 时，它的 vruntime 要加上该队列的 min_vruntime 值。这样，进程从一个 CPU 迁移到另一个 CPU 之后，vruntime 保持相对公平。</p>
+
+<p>参考自<a href="http://linuxperf.com/?p=42">《从几个问题开始理解CFS调度器》</a></p>
+</blockquote></li>
+<li><p>删除进程</p>
+
+<p>删除进程发生在进程阻塞或终止时：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">static void
+dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
+{
+    /*
+    * Update run-time statistics of the &#39;current&#39;.
+    */
+    update_curr(cfs_rq);
+
+    update_stats_dequeue(cfs_rq, se);
+    if (sleep) {
+#ifdef CONFIG_SCHEDSTATS
+        if (entity_is_task(se)) {
+            struct task_struct *tsk = task_of(se);
+
+            if (tsk-&gt;state &amp; TASK_INTERRUPTIBLE)
+                se-&gt;sleep_start = rq_of(cfs_rq)-&gt;clock;
+            if (tsk-&gt;state &amp; TASK_UNINTERRUPTIBLE)
+                se-&gt;block_start = rq_of(cfs_rq)-&gt;clock;
+        }
+#endif
+    }
+
+    clear_buddies(cfs_rq, se);
+
+    if (se != cfs_rq-&gt;curr)
+        __dequeue_entity(cfs_rq, se);
+    account_entity_dequeue(cfs_rq, se);
+    update_min_vruntime(cfs_rq);
+
+    /*
+    * Normalize the entity after updating the min_vruntime because the
+    * update can refer to the -&gt;curr item and we need to reflect this
+    * movement in our normalized position.
+    */
+    if (!sleep)
+        se-&gt;vruntime -= cfs_rq-&gt;min_vruntime;
+}
+
+static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+{
+    if (cfs_rq-&gt;rb_leftmost == &amp;se-&gt;run_node) {
+        struct rb_node *next_node;
+
+        next_node = rb_next(&amp;se-&gt;run_node);
+        cfs_rq-&gt;rb_leftmost = next_node;
+    }
+
+    rb_erase(&amp;se-&gt;run_node, &amp;cfs_rq-&gt;tasks_timeline);
+}
+</code></pre></figure></li>
+</ul>
+
+<h3>调度器的入口</h3>
+
+<p>进程调度的主要入口是函数 <code>schedule()</code>，定义在 kernel/sched.c 中。schedule() 先找到一个最高优先级的调度类，调度类有各自的可运行队列，由调度类返回最高优先级的进程：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">static inline struct task_struct *
+    pick_next_task(struct rq *rq)
+    {
+        const struct sched_class *class;
+        struct task_struct *p;
+
+        /*
+        * Optimization: we know that if all tasks are in
+        * the fair class we can call that function directly:
+        */
+        if (likely(rq-&gt;nr_running == rq-&gt;cfs.nr_running)) {
+            p = fair_sched_class.pick_next_task(rq);
+            if (likely(p))
+                return p;
+        }
+
+        class = sched_class_highest;
+        for ( ; ; ) {
+            p = class-&gt;pick_next_task(rq);
+            if (p)
+                return p;
+            /*
+            * Will never be NULL as the idle class always
+            * returns a non-NULL p:
+            */
+            class = class-&gt;next;
+        }
+    }
+</code></pre></figure>
+<p>函数开始部分的优化，CFS 是普通进程的调度类，如果所有可运行进程数量等于 CFS 类对应的可运行进程数，意味着可以直接选择 CFS 为调度类。</p>
+
+<p>每个调度类都实现了 <code>pick_next_task()</code> 函数，其返回下一个可运行进程的指针。<code>pick_next_task()</code> 实现中会调用 <code>pick_next_entity()</code>，该函数会调用 <code>__pick_next_entity()</code> 函数。</p>
+
+<h3>睡眠和唤醒</h3>
+
+<p>睡眠时进程把自己标记成休眠状态，从可执行红黑树中移出，放入等待队列中，然后调用 <code>schedule()</code> 选择和执行下一个进程。唤醒的过程刚好相反：进程被设置为可运行状态，然后从等待队列中移到可执行红黑树中。</p>
+
+<ul>
+<li><p>等待队列</p>
+
+<p>内核用 wake_queue_head_t 表示等待队列。休眠和唤醒实现比较复杂，因为要避免竞争条件:</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">DEFINE_WAIT(wait);
+
+add_wait_queue(q, &amp;wait);
+while (!condition) {  /* condition 是我们等待的事件 */
+    prepare_to_wait(&amp;q, &amp;wait, TASK_INTERRUPTIBLE);
+    if (signal_pending(current))
+        /* 处理信号 */
+        schedule();
+}
+finish_wait(&amp;q, &amp;wait);
+</code></pre></figure>
+<p>步骤如下：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">1. 调用宏 DEFINE_WAIT() 创建一个等待队列的项
+2. 调用 add_wait_queue() 把自己加入到队列中，该队列会在进程等待条件满足时唤醒它
+3. 调用 prepare_to_wait() 方法将进程的状态变更为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE
+4. 如果状态被设置为 TASK_INTERRUPTIBLE，则信号唤醒进程，检查并处理信号
+5. 当进程被唤醒时，会再次检查条件是否为真。如果是，则退出循环。如果不是，再次调用 schedule() 
+6. 当条件满足后，进程设置为 TASK_RUNNING 并调用 finish_wait() 方法将自己移出等待队列
+</code></pre></figure>
+<p>位于 fs/notify/inotify/inotify_user.c 的 <code>inotify_read()</code>，负责从通知文件描述符中读取信息。其实现是等待队列的典型用法：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">static ssize_t inotify_read(struct file *file, char __user *buf,
+            size_t count, loff_t *pos)
+{
+    struct fsnotify_group *group;
+    struct fsnotify_event *kevent;
+    char __user *start;
+    int ret;
+    DEFINE_WAIT(wait);
+
+    start = buf;
+    group = file-&gt;private_data;
+
+    while (1) {
+        prepare_to_wait(&amp;group-&gt;notification_waitq, &amp;wait, TASK_INTERRUPTIBLE);
+
+        mutex_lock(&amp;group-&gt;notification_mutex);
+        kevent = get_one_event(group, count);
+        mutex_unlock(&amp;group-&gt;notification_mutex);
+
+        if (kevent) {
+            ret = PTR_ERR(kevent);
+            if (IS_ERR(kevent))
+                break;
+            ret = copy_event_to_user(group, kevent, buf);
+            fsnotify_put_event(kevent);
+            if (ret &lt; 0)
+                break;
+            buf += ret;
+            count -= ret;
+            continue;
+        }
+
+        ret = -EAGAIN;
+        if (file-&gt;f_flags &amp; O_NONBLOCK)
+            break;
+        ret = -EINTR;
+        if (signal_pending(current))
+            break;
+
+        if (start != buf)
+            break;
+
+        schedule();
+    }
+
+    finish_wait(&amp;group-&gt;notification_waitq, &amp;wait);
+    if (start != buf &amp;&amp; ret != -EFAULT)
+        ret = buf - start;
+    return ret;
+}
+
+void
+prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
+{
+    unsigned long flags;
+
+    wait-&gt;flags &amp;= ~WQ_FLAG_EXCLUSIVE;
+    spin_lock_irqsave(&amp;q-&gt;lock, flags);
+    if (list_empty(&amp;wait-&gt;task_list))
+        __add_wait_queue(q, wait);
+    set_current_state(state);
+    spin_unlock_irqrestore(&amp;q-&gt;lock, flags);
+}
+
+static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
+{
+    list_add(&amp;new-&gt;task_list, &amp;head-&gt;task_list);
+}
+</code></pre></figure></li>
+<li><p>唤醒</p>
+
+<p>唤醒操作通过函数 <code>wake_up()</code> 进行，他会唤醒指定的等待队列上的所有进程。其调用 <code>try_to_wake_up()</code>，该函数负责将进程设置为 TASK_RUNNING 状态，调用 <code>enqueue_task()</code> 将进程放入红黑树。如果被唤醒的进程优先级比当前正在执行的进程优先级高，还需要设置 need_resched 标志。通常哪段代码促使条件达成，就负责调用 <code>wake_up()</code> 函数。</p></li>
+</ul>
+
+<h2>抢占和上下文切换</h2>
+
+<p>上下文切换由定义在 kernel/sched.c 中的 <code>context_switch()</code> 函数负责。每当新进程准备投入运行时，<code>schedule()</code> 就会调用该函数，它完成两项基本工作：</p>
+
+<ul>
+<li>调用声明在 <asm/mmu_context.h> 中的 switch_mm()，该函数负责把虚拟内存从上一个进程映射切换到新进程中。</li>
+<li>调用声明在 <asm/system.h> 中的 switch_to()，该函数负责从上一个进程的处理器状态切换到新进程的处理器状态，包括保存、恢复栈信息和寄存器信息，还有其他和体系结构相关的状态信息，都必须以每个进程为对象进行管理和保存。</li>
+</ul>
+
+<p>内核提供 need_resched 标志来表明是否需要重新调度。当某个进程应该被抢占时，<code>scheduler_tick()</code> 就会设置这个标志；当一个优先级高的进程进入可执行状态时，<code>try_to_wake_up()</code> 也会设置这个标志。内核检查该标志，当其被设置时调用 <code>schedule()</code> 来切换到新进程。</p>
+
+<p>再次返回到用户空间以及从中断返回的时候，内核也会检查 need_resched 标志。如果已被设置，内核会在继续执行前调用调度程序。</p>
+
+<p>每个进程都包含一个 need_resched 标志，这是因为访问进程描述符内的数值要比访问一个全局变量快（因为 current 宏速度很快并且描述符通常都在高速缓存中）。2.6 版本中 need_resched 被移到 thread_info 结构体里，用一个特别的标志变量中的一位来表示。</p>
+
+<h3>用户抢占</h3>
+
+<p>内核即将返回用户空间时，如果 need_resched 标识被设置，会导致 schedule() 被调用，此时就会发生用户抢占。简而言之，用户抢占在以下情况产生：</p>
+
+<ul>
+<li>从系统调用返回用户空间时</li>
+<li>从中断处理程序返回用户空间时</li>
+</ul>
+
+<h3>内核抢占</h3>
+
+<p>Linux 系统中，只要重新调度是安全的，内核就可以在任何时间抢占正在执行的任务。只要没有持有锁，内核就可以抢占。</p>
+
+<p>为了支持内核抢占，每个进程的 thread_info 引入 preempt_count 计数器。该计数器初始值为 0，每当使用锁的时候数值加 1，释放锁时数值减 1。当数值为 0 时，内核就可以抢占。从中断返回内核空间时，内核会检查 need_resched 和 preempt_count 的值。如果 need_resched 被设置，并且 preempt_count 为 0，此时调度程序会被调用。</p>
+
+<p>如果内核中的进程被阻塞了，或显式调用了 <code>schedule()</code>，内核抢占也会显式地发生。 </p>
+
+<p>简而言之，内核抢占会发生在：</p>
+
+<ul>
+<li>中断处理程序正在执行，且返回内核空间之前</li>
+<li>内核代码再一次具有可抢占性</li>
+<li>如果内核中的任务显式调用 schedule()</li>
+<li>如果内核中的任务阻塞</li>
+</ul>
+
+<h2>实时调度策略</h2>
+
+<p>Linux 提供了两种实时调度策略：SCHED_FIFO 和 SCHED_RR。而普通的、非实时的调度策略是 SCHED_NORMAL。</p>
+
+<p>SCHED_FIFO 实现了一种简单的先入先出的调度算法。处于可运行状态的 SCHED_FIFO 级的进程会比任何 SCHED_NORMAL 级的进程都先得到调度。一旦一个 SCHED_FIFO 级进程处于可执行状态，就会一直执行，直到受阻塞或显式释放处理器。只有更高优先级的 SCHED_FIFO 或者 SCHED_RR 任务才能抢占 SCHED_FIFO 任务。</p>
+
+<p>SCHED_RR 与 SCHED_FIFO 大体相同，只是 SCHED_RR 级的进程在耗尽事先分配的时间片后就不再继续执行。SCHED_RR 即带有时间片的 SCHED_FIFO，时间片只能用来重新调度同一优先级的进程。</p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2016/12/review/" title="link to 我的 2016">我的 2016</a></h2>
+       <p class="excerpt">时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。回顾过去在这整整一年中，我所思考的和困扰的，可以由三个词来概括：成绩、成长和价值。工作已经两年半，对自己目前取得的成绩，对自己技术成长的预期，对自己为团队创造的价值，实话实说，都不满意。从今年年初开始，我就有点焦虑，觉得自己没有太多的成长，一直在原地踏步，已经没有刚入职时那种回顾过去会觉得自己突飞猛进的感觉（工作后做的每个比较大的需求，我都会整理保存下来 ppt，回看时就会清楚...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2016-12-28 22:19:43 +0800" class="post-list__meta--date date">2016-12-28</time> &#8226; <span class="post-list__meta--tags tags">随笔</span><a class="btn-border-small" href=/2016/12/review/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/01/linux-kernel-serial-3/";
+        this.page.identifier = "/2017/01/linux-kernel-serial-3/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>
