@@ -306,8 +306,11 @@ a\_ops 域指向地址空间对象中的操作函数表。
 
 struct page 中有两个字段：mapping 和 index。其中 mapping 指向该页所有者的 address\_space，index 字段表示所有者地址空间中以页大小为单位的偏移量。用这两个字段就能在页高速缓存中查找。
 
+
+页高速缓存通过两个参数：address\_space 对象和一个偏移量进行搜索。每个 address_space 对象都有唯一一个基树，保存在 page\_tree 结构体中。基树是一个二叉树，只要指定了文件偏移量，就可以在基树中迅速检索到希望的数据。
+
 inode、address space 和 page 三者的关系如下图：
 
 <img src="/assets/images/linux-kernel-serial-5/illustration-1.png" width="800" />
 
-页高速缓存通过两个参数：address\_space 对象和一个偏移量进行搜索。每个 address_space 对象都有唯一一个基数，保存在 page\_tree 结构体中。基数是一个二叉树，只要指定了文件偏移量，就可以在基数中迅速检索到希望的数据。
+（补充下 apue 中缓存 io 的内容）
