@@ -5,7 +5,7 @@ title: Linux 性能监控
 category: 工作
 ---
 
-本文是对 [《Linux 性能监测》](http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/) 系列文章的读书笔记，非原创。
+本文是对 [《Linux 性能监测》](http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/) 系列文章的读书笔记，并在此基础上丰富。
 
 ## CPU 相关
 ### vmstat 
@@ -100,6 +100,17 @@ mpstat 和 vmstat 类似，不同的是 mpstat 可以输出多个处理器的数
 ### ps
 ps 用于查看某个程序、进程占用的 CPU 资源。
 
+### 实践：定位 CPU 100% 的问题
+
+某个进程 CPU 100% 了，如何定位？
+
+1. 如果是多线程，使用 ```ps -eL |grep 进程id```，找出占用 CPU 最长时间的线程 id
+2. 使用 ```strace -p 线程id -tt``` 观察调用的系统调用
+3. 使用 ```perf top``` 看看哪个函数占用率最高
+4. 或使用 ```watch pstack 线程 id``` 看看调用堆栈
+
+之前工作中遇到过 CPU 使用率很高，通过 ```perf top``` 和 ```pstack``` 观察到写磁盘操作很多，推测是日志打印过多导致 CPU 使用率暴涨，调低了日志等级后顺利解决。
+
 ## 内存相关
 
 kswapd daemon 用来检查 pages\_high 和 pages\_low，如果可用内存少于 pages\_low，kswapd 就开始扫描并试图释放 32个页面，并且重复扫描释放的过程直到可用内存大于 pages\_high 为止。
@@ -177,6 +188,14 @@ Swap:      1046524     164376     882148
 * +buffers/cache：可用的内存大小，其值等于 free1 加上 buffers1 再加上 cached
 
 当空闲物理内存不多时，不一定表示系统运行状态很差，因为内存的 cached 及 buffers 部分可以随时被重用。swap 如果被频繁调用，bi 和 bo 长时间不为 0，才是内存资源是否紧张的依据。通过 free 看资源时，实际主要关注 -/+ buffers/cache 的值就可以知道内存到底够不够了。
+
+### valgrind 
+
+valgrind 是定位内存泄漏的好工具，使用 ```valgrind --lead-check=full --log-file=valgrind.log ./a.out``` 即可在进程结束运行后输出内存泄露报告。
+
+### pmap 
+
+待补充
 
 ## IO 相关
 
@@ -277,6 +296,12 @@ IpExt:
 
 ## 相关资料
 
-vmstat:[《Linux Performance Measurements using vmstat》](https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat)
+[《Linux Performance Measurements using vmstat》](https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat)
 
-tcpdump:[《tcpdump使用技巧》](http://linuxwiki.github.io/NetTools/tcpdump.html)。
+[《tcpdump使用技巧》](http://linuxwiki.github.io/NetTools/tcpdump.html)
+
+[《Perf -- Linux下的系统性能调优工具》](https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/)
+
+[《通过/proc查看Linux内核态调用栈来定位问题》](http://www.51testing.com/html/56/490256-3711169.html)
+
+[《Linux性能优化》](http://linuxtools-rst.readthedocs.io/zh_CN/latest/advance/03_optimization.html)

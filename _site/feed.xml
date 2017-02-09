@@ -5,13 +5,13 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 05 Feb 2017 23:09:08 +0800</pubDate>
-    <lastBuildDate>Sun, 05 Feb 2017 23:09:08 +0800</lastBuildDate>
+    <pubDate>Thu, 09 Feb 2017 21:22:19 +0800</pubDate>
+    <lastBuildDate>Thu, 09 Feb 2017 21:22:19 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
         <title>Linux 性能监控</title>
-        <description>&lt;p&gt;本文是对 &lt;a href=&quot;http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/&quot;&gt;《Linux 性能监测》&lt;/a&gt; 系列文章的读书笔记，非原创。&lt;/p&gt;
+        <description>&lt;p&gt;本文是对 &lt;a href=&quot;http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/&quot;&gt;《Linux 性能监测》&lt;/a&gt; 系列文章的读书笔记，并在此基础上丰富。&lt;/p&gt;
 
 &lt;h2&gt;CPU 相关&lt;/h2&gt;
 
@@ -107,6 +107,19 @@ procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
 
 &lt;p&gt;ps 用于查看某个程序、进程占用的 CPU 资源。&lt;/p&gt;
 
+&lt;h3&gt;实践：定位 CPU 100% 的问题&lt;/h3&gt;
+
+&lt;p&gt;某个进程 CPU 100% 了，如何定位？&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;如果是多线程，使用 &lt;code&gt;ps -eL |grep 进程id&lt;/code&gt;，找出占用 CPU 最长时间的线程 id&lt;/li&gt;
+&lt;li&gt;使用 &lt;code&gt;strace -p 线程id -tt&lt;/code&gt; 观察调用的系统调用&lt;/li&gt;
+&lt;li&gt;使用 &lt;code&gt;perf top&lt;/code&gt; 看看哪个函数占用率最高&lt;/li&gt;
+&lt;li&gt;或使用 &lt;code&gt;watch pstack 线程 id&lt;/code&gt; 看看调用堆栈&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;之前工作中遇到过 CPU 使用率很高，通过 &lt;code&gt;perf top&lt;/code&gt; 和 &lt;code&gt;pstack&lt;/code&gt; 观察到写磁盘操作很多，推测是日志打印过多导致 CPU 使用率暴涨，调低了日志等级后顺利解决。&lt;/p&gt;
+
 &lt;h2&gt;内存相关&lt;/h2&gt;
 
 &lt;p&gt;kswapd daemon 用来检查 pages_high 和 pages_low，如果可用内存少于 pages_low，kswapd 就开始扫描并试图释放 32个页面，并且重复扫描释放的过程直到可用内存大于 pages_high 为止。&lt;/p&gt;
@@ -181,6 +194,14 @@ Swap:      1046524     164376     882148
 &lt;/ul&gt;
 
 &lt;p&gt;当空闲物理内存不多时，不一定表示系统运行状态很差，因为内存的 cached 及 buffers 部分可以随时被重用。swap 如果被频繁调用，bi 和 bo 长时间不为 0，才是内存资源是否紧张的依据。通过 free 看资源时，实际主要关注 -/+ buffers/cache 的值就可以知道内存到底够不够了。&lt;/p&gt;
+
+&lt;h3&gt;valgrind&lt;/h3&gt;
+
+&lt;p&gt;valgrind 是定位内存泄漏的好工具，使用 &lt;code&gt;valgrind --lead-check=full --log-file=valgrind.log ./a.out&lt;/code&gt; 即可在进程结束运行后输出内存泄露报告。&lt;/p&gt;
+
+&lt;h3&gt;pmap&lt;/h3&gt;
+
+&lt;p&gt;待补充&lt;/p&gt;
 
 &lt;h2&gt;IO 相关&lt;/h2&gt;
 
@@ -312,9 +333,15 @@ IpExt:
 
 &lt;h2&gt;相关资料&lt;/h2&gt;
 
-&lt;p&gt;vmstat:&lt;a href=&quot;https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat&quot;&gt;《Linux Performance Measurements using vmstat》&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat&quot;&gt;《Linux Performance Measurements using vmstat》&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;tcpdump:&lt;a href=&quot;http://linuxwiki.github.io/NetTools/tcpdump.html&quot;&gt;《tcpdump使用技巧》&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://linuxwiki.github.io/NetTools/tcpdump.html&quot;&gt;《tcpdump使用技巧》&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/&quot;&gt;《Perf -- Linux下的系统性能调优工具》&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.51testing.com/html/56/490256-3711169.html&quot;&gt;《通过/proc查看Linux内核态调用栈来定位问题》&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://linuxtools-rst.readthedocs.io/zh_CN/latest/advance/03_optimization.html&quot;&gt;《Linux性能优化》&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sun, 05 Feb 2017 22:57:39 +0800</pubDate>
         <link>http://masutangu.com/2017/02/linux-performance-monitor/</link>

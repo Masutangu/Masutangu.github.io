@@ -7,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <title>Linux 性能监控</title>
-  <meta name="description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，非原创。">
+  <meta name="description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，并在此基础上丰富。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Linux 性能监控">
-  <meta name="twitter:description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，非原创。">
+  <meta name="twitter:description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，并在此基础上丰富。">
   
   <meta property="og:type" content="article">
   <meta property="og:title" content="Linux 性能监控">
-  <meta property="og:description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，非原创。">
+  <meta property="og:description" content="本文是对 《Linux 性能监测》 系列文章的读书笔记，并在此基础上丰富。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
   <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -132,7 +132,7 @@
   </header>
 
   <section class="post">
-    <p>本文是对 <a href="http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/">《Linux 性能监测》</a> 系列文章的读书笔记，非原创。</p>
+    <p>本文是对 <a href="http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/">《Linux 性能监测》</a> 系列文章的读书笔记，并在此基础上丰富。</p>
 
 <h2>CPU 相关</h2>
 
@@ -228,6 +228,19 @@ procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
 
 <p>ps 用于查看某个程序、进程占用的 CPU 资源。</p>
 
+<h3>实践：定位 CPU 100% 的问题</h3>
+
+<p>某个进程 CPU 100% 了，如何定位？</p>
+
+<ol>
+<li>如果是多线程，使用 <code>ps -eL |grep 进程id</code>，找出占用 CPU 最长时间的线程 id</li>
+<li>使用 <code>strace -p 线程id -tt</code> 观察调用的系统调用</li>
+<li>使用 <code>perf top</code> 看看哪个函数占用率最高</li>
+<li>或使用 <code>watch pstack 线程 id</code> 看看调用堆栈</li>
+</ol>
+
+<p>之前工作中遇到过 CPU 使用率很高，通过 <code>perf top</code> 和 <code>pstack</code> 观察到写磁盘操作很多，推测是日志打印过多导致 CPU 使用率暴涨，调低了日志等级后顺利解决。</p>
+
 <h2>内存相关</h2>
 
 <p>kswapd daemon 用来检查 pages_high 和 pages_low，如果可用内存少于 pages_low，kswapd 就开始扫描并试图释放 32个页面，并且重复扫描释放的过程直到可用内存大于 pages_high 为止。</p>
@@ -302,6 +315,14 @@ Swap:      1046524     164376     882148
 </ul>
 
 <p>当空闲物理内存不多时，不一定表示系统运行状态很差，因为内存的 cached 及 buffers 部分可以随时被重用。swap 如果被频繁调用，bi 和 bo 长时间不为 0，才是内存资源是否紧张的依据。通过 free 看资源时，实际主要关注 -/+ buffers/cache 的值就可以知道内存到底够不够了。</p>
+
+<h3>valgrind</h3>
+
+<p>valgrind 是定位内存泄漏的好工具，使用 <code>valgrind --lead-check=full --log-file=valgrind.log ./a.out</code> 即可在进程结束运行后输出内存泄露报告。</p>
+
+<h3>pmap</h3>
+
+<p>待补充</p>
 
 <h2>IO 相关</h2>
 
@@ -433,9 +454,15 @@ IpExt:
 
 <h2>相关资料</h2>
 
-<p>vmstat:<a href="https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat">《Linux Performance Measurements using vmstat》</a></p>
+<p><a href="https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat">《Linux Performance Measurements using vmstat》</a></p>
 
-<p>tcpdump:<a href="http://linuxwiki.github.io/NetTools/tcpdump.html">《tcpdump使用技巧》</a>。</p>
+<p><a href="http://linuxwiki.github.io/NetTools/tcpdump.html">《tcpdump使用技巧》</a></p>
+
+<p><a href="https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/">《Perf -- Linux下的系统性能调优工具》</a></p>
+
+<p><a href="http://www.51testing.com/html/56/490256-3711169.html">《通过/proc查看Linux内核态调用栈来定位问题》</a></p>
+
+<p><a href="http://linuxtools-rst.readthedocs.io/zh_CN/latest/advance/03_optimization.html">《Linux性能优化》</a></p>
 
   </section>
 </article>
