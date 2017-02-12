@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2017-01-25T10:21:16+08:00
+date: 2016-12-11T10:21:16+08:00
 title: Linux 内核系列－内存管理
 category: 读书笔记
 ---

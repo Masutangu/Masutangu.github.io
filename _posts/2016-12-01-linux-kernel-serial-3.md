@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2017-01-22T16:40:36+08:00
+date: 2016-12-01T16:40:36+08:00
 title: Linux 内核系列－进程调度
 category: 读书笔记
 ---

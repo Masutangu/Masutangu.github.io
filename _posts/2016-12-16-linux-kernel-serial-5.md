@@ -1,12 +1,49 @@
 ---
 layout: post
-date: 2017-01-26T21:37:16+08:00
+date: 2016-12-16T21:37:16+08:00
 title: Linux 内核系列－文件系统和 IO
 category: 读书笔记
 ---
 
 本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
 
+# 概念 
+
+如果能把文件看成是一种地址空间，那么就离理解文件不远了。（文件类似虚拟地址空间，相应的磁盘地址对应内存物理地址，通过 inode 来管理映射关系，类似页表的作用）。
+
+## 文件系统的实现
+
+文件系统存放在磁盘上。多数磁盘划分为一个或多个区，每个分区有一个独立的文件系统。磁盘的 0 号扇区称为主引导记录（MBR），用来引导计算机。在 MBR 结尾是分区表，给出每个分区的起始和结束地址。
+
+文件系统通常包含了超级块（包含文件系统的关键参数）、空闲空间管理、i节点、根目录以及文件存储区。
+
+### 文件的实现
+
+文件存储的实现关键问题是记录各个文件分别用到哪些磁盘块。
+
+#### 连续分配
+
+最简单的分配方案是把每个文件作为一连串连续数据块存储在磁盘上。
+
+#### 链表分配
+
+链表分配不会有磁盘碎片的问题，顺序读取非常方便，但随即存取却相当缓慢。而且由于指针占了一些字节，磁盘块存储数据的字节数不再是 2 的整数幂。
+
+#### 在内存中采用的链表分配
+
+将每个磁盘块的指针放在内存的一张表中，可以解决上面的两个不足。随机存取虽然依然需要遍历，但不再需要任何磁盘引用。缺点在于整张表必须放在内存，对大磁盘来说（表太大）不太合适。
+
+#### i 节点 
+
+最后一个解决方案是给每个文件赋予一个 i 节点，包含文件属性和文件块的磁盘地址。只有文件打开时，i 节点才会加载到内存。
+
+### 目录的实现
+
+对于 i 节点系统，目录项只包括文件名和相应的 i 节点号。查找文件名时，可以在每个目录使用散列表来加快查找速度。另外一种方法是将查找结果放入高速缓存。
+
+### 虚拟文件系统
+
+UNIX 使用虚拟文件系统的概念，关键思想在于抽象出所有文件系统的共有部分，把这部分代码放在单独的一层，该层调用底层的实际文件系统来管理数据。
 
 # Linux 中的实现
 
@@ -61,9 +98,95 @@ VFS 采用的是面向对象的设计思路，使用一族数据结构来代表�
 
 索引节点对象包含了内核在操作文件或目录时需要的全部信息，由 inode 结构体表示，定义在文件 <linux/fs.h> 中。
 
+```c
+struct inode {
+	struct hlist_node	i_hash;
+	struct list_head	i_list;		// 索引节点链表
+	struct list_head	i_sb_list;  // 超级块链表
+	struct list_head	i_dentry;   // 目录项链表
+	unsigned long		i_ino;      // 节点号
+	atomic_t			i_count;
+	unsigned int		i_nlink;
+	uid_t			i_uid;
+	gid_t			i_gid;
+	dev_t			i_rdev;  		// 实际设备标识符
+	unsigned int	i_blkbits;      // 以位为单位的块大小
+	u64				i_version;
+	loff_t			i_size;   		// 以字节为单位的文件大小
+#ifdef __NEED_I_SIZE_ORDERED
+	seqcount_t		i_size_seqcount;
+#endif
+	struct timespec		i_atime;  // 最后访问时间
+	struct timespec		i_mtime;  // 最后修改时间
+	struct timespec		i_ctime;  // 最后改变时间
+	blkcnt_t		i_blocks;     // 文件块数
+	unsigned short  i_bytes;  	  // 使用的字节数
+	umode_t			i_mode;       // 访问权限
+	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
+	struct mutex		i_mutex;
+	struct rw_semaphore	i_alloc_sem;
+	const struct inode_operations	*i_op;  // 索引节点操作表
+	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
+	struct super_block	*i_sb;
+	struct file_lock	*i_flock;
+	struct address_space	*i_mapping;
+	struct address_space	i_data;
+
+	struct list_head	i_devices;
+	union {
+		struct pipe_inode_info	*i_pipe;
+		struct block_device	*i_bdev;
+		struct cdev		*i_cdev;
+	};
+	unsigned long		i_state;
+	unsigned long		dirtied_when;	// 第一次弄脏数据的时间
+	unsigned int		i_flags;    	// 文件系统标识
+	atomic_t		i_writecount;       // 写者计数
+	void			*i_private; /* fs or device private pointer */
+};
+```
+
 ### 目录项对象
 
-VFS 经常需要执行目录相关的操作，例如路径名查找等。路径名查找需要解析路径中的每一个组成部分。为了方便查找操作，VFS 引入目录项的概念。每个 dentry 代表路径中的一个特定部分。在路径中，包括普通文件在内，每一个部分都是目录项对象。不同于前面的两个对象，目录项对象没有对应的磁盘数据结构，VFS 根据字符串形式的路径名现场创建它。
+VFS 经常需要执行目录相关的操作，例如路径名查找等。路径名查找需要解析路径中的每一个组成部分。为了方便查找操作，VFS 引入目录项的概念。每个 dentry 代表路径中的一个特定部分。在路径中，包括普通文件在内，每一个部分都是目录项对象。
+
+目录项由对象 dentry 结构体表示，定义在文件 <linux/dcache.h> 中：
+
+```c
+struct dentry {
+	atomic_t d_count;     	// 使用记账
+	unsigned int d_flags;   /* protected by d_lock */
+	spinlock_t d_lock;		/* per dentry lock */
+	int d_mounted;
+	struct inode *d_inode;		/* Where the name belongs to - NULL is * negative */
+	/*
+	 * The next three fields are touched by __d_lookup.  Place them here
+	 * so they all fit in a cache line.
+	 */
+	struct hlist_node d_hash;	// dcache中的所有dentry对象都通过d_hash指针域链到相应的dentry哈希链表中。
+	struct dentry *d_parent;	/* parent directory */
+	struct qstr d_name;
+
+	struct list_head d_lru;		/* LRU list */
+	/*
+	 * d_child and d_rcu can share memory
+	 */
+	union {
+		struct list_head d_child;	/* child of parent list */
+	 	struct rcu_head d_rcu;
+	} d_u;
+	struct list_head d_subdirs;	/* our children */
+	struct list_head d_alias;	/* inode alias list */
+	unsigned long d_time;		/* used by d_revalidate */
+	const struct dentry_operations *d_op;
+	struct super_block *d_sb;	/* The root of the dentry tree */
+	void *d_fsdata;			/* fs-specific data */
+
+	unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
+};
+```
+
+不同于前面的两个对象，目录项对象没有对应的磁盘数据结构，VFS 根据字符串形式的路径名现场创建它。
 
 #### 目录项状态
 
@@ -85,7 +208,33 @@ VFS 经常需要执行目录相关的操作，例如路径名查找等。路径�
 
 ### 文件对象
 
-文件对象表示进程已打开的文件，由结构体 file 表示，定义在文件 <linux/fs.h> 中。文件对象通过 f\_dentry 指针指向相关的目录项对象，目录项会指向相关的索引节点，索引节点会记录文件是否为脏。
+文件对象表示进程已打开的文件，由结构体 file 表示，定义在文件 <linux/fs.h> 中。
+
+```c
+struct file {
+	/*
+	 * fu_list becomes invalid after file_free is called and queued via
+	 * fu_rcuhead for RCU freeing
+	 */
+	union {
+		struct list_head	fu_list;    // 文件对象链表
+		struct rcu_head 	fu_rcuhead; // 释放后 rcu 链表
+	} f_u;
+	struct path		f_path;   // 包含目录项
+#define f_dentry	f_path.dentry
+#define f_vfsmnt	f_path.mnt
+	const struct file_operations	*f_op;  // 文件操作表
+	spinlock_t		f_lock;   /* f_ep_links, f_flags, no IRQ */
+	atomic_long_t	f_count;  // 文件对象使用计数
+	unsigned int 	f_flags;  //打开文件指定的标志位
+	fmode_t			f_mode;   // 文件访问模式
+	loff_t			f_pos;    // 文件当前的位移量
+	struct fown_struct	f_owner;
+	u64			f_version;
+	struct address_space	*f_mapping;  // 页缓存映射
+};
+```
+文件对象通过 f\_dentry 指针指向相关的目录项对象，目录项会指向相关的索引节点，索引节点会记录文件是否为脏。
 
 ### 文件系统相关的数据结构
 
@@ -161,6 +310,17 @@ struct files_struct {
 ```
 
 fd 数组指针指向已打开的文件对象链表，默认情况下指向 fd\_array 数组。因为 NR\_OPEN\_DEFAULT 等于 32，如果一个进程打开的文件对象超过 32 个，内核将分配一个新数组并将 fd 指针指向它。
+
+下图是 APUE 中进程打开文件的图例：
+
+<img src="/assets/images/linux-kernel-serial-5/illustration-2.png" width="800" />
+
+其中 process table entry 表项对应 files\_struct 对象，file table 表项对应 file 对象，v-node table 表项可以看成两部分，一部分是文件操作函数的指针，由 file 对象的 f\_op 字段指向，另一部分 inode 信息，由 file 对象的 f\_dentry 字段指向的目录项对象的 d\_inode 关联到相关的 inode 节点：
+
+<img src="/assets/images/linux-kernel-serial-5/illustration-3.png" width="800" />
+
+> 注：上图取自[知乎](https://www.zhihu.com/question/39148572)
+
 
 和进程相关的第二个结构体是 fs\_struct。该结构由进程描述符 fs 域指向。它包含文件系统和进程相关的信息，定义在 <linux/fs_struct.h> 中：
 

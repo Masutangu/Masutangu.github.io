@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 12 Feb 2017 10:26:34 +0800</pubDate>
-    <lastBuildDate>Sun, 12 Feb 2017 10:26:34 +0800</lastBuildDate>
+    <pubDate>Sun, 12 Feb 2017 11:56:00 +0800</pubDate>
+    <lastBuildDate>Sun, 12 Feb 2017 11:56:00 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -349,6 +349,553 @@ IpExt:
         
         
         <category>工作</category>
+        
+      </item>
+    
+      <item>
+        <title>我的 2016</title>
+        <description>&lt;p&gt;时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。&lt;/p&gt;
+
+&lt;h1&gt;回顾过去&lt;/h1&gt;
+
+&lt;p&gt;在这整整一年中，我所思考的和困扰的，可以由三个词来概括：&lt;strong&gt;成绩&lt;/strong&gt;、&lt;strong&gt;成长&lt;/strong&gt;和&lt;strong&gt;价值&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;工作已经两年半，对自己目前取得的成绩，对自己技术成长的预期，对自己为团队创造的价值，实话实说，都不满意。&lt;/p&gt;
+
+&lt;p&gt;从今年年初开始，我就有点焦虑，觉得自己没有太多的成长，一直在原地踏步，已经没有刚入职时那种回顾过去会觉得自己突飞猛进的感觉（工作后做的每个比较大的需求，我都会整理保存下来 ppt，回看时就会清楚自己相比起过去进步了多少）。困于瓶颈期时，我尝试更加主动的去做事情。在那段时间，我开始关注些不仅仅是技术上的知识，例如关注了&lt;a href=&quot;https://wanqu.co/&quot;&gt;《湾区日报》&lt;/a&gt;，做了些读书笔记&lt;a href=&quot;http://masutangu.com/2015/12/dewdrop-note-1/&quot;&gt;《水滴石穿》&lt;/a&gt;。那段时间有些收获，但当我尝试把我阅读中收获的这些想法，运用到工作中时，却发现有层层阻碍。其中细节就不展开了，这让我非常沮丧。一方面，我理解在大公司工作，最重要是“稳”。有新的方案，新的想法，首要考虑的不是这个新的方案、新的想法的收益，而是运维成本。另一方面，这也让我觉得在大公司工作非常乏味，每个人的贡献都是固定的，尤其是工程师，你的定位就是执行者。公司也已经有很多很成熟的组件，即使不太适应于业务场景，也能勉强用用，你的工作就是做做接入，其它不需要操心。&lt;/p&gt;
+
+&lt;p&gt;这种状况让我觉得非常的不适应。在学生时代，每一阶段、每个学期你都会学习到新的知识。而在工作中，更多的时候你是在重复做些体力活，例如，复制粘贴的完成一些需求。又例如，一遍遍的用已经成熟的方案去解决一些问题。而我其实不太喜欢这样的工作方式。我蛮希望自己是一个比较有创造力的工程师，我倾向于用不同的方案去完成类似的需求，通过真正的实践来对比不同的方案的优劣性。但在大公司来说，&lt;strong&gt;进度&lt;/strong&gt;和&lt;strong&gt;稳定性&lt;/strong&gt;是首要目标。只有在发展迅猛的前沿/明星项目中，你才有可能遇到各种新的问题，才有得到锻炼的机会。&lt;/p&gt;
+
+&lt;p&gt;互联网不是按照工龄来排资论辈，同样工作三五年，差距可能非常大。有一句话说得好，&lt;strong&gt;“Good judgment comes from experience, experience comes from bad judgment.”&lt;/strong&gt;（正确的判断来自于丰富的经验,而丰富的经验来自错误的判断）。如果工作中没有太多挑战，不能促使你学习进步以应对工作的要求，一味追求保守无法得到犯错踩坑进步的机会，那你就应该停下来思考自己的未来了。我非常不希望把工作当做是一个任务，我希望工作是融于生活的，能带给我挑战和战胜难题的动力，能带给我解决问题后的成就感。如果说做为工程师，工作于己如同体力劳动般每日重复，那和流水线工人又有什么区别呢？&lt;/p&gt;
+
+&lt;p&gt;再一个让我不适应的，是大公司的考核机制。并不像在学生时代，你的排名和你考出来的成绩相关，和你上课积不积极听讲，有没经常举手回答问题，一点关系都没有。所以你的成绩很差，抱歉，是你不够努力，你知道是自己的原因，所以你会努力去学习让自己进步。工作则不是如此简单纯粹。由于工作中有挑战的难点并不多，每个人做的事情都差不多，那只好看谁做事比较积极主动（并非吐槽，我也非常理解）。而我不太喜欢“伪加班”，也希望工作完成后能有更多自己的时间去学习充电。因此，工作后自己取得的绩效非常平庸。我意识到再这样下去，职业生涯也许就这样了。做为一个已经不算新人的员工来说，我渴望做出成绩，希望能为团队贡献更多的价值。我觉得自己还有很多的能量，我能做的不仅仅是完成我手上的工作。我也意识需要到达一定的职位，才能去推动些什么，去改变些什么。但以我这平庸的考核，我对自己未来的发展不抱有太多的信心，所以我开始寻求改变。&lt;/p&gt;
+
+&lt;p&gt;既然不想再在大公司做了，我开始寻找一些有意思的创业公司。在 v2ex 上逛的时候，&lt;a href=&quot;https://www.xiaohongshu.com/&quot;&gt;小红书&lt;/a&gt; 吸引了我的注意。CTO 来自前谷歌中国工程院副院长，团队很多海归名校的背景，非常有吸引力。在经过电面，飞到上海去面试后，我拿到了offer。然而犹豫再三，我还是放弃了。放弃的原因主要是因为我资历尚浅，5月份拿到 offer，那时我才工作了一年多，当时小红书的开发团队已经有几十人，已经算是个大团队了。但不得不说，面试官给我的感觉非常的好，如果是在更早期，团队还是小规模的时候，我一定愿意加入这样的团队。&lt;/p&gt;
+
+&lt;p&gt;之后就在公司内部寻找些机会，7月份到了现在的游戏工作室。小团队，后台只有几个人，听起来很有成就感。转岗之前我也有点小担心，担心难以融入，担心过来后也是打打杂，幸好过来后发现多虑了。工作室给我的感觉，很明显，大家共同的目标就是把游戏做好。当然从做社交，到做游戏，一开始还是有些不适应。做社交，本质上是各类存储的设计。游戏则不太一样，复杂的都是在业务逻辑。&lt;/p&gt;
+
+&lt;p&gt;下半年的工作，新的环境，新的方向。学习了新的后台框架，对比之前用的框架，自己造了个轮子，写了篇文章&lt;a href=&quot;http://masutangu.com/2016/08/simple-async-framework/&quot;&gt;《简单异步应用框架的实现》&lt;/a&gt;，对后台异步框架的设计有一些了解，不再局限于只会用框架了。浅读了 libuv 和 libco 的源码，同样写了两篇文章&lt;a href=&quot;http://masutangu.com/2016/10/libuv-source-code/&quot;&gt;《Libuv 源码阅读》&lt;/a&gt; 和 &lt;a href=&quot;http://masutangu.com/2016/10/learn-libco/&quot;&gt;《浅读 Libco》&lt;/a&gt;，对异步和协程两种模式都有了进一步的认识。之后，在日常查问题的时候，我意识到自己定位问题的能力有所缺失，主要是对 linux 的各种监控系统状态的命令还不熟悉，操作系统和网络的知识也忘掉差不多了，所以决定重新翻读下 《UNIX 环境高级编程》、《现代操作系统》，并结合 《Linux 内核设计与实现》，了解些操作系统的理论和实现，这个系列的文章&lt;a href=&quot;http://masutangu.com/2016/11/linux-kernel-serial-1/&quot;&gt;《Linux 内核系列－进程》&lt;/a&gt; 还没写完。&lt;/p&gt;
+
+&lt;p&gt;经过这阵子的摸索，我明确了之后的突破点，找到了进步的方向。虽然说，这一年，我有很多困惑、迷茫和焦虑，心情经常非常差，情绪起伏也很大。我明白这些都是成长的必经之路，这么看来，这些起起伏伏，也是蛮值得的。&lt;/p&gt;
+
+&lt;h1&gt;展望未来&lt;/h1&gt;
+
+&lt;p&gt;新的一年，工作上认真努力，不必多说。这里来聊聊新的一年，个人方面，我想做些什么。&lt;/p&gt;
+
+&lt;p&gt;今年我意识到，对于大多数项目来说，技术并不是最重要的，只要不出问题就好（虽然我热爱技术，但我也不得不承认这点）。那技术人员应该如何发挥更大的价值呢？&lt;/p&gt;
+
+&lt;p&gt;我给自己定的目标是：&lt;strong&gt;提高核心竞争力&lt;/strong&gt;和&lt;strong&gt;变得更全面&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;提升技术能力，这是首要目标。我希望新的一年可以把基础打扎实了，作为后台开发，操作系统和网络知识要打牢。另外了解业界流行的中间件（消息队列、数据库等）的实现，比较深入的选择一个方向（游戏引擎、数据分析、图形学、编程语言等）去研究。&lt;/p&gt;
+
+&lt;p&gt;另外在公司工作，技能点很容易变得非常窄。我希望自己可以变得更加全面，不希望把自己局限于后台开发，也不仅局限于技术。新的一年，我希望自己能够做一个上线的 side project 并用心运营。目前看来我应该会选择做一款独立游戏，技术上独立完成前台－接入层－后台的实现，也借此学习下游戏策划的一些思想，让自己更加了解游戏这个行业。&lt;/p&gt;
+
+&lt;h1&gt;总结心得&lt;/h1&gt;
+
+&lt;p&gt;今天读了陈皓的&lt;a href=&quot;http://coolshell.cn/articles/17583.html&quot;&gt;《技术人员的发展之路》&lt;/a&gt;，写的很好，推荐大家都读一读。这一年，有两句话，我经常对自己说的，一是：&lt;strong&gt;不忘初心&lt;/strong&gt;，二是：&lt;strong&gt;Pursue excellence, and success will follow&lt;/strong&gt; (追求卓越，成功就会如期而至)。&lt;/p&gt;
+
+&lt;p&gt;不忘初心，是提醒自己，选择了计算机的道路，是因为我喜欢编程，喜欢创造。不要因为眼前的失意去妥协自己。希望自己工作三年，五年，十年，都能保持学生的心态。&lt;strong&gt;stay hungry, stay foolish&lt;/strong&gt;。 &lt;/p&gt;
+
+&lt;p&gt;追求卓越，是因为我相信，让自己成为一个优秀的工程师，比拿到好的绩效更加重要。自己要为自己的职业生涯负责，更勇敢的去追求梦想。&lt;/p&gt;
+
+&lt;p&gt;大公司工作，可以带给你光环，但自己要想清楚，去掉光环后，自己还剩下些什么。也许我们都是平凡人，但平凡人也希望做出稍微那么不平凡的成绩。2017 年，希望自己不留遗憾！&lt;/p&gt;
+</description>
+        <pubDate>Wed, 28 Dec 2016 22:19:43 +0800</pubDate>
+        <link>http://masutangu.com/2016/12/review/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/12/review/</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
+    
+      <item>
+        <title>Linux 内核系列－文件系统和 IO</title>
+        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
+
+&lt;h1&gt;概念&lt;/h1&gt;
+
+&lt;p&gt;如果能把文件看成是一种地址空间，那么就离理解文件不远了。（文件类似虚拟地址空间，相应的磁盘地址对应内存物理地址，通过 inode 来管理映射关系，类似页表的作用）。&lt;/p&gt;
+
+&lt;h2&gt;文件系统的实现&lt;/h2&gt;
+
+&lt;p&gt;文件系统存放在磁盘上。多数磁盘划分为一个或多个区，每个分区有一个独立的文件系统。磁盘的 0 号扇区称为主引导记录（MBR），用来引导计算机。在 MBR 结尾是分区表，给出每个分区的起始和结束地址。&lt;/p&gt;
+
+&lt;p&gt;文件系统通常包含了超级块（包含文件系统的关键参数）、空闲空间管理、i节点、根目录以及文件存储区。&lt;/p&gt;
+
+&lt;h3&gt;文件的实现&lt;/h3&gt;
+
+&lt;p&gt;文件存储的实现关键问题是记录各个文件分别用到哪些磁盘块。&lt;/p&gt;
+
+&lt;h4&gt;连续分配&lt;/h4&gt;
+
+&lt;p&gt;最简单的分配方案是把每个文件作为一连串连续数据块存储在磁盘上。&lt;/p&gt;
+
+&lt;h4&gt;链表分配&lt;/h4&gt;
+
+&lt;p&gt;链表分配不会有磁盘碎片的问题，顺序读取非常方便，但随即存取却相当缓慢。而且由于指针占了一些字节，磁盘块存储数据的字节数不再是 2 的整数幂。&lt;/p&gt;
+
+&lt;h4&gt;在内存中采用的链表分配&lt;/h4&gt;
+
+&lt;p&gt;将每个磁盘块的指针放在内存的一张表中，可以解决上面的两个不足。随机存取虽然依然需要遍历，但不再需要任何磁盘引用。缺点在于整张表必须放在内存，对大磁盘来说（表太大）不太合适。&lt;/p&gt;
+
+&lt;h4&gt;i 节点&lt;/h4&gt;
+
+&lt;p&gt;最后一个解决方案是给每个文件赋予一个 i 节点，包含文件属性和文件块的磁盘地址。只有文件打开时，i 节点才会加载到内存。&lt;/p&gt;
+
+&lt;h3&gt;目录的实现&lt;/h3&gt;
+
+&lt;p&gt;对于 i 节点系统，目录项只包括文件名和相应的 i 节点号。查找文件名时，可以在每个目录使用散列表来加快查找速度。另外一种方法是将查找结果放入高速缓存。&lt;/p&gt;
+
+&lt;h3&gt;虚拟文件系统&lt;/h3&gt;
+
+&lt;p&gt;UNIX 使用虚拟文件系统的概念，关键思想在于抽象出所有文件系统的共有部分，把这部分代码放在单独的一层，该层调用底层的实际文件系统来管理数据。&lt;/p&gt;
+
+&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
+
+&lt;h2&gt;虚拟文件系统&lt;/h2&gt;
+
+&lt;p&gt;虚拟文件系统（VPS）作为内核子系统，为用户空间程序提供了文件系统相关的接口。通过虚拟文件系统，程序可以利用标准的 UNIX 文件系统调用对不同介质的不同文件系统进行读写操作。&lt;/p&gt;
+
+&lt;h3&gt;通用文件系统接口&lt;/h3&gt;
+
+&lt;p&gt;VFS 使用户可以直接使用 open()、read() 和 write() 这样的系统调用而无需考虑具体文件系统和实际物理介质。&lt;/p&gt;
+
+&lt;h3&gt;文件系统抽象层&lt;/h3&gt;
+
+&lt;p&gt;VFS 抽象层定义了所有文件系统都支持的基本的、概念上的接口和数据结构，因此能衔接各种各样的文件系统。&lt;/p&gt;
+
+&lt;p&gt;在内核中，除了文件系统本身外，并不需要了解文件系统的内部细节。例如用户空间程序执行如下的操作：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;write(f, &amp;amp;buf, len);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;该代码将 &amp;amp;buf 指针指向的、长度为 len 字节的数据写入文件描述符 f 对应的文件的当前位置。该用户调用首先被一个通用系统调用 &lt;code&gt;sys_write()&lt;/code&gt; 处理，&lt;code&gt;sys_write()&lt;/code&gt; 函数要找到 f 所在的文件系统对应的写操作，然后执行该操作。&lt;/p&gt;
+
+&lt;h3&gt;Unix 文件系统&lt;/h3&gt;
+
+&lt;p&gt;Unix 使用了四种和文件系统相关的传统抽象概念：文件、目录项、索引节点和安装点（mount point）。从本质上讲，文件系统是特殊的数据分层存储结构，它包含文件、目录和相关的控制信息。文件系统的通用操作包含创建、删除和安装等等。在 Unix 中，文件系统被安装在一个特定的安装点上，该安装点在全局层次结构中被称为命名空间，所有的已安装文件系统都作为根文件系统树的枝叶出现在系统中。&lt;/p&gt;
+
+&lt;p&gt;Unix 中，目录属于普通文件，它列出包含在其中的所有文件。因此可以对目录执行和文件相同的操作。 &lt;/p&gt;
+
+&lt;p&gt;Unix 将文件的相关信息和文件本身着两个概念加以区分，例如访问控制权限、大小、拥有者、创建时间等信息。文件相关信息有时被称为索引节点（inode）。&lt;/p&gt;
+
+&lt;p&gt;文件系统的控制信息存储在超级块中，超级块是一种包含文件系统信息的数据结构。我们将文件信息和文件系统的信息统称为文件系统数据元。&lt;/p&gt;
+
+&lt;p&gt;Unix 文件系统在他们物理磁盘布局中也是按照上述的概念实现的。文件信息按照索引节点形式存储在单独的块中，控制信息集中存储在磁盘的超级块中。&lt;/p&gt;
+
+&lt;h3&gt;VFS 对象及其数据结构&lt;/h3&gt;
+
+&lt;p&gt;VFS 采用的是面向对象的设计思路，使用一族数据结构来代表通用文件对象。VFS 中有四个主要的对象类型：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;超级块对象，代表一个已安装文件系统&lt;/li&gt;
+&lt;li&gt;索引节点对象，代表一个文件&lt;/li&gt;
+&lt;li&gt;目录项对象，代表一个目录项，是路径的一个组成部分&lt;/li&gt;
+&lt;li&gt;文件对象，代表进程打开的文件&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;超级块对象&lt;/h3&gt;
+
+&lt;p&gt;各种文件系统都必须实现超级块，该对象用于存储特定文件系统信息，通常对应存放于磁盘特定扇区中的文件系统超级块或文件系统控制块。对于并非基于磁盘的文件系统，它们会在现场创建超级块并保存到内存中。&lt;/p&gt;
+
+&lt;p&gt;超级块对象由 super_block 结构体表示，定义在文件 &lt;linux/fs.h&gt; 中。&lt;/p&gt;
+
+&lt;h3&gt;索引节点对象&lt;/h3&gt;
+
+&lt;p&gt;索引节点对象包含了内核在操作文件或目录时需要的全部信息，由 inode 结构体表示，定义在文件 &lt;linux/fs.h&gt; 中。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct inode {
+    struct hlist_node   i_hash;
+    struct list_head    i_list;     // 索引节点链表
+    struct list_head    i_sb_list;  // 超级块链表
+    struct list_head    i_dentry;   // 目录项链表
+    unsigned long       i_ino;      // 节点号
+    atomic_t            i_count;
+    unsigned int        i_nlink;
+    uid_t           i_uid;
+    gid_t           i_gid;
+    dev_t           i_rdev;         // 实际设备标识符
+    unsigned int    i_blkbits;      // 以位为单位的块大小
+    u64             i_version;
+    loff_t          i_size;         // 以字节为单位的文件大小
+#ifdef __NEED_I_SIZE_ORDERED
+    seqcount_t      i_size_seqcount;
+#endif
+    struct timespec     i_atime;  // 最后访问时间
+    struct timespec     i_mtime;  // 最后修改时间
+    struct timespec     i_ctime;  // 最后改变时间
+    blkcnt_t        i_blocks;     // 文件块数
+    unsigned short  i_bytes;      // 使用的字节数
+    umode_t         i_mode;       // 访问权限
+    spinlock_t      i_lock; /* i_blocks, i_bytes, maybe i_size */
+    struct mutex        i_mutex;
+    struct rw_semaphore i_alloc_sem;
+    const struct inode_operations   *i_op;  // 索引节点操作表
+    const struct file_operations    *i_fop; /* former -&amp;gt;i_op-&amp;gt;default_file_ops */
+    struct super_block  *i_sb;
+    struct file_lock    *i_flock;
+    struct address_space    *i_mapping;
+    struct address_space    i_data;
+
+    struct list_head    i_devices;
+    union {
+        struct pipe_inode_info  *i_pipe;
+        struct block_device *i_bdev;
+        struct cdev     *i_cdev;
+    };
+    unsigned long       i_state;
+    unsigned long       dirtied_when;   // 第一次弄脏数据的时间
+    unsigned int        i_flags;        // 文件系统标识
+    atomic_t        i_writecount;       // 写者计数
+    void            *i_private; /* fs or device private pointer */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;目录项对象&lt;/h3&gt;
+
+&lt;p&gt;VFS 经常需要执行目录相关的操作，例如路径名查找等。路径名查找需要解析路径中的每一个组成部分。为了方便查找操作，VFS 引入目录项的概念。每个 dentry 代表路径中的一个特定部分。在路径中，包括普通文件在内，每一个部分都是目录项对象。&lt;/p&gt;
+
+&lt;p&gt;目录项由对象 dentry 结构体表示，定义在文件 &lt;linux/dcache.h&gt; 中：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct dentry {
+    atomic_t d_count;       // 使用记账
+    unsigned int d_flags;   /* protected by d_lock */
+    spinlock_t d_lock;      /* per dentry lock */
+    int d_mounted;
+    struct inode *d_inode;      /* Where the name belongs to - NULL is * negative */
+    /*
+     * The next three fields are touched by __d_lookup.  Place them here
+     * so they all fit in a cache line.
+     */
+    struct hlist_node d_hash;   // dcache中的所有dentry对象都通过d_hash指针域链到相应的dentry哈希链表中。
+    struct dentry *d_parent;    /* parent directory */
+    struct qstr d_name;
+
+    struct list_head d_lru;     /* LRU list */
+    /*
+     * d_child and d_rcu can share memory
+     */
+    union {
+        struct list_head d_child;   /* child of parent list */
+        struct rcu_head d_rcu;
+    } d_u;
+    struct list_head d_subdirs; /* our children */
+    struct list_head d_alias;   /* inode alias list */
+    unsigned long d_time;       /* used by d_revalidate */
+    const struct dentry_operations *d_op;
+    struct super_block *d_sb;   /* The root of the dentry tree */
+    void *d_fsdata;         /* fs-specific data */
+
+    unsigned char d_iname[DNAME_INLINE_LEN_MIN];    /* small names */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;不同于前面的两个对象，目录项对象没有对应的磁盘数据结构，VFS 根据字符串形式的路径名现场创建它。&lt;/p&gt;
+
+&lt;h4&gt;目录项状态&lt;/h4&gt;
+
+&lt;p&gt;目录项对象有三种有效状态：被使用、未被使用和负状态。&lt;/p&gt;
+
+&lt;p&gt;一个被使用的目录项对应一个有效的索引节点（d_inode 指向相应的索引节点）并表明该对象存在一个或多个使用者（d_count 为正值）。&lt;/p&gt;
+
+&lt;p&gt;一个未被使用的目录项对应一个有效的索引节点（d_inode 指向一个索引节点）但 VFS 当前并未使用它（d_count 为 0)。该目录项对象仍然指向一个有效对象，而且被保留在缓存中以便需要时再使用。&lt;/p&gt;
+
+&lt;p&gt;一个负状态的目录项没有对应的有效索引节点（d_inode 为 NULL），因为索引节点已被删除或路径不再正确。&lt;/p&gt;
+
+&lt;h4&gt;目录项缓存&lt;/h4&gt;
+
+&lt;p&gt;内核将目录项对象缓存在目录项缓存（dcache）中。目录项缓存包含三个主要部分：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;“被使用的”目录项链表：该链表通过索引节点对象中的 i_dentry 项连接相关的索引节点。一个给定的索引节点可能有多个链接，就可能有多个目录项对象，因此用链表来连接。&lt;/li&gt;
+&lt;li&gt;“最近被使用的”双向链表：该链表含有未被使用的和负状态的目录项对象。该链表以时间顺序插入，所以链头的节点是最新数据。当内核必须通过删除节点项回收内存时，会从链尾删除节点项。&lt;/li&gt;
+&lt;li&gt;散列表和相应的散列函数用来快速将给定路径解析为相关目录项对象。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;文件对象&lt;/h3&gt;
+
+&lt;p&gt;文件对象表示进程已打开的文件，由结构体 file 表示，定义在文件 &lt;linux/fs.h&gt; 中。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct file {
+    /*
+     * fu_list becomes invalid after file_free is called and queued via
+     * fu_rcuhead for RCU freeing
+     */
+    union {
+        struct list_head    fu_list;    // 文件对象链表
+        struct rcu_head     fu_rcuhead; // 释放后 rcu 链表
+    } f_u;
+    struct path     f_path;   // 包含目录项
+#define f_dentry    f_path.dentry
+#define f_vfsmnt    f_path.mnt
+    const struct file_operations    *f_op;  // 文件操作表
+    spinlock_t      f_lock;   /* f_ep_links, f_flags, no IRQ */
+    atomic_long_t   f_count;  // 文件对象使用计数
+    unsigned int    f_flags;  //打开文件指定的标志位
+    fmode_t         f_mode;   // 文件访问模式
+    loff_t          f_pos;    // 文件当前的位移量
+    struct fown_struct  f_owner;
+    u64         f_version;
+    struct address_space    *f_mapping;  // 页缓存映射
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;文件对象通过 f_dentry 指针指向相关的目录项对象，目录项会指向相关的索引节点，索引节点会记录文件是否为脏。&lt;/p&gt;
+
+&lt;h3&gt;文件系统相关的数据结构&lt;/h3&gt;
+
+&lt;p&gt;struct file_system_type 用来描述每种文件系统的功能和行为：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct file_system_type {
+    const char *name;               /* 文件系统的名字 */
+    int fs_flags;                   /* 文件系统类型标志 */
+
+    /* 从磁盘读取超级块 */
+    int (*get_sb) (struct file_system_type *, int,
+               const char *, void *, struct vfsmount *);
+
+    /* 终止访问超级块 */
+    void (*kill_sb) (struct super_block *);
+
+    struct module *owner;           /* 文件系统模块 */
+    struct file_system_type * next; /* 链表中下一个 */
+    struct list_head fs_supers;     /* 超级块对象链表 */
+
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;当文件系统被实际安装时，将有一个 vfsmount 结构体在安装点被创建。该结构体用来代表文件系统的实例：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct vfsmount {
+    struct list_head mnt_hash;
+    struct vfsmount *mnt_parent;    /* fs we are mounted on */
+    struct dentry *mnt_mountpoint;  /* dentry of mountpoint */
+    struct dentry *mnt_root;    /* root of the mounted tree */
+    struct super_block *mnt_sb; /* pointer to superblock */
+    struct list_head mnt_mounts;    /* list of children, anchored here */
+    struct list_head mnt_child; /* and going through their mnt_child */
+    int mnt_flags;
+    /* 4 bytes hole on 64bits arches */
+    const char *mnt_devname;    /* Name of device e.g. /dev/dsk/hda1 */
+    struct list_head mnt_list;
+    struct mnt_namespace *mnt_ns;   /* containing namespace */
+    int mnt_id;         /* mount identifier */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;进程相关的数据结构&lt;/h3&gt;
+
+&lt;p&gt;有三个数据结构将 VFS 层和系统进程紧密联系在一起，分别是：files_struct、fs_struct 和 namespace 结构体。&lt;/p&gt;
+
+&lt;p&gt;files_structt 结构体定义在文件 &lt;linux/file.h&gt; 中。该结构体由进程描述符中的 files 域指向。所有与每个进程（per-process）相关的信息如果打开的文件和文件描述符都在其中：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct fdtable {
+    unsigned int max_fds;
+    struct file ** fd;      /* current fd array */
+    fd_set *close_on_exec;
+    fd_set *open_fds;
+    struct rcu_head rcu;
+    struct fdtable *next;
+};
+
+struct files_struct {
+  /*
+   * read mostly part
+   */
+    atomic_t count;
+    struct fdtable *fdt;
+    struct fdtable fdtab;
+    int next_fd;
+    struct embedded_fd_set close_on_exec_init;
+    struct embedded_fd_set open_fds_init;
+    struct file * fd_array[NR_OPEN_DEFAULT];
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;fd 数组指针指向已打开的文件对象链表，默认情况下指向 fd_array 数组。因为 NR_OPEN_DEFAULT 等于 32，如果一个进程打开的文件对象超过 32 个，内核将分配一个新数组并将 fd 指针指向它。&lt;/p&gt;
+
+&lt;p&gt;下图是 APUE 中进程打开文件的图例：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linux-kernel-serial-5/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中 process table entry 表项对应 files_struct 对象，file table 表项对应 file 对象，v-node table 表项可以看成两部分，一部分是文件操作函数的指针，由 file 对象的 f_op 字段指向，另一部分 inode 信息，由 file 对象的 f_dentry 字段指向的目录项对象的 d_inode 关联到相关的 inode 节点：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linux-kernel-serial-5/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;注：上图取自&lt;a href=&quot;https://www.zhihu.com/question/39148572&quot;&gt;知乎&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;和进程相关的第二个结构体是 fs_struct。该结构由进程描述符 fs 域指向。它包含文件系统和进程相关的信息，定义在 &lt;linux/fs_struct.h&gt; 中：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct path {
+    struct vfsmount *mnt;
+    struct dentry *dentry;
+};
+
+struct fs_struct {
+    int users;                  /* 结构的使用计数 */
+    rwlock_t lock;   
+    int umask;                  /* 默认的文件访问权限 */
+    int in_exec;             
+    struct path root, pwd;     /* 根目录和当前目录的目录项对象和安装点对象 */  
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;最后一个结构体是 mnt_namespace，定义在 &lt;linux/mnt_namespace.h&gt; 中，由进程描述符中的 namespace 指向。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct mnt_namespace {
+    atomic_t        count;          /* 结构的使用计数 */
+    struct vfsmount *   root;       /* 根目录的安装点对象 */
+    struct list_head    list;       /* 安装点链表 */
+    wait_queue_head_t poll; 
+    int event;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;对大多数进程来说，它们的描述符会指向唯一的 files_struct 和 fs_struct 结构体。对于使用克隆标志 CLONE_FILES 或 CLONE_FS 创建的进程，会共享这两个结构体。所以多个进程描述符可能会指向同一个 files_struct 或 fs_struct 结构体。因此每个结构体维护一个 count 域（或 users 域）作为引用计数。&lt;/p&gt;
+
+&lt;p&gt;namespace 结构体则不同，默认情况下，所有进程共享同样的命名空间。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://bean-li.github.io/vfs-inode-dentry/&quot;&gt;http://bean-li.github.io/vfs-inode-dentry/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://unicornx.github.io/2016/03/20/20160320-lk-vfs/&quot;&gt;http://unicornx.github.io/2016/03/20/20160320-lk-vfs/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;APUE 对应进程打开文件的图例&lt;/p&gt;
+
+&lt;h2&gt;块 I/O 层&lt;/h2&gt;
+
+&lt;p&gt;系统能随机访问固定大小数据片（chunk）的设备被称作块设备。另一种基本的设备类型是字符设备，字符设备按照字符流的方式被有序访问，例如串口和键盘。&lt;/p&gt;
+
+&lt;h3&gt;解剖一个块设备&lt;/h3&gt;
+
+&lt;p&gt;块设备中最小的可寻址单元是扇区（sector）。扇区大小一般是 2 的整数倍，最常见的大小是 512 个字节。扇区的大小是设备的物理属性，扇区是所有块设备的基本单元，块设备无法对它还小的单元进行寻址的操作。&lt;/p&gt;
+
+&lt;p&gt;最小逻辑可寻址单元是块（block）。块是文件系统的抽象，只能基于块来访问文件系统。虽然物理磁盘寻址是按照扇区级进行的，但内核执行的所有磁盘操作都是按照块进行的。对块大小的要求是：必须是扇区大小的 2 的整数倍，并且要小于页面大小。所以块大小通常为 512 字节、1K 或 4K。&lt;/p&gt;
+
+&lt;h3&gt;缓冲区和缓冲区头&lt;/h3&gt;
+
+&lt;p&gt;当块被调入内存时，它要存储在一个缓冲区中。缓冲区相当于磁盘块在内存中的表示。由于内核在处理数据时需要一些相关的控制信息（比如块属于哪一个块设备，对于哪个缓冲区等），所以每个缓冲区都有一个对应的描述符，由 buffer_head 结构体表示，称为缓冲区头，在 &lt;linux/buffer_head.h&gt; 中定义。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct buffer_head {
+    unsigned long b_state;      /* buffer state bitmap (see above) */
+    struct buffer_head *b_this_page;/* circular list of page&amp;#39;s buffers */
+    struct page *b_page;        /* the page this bh is mapped to */
+
+    sector_t b_blocknr;     /* start block number */
+    size_t b_size;          /* size of mapping */
+    char *b_data;           /* pointer to data within the page */
+
+    struct block_device *b_bdev;
+    bh_end_io_t *b_end_io;      /* I/O completion */
+    void *b_private;        /* reserved for b_end_io */
+    struct list_head b_assoc_buffers; /* associated with another mapping */
+    struct address_space *b_assoc_map;  /* mapping this buffer is
+                           associated with */
+    atomic_t b_count;       /* users using this buffer_head */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;与缓冲区对应的磁盘物理块由 b_blocknr 域索引，该值是 b_bdev 域指明的块设备中的逻辑块号。&lt;/p&gt;
+
+&lt;p&gt;与缓冲区对应的内存物理页由 b_page 域表示，另外 b_data 域直接指向相应的块（它位于 b_page 域所指明的页面的某个位置上）。块的大小由 b_size 域表示，所以块在内存中的起始位置在 b_data 处，结束位置在 (b_data + b_size) 处。&lt;/p&gt;
+
+&lt;h3&gt;bio 结构体&lt;/h3&gt;
+
+&lt;p&gt;内核中块 I/O 操作的基本容器由 bio 结构体表示，定义在文件 &lt;linux/bio.h&gt; 中。&lt;/p&gt;
+
+&lt;p&gt;每个块 I/O 请求都通过一个 bio 结构体表示。每个请求包含了一个或多个块，这些块存储在 bio_vec 结构体数组中。这些结构体描述了每个片段在物理页中的实际位置，并且像 vector 一样被组织在一起。I/O 操作的第一个片段由 b_io_vec 结构体所指向，共有 bi_vcnt 个片段。当块 I/O 层开始执行请求、需要使用各个片段时，bi_idx 域会不断更新，从而指向当前片段。&lt;/p&gt;
+
+&lt;p&gt;buffer_head 和 bio 结构体之间存在明显差别。bio 结构体代表的是 I/O 操作，它可以包含内存中的一个或多页；而另一方面，buffer_head 结构体代表的是一个缓冲区，它描述的仅仅是磁盘中的一个块。因为缓冲区头关联的是单独页中的单独磁盘块，所以它可能会引起不必要的分割，将请求按块为单位划分。bio 则不需要连续存储区，也不需要分割 I/O 操作。&lt;/p&gt;
+
+&lt;h3&gt;请求队列&lt;/h3&gt;
+
+&lt;p&gt;块设备将它们挂起的块 I/O 请求保存在请求队列中，该队列由 reques_queue 结构体表示，定义在 &lt;linux/blkdev.h&gt; 中，包含一个双向请求链表以及相关控制信息。请求队列表中的每一项都是一个单独的请求，由 request 结构体表示。一个请求可能要操作多个连续的磁盘块，所以每个请求可以由多个 bio 结构体组成。&lt;/p&gt;
+
+&lt;h3&gt;I/O 调度程序&lt;/h3&gt;
+
+&lt;p&gt;磁盘寻址是整个计算机中最慢的操作之一，缩短寻址时间是提高系统性能的关键。为了优化寻址操作，内核会在提交任务前先执行合并与排序的预操作。在内核中负责提交 I/O 请求的子系统称为 I/O 调度程序。&lt;/p&gt;
+
+&lt;h4&gt;I/O 调度程序的工作&lt;/h4&gt;
+
+&lt;p&gt;I/O 调度程序的工作是管理块设备的请求队列。I/O 调度程序通过&lt;strong&gt;合并&lt;/strong&gt;和&lt;strong&gt;排序&lt;/strong&gt;来减少磁盘寻址时间。&lt;/p&gt;
+
+&lt;h4&gt;Linus 电梯&lt;/h4&gt;
+
+&lt;p&gt;第一个 I/O 调度程序被称为 Linus 电梯。当有新的请求加入队列时，会先检查每一个挂起的请求是否可以和新请求合并。Linus 电梯 I/O 调度程序可以执行向前和向后合并。如果合并失败，那就需要寻找可能的插入点。如果找到就插入，如果没合适的位置，那么新请求就被加入到队列尾部。另外如果队列中有驻留时间过长的请求，那么新请求也将被加入到队列尾部，即使插入后还要排序。这是为了避免由于访问相近磁盘位置的请求太多，从而造成访问磁盘其他位置的请求难以得到执行机会。&lt;/p&gt;
+
+&lt;h4&gt;最终期限 I/O 调度程序&lt;/h4&gt;
+
+&lt;p&gt;最终期限 I/O 调度程序中，每个请求都有一个超时时间。默认情况下，读请求的超时时间是 500 毫秒，写请求的超时时间是 5 秒。最终期限 I/O 调度请求类似于 Linus 电梯，也以磁盘物理位置次序维护请求队列，这个队列称为排序队列。但同时也会根据请求类型将它们插入到额外队列中。读请求按次序被插入特定的读 FIFO 队列中，写请求被插入到特定的写 FIFO 队列中。一般情况下，调度程序从排序队列头部取出请求，再推入到派发队列中。如果在写／读 FIFO 队列头的请求超时，那么调度程序便从 FIFO 队列中提取请求。&lt;/p&gt;
+
+&lt;h2&gt;页高速缓存和页回写&lt;/h2&gt;
+
+&lt;p&gt;页高速缓存是 Linux 内核实现的一种主要磁盘缓存。它主要用来减少对磁盘的 I/O 操作。具体来讲，是通过把磁盘中的数据缓存到物理内存，把对磁盘的访问变成对物理内存的访问。&lt;/p&gt;
+
+&lt;p&gt;页高速缓存是由 RAM 中的物理页组成，每一页都对应磁盘多个块。每当内核开始执行一个页 I/O 操作时，首先会检查需要的数据是否在高速缓存中，如果在，则直接使用高速缓存中的数据。&lt;/p&gt;
+
+&lt;p&gt;也可以通过块 I/O 缓冲区把独立的磁盘块与页高速缓存联系在一起。通过缓存磁盘块以及缓冲块 I/O 操作，页高速缓存同样可以减少块 I/O 操作期间的磁盘访问量。这种缓存通常称为“缓冲区高速缓存”，也是页高速缓存中的一部分。&lt;/p&gt;
+
+&lt;h3&gt;页高速缓存&lt;/h3&gt;
+
+&lt;p&gt;页高速缓存包含了最近被访问过的文件的全部页面，在执行 I/O 操作前，内核会检查数据是否已经在页高速缓存中了，如果在，则不再需要从磁盘读取数据。&lt;/p&gt;
+
+&lt;h4&gt;address_space 对象&lt;/h4&gt;
+
+&lt;p&gt;一个物理页可能由多个不连续的物理磁盘块组成，所以在页高速缓存中检测特定数据是否已经被缓存是件非常困难的工作。&lt;/p&gt;
+
+&lt;p&gt;Liunx 页高速缓存使用 address_space 结构体描述页高速缓存中的页面。该结构定义在 &lt;linux/fs.h&gt;：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct address_space {
+    struct inode            *host;      /* owner: inode, block_device */
+    struct radix_tree_root  page_tree;  /* radix tree of all pages */
+    spinlock_t              tree_lock;  /* and lock protecting it */
+    unsigned int            i_mmap_writable;/* count VM_SHARED mappings */
+    struct prio_tree_root   i_mmap;     /* tree of private and shared mappings */
+    struct list_head        i_mmap_nonlinear;/*list VM_NONLINEAR mappings */
+    spinlock_t              i_mmap_lock;    /* protect tree, count, list */
+    unsigned int            truncate_count; /* Cover race condition with truncate */
+    unsigned long           nrpages;    /* number of total pages */
+    pgoff_t                 writeback_index;/* writeback starts here */
+    const struct address_space_operations *a_ops;   /* methods */
+    unsigned long           flags;      /* error bits/gfp mask */
+    struct backing_dev_info *backing_dev_info; /* device readahead, etc */
+    spinlock_t              private_lock;   /* for use by the address_space */
+    struct list_head        private_list;   /* ditto */
+    struct address_space    *assoc_mapping; /* ditto */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;i_mmap 字段是个优先搜索树，它的搜索范围包含了在 address_space 中所有共享和私有的映射页面。address_space 结构往往会和某些内核对象关联。通常会与一个索引节点（inode）关联，这时 host 域就指向该索引节点，该索引节点的 i_mapping 域指向到 address_space 对象，方便查找自身文件数据是否已经缓存。&lt;/p&gt;
+
+&lt;p&gt;a_ops 域指向地址空间对象中的操作函数表。&lt;/p&gt;
+
+&lt;p&gt;struct page 中有两个字段：mapping 和 index。其中 mapping 指向该页所有者的 address_space，index 字段表示所有者地址空间中以页大小为单位的偏移量。用这两个字段就能在页高速缓存中查找。&lt;/p&gt;
+
+&lt;p&gt;页高速缓存通过两个参数：address_space 对象和一个偏移量进行搜索。每个 address_space 对象都有唯一一个基树，保存在 page_tree 结构体中。基树是一个二叉树，只要指定了文件偏移量，就可以在基树中迅速检索到希望的数据。&lt;/p&gt;
+
+&lt;p&gt;inode、address space 和 page 三者的关系如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linux-kernel-serial-5/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h1&gt;Linux 中的 I/O 机制&lt;/h1&gt;
+
+&lt;h2&gt;Buffered I/O&lt;/h2&gt;
+
+&lt;p&gt;Buffered I/O 指的是在内核和用户程序之间设置了一层缓冲区，用来提高IO读写的效率：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;读取：硬盘---&amp;gt;内核缓冲区---&amp;gt;用户缓冲区---&amp;gt;用户程序&lt;/li&gt;
+&lt;li&gt;写回：用户程序---&amp;gt;用户缓冲区---&amp;gt;内核缓冲区---&amp;gt;硬盘&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Unbuffered I/O&lt;/h2&gt;
+
+&lt;p&gt;Unbuffered I/O 没有用户缓冲区，&lt;strong&gt;注意内核缓冲区仍然存在&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;读取：硬盘---&amp;gt;内核缓冲区---&amp;gt;用户程序&lt;/li&gt;
+&lt;li&gt;写回：用户程序---&amp;gt;内核缓冲区---&amp;gt;硬盘&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Direct IO&lt;/h2&gt;
+
+&lt;p&gt;Direct I/O 是真正的什么缓冲区都没有，直接与硬盘交互：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;读取：硬盘---&amp;gt;用户程序&lt;/li&gt;
+&lt;li&gt;写回：用户程序---&amp;gt;硬盘&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;使用带有内核缓冲区的 I/O（Buffer I/O 和 Unbuffer I/O），DMA 方式可以将数据直接从磁盘读到页缓存中，或者将数据从页缓存直接写回到磁盘上，而不能直接在应用程序地址空间和磁盘之间进行数据传输。数据在传输过程中需要在应用程序地址空间和页缓存之间进行多次数据拷贝操作，这些数据拷贝操作所带来的 CPU 以及内存开销是非常大的。&lt;/p&gt;
+
+&lt;p&gt;Direct I/O 最主要的优点就是通过减少操作系统内核缓冲区和应用程序地址空间的数据拷贝次数，降低了对文件读取和写入时所带来的 CPU 的使用以及内存带宽的占用。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 16 Dec 2016 21:37:16 +0800</pubDate>
+        <link>http://masutangu.com/2016/12/linux-kernel-serial-5/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-5/</guid>
+        
+        
+        <category>读书笔记</category>
         
       </item>
     
@@ -724,9 +1271,9 @@ IpExt:
 
 &lt;p&gt;&lt;a href=&quot;http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/&quot;&gt;《How the Kernel Manages Your Memory》&lt;/a&gt;&lt;/p&gt;
 </description>
-        <pubDate>Wed, 25 Jan 2017 10:21:16 +0800</pubDate>
-        <link>http://masutangu.com/2017/01/linux-kernel-serial-4/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/01/linux-kernel-serial-4/</guid>
+        <pubDate>Sun, 11 Dec 2016 10:21:16 +0800</pubDate>
+        <link>http://masutangu.com/2016/12/linux-kernel-serial-4/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-4/</guid>
         
         
         <category>读书笔记</category>
@@ -1262,69 +1809,12 @@ static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
 
 &lt;p&gt;SCHED_RR 与 SCHED_FIFO 大体相同，只是 SCHED_RR 级的进程在耗尽事先分配的时间片后就不再继续执行。SCHED_RR 即带有时间片的 SCHED_FIFO，时间片只能用来重新调度同一优先级的进程。&lt;/p&gt;
 </description>
-        <pubDate>Sun, 22 Jan 2017 16:40:36 +0800</pubDate>
-        <link>http://masutangu.com/2017/01/linux-kernel-serial-3/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/01/linux-kernel-serial-3/</guid>
+        <pubDate>Thu, 01 Dec 2016 16:40:36 +0800</pubDate>
+        <link>http://masutangu.com/2016/12/linux-kernel-serial-3/</link>
+        <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-3/</guid>
         
         
         <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>我的 2016</title>
-        <description>&lt;p&gt;时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。&lt;/p&gt;
-
-&lt;h1&gt;回顾过去&lt;/h1&gt;
-
-&lt;p&gt;在这整整一年中，我所思考的和困扰的，可以由三个词来概括：&lt;strong&gt;成绩&lt;/strong&gt;、&lt;strong&gt;成长&lt;/strong&gt;和&lt;strong&gt;价值&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;工作已经两年半，对自己目前取得的成绩，对自己技术成长的预期，对自己为团队创造的价值，实话实说，都不满意。&lt;/p&gt;
-
-&lt;p&gt;从今年年初开始，我就有点焦虑，觉得自己没有太多的成长，一直在原地踏步，已经没有刚入职时那种回顾过去会觉得自己突飞猛进的感觉（工作后做的每个比较大的需求，我都会整理保存下来 ppt，回看时就会清楚自己相比起过去进步了多少）。困于瓶颈期时，我尝试更加主动的去做事情。在那段时间，我开始关注些不仅仅是技术上的知识，例如关注了&lt;a href=&quot;https://wanqu.co/&quot;&gt;《湾区日报》&lt;/a&gt;，做了些读书笔记&lt;a href=&quot;http://masutangu.com/2015/12/dewdrop-note-1/&quot;&gt;《水滴石穿》&lt;/a&gt;。那段时间有些收获，但当我尝试把我阅读中收获的这些想法，运用到工作中时，却发现有层层阻碍。其中细节就不展开了，这让我非常沮丧。一方面，我理解在大公司工作，最重要是“稳”。有新的方案，新的想法，首要考虑的不是这个新的方案、新的想法的收益，而是运维成本。另一方面，这也让我觉得在大公司工作非常乏味，每个人的贡献都是固定的，尤其是工程师，你的定位就是执行者。公司也已经有很多很成熟的组件，即使不太适应于业务场景，也能勉强用用，你的工作就是做做接入，其它不需要操心。&lt;/p&gt;
-
-&lt;p&gt;这种状况让我觉得非常的不适应。在学生时代，每一阶段、每个学期你都会学习到新的知识。而在工作中，更多的时候你是在重复做些体力活，例如，复制粘贴的完成一些需求。又例如，一遍遍的用已经成熟的方案去解决一些问题。而我其实不太喜欢这样的工作方式。我蛮希望自己是一个比较有创造力的工程师，我倾向于用不同的方案去完成类似的需求，通过真正的实践来对比不同的方案的优劣性。但在大公司来说，&lt;strong&gt;进度&lt;/strong&gt;和&lt;strong&gt;稳定性&lt;/strong&gt;是首要目标。只有在发展迅猛的前沿/明星项目中，你才有可能遇到各种新的问题，才有得到锻炼的机会。&lt;/p&gt;
-
-&lt;p&gt;互联网不是按照工龄来排资论辈，同样工作三五年，差距可能非常大。有一句话说得好，&lt;strong&gt;“Good judgment comes from experience, experience comes from bad judgment.”&lt;/strong&gt;（正确的判断来自于丰富的经验,而丰富的经验来自错误的判断）。如果工作中没有太多挑战，不能促使你学习进步以应对工作的要求，一味追求保守无法得到犯错踩坑进步的机会，那你就应该停下来思考自己的未来了。我非常不希望把工作当做是一个任务，我希望工作是融于生活的，能带给我挑战和战胜难题的动力，能带给我解决问题后的成就感。如果说做为工程师，工作于己如同体力劳动般每日重复，那和流水线工人又有什么区别呢？&lt;/p&gt;
-
-&lt;p&gt;再一个让我不适应的，是大公司的考核机制。并不像在学生时代，你的排名和你考出来的成绩相关，和你上课积不积极听讲，有没经常举手回答问题，一点关系都没有。所以你的成绩很差，抱歉，是你不够努力，你知道是自己的原因，所以你会努力去学习让自己进步。工作则不是如此简单纯粹。由于工作中有挑战的难点并不多，每个人做的事情都差不多，那只好看谁做事比较积极主动（并非吐槽，我也非常理解）。而我不太喜欢“伪加班”，也希望工作完成后能有更多自己的时间去学习充电。因此，工作后自己取得的绩效非常平庸。我意识到再这样下去，职业生涯也许就这样了。做为一个已经不算新人的员工来说，我渴望做出成绩，希望能为团队贡献更多的价值。我觉得自己还有很多的能量，我能做的不仅仅是完成我手上的工作。我也意识需要到达一定的职位，才能去推动些什么，去改变些什么。但以我这平庸的考核，我对自己未来的发展不抱有太多的信心，所以我开始寻求改变。&lt;/p&gt;
-
-&lt;p&gt;既然不想再在大公司做了，我开始寻找一些有意思的创业公司。在 v2ex 上逛的时候，&lt;a href=&quot;https://www.xiaohongshu.com/&quot;&gt;小红书&lt;/a&gt; 吸引了我的注意。CTO 来自前谷歌中国工程院副院长，团队很多海归名校的背景，非常有吸引力。在经过电面，飞到上海去面试后，我拿到了offer。然而犹豫再三，我还是放弃了。放弃的原因主要是因为我资历尚浅，5月份拿到 offer，那时我才工作了一年多，当时小红书的开发团队已经有几十人，已经算是个大团队了。但不得不说，面试官给我的感觉非常的好，如果是在更早期，团队还是小规模的时候，我一定愿意加入这样的团队。&lt;/p&gt;
-
-&lt;p&gt;之后就在公司内部寻找些机会，7月份到了现在的游戏工作室。小团队，后台只有几个人，听起来很有成就感。转岗之前我也有点小担心，担心难以融入，担心过来后也是打打杂，幸好过来后发现多虑了。工作室给我的感觉，很明显，大家共同的目标就是把游戏做好。当然从做社交，到做游戏，一开始还是有些不适应。做社交，本质上是各类存储的设计。游戏则不太一样，复杂的都是在业务逻辑。&lt;/p&gt;
-
-&lt;p&gt;下半年的工作，新的环境，新的方向。学习了新的后台框架，对比之前用的框架，自己造了个轮子，写了篇文章&lt;a href=&quot;http://masutangu.com/2016/08/simple-async-framework/&quot;&gt;《简单异步应用框架的实现》&lt;/a&gt;，对后台异步框架的设计有一些了解，不再局限于只会用框架了。浅读了 libuv 和 libco 的源码，同样写了两篇文章&lt;a href=&quot;http://masutangu.com/2016/10/libuv-source-code/&quot;&gt;《Libuv 源码阅读》&lt;/a&gt; 和 &lt;a href=&quot;http://masutangu.com/2016/10/learn-libco/&quot;&gt;《浅读 Libco》&lt;/a&gt;，对异步和协程两种模式都有了进一步的认识。之后，在日常查问题的时候，我意识到自己定位问题的能力有所缺失，主要是对 linux 的各种监控系统状态的命令还不熟悉，操作系统和网络的知识也忘掉差不多了，所以决定重新翻读下 《UNIX 环境高级编程》、《现代操作系统》，并结合 《Linux 内核设计与实现》，了解些操作系统的理论和实现，这个系列的文章&lt;a href=&quot;http://masutangu.com/2016/11/linux-kernel-serial-1/&quot;&gt;《Linux 内核系列－进程》&lt;/a&gt; 还没写完。&lt;/p&gt;
-
-&lt;p&gt;经过这阵子的摸索，我明确了之后的突破点，找到了进步的方向。虽然说，这一年，我有很多困惑、迷茫和焦虑，心情经常非常差，情绪起伏也很大。我明白这些都是成长的必经之路，这么看来，这些起起伏伏，也是蛮值得的。&lt;/p&gt;
-
-&lt;h1&gt;展望未来&lt;/h1&gt;
-
-&lt;p&gt;新的一年，工作上认真努力，不必多说。这里来聊聊新的一年，个人方面，我想做些什么。&lt;/p&gt;
-
-&lt;p&gt;今年我意识到，对于大多数项目来说，技术并不是最重要的，只要不出问题就好（虽然我热爱技术，但我也不得不承认这点）。那技术人员应该如何发挥更大的价值呢？&lt;/p&gt;
-
-&lt;p&gt;我给自己定的目标是：&lt;strong&gt;提高核心竞争力&lt;/strong&gt;和&lt;strong&gt;变得更全面&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;提升技术能力，这是首要目标。我希望新的一年可以把基础打扎实了，作为后台开发，操作系统和网络知识要打牢。另外了解业界流行的中间件（消息队列、数据库等）的实现，比较深入的选择一个方向（游戏引擎、数据分析、图形学、编程语言等）去研究。&lt;/p&gt;
-
-&lt;p&gt;另外在公司工作，技能点很容易变得非常窄。我希望自己可以变得更加全面，不希望把自己局限于后台开发，也不仅局限于技术。新的一年，我希望自己能够做一个上线的 side project 并用心运营。目前看来我应该会选择做一款独立游戏，技术上独立完成前台－接入层－后台的实现，也借此学习下游戏策划的一些思想，让自己更加了解游戏这个行业。&lt;/p&gt;
-
-&lt;h1&gt;总结心得&lt;/h1&gt;
-
-&lt;p&gt;今天读了陈皓的&lt;a href=&quot;http://coolshell.cn/articles/17583.html&quot;&gt;《技术人员的发展之路》&lt;/a&gt;，写的很好，推荐大家都读一读。这一年，有两句话，我经常对自己说的，一是：&lt;strong&gt;不忘初心&lt;/strong&gt;，二是：&lt;strong&gt;Pursue excellence, and success will follow&lt;/strong&gt; (追求卓越，成功就会如期而至)。&lt;/p&gt;
-
-&lt;p&gt;不忘初心，是提醒自己，选择了计算机的道路，是因为我喜欢编程，喜欢创造。不要因为眼前的失意去妥协自己。希望自己工作三年，五年，十年，都能保持学生的心态。&lt;strong&gt;stay hungry, stay foolish&lt;/strong&gt;。 &lt;/p&gt;
-
-&lt;p&gt;追求卓越，是因为我相信，让自己成为一个优秀的工程师，比拿到好的绩效更加重要。自己要为自己的职业生涯负责，更勇敢的去追求梦想。&lt;/p&gt;
-
-&lt;p&gt;大公司工作，可以带给你光环，但自己要想清楚，去掉光环后，自己还剩下些什么。也许我们都是平凡人，但平凡人也希望做出稍微那么不平凡的成绩。2017 年，希望自己不留遗憾！&lt;/p&gt;
-</description>
-        <pubDate>Wed, 28 Dec 2016 22:19:43 +0800</pubDate>
-        <link>http://masutangu.com/2016/12/review/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/12/review/</guid>
-        
-        
-        <category>随笔</category>
         
       </item>
     
@@ -4098,398 +4588,6 @@ void co_resume( stCoRoutine_t *co )   // 恢复 co 协程
         
         
         <category>协议设计</category>
-        
-      </item>
-    
-      <item>
-        <title>简单异步应用框架的实现</title>
-        <description>&lt;p&gt;两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 &lt;a href=&quot;https://github.com/Masutangu/SAF&quot;&gt;saf (Simple Async Framework)&lt;/a&gt;，趁此机会和大家聊聊异步框架的设计思想和实现。&lt;/p&gt;
-
-&lt;h1&gt;异步框架设计思想&lt;/h1&gt;
-
-&lt;h2&gt;服务器模型&lt;/h2&gt;
-
-&lt;p&gt;先来看看传统的服务器模型，如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;一般来说，服务器端可以分为三层：&lt;strong&gt;接入层&lt;/strong&gt;，&lt;strong&gt;逻辑层&lt;/strong&gt;，&lt;strong&gt;数据层&lt;/strong&gt;。接入层负责客户端的接入，逻辑层则实现业务逻辑，数据层就是数据的存储。&lt;/p&gt;
-
-&lt;p&gt;简单来说，逻辑层做的事情无非就是解析客户端的请求包，写入数据到数据层或从数据层读取数据，再组装回包发送给客户端。&lt;/p&gt;
-
-&lt;p&gt;我们拿微博做例子，用户登录微博，客户端发起拉取首页的请求，server 首先解析客户端请求，拿到用户 id，再根据用户 id 到数据层查询以下数据并拼装回包发回给客户端：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;关注数&lt;/li&gt;
-&lt;li&gt;粉丝数&lt;/li&gt;
-&lt;li&gt;微博数&lt;/li&gt;
-&lt;li&gt;个人简介，包括头像&lt;/li&gt;
-&lt;li&gt;微博时间轴，即关注的人最近发的微博&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;同步 vs 异步&lt;/h2&gt;
-
-&lt;p&gt;继续上面微博的例子，我们假设微博时间轴采用拉的方式去获取。
-同步的 server，实现的逻辑如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;如果同步的 server 是单线程，那每次发送请求到数据层查询数据时都会阻塞，在收到数据层的回包前 server 做不了其他事情，CPU 在等待期间空转，非常浪费资源。&lt;/p&gt;
-
-&lt;p&gt;异步 server 则不会有这个烦恼，当 server 向数据层发送请求时会立即返回，此时 server 可以处理其它客户端请求，直到数据层返回所请求的数据，通知到 server，server 再继续之前的业务逻辑。流程图大致如下：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;我们再仔细看上面的流程图，可以发现除了拉取微博时间轴需要依赖关注人列表之外，其它数据查询都互不依赖。因此可以把流程优化下：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;通过这样的优化，耗时从 &lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;关注数请求耗时 + 粉丝数请求耗时 + 微博数请求耗时 + 个人简介耗时 + 时间轴耗时&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;缩减到 &lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;MAX(关注数请求耗时，粉丝数请求耗时，微博数请求耗时，个人简介耗时) + 时间轴耗时&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;模型抽象化&lt;/h2&gt;
-
-&lt;p&gt;通过上面的例子，来讲讲如何将上述异步处理逻辑抽象化。
-我们可以把业务逻辑以&lt;strong&gt;状态（state）&lt;/strong&gt;为单位来划分，如下图。&lt;strong&gt;状态与状态之间是串行的&lt;/strong&gt;，即你必须执行完一个状态，才会跳转到下一个状态。比如我们必须先拉取关注列表，才能根据关注列表去拉取时间轴。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;而一个状态内可以有很多&lt;strong&gt;动作（action）&lt;/strong&gt;，&lt;strong&gt;一个状态内的动作是互相不依赖的，即可以并行执行&lt;/strong&gt;，如下图。如我们可以同时发请求拉去关注数，粉丝数，微博数，因为他们之间是互相独立没有依赖的。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/simple-async-framework/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h1&gt;异步框架的实现&lt;/h1&gt;
-
-&lt;p&gt;讲完了概念，开始来实践。linux 下有 epoll 模型，另外还有大名鼎鼎的 libuv 提供了跨平台的异步 IO。那接下来结合我自己造的轮子，谈谈如何基于 epoll 或 libuv 来实现一个异步框架。&lt;/p&gt;
-
-&lt;h2&gt;状态保存&lt;/h2&gt;
-
-&lt;p&gt;无论是函数调用，或者线程切换，都会保存上下文，等到函数调用返回或线程切回来时，才能继续处理之前未完成的逻辑。而我们的异步模型（其实就是状态机），也是类似的道理，我们需要在请求发送时保存好上下文，才能在收到回包时继续之前的逻辑往下走。
-saf 是基于 libuv 的，因此我使用 libuv 的 handle 结构体的 data 字段来保存上下文。如果是直接使用 epoll 来实现异步server，则可以用 fd 来绑定上下文（全局的 map，key 为 fd，value 为上下文信息）。&lt;/p&gt;
-
-&lt;h2&gt;消息透传&lt;/h2&gt;
-
-&lt;p&gt;既然各个状态是有依赖关系的，那就得有一个消息（message）实体贯穿整个处理流程。通过这个消息实体来传递各个状态所需要的信息。这也是为什么 saf 中 action 和 state 的接口都有一个 msg 参数的原因（见下节&lt;strong&gt;接口设计&lt;/strong&gt;）。&lt;/p&gt;
-
-&lt;h2&gt;接口设计&lt;/h2&gt;
-
-&lt;p&gt;封装一个异步框架，意味着对于框架使用者来说其无需关心网络收发包的细节，只需关心自身业务逻辑的实现。那我们在设计接口上就需要屏蔽这些细节。&lt;/p&gt;
-
-&lt;p&gt;既然要对使用者屏蔽收发包细节，表明收包和发包的回调都由框架来控制。因此我们只需要暴露打包请求包和解包回包的接口给使用者去实现。框架调用使用者实现的打包接口后，将打好的 buffer 发送出去，在收到回包之后，再调用使用者实现的解包接口来处理回包。&lt;/p&gt;
-
-&lt;p&gt;在 saf 的接口设计中，我尽量保持接口命名的统一，&lt;code&gt;prepareProcess&lt;/code&gt; 表示在执行前的预处理工作，&lt;code&gt;afterProcess&lt;/code&gt; 表示执行完后的后续处理工作。下面可以看到在不同的模块中，&lt;code&gt;prepareProcess&lt;/code&gt; 和 &lt;code&gt;afterProcess&lt;/code&gt; 的功能略有不同。&lt;/p&gt;
-
-&lt;h3&gt;消息类&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;//msg.h
-
-class Msg {
-public:
-    virtual ~Msg() {}
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;如上所述，消息用于状态之间传递依赖的信息，由业务自行继承添加所需成员。&lt;/p&gt;
-
-&lt;h3&gt;Handler 类&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //handler.h
-
-    /*
-     * 解析客户端请求包
-     * 返回 &amp;gt; 0 表示收包不完整
-     * 返回 0 表示解析成功
-     * 返回 &amp;lt; 0 表示解包失败, server将会杀掉客户端连接
-     */
-    virtual int prepareProcess(char* buf, unsigned int len, Msg* msg) = 0;
-
-    /*
-     * 打包客户端回包到输入 buf 中,len 为输入 buf 长度
-     * 返回 &amp;gt; 0 表示 buf 不够, len 为实际需要的 buf 长度
-     * 返回 0 表示打包成功, len 为 buf 的实际长度
-     * 返回 &amp;lt; 0 表示打包失败, server将会杀掉客户端连接
-     */
-    virtual int afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) = 0;
-
-    /*
-     * 创建该 handler 的 msg
-     */
-    virtual Msg* createMsg() = 0;
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;Handler 类对应客户端请求的处理流程。业务继承 Handler 基类，实现请求包和回包的打解包接口以及创建业务消息的接口。&lt;/p&gt;
-
-&lt;p&gt;在 Handler 的构造函数添加该 Handler 包含的 State。在收到客户端请求后，框架调用相应的 Handler 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口对客户端请求进行解包。然后依次执行各个 State，全部 State 执行完成后，框架调用该 Handler 的 &lt;code&gt;afterProcess&lt;/code&gt; 将回包打包到传入的 buffer 参数，再由框架将该 buffer 发送回客户端。&lt;/p&gt;
-
-&lt;h3&gt;State 类&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    // state.h
-
-    /*
-     * 执行 state 包含的 action 前, 框架会调用该函数, 可以做预处理工作
-     * 返回 0 表示成功
-     * 返回 != 0 表示失败
-     */
-    virtual int prepareProcess(Msg* msg) { return 0; };
-    /*
-     * state 包含的 action 都执行完时, 框架会调用该函数,可以做一些后续处理工作
-     * 返回 0 表示成功
-     * 返回 != 0 表示失败
-     */
-    virtual int afterProcess(Msg* msg) { return 0; };
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;State 类对应上面&lt;strong&gt;模型抽象化&lt;/strong&gt;小节的&lt;strong&gt;状态&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;在 State 的构造函数添加该 State 包含的 Action。State 执行前，框架调用该 State 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口，使用者可以在该接口做些预处理工作。当 State 执行完成后，框架调用该 State 的 &lt;code&gt;afterProcess&lt;/code&gt; 接口。&lt;/p&gt;
-
-&lt;h3&gt;Action 类&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //action.h 
-
-    /*
-     * 设置 action 的目的 ip，端口和通信协议（目前只支持tcp） 
-     */
-    void setActionInfo(const std::string&amp;amp; ip, int port, int protocol);
-
-    /*
-     * 设置 action 的超时时间，单位为毫秒。 &amp;lt;=0 为永不超时
-     */
-    void setTimeout(unsigned int timeout) { m_timeout = timeout; }  
-
-    /*
-     * 打包 Action 请求包到输入 buf 中, len 为输入 buf 的长度
-     * 返回 0 表示打包成功, len 为实际需要的 buf 长度
-     * 返回 &amp;gt; 表示 buf 不够, len 为实际需要的 buf 长度
-     * 返回 &amp;lt; 0 表示失败
-     */
-    virtual int prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) = 0;
-
-    /*
-     * 解析 Action 回包
-     * 返回 0 表示解析回包成功
-     * 返回 &amp;lt; 0 表示出错
-     * 返回 &amp;gt; 0 表示收包未完整
-     */
-    virtual int afterProcess(char* buf, unsigned int len, Msg* msg) = 0;
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;Action 类对应上面&lt;strong&gt;模型抽象化&lt;/strong&gt;小节的&lt;strong&gt;动作&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;Action 执行前，框架调用该 Action 的 &lt;code&gt;prepareProcess&lt;/code&gt; 接口，将 Action 的请求包打包到传入的 buffer 参数，当收到 Action 的回包后，框架会调用 Action 的 &lt;code&gt;afterProcess&lt;/code&gt; 接口，将回包解包。&lt;/p&gt;
-
-&lt;h3&gt;REGISTER_HEADER_PARSER&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;REGISTER_HEADER_PARSER&lt;/code&gt; 宏用于注册解析请求包头函数。&lt;/p&gt;
-
-&lt;h3&gt;REGISTER_HANDLER&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;REGISTER_HANDLER&lt;/code&gt; 宏用于注册请求对应的 handler 类&lt;/p&gt;
-
-&lt;h2&gt;状态机逻辑&lt;/h2&gt;
-
-&lt;p&gt;接下来看看 saf 如何将 handler／state／action 串联起来（代码有所简化）&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //handler.cpp
-    /* 
-     * 主逻辑，ClientContext 保存了客户端会话的上下文
-     * 其 m_state_idx 成员表示当前所属的状态 id
-     * m_action_idx 成员表示处于当前所属状态的动作id
-     * m_msg 即业务定义的消息类，被透传给 state 和 action 中
-     */  
-    void Handler::process(ClientContext* c_ctx) {
-        if (c_ctx-&amp;gt;m_state_idx &amp;lt; m_state_list.size()) {
-            State* state = m_state_list[c_ctx-&amp;gt;m_state_idx++];
-            // 执行 state 前, 将 action_idx 置 0
-            c_ctx-&amp;gt;m_action_idx = 0;
-            // 调用 state 的 prepareProcess 接口
-            state-&amp;gt;prepareProcess(c_ctx-&amp;gt;m_msg);
-            // 开始执行该state
-            state-&amp;gt;process(c_ctx);   
-        } else {
-            static char buf[DEFAULT_BUF_SIZE];
-            char* actual_buf = buf;
-            unsigned int actual_len = DEFAULT_BUF_SIZE;
-            // 调用 handler 的 afterProcess 接口，打包回包到 actual_buf 中
-            afterProcess(actual_buf, actual_len, c_ctx-&amp;gt;m_msg);
-            // 发送回包给客户端
-            c_ctx-&amp;gt;sendResponse(actual_buf, actual_len);
-        }
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //state.cpp
-
-    /* 
-     * state 处理逻辑
-     */
-    void State::process(ClientContext* c_ctx) {
-        // 如果没有action,直接finish
-        if (m_action_list.size() == 0) {
-            finish(c_ctx);
-            return;
-        }
-
-        static char buf[DEFAULT_BUF_SIZE];
-        char* actual_buf = NULL;
-        unsigned int actual_len = 0; // buf 的实际长度
-        int ret = 0;
-
-        // 执行该 state 下所有 action 
-        for(unsigned int i = 0; i &amp;lt; m_action_list.size(); i++) {
-            Action* action = m_action_list[i];
-            actual_len = DEFAULT_BUF_SIZE;
-            actual_buf = buf;
-            // 调用 action 的 prepareProcess 接口，打包 action 的请求包到 actual_buf 中
-            action-&amp;gt;prepareProcess(actual_buf, actual_len, c_ctx-&amp;gt;m_msg);
-            // 执行该 action
-            c_ctx-&amp;gt;processAction(action, actual_buf, actual_len);
-        }
-    }
-
-    // action 完成后回调该接口，如果所有action都完成，则调用下面的 finish 接口
-    void State::finishAction(ClientContext* c_ctx) {
-        printf(&amp;quot;finishAction\n&amp;quot;);
-        c_ctx-&amp;gt;m_action_idx++;
-        if (c_ctx-&amp;gt;m_action_idx &amp;gt;= m_action_list.size()) {
-            finish(c_ctx);
-        }
-    }
-
-    // 调用 state 所属的 handler 的 process 函数
-    void State::finish(ClientContext* c_ctx) {
-        afterProcess(c_ctx-&amp;gt;m_msg);
-        m_handler-&amp;gt;process(c_ctx);
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;    //ClientContext.cpp
-
-    /*
-     * action 收到回包后的回调
-     */
-    static void recvActionRsp(uv_stream_t *server, ssize_t nread, const uv_buf_t *buf) {
-        // data 字段保存了 action 的上下文
-        ActionContext* a_ctx = (ActionContext*) server-&amp;gt;data;
-        a_ctx-&amp;gt;recv_buf.append(buf-&amp;gt;base, nread);
-        // action 的上下文中保存了客户端请求的上下文
-        ClientContext* c_ctx = a_ctx-&amp;gt;c_ctx;
-        // 调用 action 的 afterProcess 接口
-        int ret = a_ctx-&amp;gt;action-&amp;gt;afterProcess(a_ctx-&amp;gt;recv_buf.data(), a_ctx-&amp;gt;recv_buf.len(), c_ctx-&amp;gt;m_msg);
-        // 通知 action 所属的 state 该 action 完成了
-        a_ctx-&amp;gt;action-&amp;gt;m_state-&amp;gt;finish(a_ctx-&amp;gt;c_ctx);
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;样例&lt;/h2&gt;
-
-&lt;p&gt;以下是 saf 的一个简单的 &lt;a href=&quot;https://github.com/Masutangu/SAF/blob/master/sample.cpp&quot;&gt;demo&lt;/a&gt;。代码仅说明用，所以比较简单粗暴。该 server 的所有请求都由 myHandler 来处理，myHandler 包含一个状态 myState1。myState1 包含一个 Action, 该 Action 将客户端请求包拷贝并通过 tcp 发送给 127.0.0.1:7000 的服务，接收到回包后再把回包原样发回给客户端。  &lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;//
-// Created by Masutangu on 16/8/9.
-//
-
-#include &amp;quot;saf/header.h&amp;quot;
-
-#include &amp;lt;cstring&amp;gt;
-
-using namespace saf;
-
-const int BUF_SIZE = 1024;
-
-class myMsg: public Msg {
-public:
-    char readbuf[BUF_SIZE];
-    char writebuf[BUF_SIZE];
-};
-
-class myAction: public Action {
-public:
-    int prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
-    int afterProcess(char* buf, unsigned int len, Msg* msg);
-};
-
-int myAction::prepareProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
-    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-    printf(&amp;quot;myAction prepareProcess, data: %s\n&amp;quot;, my_msg-&amp;gt;readbuf);
-    if (len &amp;gt;= BUF_SIZE) {
-        memcpy(buf, my_msg-&amp;gt;readbuf, BUF_SIZE);
-        return 0;
-    } else {
-        len = BUF_SIZE;
-        return BUF_SIZE;
-    }
-
-}
-
-int myAction::afterProcess(char* buf, unsigned int len, Msg* msg) {
-    printf(&amp;quot;myAction afterProcess: %s\n&amp;quot;, buf);
-    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-    memcpy(my_msg-&amp;gt;writebuf, buf, len &amp;lt; BUF_SIZE ? len:BUF_SIZE);
-    return 0;
-}
-
-class myState1: public State {
-public:
-    myState1();
-};
-
-myState1::myState1() {
-    myAction* action = new myAction;
-    action-&amp;gt;setActionInfo(&amp;quot;127.0.0.1&amp;quot;, 7000, 0); //设置action的ip和端口
-    addAction(action);
-}
-
-class myHandler: public Handler {
-public:
-    myHandler();
-    Msg* createMsg();
-    int prepareProcess(char* buf, unsigned int len, Msg* msg);
-    int afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg);
-
-};
-
-Msg* myHandler::createMsg() {
-    return new myMsg();
-}
-
-myHandler::myHandler() {
-    myState1* state1 = new myState1();
-    addState(state1);
-
-}
-
-int myHandler::prepareProcess(char* buf, unsigned int len, Msg* msg) {
-    printf(&amp;quot;handler: prepareProcess len=%d\n&amp;quot;, len);
-    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-    memcpy(my_msg-&amp;gt;readbuf, buf, len);
-    return 0;
-}
-
-int myHandler::afterProcess(char* buf, unsigned int&amp;amp; len, Msg* msg) {
-    myMsg* my_msg = static_cast&amp;lt;myMsg*&amp;gt; (msg);
-    if (len &amp;gt;= 1024) {
-        memcpy(buf, my_msg-&amp;gt;writebuf, 1024);
-        return 0;
-    } else {
-        len = 1024;
-        return 1;
-    }
-}
-
-int parseReq(char* buf, unsigned int len) {
-    return 1; // 该请求的类型为 1，由 myHandler 处理
-}
-
-int main() {
-    REGISTER_HANDLER(1, myHandler);  // 请求类型为 1 的由 myHandler 类处理
-    REGISTER_HEADER_PARSER(parseReq); // 请求包头由 parseReq 函数解析
-
-    AsyncServer server = AsyncServer();
-    server.setBindAddress(&amp;quot;0.0.0.0&amp;quot;, 8000); // 监听 8000 端口
-    server.run();
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h1&gt;总结&lt;/h1&gt;
-
-&lt;p&gt;由于时间和能力有限，saf 目前来说非常简陋，也没有经过严格的测试。对于一个框架来说，要做的事情还有很多，比如日志模块的完善、性能分析和优化。不过，&lt;strong&gt;done is better than perfect&lt;/strong&gt;. 最后，如有问题或意见，欢迎留言或者 email 我，也欢迎转载分享～&lt;/p&gt;
-</description>
-        <pubDate>Tue, 30 Aug 2016 08:14:24 +0800</pubDate>
-        <link>http://masutangu.com/2016/08/simple-async-framework/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/08/simple-async-framework/</guid>
-        
-        
-        <category>个人项目</category>
         
       </item>
     
