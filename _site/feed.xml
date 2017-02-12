@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 09 Feb 2017 21:22:19 +0800</pubDate>
-    <lastBuildDate>Thu, 09 Feb 2017 21:22:19 +0800</lastBuildDate>
+    <pubDate>Sun, 12 Feb 2017 10:26:34 +0800</pubDate>
+    <lastBuildDate>Sun, 12 Feb 2017 10:26:34 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -349,6 +349,387 @@ IpExt:
         
         
         <category>工作</category>
+        
+      </item>
+    
+      <item>
+        <title>Linux 内核系列－内存管理</title>
+        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
+
+&lt;h1&gt;概念&lt;/h1&gt;
+
+&lt;p&gt;操作系统存储管理方案的演进：&lt;/p&gt;
+
+&lt;h2&gt;无存储抽象&lt;/h2&gt;
+
+&lt;p&gt;早期计算机并没有存储抽象，程序直接访问物理内存地址。使用这种模型，想要同时运行多个程序非常困难。&lt;/p&gt;
+
+&lt;h2&gt;存储抽象：地址空间&lt;/h2&gt;
+
+&lt;h3&gt;地址空间的概念&lt;/h3&gt;
+
+&lt;p&gt;要保证多个应用程序同时处于内存并且互不影响，则需要解决两个问题：&lt;strong&gt;保护&lt;/strong&gt;和&lt;strong&gt;重定位&lt;/strong&gt;。内存块加上保护键并通过装载时重定位程序虽然可以做到，但是是个缓慢和复杂的解决方案。一个更好的方法是创造一个新的内存抽象：地址空间。地址空间是一个进程可用于寻址内存的一套地址集合。进程的地址空间独立于其他进程的地址空间。&lt;/p&gt;
+
+&lt;h3&gt;交换技术&lt;/h3&gt;
+
+&lt;p&gt;有两种处理内存超载的通用方法，最简单的策略是交接（swapping）技术，即把一个进程完整调入内存，运行一段时间后，存回磁盘。另一种策略是虚拟内存。&lt;/p&gt;
+
+&lt;h3&gt;空闲内存管理&lt;/h3&gt;
+
+&lt;p&gt;在动态分配内存时，操作系统通常有两种方式跟踪内存使用情况：&lt;strong&gt;位图&lt;/strong&gt;和&lt;strong&gt;空闲链表&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h2&gt;虚拟内存&lt;/h2&gt;
+
+&lt;p&gt;虚拟内存的基本思想是：每个程序拥有自己的地址空间，这个空间被分割为许多块，每一块被称为页面（page）。这些页被映射到物理内存，但不是所有页都在内存才能运行程序。&lt;/p&gt;
+
+&lt;h3&gt;分页&lt;/h3&gt;
+
+&lt;p&gt;大部分虚拟内存系统都使用了&lt;strong&gt;分页&lt;/strong&gt;技术。程序产生的地址称为虚拟地址，访问时不是直接由内存总线处理，而是通过内存管理单元（MMU)，MMU 把虚拟地址映射到物理内存。&lt;/p&gt;
+
+&lt;p&gt;虚拟地址空间按照固定大小划分页面，物理内存对应的单元称为页框（page frame）。页面和页框的大小通常是一样的。RAM 和磁盘之间的交换总是以整个页面为单元进行的。&lt;/p&gt;
+
+&lt;p&gt;当进程访问了一个未映射的页面，MMU 注意到该页面没有被映射，于是使 CPU 陷入到操作系统（缺页中断），操作系统找到一个很少使用的页框，将其内容写入磁盘，并把需要访问的页面的内容读到该页框中，修改映射关系后，重新启动引起陷进的指令。&lt;/p&gt;
+
+&lt;h3&gt;页表&lt;/h3&gt;
+
+&lt;p&gt;页表的简单实现：虚拟地址被分成&lt;strong&gt;虚拟页号&lt;/strong&gt;（高位部分）和&lt;strong&gt;偏移量&lt;/strong&gt;（低位部分）。虚拟页号可用作页表的索引，以找到相应的页表项。由页表项可以找到页框号。页框号加上偏移量就是实际的内存物理地址。&lt;/p&gt;
+
+&lt;p&gt;页表项的结构同城包含页框号、“在／不在”位、“保护”位（读写执行权限）、“修改”位、“访问”位和“高速缓存禁止”位。&lt;/p&gt;
+
+&lt;p&gt;若页面不在内存时，该页面对应的磁盘地址不是页表的一部分。这部分信息保存在操作系统内部的软件表格中，硬件不需要。&lt;/p&gt;
+
+&lt;h3&gt;加速分页过程&lt;/h3&gt;
+
+&lt;p&gt;大多数程序总是对少量页面进行多次访问，因此优化方案是为计算机配置一个小型硬件设备 TLB，将虚拟地址直接映射成物理地址，而不必访问页表。&lt;/p&gt;
+
+&lt;h3&gt;针对大内存的页表&lt;/h3&gt;
+
+&lt;p&gt;64位机器上，多级页表不是个好主意。解决方案之一是使用倒排页表。在这种设计中，每一个页框有一个表项，而不是每个页面有一个表项。倒排页表的不足在于从虚拟地址到物理地址的转换变得很困难。可以通过 TLB 和散列表来提升效率。&lt;/p&gt;
+
+&lt;h2&gt;分页系统中的设计问题&lt;/h2&gt;
+
+&lt;h3&gt;分离的指令空间和数据空间&lt;/h3&gt;
+
+&lt;p&gt;大多数计算机只有一个地址空间，即存放程序也存放数据。如果地址空间太小的话，PDP-11的解决方案是为指令和数据设置分离的地址空间，分别称为 I 空间和 D 空间。此时链接器必须将数据重定位到虚拟地址 0，而不是指令段后。&lt;/p&gt;
+
+&lt;h3&gt;共享库&lt;/h3&gt;
+
+&lt;p&gt;传统的链接，会将被调用的外部库的函数加载到二进制文件，当程序载入内存开始执行时，它所需的所有函数都已经准备就绪。&lt;/p&gt;
+
+&lt;p&gt;为了节省磁盘和内存空间，引入了共享库。当程序和共享库链接时，链接器没有加载被调用的函数，而是加载了一小段能够在运行时绑定所调用函数的存根例程（stbu routine）。共享库或和程序一起加载，或在第一次被调用时加载。当其他程序已经加载过，就没有必要再次加载了。共享库不是一次性读入内存，而是以页面为单位装载的。&lt;/p&gt;
+
+&lt;h3&gt;内存映射文件&lt;/h3&gt;
+
+&lt;p&gt;共享库其实是一种更通用的机制：内存映射文件的一个特例。其思想是：进程可以通过系统调用，将一个文件映射到其虚拟地址空间的一部分。在映射共享的页面时不会实际读入页面的内容，而是访问页面时才会被读入，磁盘文件当作后备存储，当进程退出或显式解除文件映射时，所有改动才会写回文件。&lt;/p&gt;
+
+&lt;p&gt;如果两个或以上的进程同时映射了一个文件，它们就可以通过共享内存来通信。&lt;/p&gt;
+
+&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
+
+&lt;h2&gt;内存管理&lt;/h2&gt;
+
+&lt;h3&gt;页&lt;/h3&gt;
+
+&lt;p&gt;内核把物理页作为内存管理的基本单位。尽管处理器最小可寻址单位通常为字，但内存管理单元（MMU)通常以页为单位进行处理。体系结构不同，支持的页大小也不同。大多数 32 位体系结构支持 4 KB 的页，而 64 位体系结构一般支持 8 KB 的页。&lt;/p&gt;
+
+&lt;p&gt;内核用 &lt;code&gt;struct page&lt;/code&gt; 结构表示系统中的每个物理页，该结构位于 &lt;linux/mm_types.h&gt; 中：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct page {
+    unsigned long flags;    /* Atomic flags, some possibly updated asynchronously */
+    atomic_t _count;        /* Usage count, see below. */
+
+    atomic_t _mapcount;     /* Count of ptes mapped in mms,
+                             * to show when page is mapped
+                             * &amp;amp; limit reverse map searches.
+                             */
+    };
+    union {
+        struct {
+        unsigned long private;  /* Mapping-private opaque data:
+                                 * usually used for buffer_heads
+                                 * if PagePrivate set; used for
+                                 * swp_entry_t if PageSwapCache;
+                                 * indicates order in the buddy
+                                 * system if PG_buddy is set.
+                                 */
+        struct address_space *mapping;  /* If low bit clear, points to
+                                         * inode address_space, or NULL.
+                                         * If page mapped as anonymous
+                                         * memory, low bit is set, and
+                                         * it points to anon_vma object:
+                                         * see PAGE_MAPPING_ANON below.
+                                         */
+        };
+    union {
+        pgoff_t index;      /* Our offset within mapping. */
+        void *freelist;     /* SLUB: freelist req. slab lock */
+    };
+    struct list_head lru;   /* Pageout list, eg. active_list
+                             * protected by zone-&amp;gt;lru_lock !
+                             */
+    void *virtual;          /* Kernel virtual address (NULL if not kmapped, ie. highmem) */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;flage 域用来存放页的状态。这些状态包括页是不是脏的，是不是被锁定在内存中等等。_count 域存放页的引用计数，变成 0 说明当前内核没有引用这一页。页可以由页缓存使用（此时 mapping 域指向和这个页关联的 address_space 对象)，或者作为私有数据（由 private 指向），或者作为进程页表中的映射。&lt;/p&gt;
+
+&lt;p&gt;virtual 域是页的虚拟地址，通常情况下，就是页在虚拟内存中的地址。高端内存并不会永久映射到内核地址空间上，这种情况下，virtual 域的值为 NULL。&lt;/p&gt;
+
+&lt;p&gt;page 结构与物理页相关，并非与虚拟页相关。&lt;/p&gt;
+
+&lt;h3&gt;区&lt;/h3&gt;
+
+&lt;p&gt;由于硬件的限制，内核把页划分为不同的区（zone）。内核使用区对具有相似特性的页进行分组。Linux 必须处理以下两种因硬件存在的缺陷而引起的内存寻址问题：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;一些硬件只能用特定的内存地址来执行 DMA（直接内存访问）&lt;/li&gt;
+&lt;li&gt;一些体系结构其内存的物理寻址范围比虚拟寻址范围大得多，这样就有些内存不能永久地映射到内核空间上&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因为存在这些制约条件，Linux 使用三种区：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;ZONE_DMA： 这个区包含的页能用来执行 DMA 操作&lt;/li&gt;
+&lt;li&gt;ZONE_NORMAL： 这个区包含的都是能正常映射的页&lt;/li&gt;
+&lt;li&gt;ZONE_HIGHMEM： 这个区包含“高端内存”，其中的页并不能永久地映射到内核地址空间。这些区定义于 &lt;linux/mmzone.h&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Linux 把系统的页划分为区，形成不同的内存池。每个区都用 &lt;code&gt;struct zone&lt;/code&gt; 表示，定义在 &lt;linux/mmzone.h&gt; 中。&lt;/p&gt;
+
+&lt;h3&gt;获得页&lt;/h3&gt;
+
+&lt;p&gt;内核提供一种请求内存的底层机制，并提供了对它进行访问的几个接口。所有这些接口都以页为单位分配内存，定义于 &lt;linux/gfp.h&gt;。最核心的函数是：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struc page * alloc_pages(unsigned int gfp_mask, unsigned int order)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;该函数分配 2&lt;sup&gt;order&lt;/sup&gt; 个连续的物理页，并返回一个指针，该指针指向第一个页的 page 结构体；如果出错就返回 NULL。&lt;/p&gt;
+
+&lt;p&gt;下面的函数：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void *page_address(struct page *page)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;把给定的物理页转换成逻辑地址。如果你不需要使用 struct page，可以直接调用&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;unsigned long__get_free_pages(unsigned int gfp_mask, unsigned int order)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;该函数与 &lt;code&gt;alloc_page()&lt;/code&gt; 作用相同，不过它直接返回请求的第一个页的逻辑地址，因为页是连续的，其他页也会紧随其后。&lt;/p&gt;
+
+&lt;h2&gt;kmalloc()&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;kmalloc()&lt;/code&gt; 函数与用户空间的 &lt;code&gt;malloc()&lt;/code&gt; 一族非常类似，只不过它多了一个 flags 参数。&lt;code&gt;kmalloc()&lt;/code&gt; 函数是一个简单的接口，用它可以获得以字节为单位的一块内核内存。&lt;code&gt;kmalloc()&lt;/code&gt; 在 &lt;linux/slab.h&gt; 中声明：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void *kmalloc(size_t size, int flags)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;这个函数返回一个指向内存块的指针，其内存块至少要有 size 大小。所分配的内存区在物理上是连续的。在出错时返回 NULL。&lt;/p&gt;
+
+&lt;h3&gt;vmalloc()&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;vmalloc()&lt;/code&gt; 函数的工作方式类似于 &lt;code&gt;kmalloc()&lt;/code&gt;，只不过前者分配的内存虚拟地址是连续的，而物理地址无需连续。这也是用户空间分配函数的工作方式：由 &lt;code&gt;malloc()&lt;/code&gt; 返回的页在进程的虚拟地址空间内是连续的，但并不保证它们在物理 RAM 中也连续。&lt;code&gt;kmalloc()&lt;/code&gt; 函数确保页在物理地址上是连续的。&lt;/p&gt;
+
+&lt;p&gt;大多数情况下，只有硬件设备需要得到物理地址连续的内存，硬件设备存在于内存管理单元之外，它根本不理解什么是虚拟内存。因此硬件设备用到的任何内存区都必须是物理上连续的块，而不仅仅是虚拟地址连续的块。而仅供软件使用的内存块（例如进程相关的缓冲区）就可以使用只有虚拟地址连续的内存块。&lt;/p&gt;
+
+&lt;p&gt;尽管在某些情况下才需要物理上连续的内存块，但很多内核代码都用 &lt;code&gt;kmalloc()&lt;/code&gt; 来获得内存，而不是 &lt;code&gt;vmalloc()&lt;/code&gt;。这主要是出于性能的考虑。&lt;code&gt;vmalloc()&lt;/code&gt; 为了把物理上不连续的页转换为虚拟空间上连续的页，必须专门建立页表项，通过 &lt;code&gt;vmalloc()&lt;/code&gt; 获得的页必须一个个进行映射，这会导致比直接内存映射大得多的 TLB 抖动。因此 &lt;code&gt;vmalloc()&lt;/code&gt; 仅在不得已的时候才使用，一般是在为了获得大块内存，例如当模块被动态插入到内核中时，就把模块装载到由 &lt;code&gt;vmalloc()&lt;/code&gt; 分配的内存上。&lt;/p&gt;
+
+&lt;h3&gt;slab 层&lt;/h3&gt;
+
+&lt;p&gt;Linux 内核提供了 slab 层（即 slab 分配器），slab 分配器扮演了通用数据结构缓存层的角色。&lt;/p&gt;
+
+&lt;h4&gt;slab 层的设计&lt;/h4&gt;
+
+&lt;p&gt;slab 层把不同的对象划分为所谓的&lt;strong&gt;高速缓存组&lt;/strong&gt;，其中每个高速缓存都存放不同类型的对象，每种对象类型对应一个高速缓存。例如一个高速缓存用于存放进程描述符，另一个高速缓存存放索引节点对象（struct inode）。&lt;code&gt;kmalloc()&lt;/code&gt; 接口建立在 slab 层之上，使用了一组通用高速缓存。&lt;/p&gt;
+
+&lt;p&gt;这些高速缓存又被划分为 slab。slab 由一个或多个物理上连续的页组成。每个高速缓存由多个 slab 组成。每个 slab 都包含一些对象成员，即被缓存的数据结构。每个 slab 处于三种状态之一：满、部分满或空。当内核需要一个新对象时，先从部分满的 slab 中进行分配，如果没有部分满的 slab，就从空的 slab 进行分配。如果没有空的 slab，就要创建一个 slab。&lt;/p&gt;
+
+&lt;h2&gt;进程地址空间&lt;/h2&gt;
+
+&lt;p&gt;内核除了管理自身的内存外，还必须管理进程的地址空间。Linux 操作系统采用虚拟内存技术，对每个进程来说，它们好像都可以访问整个系统的所有物理内存，即使单独一个进程，它拥有的地址空间也可远大于系统物理内存。&lt;/p&gt;
+
+&lt;p&gt;每个进程都有一个 32 或 64 位的平坦地址空间，空间的具体大小取决于体系结构。每个进程有唯一的平坦地址空间，而且进程地址空间之间彼此互不相干。两个不同的进程可以在它们各自地址空间中国年相同的地址内存存放不同的数据，进程之间也可以选择共享地址空间（线程）。&lt;/p&gt;
+
+&lt;p&gt;进程地址空间中，可被访问的合法地址区间称为内存区域（memory area）。进程只能访问有效范围内的内存地址。每个内存区域也具有进程必须遵循的特定访问属性，如只读、只写、可执行等属性。如果进程访问了不在有效范围中的地址，或以不正确的方式访问有效地址，那么内核就会终止该进程，并返回“段错误”。&lt;/p&gt;
+
+&lt;p&gt;内存区域可以包含各种内存对象：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;可执行文件代码的内存映射，称为代码段（text section）&lt;/li&gt;
+&lt;li&gt;可执行文件的已初始化全局变量的内存映射，称为数据段（data section）&lt;/li&gt;
+&lt;li&gt;包含未初始化全局变量，即 bss 段的零页的内存映射&lt;/li&gt;
+&lt;li&gt;用于进程用户空间栈的零页的内存映射&lt;/li&gt;
+&lt;li&gt;每个共享库的代码段、数据段和 bss 也会载入进程的地址空间&lt;/li&gt;
+&lt;li&gt;任何内存映射文件&lt;/li&gt;
+&lt;li&gt;任何共享内存段&lt;/li&gt;
+&lt;li&gt;任何匿名的内存映射，比如由 malloc() 分配的内存&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;内存描述符&lt;/h3&gt;
+
+&lt;p&gt;内核使用内存描述符结构体表示进程的地址空间，该结构包含了和进程地址空间有关的全部心血。内存描述法由 mm_struct 结构体表示，定义在文件 &lt;linux/sched.h&gt; 中。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct mm_struct {
+    struct vm_area_struct * mmap;       /* list of VMAs */
+    struct rb_root mm_rb;
+    struct vm_area_struct * mmap_cache; /* last find_vma result */
+
+    unsigned long free_area_cache;      /* first hole of size cached_hole_size or larger */
+    pgd_t * pgd;
+    atomic_t mm_users;          /* How many users with user space? */
+    atomic_t mm_count;          /* How many references to &amp;quot;struct mm_struct&amp;quot; (users count as 1) */
+    int map_count;              /* number of VMAs */
+    struct rw_semaphore mmap_sem;
+    spinlock_t page_table_lock;     /* Protects page tables and some counters */
+
+    struct list_head mmlist;        /* List of maybe swapped mm&amp;#39;s.  These are globally strung
+                                     * together off init_mm.mmlist, and are protected
+                                     * by mmlist_lock
+                                     */
+    unsigned long hiwater_rss;  /* High-watermark of RSS usage */
+    unsigned long hiwater_vm;   /* High-water virtual memory usage */
+
+    unsigned long total_vm, locked_vm, shared_vm, exec_vm;
+    unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
+    unsigned long start_code, end_code, start_data, end_data;
+    unsigned long start_brk, brk, start_stack;
+    unsigned long arg_start, arg_end, env_start, env_end;   
+
+    cpumask_t cpu_vm_mask;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;mm_users 域纪录正在使用该地址的进程数目。mm_count 域是 mm_struct 结构体的主引用数。只有当 mm_users 为 0，mm_count 值才会变成 0，表示已经没有任何指向该 mm_struct 结构体的引用，这时该结构体就会被销毁。&lt;/p&gt;
+
+&lt;p&gt;mmap 和 mm_rb 这两个不同数据结构体描述的对象是相同的：该地址空间中的全部内存区域。前者以链表形式存放而后者以红黑树的形式存放。mmap 结构体作为链表，方便简单、高效地遍历所有元素；而 mm_rb 结构体作为红黑树，方便搜索指定元素。&lt;/p&gt;
+
+&lt;p&gt;所有 mm_struct 结构体都通过自身的 mmlist 域链接在一个双向链表中。该链表的首元素是 init_mm 内存描述符，他代表 init 进程的地址空间。&lt;/p&gt;
+
+&lt;h3&gt;分配内存描述符&lt;/h3&gt;
+
+&lt;p&gt;在进程的进程描述符中，mm 域存放着该进程使用的内存描述符。&lt;code&gt;fork()&lt;/code&gt; 函数利用 &lt;code&gt;copy_mm()&lt;/code&gt; 函数复制父进程的内存描述符，也就是 current-&amp;gt;mm 域给其子进程。而子进程的 mm_struct 结构体是通过文件 kernel/fork.c 中的 &lt;code&gt;allcote_mm()&lt;/code&gt; 宏从 mm_cachep slab 缓存中分配得到的。通常每个进程都有唯一的 mm_struct 结构体，即唯一的进程地址空间。&lt;/p&gt;
+
+&lt;p&gt;如果父子进程共享地址空间，可以调用 &lt;code&gt;clone()&lt;/code&gt; 时，设置 CLONE_VM 标志。我们把这样的进程称为线程：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;if (clone_flags &amp;amp; CLONE_VM) {
+    atomic_inc(&amp;amp;current-&amp;gt;mm-&amp;gt;mm_users);
+    tsk-&amp;gt;mm = current-&amp;gt;mm;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;销毁内存描述符&lt;/h3&gt;
+
+&lt;p&gt;进程退出时，内核会调用 &lt;code&gt;exit_mm()&lt;/code&gt; 函数，该函数会调用 &lt;code&gt;mmput()&lt;/code&gt; 函数来减少内存描述符中的 mm_users 用户计数，如果为 0 则调用 &lt;code&gt;mmdrop()&lt;/code&gt; 函数，减少 mm_count 使用计数。如果使用计数也等于 0 了，则调用 &lt;code&gt;free_mm()&lt;/code&gt; 宏通过 &lt;code&gt;kmem_cache_free()&lt;/code&gt; 函数将 mm_struct 结构体归还到 mm_cachep slab 缓存中。&lt;/p&gt;
+
+&lt;h3&gt;mm_struct 与内核线程&lt;/h3&gt;
+
+&lt;p&gt;内核线程没有进程地址空间，也没有相关的内存描述符。所以内核线程对应的进程描述符中的 mm 域为空。&lt;/p&gt;
+
+&lt;p&gt;当进程被调度时，该进程的 mm 域指向的地址空间被装载到内存，进程描述符中的 active_mm 域会被更新，指向新的地址空间。当内核线程被调度时，内核发现他的 mm 域为 NULL，就会保留前一个进程的地址空间，随后更新内核线程对应进程描述符中的 active_mm 域，使其指向前一个进程的内存描述符。因此在需要时，内核线程可以使用前一个进程的页表。因为内核线程不访问用户空间的内存，仅仅使用地址空间中和内核内存相关的信息。&lt;/p&gt;
+
+&lt;h2&gt;内存区域&lt;/h2&gt;
+
+&lt;p&gt;内存区域由 vm_area_struct 结构体描述，定义在文件 &lt;linux/mm.h&gt; 中，内存区域在内核中也经常被称做虚拟内存区域或 VMA。&lt;/p&gt;
+
+&lt;p&gt;vm_area_struct 结构体描述了指定地址空间内连续区间上的一个独立内存范围。内核将每个内存区域作为一个单独的内存对象管理，每个内存区域都拥有一致的属性，比如访问权限等。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct vm_area_struct {
+    struct mm_struct * vm_mm;   /* The address space we belong to. */
+    unsigned long vm_start;     /* Our start address within vm_mm. */
+    unsigned long vm_end;       /* The first byte after our end address within vm_mm. */
+
+    /* linked list of VM areas per task, sorted by address */
+    struct vm_area_struct *vm_next;
+
+    pgprot_t vm_page_prot;      /* Access permissions of this VMA. */
+    unsigned long vm_flags;     /* Flags, see mm.h. */
+
+    struct rb_node vm_rb;
+
+    /*
+     * For areas with an address space and backing store,
+     * linkage into the address_space-&amp;gt;i_mmap prio tree, or
+     * linkage to the list of like vmas hanging off its node, or
+     * linkage of vma in the address_space-&amp;gt;i_mmap_nonlinear list.
+     */
+    union {
+        struct {  
+            struct list_head list;
+            void *parent;   /* aligns with prio_tree_node parent */
+            struct vm_area_struct *head;
+        } vm_set;
+
+        struct raw_prio_tree_node prio_tree_node;
+    } shared;
+
+    /*
+     * A file&amp;#39;s MAP_PRIVATE vma can be in both i_mmap tree and anon_vma
+     * list, after a COW of one of the file pages.  A MAP_SHARED vma
+     * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
+     * or brk vma (with NULL file) can only be in an anon_vma list.
+     */
+    struct list_head anon_vma_chain; /* Serialized by mmap_sem &amp;amp; page_table_lock */
+    struct anon_vma *anon_vma;       /* Serialized by page_table_lock */
+
+    /* Function pointers to deal with this struct. */
+    const struct vm_operations_struct *vm_ops;
+
+    /* Information about our backing store: */
+    unsigned long vm_pgoff;     /* Offset (within vm_file) in PAGE_SIZE units, *not* PAGE_CACHE_SIZE */
+    struct file * vm_file;      /* File we map to (can be NULL). */
+    void * vm_private_data;     /* was vm_pte (shared mem) */
+    unsigned long vm_truncate_count;/* truncate_count or restart_addr */
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;vm_mm 域指向和 VMA 相关的 mm_struct 结构体，注意每个 VMA 对其相关的 mm_struct 结构体来说都是唯一的。即使两个独立的进程将同一个文件映射到各自的地址空间，它们分别都有一个 vm_area_struct 结构体来标志自己的内存区域。但如果两个线程共享一个地址空间，那么它们也同时共享其中的所有 vm_area_struct 结构体。&lt;/p&gt;
+
+&lt;h3&gt;VMA 标志&lt;/h3&gt;
+
+&lt;p&gt;VMA 标志是一种位标志，包含在 vm_flags 域内，标志了内存区域所包含的页面的行为和信息：&lt;/p&gt;
+
+&lt;table&gt;&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;标志&lt;/th&gt;
+&lt;th&gt;对 VMA 及其页面的影响&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;VM_READ&lt;/td&gt;
+&lt;td&gt;页面可读取&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VM_WRITE&lt;/td&gt;
+&lt;td&gt;页面可写&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VM_EXEC&lt;/td&gt;
+&lt;td&gt;页面可执行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VM_SHARED&lt;/td&gt;
+&lt;td&gt;页面可共享&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;p&gt;当访问 VMA 时，需要查看其访问权限。比如进程的对象代码映射区域可能会标志为 VM_READ 和 VM_EXEC，而不会标志为 VM_WRITE。另一方面，可执行对象数据段的映射区域被标志为 VM_READ 和 VM_WRITE，而 VM_EXEC 标志对它毫无意义。只读文件数据段的映射区域仅可被标志为 VM_READ。VM_SHARED 指明了内存区域包含的映射是否可以在多进程间共享，如果该标志被设置，则称其为共享映射。如果未被设置，则只有一个进程可以使用该映射的内容，称其为私有映射。&lt;/p&gt;
+
+&lt;p&gt;VM_IO 标志内存区域中的包含对设备 I/O 空间的映射。该标志通常在设备驱动程序执行 &lt;code&gt;mmap()&lt;/code&gt; 函数进行 I/O 空间映射时才被设置。同时该标志也表示该内存区域不能被包含在任何进程的 coredump 中。&lt;/p&gt;
+
+&lt;h3&gt;实际使用中的内存区域&lt;/h3&gt;
+
+&lt;p&gt;可以使用 /proc 文件系统和 pmap 工具查看给定进程的内存空间和其中所含的内存区域。&lt;/p&gt;
+
+&lt;h2&gt;页表&lt;/h2&gt;
+
+&lt;p&gt;当应用程序访问一个虚拟地址时，必须将虚拟地址转化为物理地址，然后处理器才能解析地址访问请求。&lt;/p&gt;
+
+&lt;p&gt;Linux 中使用三级页表完成地址转换。利用多级页表能够节约地址转换需占用的存放空间。&lt;/p&gt;
+
+&lt;p&gt;顶级页表是页全局目录(PGD)，PGD 包含了一个 pgd_t 类型数组，PGD 中的表项指向二级页目录中的表项：PMD。&lt;/p&gt;
+
+&lt;p&gt;二级页表是中间页目录（PMD)，PMD 是一个 pmd_t 类型数组，其中表项指向 PTE 中的表项。&lt;/p&gt;
+
+&lt;p&gt;最后一级的页表简称页表，其中包含 pte_t 类型的页表项，该页表项指向物理页面。&lt;/p&gt;
+
+&lt;p&gt;每个进程都有自己的页表，内存描述符的 pgd 域指向的就是进程的页全局目录。操作和检索页表时必须使用 page_table_lock 锁。&lt;/p&gt;
+
+&lt;p&gt;由于每次对虚拟内存中的页面访问都必须先解析，所以页表操作的性能非常关键。为了加快搜索，多数体系结构都实现了一个翻译后缓冲器（TLB)。TLB 是一个将虚拟地址映射到物理地址的硬件缓存。&lt;/p&gt;
+
+&lt;h1&gt;相关资料&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/&quot;&gt;《How the Kernel Manages Your Memory》&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 25 Jan 2017 10:21:16 +0800</pubDate>
+        <link>http://masutangu.com/2017/01/linux-kernel-serial-4/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/01/linux-kernel-serial-4/</guid>
+        
+        
+        <category>读书笔记</category>
         
       </item>
     
@@ -4109,41 +4490,6 @@ int main() {
         
         
         <category>个人项目</category>
-        
-      </item>
-    
-      <item>
-        <title>工作两年记</title>
-        <description>&lt;p&gt;转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。&lt;/p&gt;
-
-&lt;p&gt;回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一些简单的成果。之后又熟悉了 Django，了解 MVC。之后再尝试空闲时间读一些库的源码，并最终自己用 Python 写了一个开源项目 &lt;a href=&quot;https://github.com/Masutangu/Elric&quot;&gt;Elric&lt;/a&gt;（基于 Apscheduler ）。这些经历极大得提升了我的自信心，也锻炼了我的代码能力和少部分的架构能力。&lt;/p&gt;
-
-&lt;p&gt;第二年的时候，我给自己的计划是多学习新的知识点，重在求广。因此我学了 Golang，写了个小项目 &lt;a href=&quot;https://github.com/Masutangu/SuperScripter&quot;&gt;SuperScripter&lt;/a&gt; 练手（最终这个项目的进化版用在了工作中）；学习了 iOS，写了一个简单的 &lt;a href=&quot;https://github.com/Masutangu/ToDo&quot;&gt;ToDoList&lt;/a&gt;, 对客户端有了些了解；读了 NSQ 的源码，大致了解消息队列的实现；还读了一段时间的非技术类的文章（读书笔记：&lt;a href=&quot;http://masutangu.com/2015/12/dewdrop-note-1/&quot;&gt;水滴石穿&lt;/a&gt;），希望自己的思维可以更宽广，可惜后来没坚持下去。&lt;/p&gt;
-
-&lt;p&gt;到了今年的年初，我感觉自己在技术上到了一个瓶颈，对于职业发展也有些迷茫。总会觉得自己在原地踏步，会的更熟练，不会的还是不会，让我有些急躁，心情也不是特别好。有一阵子我每天一闲下来就会想：“到底怎么做才能更进一步？”，始终绕不出这个困扰。后来我发现想要驱除内心的恐慌，取得让自己满意的进步，唯一的方法就是花时间做一些更深入的研究，而不是浮在表面。浮在表面让我非常没有安全感，如果你很快就能学会的，别人也可以。所以我不再把重心放在新知识上，打算打牢基础，并在自己感兴趣的领域做些探索。&lt;/p&gt;
-
-&lt;p&gt;想清楚后，我规划了接下来这一年的学习路线：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;回归语言的本质&lt;/p&gt;
-
-&lt;p&gt;学再多语言，不深入思考的话，也只是学到皮毛。不应该止步于会用，而是要深入到编程语言的设计哲学。我希望之后在这方面有一些理解。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;网络框架读源码，造轮子&lt;/p&gt;
-
-&lt;p&gt;在公司工作，都有了现成的框架。就算自己做项目，也有很多开源框架可以使用。和编程语言类似，我希望自己能够再深入些，比如读读协程／异步／同步框架的代码，比较他们的适用场景，最好是能够自己造一些轻量级的轮子加深理解。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;巩固操作系统/编译原理/网络基础&lt;/p&gt;
-
-&lt;p&gt;看书学习理论，造轮子加深理解。也许工作中 90% 的情况下不需要这些知识，但总会有 10% 的概率会出各种奇奇怪怪的问题，这时就是考验基本功的时候了。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;我觉得第两年到第三年，是一个关键点。这一年，我希望兑现全部潜力，大幅度提升自己的能力，不仅是代码能力、架构能力，还有工程素养。我希望三年级的我，可以扛起重任。就像 NBA 的球员一样，经历了两年的磨砺，三年级，也该去争取进入全明星，争取一阵，争取属于自己的总冠军了！&lt;/p&gt;
-</description>
-        <pubDate>Wed, 13 Jul 2016 21:24:34 +0800</pubDate>
-        <link>http://masutangu.com/2016/07/conclusion-of-two-years/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/07/conclusion-of-two-years/</guid>
-        
-        
-        <category>工作</category>
         
       </item>
     

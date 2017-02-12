@@ -99,3 +99,61 @@ public:
     }
 };
 ```
+
+# Median of Two Sorted Arrays
+
+There are two sorted arrays nums1 and nums2 of size m and n respectively.
+
+Find the median of the two sorted arrays. The overall run time complexity should be O(log (m+n)).
+
+Example 1:
+nums1 = [1, 3]
+nums2 = [2]
+
+The median is 2.0
+Example 2:
+nums1 = [1, 2]
+nums2 = [3, 4]
+
+The median is (2 + 3)/2 = 2.5
+
+```c
+double GetMedian(int* num1, int n, int* num2, int m, int idx) {
+    if (n <= 0) {
+        return num2[idx];
+    } else if (m <= 0) {
+        return num1[idx];
+    } 
+    
+    int mid1 = (n - 1) / 2;
+    int mid2 = (m - 1) / 2;
+    
+    if (mid1 + mid2 < idx) {
+        if (num1[mid1] > num2[mid2]) {  
+            // drop num2[:m/2]
+            return GetMedian(num1, n, num2 + mid2 + 1, m - mid2 - 1, idx - mid2 - 1);
+        } else {  
+            // drop num1[:n/2]
+            return GetMedian(num1 + mid1 + 1, n - mid1 -1, num2, m, idx - mid1 -1);
+        }
+    } else {
+        if (num1[mid1] > num2[mid2]) { 
+            // drop num1[n/2:]
+            return GetMedian(num1, mid1, num2, m, idx);
+        } else {
+            // drop num2[m/2:]
+            return GetMedian(num1, n, num2, mid2, idx);
+        }
+    }
+}
+
+double findMedianSortedArrays(int* nums1, int nums1Size, int* nums2, int nums2Size) {
+    if ((nums1Size + nums2Size) % 2 == 0) {
+        return (GetMedian(nums1, nums1Size, nums2, nums2Size, (nums1Size + nums2Size)/2) + 
+               GetMedian(nums1, nums1Size, nums2, nums2Size, (nums1Size + nums2Size)/2 - 1))/2;
+    } else {
+        return GetMedian(nums1, nums1Size, nums2, nums2Size, (nums1Size + nums2Size)/2);
+    }
+    
+}
+```

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Linux 内核系列－内存管理</title>
+  <meta name="description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Linux 内核系列－内存管理">
+  <meta name="twitter:description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Linux 内核系列－内存管理">
+  <meta property="og:description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/01/linux-kernel-serial-4/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-01-25 10:21:16 +0800" itemprop="datePublished" class="post-meta__date date">2017-01-25</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">Linux 内核系列－内存管理</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。</p>
+
+<h1>概念</h1>
+
+<p>操作系统存储管理方案的演进：</p>
+
+<h2>无存储抽象</h2>
+
+<p>早期计算机并没有存储抽象，程序直接访问物理内存地址。使用这种模型，想要同时运行多个程序非常困难。</p>
+
+<h2>存储抽象：地址空间</h2>
+
+<h3>地址空间的概念</h3>
+
+<p>要保证多个应用程序同时处于内存并且互不影响，则需要解决两个问题：<strong>保护</strong>和<strong>重定位</strong>。内存块加上保护键并通过装载时重定位程序虽然可以做到，但是是个缓慢和复杂的解决方案。一个更好的方法是创造一个新的内存抽象：地址空间。地址空间是一个进程可用于寻址内存的一套地址集合。进程的地址空间独立于其他进程的地址空间。</p>
+
+<h3>交换技术</h3>
+
+<p>有两种处理内存超载的通用方法，最简单的策略是交接（swapping）技术，即把一个进程完整调入内存，运行一段时间后，存回磁盘。另一种策略是虚拟内存。</p>
+
+<h3>空闲内存管理</h3>
+
+<p>在动态分配内存时，操作系统通常有两种方式跟踪内存使用情况：<strong>位图</strong>和<strong>空闲链表</strong>。</p>
+
+<h2>虚拟内存</h2>
+
+<p>虚拟内存的基本思想是：每个程序拥有自己的地址空间，这个空间被分割为许多块，每一块被称为页面（page）。这些页被映射到物理内存，但不是所有页都在内存才能运行程序。</p>
+
+<h3>分页</h3>
+
+<p>大部分虚拟内存系统都使用了<strong>分页</strong>技术。程序产生的地址称为虚拟地址，访问时不是直接由内存总线处理，而是通过内存管理单元（MMU)，MMU 把虚拟地址映射到物理内存。</p>
+
+<p>虚拟地址空间按照固定大小划分页面，物理内存对应的单元称为页框（page frame）。页面和页框的大小通常是一样的。RAM 和磁盘之间的交换总是以整个页面为单元进行的。</p>
+
+<p>当进程访问了一个未映射的页面，MMU 注意到该页面没有被映射，于是使 CPU 陷入到操作系统（缺页中断），操作系统找到一个很少使用的页框，将其内容写入磁盘，并把需要访问的页面的内容读到该页框中，修改映射关系后，重新启动引起陷进的指令。</p>
+
+<h3>页表</h3>
+
+<p>页表的简单实现：虚拟地址被分成<strong>虚拟页号</strong>（高位部分）和<strong>偏移量</strong>（低位部分）。虚拟页号可用作页表的索引，以找到相应的页表项。由页表项可以找到页框号。页框号加上偏移量就是实际的内存物理地址。</p>
+
+<p>页表项的结构同城包含页框号、“在／不在”位、“保护”位（读写执行权限）、“修改”位、“访问”位和“高速缓存禁止”位。</p>
+
+<p>若页面不在内存时，该页面对应的磁盘地址不是页表的一部分。这部分信息保存在操作系统内部的软件表格中，硬件不需要。</p>
+
+<h3>加速分页过程</h3>
+
+<p>大多数程序总是对少量页面进行多次访问，因此优化方案是为计算机配置一个小型硬件设备 TLB，将虚拟地址直接映射成物理地址，而不必访问页表。</p>
+
+<h3>针对大内存的页表</h3>
+
+<p>64位机器上，多级页表不是个好主意。解决方案之一是使用倒排页表。在这种设计中，每一个页框有一个表项，而不是每个页面有一个表项。倒排页表的不足在于从虚拟地址到物理地址的转换变得很困难。可以通过 TLB 和散列表来提升效率。</p>
+
+<h2>分页系统中的设计问题</h2>
+
+<h3>分离的指令空间和数据空间</h3>
+
+<p>大多数计算机只有一个地址空间，即存放程序也存放数据。如果地址空间太小的话，PDP-11的解决方案是为指令和数据设置分离的地址空间，分别称为 I 空间和 D 空间。此时链接器必须将数据重定位到虚拟地址 0，而不是指令段后。</p>
+
+<h3>共享库</h3>
+
+<p>传统的链接，会将被调用的外部库的函数加载到二进制文件，当程序载入内存开始执行时，它所需的所有函数都已经准备就绪。</p>
+
+<p>为了节省磁盘和内存空间，引入了共享库。当程序和共享库链接时，链接器没有加载被调用的函数，而是加载了一小段能够在运行时绑定所调用函数的存根例程（stbu routine）。共享库或和程序一起加载，或在第一次被调用时加载。当其他程序已经加载过，就没有必要再次加载了。共享库不是一次性读入内存，而是以页面为单位装载的。</p>
+
+<h3>内存映射文件</h3>
+
+<p>共享库其实是一种更通用的机制：内存映射文件的一个特例。其思想是：进程可以通过系统调用，将一个文件映射到其虚拟地址空间的一部分。在映射共享的页面时不会实际读入页面的内容，而是访问页面时才会被读入，磁盘文件当作后备存储，当进程退出或显式解除文件映射时，所有改动才会写回文件。</p>
+
+<p>如果两个或以上的进程同时映射了一个文件，它们就可以通过共享内存来通信。</p>
+
+<h1>Linux 中的实现</h1>
+
+<h2>内存管理</h2>
+
+<h3>页</h3>
+
+<p>内核把物理页作为内存管理的基本单位。尽管处理器最小可寻址单位通常为字，但内存管理单元（MMU)通常以页为单位进行处理。体系结构不同，支持的页大小也不同。大多数 32 位体系结构支持 4 KB 的页，而 64 位体系结构一般支持 8 KB 的页。</p>
+
+<p>内核用 <code>struct page</code> 结构表示系统中的每个物理页，该结构位于 <linux/mm_types.h> 中：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">struct page {
+    unsigned long flags;    /* Atomic flags, some possibly updated asynchronously */
+    atomic_t _count;        /* Usage count, see below. */
+
+    atomic_t _mapcount;     /* Count of ptes mapped in mms,
+                             * to show when page is mapped
+                             * &amp; limit reverse map searches.
+                             */
+    };
+    union {
+        struct {
+        unsigned long private;  /* Mapping-private opaque data:
+                                 * usually used for buffer_heads
+                                 * if PagePrivate set; used for
+                                 * swp_entry_t if PageSwapCache;
+                                 * indicates order in the buddy
+                                 * system if PG_buddy is set.
+                                 */
+        struct address_space *mapping;  /* If low bit clear, points to
+                                         * inode address_space, or NULL.
+                                         * If page mapped as anonymous
+                                         * memory, low bit is set, and
+                                         * it points to anon_vma object:
+                                         * see PAGE_MAPPING_ANON below.
+                                         */
+        };
+    union {
+        pgoff_t index;      /* Our offset within mapping. */
+        void *freelist;     /* SLUB: freelist req. slab lock */
+    };
+    struct list_head lru;   /* Pageout list, eg. active_list
+                             * protected by zone-&gt;lru_lock !
+                             */
+    void *virtual;          /* Kernel virtual address (NULL if not kmapped, ie. highmem) */
+};
+</code></pre></figure>
+<p>flage 域用来存放页的状态。这些状态包括页是不是脏的，是不是被锁定在内存中等等。_count 域存放页的引用计数，变成 0 说明当前内核没有引用这一页。页可以由页缓存使用（此时 mapping 域指向和这个页关联的 address_space 对象)，或者作为私有数据（由 private 指向），或者作为进程页表中的映射。</p>
+
+<p>virtual 域是页的虚拟地址，通常情况下，就是页在虚拟内存中的地址。高端内存并不会永久映射到内核地址空间上，这种情况下，virtual 域的值为 NULL。</p>
+
+<p>page 结构与物理页相关，并非与虚拟页相关。</p>
+
+<h3>区</h3>
+
+<p>由于硬件的限制，内核把页划分为不同的区（zone）。内核使用区对具有相似特性的页进行分组。Linux 必须处理以下两种因硬件存在的缺陷而引起的内存寻址问题：</p>
+
+<ul>
+<li>一些硬件只能用特定的内存地址来执行 DMA（直接内存访问）</li>
+<li>一些体系结构其内存的物理寻址范围比虚拟寻址范围大得多，这样就有些内存不能永久地映射到内核空间上</li>
+</ul>
+
+<p>因为存在这些制约条件，Linux 使用三种区：</p>
+
+<ul>
+<li>ZONE_DMA： 这个区包含的页能用来执行 DMA 操作</li>
+<li>ZONE_NORMAL： 这个区包含的都是能正常映射的页</li>
+<li>ZONE_HIGHMEM： 这个区包含“高端内存”，其中的页并不能永久地映射到内核地址空间。这些区定义于 <linux/mmzone.h></li>
+</ul>
+
+<p>Linux 把系统的页划分为区，形成不同的内存池。每个区都用 <code>struct zone</code> 表示，定义在 <linux/mmzone.h> 中。</p>
+
+<h3>获得页</h3>
+
+<p>内核提供一种请求内存的底层机制，并提供了对它进行访问的几个接口。所有这些接口都以页为单位分配内存，定义于 <linux/gfp.h>。最核心的函数是：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">struc page * alloc_pages(unsigned int gfp_mask, unsigned int order)
+</code></pre></figure>
+<p>该函数分配 2<sup>order</sup> 个连续的物理页，并返回一个指针，该指针指向第一个页的 page 结构体；如果出错就返回 NULL。</p>
+
+<p>下面的函数：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">void *page_address(struct page *page)
+</code></pre></figure>
+<p>把给定的物理页转换成逻辑地址。如果你不需要使用 struct page，可以直接调用</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">unsigned long__get_free_pages(unsigned int gfp_mask, unsigned int order)
+</code></pre></figure>
+<p>该函数与 <code>alloc_page()</code> 作用相同，不过它直接返回请求的第一个页的逻辑地址，因为页是连续的，其他页也会紧随其后。</p>
+
+<h2>kmalloc()</h2>
+
+<p><code>kmalloc()</code> 函数与用户空间的 <code>malloc()</code> 一族非常类似，只不过它多了一个 flags 参数。<code>kmalloc()</code> 函数是一个简单的接口，用它可以获得以字节为单位的一块内核内存。<code>kmalloc()</code> 在 <linux/slab.h> 中声明：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">void *kmalloc(size_t size, int flags)
+</code></pre></figure>
+<p>这个函数返回一个指向内存块的指针，其内存块至少要有 size 大小。所分配的内存区在物理上是连续的。在出错时返回 NULL。</p>
+
+<h3>vmalloc()</h3>
+
+<p><code>vmalloc()</code> 函数的工作方式类似于 <code>kmalloc()</code>，只不过前者分配的内存虚拟地址是连续的，而物理地址无需连续。这也是用户空间分配函数的工作方式：由 <code>malloc()</code> 返回的页在进程的虚拟地址空间内是连续的，但并不保证它们在物理 RAM 中也连续。<code>kmalloc()</code> 函数确保页在物理地址上是连续的。</p>
+
+<p>大多数情况下，只有硬件设备需要得到物理地址连续的内存，硬件设备存在于内存管理单元之外，它根本不理解什么是虚拟内存。因此硬件设备用到的任何内存区都必须是物理上连续的块，而不仅仅是虚拟地址连续的块。而仅供软件使用的内存块（例如进程相关的缓冲区）就可以使用只有虚拟地址连续的内存块。</p>
+
+<p>尽管在某些情况下才需要物理上连续的内存块，但很多内核代码都用 <code>kmalloc()</code> 来获得内存，而不是 <code>vmalloc()</code>。这主要是出于性能的考虑。<code>vmalloc()</code> 为了把物理上不连续的页转换为虚拟空间上连续的页，必须专门建立页表项，通过 <code>vmalloc()</code> 获得的页必须一个个进行映射，这会导致比直接内存映射大得多的 TLB 抖动。因此 <code>vmalloc()</code> 仅在不得已的时候才使用，一般是在为了获得大块内存，例如当模块被动态插入到内核中时，就把模块装载到由 <code>vmalloc()</code> 分配的内存上。</p>
+
+<h3>slab 层</h3>
+
+<p>Linux 内核提供了 slab 层（即 slab 分配器），slab 分配器扮演了通用数据结构缓存层的角色。</p>
+
+<h4>slab 层的设计</h4>
+
+<p>slab 层把不同的对象划分为所谓的<strong>高速缓存组</strong>，其中每个高速缓存都存放不同类型的对象，每种对象类型对应一个高速缓存。例如一个高速缓存用于存放进程描述符，另一个高速缓存存放索引节点对象（struct inode）。<code>kmalloc()</code> 接口建立在 slab 层之上，使用了一组通用高速缓存。</p>
+
+<p>这些高速缓存又被划分为 slab。slab 由一个或多个物理上连续的页组成。每个高速缓存由多个 slab 组成。每个 slab 都包含一些对象成员，即被缓存的数据结构。每个 slab 处于三种状态之一：满、部分满或空。当内核需要一个新对象时，先从部分满的 slab 中进行分配，如果没有部分满的 slab，就从空的 slab 进行分配。如果没有空的 slab，就要创建一个 slab。</p>
+
+<h2>进程地址空间</h2>
+
+<p>内核除了管理自身的内存外，还必须管理进程的地址空间。Linux 操作系统采用虚拟内存技术，对每个进程来说，它们好像都可以访问整个系统的所有物理内存，即使单独一个进程，它拥有的地址空间也可远大于系统物理内存。</p>
+
+<p>每个进程都有一个 32 或 64 位的平坦地址空间，空间的具体大小取决于体系结构。每个进程有唯一的平坦地址空间，而且进程地址空间之间彼此互不相干。两个不同的进程可以在它们各自地址空间中国年相同的地址内存存放不同的数据，进程之间也可以选择共享地址空间（线程）。</p>
+
+<p>进程地址空间中，可被访问的合法地址区间称为内存区域（memory area）。进程只能访问有效范围内的内存地址。每个内存区域也具有进程必须遵循的特定访问属性，如只读、只写、可执行等属性。如果进程访问了不在有效范围中的地址，或以不正确的方式访问有效地址，那么内核就会终止该进程，并返回“段错误”。</p>
+
+<p>内存区域可以包含各种内存对象：</p>
+
+<ul>
+<li>可执行文件代码的内存映射，称为代码段（text section）</li>
+<li>可执行文件的已初始化全局变量的内存映射，称为数据段（data section）</li>
+<li>包含未初始化全局变量，即 bss 段的零页的内存映射</li>
+<li>用于进程用户空间栈的零页的内存映射</li>
+<li>每个共享库的代码段、数据段和 bss 也会载入进程的地址空间</li>
+<li>任何内存映射文件</li>
+<li>任何共享内存段</li>
+<li>任何匿名的内存映射，比如由 malloc() 分配的内存</li>
+</ul>
+
+<h3>内存描述符</h3>
+
+<p>内核使用内存描述符结构体表示进程的地址空间，该结构包含了和进程地址空间有关的全部心血。内存描述法由 mm_struct 结构体表示，定义在文件 <linux/sched.h> 中。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">struct mm_struct {
+    struct vm_area_struct * mmap;       /* list of VMAs */
+    struct rb_root mm_rb;
+    struct vm_area_struct * mmap_cache; /* last find_vma result */
+
+    unsigned long free_area_cache;      /* first hole of size cached_hole_size or larger */
+    pgd_t * pgd;
+    atomic_t mm_users;          /* How many users with user space? */
+    atomic_t mm_count;          /* How many references to &quot;struct mm_struct&quot; (users count as 1) */
+    int map_count;              /* number of VMAs */
+    struct rw_semaphore mmap_sem;
+    spinlock_t page_table_lock;     /* Protects page tables and some counters */
+
+    struct list_head mmlist;        /* List of maybe swapped mm&#39;s.  These are globally strung
+                                     * together off init_mm.mmlist, and are protected
+                                     * by mmlist_lock
+                                     */
+    unsigned long hiwater_rss;  /* High-watermark of RSS usage */
+    unsigned long hiwater_vm;   /* High-water virtual memory usage */
+
+    unsigned long total_vm, locked_vm, shared_vm, exec_vm;
+    unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
+    unsigned long start_code, end_code, start_data, end_data;
+    unsigned long start_brk, brk, start_stack;
+    unsigned long arg_start, arg_end, env_start, env_end;   
+
+    cpumask_t cpu_vm_mask;
+};
+</code></pre></figure>
+<p>mm_users 域纪录正在使用该地址的进程数目。mm_count 域是 mm_struct 结构体的主引用数。只有当 mm_users 为 0，mm_count 值才会变成 0，表示已经没有任何指向该 mm_struct 结构体的引用，这时该结构体就会被销毁。</p>
+
+<p>mmap 和 mm_rb 这两个不同数据结构体描述的对象是相同的：该地址空间中的全部内存区域。前者以链表形式存放而后者以红黑树的形式存放。mmap 结构体作为链表，方便简单、高效地遍历所有元素；而 mm_rb 结构体作为红黑树，方便搜索指定元素。</p>
+
+<p>所有 mm_struct 结构体都通过自身的 mmlist 域链接在一个双向链表中。该链表的首元素是 init_mm 内存描述符，他代表 init 进程的地址空间。</p>
+
+<h3>分配内存描述符</h3>
+
+<p>在进程的进程描述符中，mm 域存放着该进程使用的内存描述符。<code>fork()</code> 函数利用 <code>copy_mm()</code> 函数复制父进程的内存描述符，也就是 current-&gt;mm 域给其子进程。而子进程的 mm_struct 结构体是通过文件 kernel/fork.c 中的 <code>allcote_mm()</code> 宏从 mm_cachep slab 缓存中分配得到的。通常每个进程都有唯一的 mm_struct 结构体，即唯一的进程地址空间。</p>
+
+<p>如果父子进程共享地址空间，可以调用 <code>clone()</code> 时，设置 CLONE_VM 标志。我们把这样的进程称为线程：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">if (clone_flags &amp; CLONE_VM) {
+    atomic_inc(&amp;current-&gt;mm-&gt;mm_users);
+    tsk-&gt;mm = current-&gt;mm;
+}
+</code></pre></figure>
+<h3>销毁内存描述符</h3>
+
+<p>进程退出时，内核会调用 <code>exit_mm()</code> 函数，该函数会调用 <code>mmput()</code> 函数来减少内存描述符中的 mm_users 用户计数，如果为 0 则调用 <code>mmdrop()</code> 函数，减少 mm_count 使用计数。如果使用计数也等于 0 了，则调用 <code>free_mm()</code> 宏通过 <code>kmem_cache_free()</code> 函数将 mm_struct 结构体归还到 mm_cachep slab 缓存中。</p>
+
+<h3>mm_struct 与内核线程</h3>
+
+<p>内核线程没有进程地址空间，也没有相关的内存描述符。所以内核线程对应的进程描述符中的 mm 域为空。</p>
+
+<p>当进程被调度时，该进程的 mm 域指向的地址空间被装载到内存，进程描述符中的 active_mm 域会被更新，指向新的地址空间。当内核线程被调度时，内核发现他的 mm 域为 NULL，就会保留前一个进程的地址空间，随后更新内核线程对应进程描述符中的 active_mm 域，使其指向前一个进程的内存描述符。因此在需要时，内核线程可以使用前一个进程的页表。因为内核线程不访问用户空间的内存，仅仅使用地址空间中和内核内存相关的信息。</p>
+
+<h2>内存区域</h2>
+
+<p>内存区域由 vm_area_struct 结构体描述，定义在文件 <linux/mm.h> 中，内存区域在内核中也经常被称做虚拟内存区域或 VMA。</p>
+
+<p>vm_area_struct 结构体描述了指定地址空间内连续区间上的一个独立内存范围。内核将每个内存区域作为一个单独的内存对象管理，每个内存区域都拥有一致的属性，比如访问权限等。</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">struct vm_area_struct {
+    struct mm_struct * vm_mm;   /* The address space we belong to. */
+    unsigned long vm_start;     /* Our start address within vm_mm. */
+    unsigned long vm_end;       /* The first byte after our end address within vm_mm. */
+
+    /* linked list of VM areas per task, sorted by address */
+    struct vm_area_struct *vm_next;
+
+    pgprot_t vm_page_prot;      /* Access permissions of this VMA. */
+    unsigned long vm_flags;     /* Flags, see mm.h. */
+
+    struct rb_node vm_rb;
+
+    /*
+     * For areas with an address space and backing store,
+     * linkage into the address_space-&gt;i_mmap prio tree, or
+     * linkage to the list of like vmas hanging off its node, or
+     * linkage of vma in the address_space-&gt;i_mmap_nonlinear list.
+     */
+    union {
+        struct {  
+            struct list_head list;
+            void *parent;   /* aligns with prio_tree_node parent */
+            struct vm_area_struct *head;
+        } vm_set;
+
+        struct raw_prio_tree_node prio_tree_node;
+    } shared;
+
+    /*
+     * A file&#39;s MAP_PRIVATE vma can be in both i_mmap tree and anon_vma
+     * list, after a COW of one of the file pages.  A MAP_SHARED vma
+     * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
+     * or brk vma (with NULL file) can only be in an anon_vma list.
+     */
+    struct list_head anon_vma_chain; /* Serialized by mmap_sem &amp; page_table_lock */
+    struct anon_vma *anon_vma;       /* Serialized by page_table_lock */
+
+    /* Function pointers to deal with this struct. */
+    const struct vm_operations_struct *vm_ops;
+
+    /* Information about our backing store: */
+    unsigned long vm_pgoff;     /* Offset (within vm_file) in PAGE_SIZE units, *not* PAGE_CACHE_SIZE */
+    struct file * vm_file;      /* File we map to (can be NULL). */
+    void * vm_private_data;     /* was vm_pte (shared mem) */
+    unsigned long vm_truncate_count;/* truncate_count or restart_addr */
+};
+</code></pre></figure>
+<p>vm_mm 域指向和 VMA 相关的 mm_struct 结构体，注意每个 VMA 对其相关的 mm_struct 结构体来说都是唯一的。即使两个独立的进程将同一个文件映射到各自的地址空间，它们分别都有一个 vm_area_struct 结构体来标志自己的内存区域。但如果两个线程共享一个地址空间，那么它们也同时共享其中的所有 vm_area_struct 结构体。</p>
+
+<h3>VMA 标志</h3>
+
+<p>VMA 标志是一种位标志，包含在 vm_flags 域内，标志了内存区域所包含的页面的行为和信息：</p>
+
+<table><thead>
+<tr>
+<th>标志</th>
+<th>对 VMA 及其页面的影响</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>VM_READ</td>
+<td>页面可读取</td>
+</tr>
+<tr>
+<td>VM_WRITE</td>
+<td>页面可写</td>
+</tr>
+<tr>
+<td>VM_EXEC</td>
+<td>页面可执行</td>
+</tr>
+<tr>
+<td>VM_SHARED</td>
+<td>页面可共享</td>
+</tr>
+</tbody></table>
+
+<p>当访问 VMA 时，需要查看其访问权限。比如进程的对象代码映射区域可能会标志为 VM_READ 和 VM_EXEC，而不会标志为 VM_WRITE。另一方面，可执行对象数据段的映射区域被标志为 VM_READ 和 VM_WRITE，而 VM_EXEC 标志对它毫无意义。只读文件数据段的映射区域仅可被标志为 VM_READ。VM_SHARED 指明了内存区域包含的映射是否可以在多进程间共享，如果该标志被设置，则称其为共享映射。如果未被设置，则只有一个进程可以使用该映射的内容，称其为私有映射。</p>
+
+<p>VM_IO 标志内存区域中的包含对设备 I/O 空间的映射。该标志通常在设备驱动程序执行 <code>mmap()</code> 函数进行 I/O 空间映射时才被设置。同时该标志也表示该内存区域不能被包含在任何进程的 coredump 中。</p>
+
+<h3>实际使用中的内存区域</h3>
+
+<p>可以使用 /proc 文件系统和 pmap 工具查看给定进程的内存空间和其中所含的内存区域。</p>
+
+<h2>页表</h2>
+
+<p>当应用程序访问一个虚拟地址时，必须将虚拟地址转化为物理地址，然后处理器才能解析地址访问请求。</p>
+
+<p>Linux 中使用三级页表完成地址转换。利用多级页表能够节约地址转换需占用的存放空间。</p>
+
+<p>顶级页表是页全局目录(PGD)，PGD 包含了一个 pgd_t 类型数组，PGD 中的表项指向二级页目录中的表项：PMD。</p>
+
+<p>二级页表是中间页目录（PMD)，PMD 是一个 pmd_t 类型数组，其中表项指向 PTE 中的表项。</p>
+
+<p>最后一级的页表简称页表，其中包含 pte_t 类型的页表项，该页表项指向物理页面。</p>
+
+<p>每个进程都有自己的页表，内存描述符的 pgd 域指向的就是进程的页全局目录。操作和检索页表时必须使用 page_table_lock 锁。</p>
+
+<p>由于每次对虚拟内存中的页面访问都必须先解析，所以页表操作的性能非常关键。为了加快搜索，多数体系结构都实现了一个翻译后缓冲器（TLB)。TLB 是一个将虚拟地址映射到物理地址的硬件缓存。</p>
+
+<h1>相关资料</h1>
+
+<p><a href="http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/">《How the Kernel Manages Your Memory》</a></p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/02/linux-performance-monitor/" title="link to Linux 性能监控">Linux 性能监控</a></h2>
+       <p class="excerpt">本文是对 《Linux 性能监测》 系列文章的读书笔记，并在此基础上丰富。CPU 相关vmstat$ vmstat 1procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu----- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st 0  0 164412 143200  35916 2...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-02-05 22:57:39 +0800" class="post-list__meta--date date">2017-02-05</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/02/linux-performance-monitor/>继续阅读</a></div>
+   </div>
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/01/linux-kernel-serial-3/" title="link to Linux 内核系列－进程调度">Linux 内核系列－进程调度</a></h2>
+       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念许多适用于进程调度的处理方法同样适用于线程调度。当内核管理线程的时候，调度经常是按照线程级别的，与线程所属的进程基本没有关联。调度需要考虑 CPU 的利用率，因为进程切换的代价比较高，进程需要从用户态切换到内核态，保存当前状态，包括在进程表中存储寄存器以便之后加载。接着，调度算法选定一个新进程，将新进程的内存映像...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-01-22 16:40:36 +0800" class="post-list__meta--date date">2017-01-22</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/01/linux-kernel-serial-3/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/01/linux-kernel-serial-4/";
+        this.page.identifier = "/2017/01/linux-kernel-serial-4/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>
