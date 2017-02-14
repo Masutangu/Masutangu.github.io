@@ -157,3 +157,126 @@ double findMedianSortedArrays(int* nums1, int nums1Size, int* nums2, int nums2Si
     
 }
 ```
+
+```
+class Solution {
+public:
+
+    void transform(int row, int idx, int& x, int& y) {
+        int base = ceil(idx / (2 * row - 2.0));
+        int mod = idx % (2 * row - 2);
+        int offset = mod - row + 1 > 0 ?  mod - row + 1 : 0;
+        y = base * (row - 1)  + offset;
+        x = mod > row - 1 ? 2 * row - 2 - mod : mod;  
+    }
+
+    string convert(string s, int numRows) {
+        if (numRows == 1) {
+            return s;
+        }
+        int x, y, numCols = 0;
+        transform(numRows, s.size() - 1 , x, numCols);
+        
+        numCols++;
+        
+        char** matrix = new char*[numRows];
+        
+        for (int i = 0; i < numRows; i++) {
+            matrix[i] = new char[numCols];
+            for (int j = 0; j < numCols; j++) {
+                matrix[i][j] = '\0';
+            }
+        }
+        
+        char result[100000];
+        
+        for (int i = 0; i < s.size(); i++) {
+            transform(numRows, i, x, y);
+            matrix[x][y] = s[i];
+        }
+        int idx = 0;
+        
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (matrix[i][j] != '\0') {
+                    result[idx++] = matrix[i][j];
+                }
+            }
+        }
+        return string(result);
+        
+    }
+};
+```
+
+# Reverse Integer
+
+Reverse digits of an integer.
+
+Example1: x = 123, return 321
+Example2: x = -123, return -321
+
+要点在于如何检测 overflow：
+
+```c
+int reverse(int x) {
+        int ans = 0;
+        while (x) {
+            int temp = ans * 10 + x % 10;
+            if (temp / 10 != ans)
+                return 0;
+            ans = temp;
+            x /= 10;
+        }
+        return ans;
+    }
+};
+```
+
+
+# String to Integer (atoi)
+
+Implement atoi to convert a string to an integer.
+
+关键点 去除空格，检测溢出：
+
+```c++
+class Solution {
+public:
+    int myAtoi(string str) {
+        if (str.size() == 0) {
+            return 0;
+        }
+        // 去首尾空格
+        str.erase(0, str.find_first_not_of(' '));
+        str.erase(str.find_last_not_of(' ') + 1);
+        
+        long num = 0;
+        int sign = 1;
+        int idx = 0;
+        
+        if (str[idx] == '+' || str[idx] == '-') {
+            sign = (str[idx] == '-' ? -1 : 1);
+            idx++;
+        }
+        
+        for (; idx < str.size(); idx++) {
+            if (str[idx] < '0' || str[idx] > '9') {
+                break;
+            }
+            
+            num = 10 * num + str[idx] - '0';
+            
+            // 检测溢出
+            if (num * sign > INT_MAX) {
+                return INT_MAX;
+            } 
+            if (num * sign < INT_MIN) {
+                return INT_MIN;
+            }
+        }
+        return num * sign;
+        
+    }
+};
+```

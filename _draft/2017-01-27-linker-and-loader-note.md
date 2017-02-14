@@ -199,7 +199,7 @@ PDP-11 产品线的后续型号为代码（称为指令空间 I）和数据（�
 
 a.out 的头部根据 UNIX 版本的不同而略有变化，但最典型的是 BSD UNIX 的版本：
 
-```
+```c
 int a_magic;   // 幻数
 int a_text;    // 文本段大小
 int a_data;    // 初始化的数据段大小
@@ -237,3 +237,177 @@ ZMAGIC 格式的文件减少了不必要的换页,对应付出的代价是浪费
 由于并没有什么特别的原因要求文本段的代码必须从地址 0 处开始运行，因此压缩可分页文件将 a.out 头部当成是文本段的一部分（实际上由于未初始化的指针变量经常为 0，位置 0 绝对不是一个程序入口的好地方）。代码紧跟在头部的后面，并将整个页映射为进程的第二个页，而不映射进程地址空间的第一个页，这样对位置 0 的指针引用就会失败。
 
 <img src="/assets/images/linker-and-loader-note/illustration-6.png" width="800" />
+
+QMAGIC 格式的可执行文件中文本和数据段都各自扩充到一个整页，这样系统就可以很容易的将文件中的页映射到地址空间中的页。数据段的最后一页由值为零的 BSS 数据填充补齐；如果 BSS 数据大于可以填充补齐的空间，那么 a.out 的头部中会保存剩余需要分配的 BSS 空间大小。
+
+## 重定位:MS-DOS EXE文件
+
+对于那些可以为每一个进程分配新的地址空间让每个程序都可以加载到相同逻辑地址的系统而言，a.out 格式是足够了。有一些系统会将所有的程序加载到相同的地址空间，还有一些系统虽然会为程序分配各自的地址空间，但是并不总是将程序加载到相同的地址。在这些情况下，可执行程序会包含多个(通常被称为 fixups 的)重定位项，它们指明了程序中需要在被加载时进行修改的地址位置。具 fixups 的最简单的格式之一就是 MS-DOS EXE格式。
+
+每个 .EXE 文件都是以下图所示的头部结构开始的。跟在头部后面的是变量长度相关的额外信息和一个 segment:offset 格式的 32 位修正地址列表。修正地址是程序基地址的相对地址，所以这些修正地址本身也需要被重定位以寻找那些程序中需要被修改的地址。在修正地址列表后的是程序代码。
+
+```c
+char signature[2] = "MZ";// magic number
+short lastsize; // # bytes used in last block
+short nblocks; // number of 512 byte blocks
+short nreloc;// number of relocation entries
+short hdrsize; // size of file header in 16 byte paragraphs short minalloc; // minimum extra memory to allocate
+short maxalloc; // maximum extra memory to allocate
+void far *sp;// initial stack pointer
+short checksum; // ones complement of file sum
+void far *ip;// initial instruction pointer
+short relocpos; // location of relocation fixup table
+short noverlay; // Overlay number, 0 for program
+char extra[];// extra material for overlays, etc.
+void far *relocs[]; // relocation entries, starts at relocpos
+```
+
+加载.EXE 文件只比加载.COM 文件复杂一点点：
+
+* 读入文件头部，验证幻数是否有效。
+* 找一块大小合适的内存区域。minalloc 和 maxalloc 域说明了在被加载程序末尾后需额外分配的内存块的最大和最小尺寸（链接器总是缺省的将最小尺寸设置为程序中类似 BSS 的未初始化数据的大小，将最大尺寸设置为 0xFFFF）。
+* 创建一个程序段前缀（Program Segment Prefix），即位于程序开头的控制区域。
+* 在 PSP 之后读入程序的代码。nblocks 和 lastsize 域定义了代码的长度。
+* 从 relocpos 处开始读取 nreloc 个修正地址项。对每一个修正地址，将其中的基地址与程序代码加载的基地址相加，然后将这个重定位后的修正地址作为指针，将程序代码的实际基地址与这个指针指向的程序代码中的地址相加。
+* 将栈指针设置为重定位后的 sp，然后跳转到重定位后的 ip 处开始执行程序。 
+
+## 符号和重定位
+
+目前我们讨论过的目标文件格式都是可加载的，即可以加载到内存中并直接运行。多数目标文件并不是可加载的，而是由编译器或汇编器生成传递给链接器或库管理器的中间文件。
+
+由于可运行文件要运行在计算机的底层硬件上因此必须要足够简单，但可链接文件的处理属于软件层面，因此可以做很多非常高级的事情。原则上，一个支持链接的加载器可以在程序被加载时完成所有链接器必须完成的功能，但由于效率原因加载器通常都尽可能的简单，以提高程序启动的速度。动态链接将很多工作由链接器转移到加载器（由此在性能上有一些损失），但由于现代计算机的速度足够快了，所以利大于弊。
+
+下面看看五种逐步复杂的格式：BSD UNIX 系统采用的 a.out 可重定位格式，System V 使用的 ELF 格式，IBM 360 目标文件格式，32 位 Windows 使用的扩展的 COFF 可链接和 PE 可执行格式，以及 COFF 格式 Windows 系统之前的 OMF 可链接格式。
+
+### 可重定位的 a.out 格式
+
+UNIX 系统对于可运行文件和可链接文件都使用相同的一种目标文件格式，其中可运行文件省略掉了那些仅用于链接器的段。文本和数据段的重定位表的大小保存在 a\_trsize 和 a\_drsize 中，符号表的尺寸保存在 a\_syms 中。这三个段跟在文本和数据段后。
+
+重定位项有两个功能。当一个代码段被重定位到另一个不同的段基址时，重定位项标注出代码中需要被修改的地方。在一个可链接文件中，同样也有用来标注对未定义符号引用的重定位项，这样链接器就知道在最终解析符号时应当向何处补写符号的值。
+
+下图展示了一个重定位项的格式。每一个重定位项包含了在文本或数据段中需被重定位的地址，以及定义了要做什么的信息。该地址是一个从文本段或数据段起始位置到需要重定位的项目的偏移量。长度域说明了该重定位项目的长度，从 0 到 3 依次对应 1、2、4 或者 8 个字节。pcrel 标志表示这是一个“PC（程序计数器）相对的”重定位项目，如果是的话，其会在指令中被作为相对地址使用。
+
+<img src="/assets/images/linker-and-loader-note/illustration-7.png" width="800" />
+
+*注：4 byte 的地址，3 byte 的索引，1 bit 的 pcrel 标志，2 bit 的长度域，1 bit 的外部标志，4 bit 的空闲位*
+
+外部标志域控制对 index 域的解释，确定该重定位项目是对某个段或符号的引用。如果外部标志为 off，那这是一个简单的重定位项目，index 就指明了该项目是基于哪个段（文本、数据或 BSS）寻址的。如果外部标志为 on，那么这是一个对外部符号的引用，则 index 是该文件符号表中的符号序号。
+
+a.out 文件的最后一个段是符号表。每个表项长度为 12 字节，描述一个符号，如下图所示：
+
+<img src="/assets/images/linker-and-loader-note/illustration-8.png" width="800" />
+
+*注：4 byte 的名字偏移量，1 byte 的类型，1 byte 的空闲字节，2 byte 的调试信息，4 byte 的值*
+
+UNIX 编译器允许任意长度的标识符，所以名字字串全部都在符号表后面的字串表中。符号表项的第一个域是该符号以空字符结尾的名字字串在字串表中的偏移量。在类型字节中，若低位被置位则该符号是外部的（可以被其它模块看到的符号，称为全局符号更合适）。其余的位是符号类型。最重要的类型包括：
+
+* 文本、数据或BSS：该模块定义的符号。外部标志位可能设置或没有设置。值为与该符号对应的模块内可重定位地址。
+* abs：绝对非可重定位符号(absolute non-relocatable symbol)。很少在调试信息以外的地方使用。外部标志位可能设置或没有设置。值为该符号的绝对地址。
+* undefined：在该模块中未定义的符号。外部标志位必须被设置。值通常为0。
+
+作为一种特例，编译器可以使用一个未定义的符号来要求链接器为该符号预留一块存储空间。如果一个外部符号的值不为零，则该值是提示链接器程序希望该符号寻址存储空间的大小。在链接时，若该符号的定义不存在，则链接器根据其名字在 BSS 中创建一块存储空间，大小为所有被链接模块中该符号提示尺寸中的最大值。如果该符号在某个模块中被定义了，则链接器使用该定义而忽略提示的空间大小。这种“公共块技巧(common block hack)”支持 Fortran 公共块和未初始化的 C 外部数据的典型用法。
+
+对于相对简单的分页系统，a.out 格式是简单而有效的。之所以被淘汰出主流，主要是因为它不能很容易的支持动态链接。并且 a.out 格式不支持 C++语言，因为 C++语言对所有的初始化和终结代码都需要特殊的处理。
+
+## Unix ELF 格式
+
+ELF 格式有三个略有不同的类型：可重定位的、可执行的和共享目标（shared objec ts）。可重定位文件由编译器和汇编器创建，但在运行前需要被链接器处理。可执行文件完成了所有的重定位工作和符号解析（除了那些可能需要在运行时被解析的共享库符号），共享目标就是共享库，即包括链接器所需的符号信息，也包括运行时可以直接执行的代码。
+
+ELF 格式具有不寻常的双重特性，如下图所示。编译器、汇编器和链接器将这个文件看作是被区段（section）头部表描述的一系列逻辑区段的集合，而系统加载器将文件看成是由程序头部表描述的一系列段（segment）的集合。一个段（segment）通常会由多个区段（section）组成。可重定位文件具有区段表，可执行程序具有程序头部表，而共享目标文件两者都有。区段（section）是用于链接器后续处理的，而段（segment）会被映射到内存中。
+
+<img src="/assets/images/linker-and-loader-note/illustration-9.png" width="800" />
+
+ELF 文件都是以 ELF 头部起始的，如下图所示。头部被设计为即使在那些字节顺序与文件的目标架构不同的机器上也可以被正确的解码。头 4 个字节是用来标识 ELF 文件的幻数，接下来的 3 个字节描述了头部其余部分的格式。当程序读取了 class 和 byteorder 标志后，它就知道了文件的字节序和字宽度，就可以进行相应的字节顺序和数据宽度的转换：
+
+```c
+char magic[4] = "\177ELF";// magic number
+char class; // address size, 1 = 32 bit, 2 = 64 bit 
+char byteorder; // 1 = little-endian, 2 = big-endian 
+char hversion; // header version, always 1
+char pad[9];
+short filetype; // file type: 1 = relocatable, 2 = executable, // 3 = shared object, 4 = core image
+short archtype; // 2 = SPARC, 3 = x86, 4 = 68K, etc. 
+int fversion;// file version, always 1
+int entry; // entry point if executable
+int phdrpos; // file position of program header or 0 
+int shdrpos; // file position of section header or 0 int flags; // architecture specific flags, usually 0 short hdrsize; // size of this ELF header
+short phdrent; // size of an entry in program header
+short phdrcnt; // number of entries in program header or 0
+short shdrent; // size of an entry in section header
+short phdrcnt; // number of entries in section header or 0
+short strsec;// section number that contains section name strings
+```
+
+一个可重定位或共享目标文件可以看成是一系列在区段头部表中被定义的区段的集合，如下图。每个区段只包含一种类型的信息，可以是程序代码、只读数据或可读写数据、重定位项或符号。
+
+```c
+int sh_name; // name, index into the string table
+int sh_type; // section type
+int sh_flags;// flag bits, below
+int sh_addr; // base memory address, if loadable, or zero 
+int sh_offset; // file position of beginning of section 
+int sh_size; // size in bytes
+int sh_link; // section number with related info or zero 
+int sh_info; // more section-specific info
+int sh_align;// alignment granularity if section is moved 
+int sh_entsize; // size of entries if section is an array
+```
+
+区段类型包括：
+
+* PROGBITS：程序内容,包括代码,数据和调试器信息。
+* NOBITS：类似于PROGBITS，但在文件本身中并没有分配空间。用于BSS数据，在程序加载时分配空间。
+* SYMTAB 和 DYNSYM：符号表，后面会有更加详细的描述。SYMTAB包含所有的符号并用于普通的链接器，DYNSYM 包含那些用于动态链接的符号（后一个表需要在运行时被加载到内存中，因此要让它尽可能的小）
+* STRTAB：字串表，与a.out文件中的字串表类似。
+* REL 和 RELA：重定位信息。REL 项将其中的重定位值加到存储在代码和数据中的基地址值，而 RELA 将重定位需要的基地址也保存在重定位项自身中。
+* DYNAMIC 和 HASH：动态链接信息和运行时符号 hash 表。这里用到了 3 个标志位：AL LOC，意味着在程序加载时该区段要占用内存空间；WRITE 意味着该区段被加载后是可写的；EXECINSTR 即表示该区段包含可执行的机器代码。
+
+区段包括：
+* .text 是具有 ALLOC 和 EXECINSTR 属性的 PROGBITS 类型区段。相当于 a.out 的文本段。
+* .data 是具有 ALLOC 和 WRITE 属性的 PROGBITS 类型区段。对应于 a.out 的数据段。
+* .rodata 是具有 ALLOC 属性的 PROGBITS 类型区段。由于是只读数据，因此没有 WRITE 属性。
+* .bss 是具有 ALLOC 和 WRITE 属性的 NOBITS 类型区段。BSS 区段在文件中没有分配空间，因此是 NOBITS 类型，但由于会在运行时分配空间，所以具有 ALLOC 属性。
+* .rel.txt，.rel.data 和 .rel.rodata 每个都是 REL 或 RELA 类型区段。是对应文本或数据区段的重定位信息。
+* .init 和 .fini，都是具有 ALLOC 和 EXECINSTR 属性的 PROGBITS 类型区段。与 .text 区段相似,但分别为程序启动和终结时执行的代码。C 和 Fortran 不需要这个，但是对于具有初始和终结函数的全局数据的 C++ 语言来说是必须的。
+* .symtab 和 .dynsym 分别是 STMTAB 和 DNYSYM 类型的区段，对应为普通的和动态链接器的符号表。动态链接器符号表具有 ALLOC 属性，因为它需要在运行时被加载。
+* .strtab 和 .dynstr 都是 STRTAB 类型的区段，这是名称字串的表，要么是符号表，要么是段表的段名称字串。.synstr 区段保存动态链接器符号表字串，由于需要在运行时被加载所以具有 ALLOC 属性。
+
+此外还有一些特殊的区段诸如 .got 和 .plt，分别是全局偏移量表（Global Offset Table）和动态链接时使用的过程链接表（Procedure Linkage Table）。.debug区段包含调试器所需的 符号，.line 区段也是用于调试器的，它保存了从源代码的行号到目标代码位置的映射关系。而 .comment 区段包含着文档字串，通常是版本控制中的版本序号。还有一个特殊的区段类型 .interp，它包含解释器程序的名字。如果这个区段存在，系统不会直接运行这个程序，而是会运行对应的解释器程序并将该 ELF 文件作为参数传递给解释器。
+
+ELF 符号表与 a.out 符号表相似，包含一个由表项组成的数组：
+
+```c
+int name; // position of name string in string table 
+int value; // symbol value, section relative in reloc, absolute in executable
+int size; // object or function size
+char type:4; // data object, function, section, or special case file 
+char bind:4; // local, global, or weak
+char other; // spare
+short sect; // section number, ABS, COMMON or UNDEF
+```
+
+一个符号的绑定可以是局部的（仅模块内可见），全局的（所有地方均可见），或者弱符号。弱符号是半个全局符号：如果存在一个对未定义的弱符号的有效定义，则链接器采用该值，否则符号值缺省为 0。
+
+符号的类型通常是数据或者函数。对每一个区段都会有一个区段符号，通常都是使用该区段本身的名字，这对重定位项是有用的（ELF 重定位项的符号都是相对地址，因此就需要一个段符号来指明某一个重定位项目是相对于文件中的哪一个区段)。文件入口点是一个包含源代码文件名称的伪符号。
+
+区段号（即 section number）标识该符号的定义所在的那个段，例如函数入口点都是相对于.text 段定义的。这里还可以看到三个特殊的伪区段，UNDEF 用于未定义符号，ABS 用于 不可重定位绝对符号，COMMON 用于尚未分配的公共块
+
+下图是一个典型的完整的 ELF 文件，包含代码、数据、重定位信息、链接器符号、和调试器符号等若干区段。如果该文件是一个 C++程序，那可能还包含.init、.fini、.rel.init 和 .rel.fini 等区段。
+
+<img src="/assets/images/linker-and-loader-note/illustration-10.png" width="800" />
+
+
+一个 ELF 可执行文件具有与可重定位 ELF 文件相同的通用格式，但对数据部分进行了调整以使得文件可以被映射到内存中并运行。ELF 头部后面紧跟程序头部，程序头部定义了要被映射的段。下图为程序头部，由段描述符组成的数组。
+
+```c
+int type; // loadable code or data, dynamic linking info, etc. 
+int offset; // file offset of segment
+int virtaddr;// virtual address to map segment
+int physaddr;// physical address, not used
+int filesize;// size of segment in file
+int memsize; // size of segment in memory (bigger if contains BSS) 
+int flags; // Read, Write, Execute bits
+int align; // required alignment, invariably hardware page size
+```
+
+一个可执行程序通常只有少数几种段，如代码和数据的只读段，可读写数据的可读写段。所有的可加载区段都归并到适当类型的段中以便系统可以通过少数的一两个操作就可以完成文件映射。
