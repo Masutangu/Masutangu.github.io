@@ -411,3 +411,101 @@ int align; // required alignment, invariably hardware page size
 ```
 
 一个可执行程序通常只有少数几种段，如代码和数据的只读段，可读写数据的可读写段。所有的可加载区段都归并到适当类型的段中以便系统可以通过少数的一两个操作就可以完成文件映射。
+
+ELF 格式文件进一步扩展了 QMAGIC 格式的 a.out 文件中使用的“头部放入地址空间”的技，以使得可执行文件尽可能的紧凑，相应付出的代价就是地址空间显得凌乱了些。一个段可以开始和结束于文件中的任何偏移量处，但是段的虚拟起始必须和文件中起始偏移量具有低位地址模对齐的关系：
+
+|                                               |  文件偏移量  |  加载地址  |            类型        | 
+|-----------------------------------------------|------------|-----------|-----------------------|
+|                       ELF头部                  |     0     |0x8000000   |                       |
+|                       程序头部                  |   0x40     | 0x8000040 |                        | 
+|               只读文本（尺寸为 0x4500）           |   0x100    | 0x8000100 |   可加载，可读，可执行   | 
+|可读/写数据（文件中尺寸为 0x2200，内存中尺寸为 0x3500)|   0x4600   | 0x8005600 |可加载，可读，可写，可执行 | 
+|           不可加载信息和可选的区段头部              |            |           |                       |
+
+
+BSS 段也是在逻辑上也是跟在数据段的可读写区段后，在本例中长度为 0x1300 字节， 即文件中尺寸与内存中尺寸的差值。数据段的最后一页会从文件中映射进来，但是在随后操作系统将 BSS 段清零时，copy-on-write 系统会该段做一个私有的副本。
+
+## IBM 360目标格式
+
+每个目标文件包含一系列的控制区段（csect）。一个源代码例程通常会被编译到一个 csect 中，或将代码编入一个 csect，数据编入另一个 csect。如果一个控制区段有名字的话，它可以用来作为寻址该控制区段起始地址的符号，除此之外其它类型的符号还包括控制区段内定义的符号、未定义的外部符号、公共块和少数其它类型。
+
+每一个在某个目标文件中定义或使用的符号都有一个很小的整数型的标识符，称为外部符号ID（ESID: External Symbol ID）。一个目标文件就是由长度为 80 字节的通用格式的记录组成的序列。每一个记录的第 1 个字节均为 0x02，它将该记录标识为目标文件的一部分（起始为空格的记录会被当作链接器的命令来对待)。第 2 个到第 4 个字节是记录的类型，程序代码或文本的类型为 TXT，定义了符号和 ESID 的外部符号目录的类型为 ESD，重定位目录的类型为 RLD，最后一个记录（同时定义了起始点）的类型为 END。接下来一直到第 72 个字节是由记录类型决定的。第 73 到 80 字节被忽略，在现实中的穿孔卡上他们实际就是卡序号。
+
+```c
+char flag = 0x2;
+char rtype[3]; // 3字节记录类型
+char data[68]; // 格式特定数据
+char seq[8]; // 忽略,通常是序号
+```
+
+一个目标文件由若干定义控制区段（csect）和符号的 ESD 记录开始，然后依次是 TXT 记录，RLD 记录和 END 记录。这些记录的顺序相当灵活。若干 TXT 记录可以对单个位置的内容重复定义，而文件中的最后一个会胜出。
+
+每个文件都是以 ESD 记录开头的，如下图所示，定义了文件中使用的控制区段（csect）和符号，并为它们分配了 ESID。
+
+```c
+char flag = 0x2; // 1
+char rtype[3] = "ESD";// 2-4 three letter type
+char pad1[6];
+short nbytes; // 11-12 number of bytes of info: 16, 32, or 48 
+char pad2[2];
+short esid; // 15-16 ESID of first symbol
+{  // 17-72, up to 3 symbols
+    char name[8]; // blank padded symbol name 
+    char type; // symbol type
+    char base[3]; // csect origin or label offset 
+    char bits; // attribute bits
+    char len[3]; // length of object or csect ESID
+}
+```
+
+每条记录可定义 ESID 连续的 3 个符号，符号名可以容纳 8 个 EBCDIC 字符。符号类型有：
+* Sd 和 PC：区段定义（Section Definition）或私有代码（Private Code），定义了一个控制区段（csect）。该控制区段的起始地址（base）是区段的逻辑起始地址，通常为零。长度就是 csect 本身的长度。属性字节包含了指明 csect 使用 24 位或 31 位程序寻址、需要被加载到 24 位或 31 位地址空间的标志。PC 是名字空白的控制区段；控制区段的名字在程序中必须是唯一的，但可以存在多个未命名的 PC 区段。
+* LD：标签定义（Label Definition）。基地址（base）是标签在所属控制区段中的偏移量，长度域为该控制段的 ESID。无属性位。
+* CM：公共块。长度就是该公共块的长度，其它域忽略。
+* ER 和 WX：外部引用（External Reference）或弱外部（Weak External）。均为其它地方定义的符号。链接器会对一个未在程序中其它地方定义的 ER 类符号报告一个错误,但对 WX 类符号而言这不是错误。
+* PR：伪寄存器，一个在链接时定义但由加载时分配的小存储区域。由属性位提供所需的对齐要求（1-8 字节），长度就是这段区域的大小。
+* PR：精灵寄存器，一个在链接时定义但在运行时分配的小的存储区域。属性位给出相应的对齐要求，1 对齐到 8 字节，len 是这个区域的大小。
+
+TXT 记录包含了程序代码和数据。每个文本记录定义了一个控制段中连续的 56 个字节。
+
+```c
+char flag = 0x2; // 1
+char rtype[3] = "TXT";// 2-4 three letter type
+char pad;
+char loc[3]; // 6-8 csect relative origin of the text 
+char pad[2];
+short nbytes; // 11-12 number of bytes of info
+char pad[2];
+short esid; // 15-16 ESID of this csect
+char text[56]; // 17-72 data
+```
+
+文本记录后面是 RLD 记录，如图。其中包含了一系列的重定位项。
+
+```c
+char flag = 0x2; // 1
+char rtype[3] = "TXT";// 2-4 three letter type 
+char pad[6];
+short nbytes; // 11-12 number of bytes of info 
+char pad[7];
+{ // 17-72 four or eight-byte relocation entries
+    short t_esid; // target, ESID of referenced csect or symbol
+                  // or zero for CXD (total size of PR defs)
+    short p_esid; // pointer, ESID of csect with reference
+    char flags;  // type and size of ref,
+    char addr[3]; // csect-relative ref address 
+}
+```
+
+每一个重定位项都有目标和指针的 ESID，一个标志字节和指针的（控制区段）相对地址。标志字节给出了引用的类型（代码、数据、PR 或 CXD）和长度（1、2、3、4 字节），一个符号位指明是加上还是减去重定位地址，此外还有一个“相同（same）”位。如果“相同 ”位被设置，则下一个重定位项（忽略自己的两个 ESID）采用与当前项相同的 ESID。
+
+最后是 END 记录，其中给出了程序的起始地址，它要么是某个控制区段内的地址，或者是某个外部符号的 ESID。
+
+```c
+char flag = 0x2; // 1
+char rtype[3] = "END";// 2-4 three letter type
+char pad;
+char loc[3]; // 6-8 csect relative start address or zero 
+char pad[6];
+short esid; // 15-16 ESID of csect or symbol
+```

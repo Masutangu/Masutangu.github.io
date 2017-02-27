@@ -280,3 +280,159 @@ public:
     }
 };
 ```
+
+
+# Regular Expression Matching
+
+https://swtch.com/~rsc/regexp/regexp1.html
+
+http://articles.leetcode.com/regular-expression-matching
+
+
+```
+bool isMatch(char* s, char* p) {
+    if (*p == '\0') {
+        if (*s == '\0') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    while (*s != '\0') {
+        while (*p == '*') {
+            p++;
+        }
+        if (*(p + 1) == '*') {
+            while ((*p == '.' || *s == *p) && *s != '\0') {
+                if (isMatch(s, p + 2)) {
+                    return true;
+                }
+                s++;
+            }
+           return isMatch(s, p + 2); 
+        } else {
+            if (*p == '.' || *p == *s) {
+                s++;
+                p++;
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    while (*p == '*') {
+        p++;
+    }
+    if (*p != '\0') {
+        if (*(p + 1) == '*') {
+            return isMatch(s, p + 2);
+        }
+        return false;
+    } else {
+        return true;
+    }
+}
+```
+
+```
+bool isMatch(char* s, char* p) {
+    while (*p == '*') {
+        p++;
+    }
+    
+    if (*p == '\0')
+        return *s == '\0';
+        
+    if (*(p + 1) == '*') {
+        while (*s != '\0' && (*p == '.' || *s == *p)) {
+            if (isMatch(s, p + 2)) {
+                return true;
+            }
+            s++;
+        }
+        return isMatch(s, p + 2);
+    } else {
+        return (*p == *s || (*s != '\0' && *p == '.')) && isMatch(s + 1, p + 1);
+    }
+    
+}
+```
+
+# Container With Most Water
+
+key: two pointer
+
+```
+int maxArea(int* height, int heightSize) {
+    int water = -1;
+    int idx1 = -1;
+    int idx2 = -1;
+    int pre_height = -1;
+    
+    for (int i = 0; i < heightSize; i++) {
+        if (*(height + i) <= pre_height) {
+            continue;
+        } 
+        pre_height = *(height + i);
+        for (int j = i + 1; j < heightSize; j++) {
+            if ((j - i) * (*(height + i)  < *(height + j) ? *(height + i) : *(height + j)) > water) {
+                water = (j - i) * (*(height + i)  < *(height + j) ? *(height + i) : *(height + j));
+                idx1 = i;
+                idx2 = j;
+            }
+        }
+    }
+    return water;
+}
+```
+
+```c
+int maxArea(int* height, int heightSize) {
+    int max_area = -1;
+    int* start = height;
+    int* end = height + heightSize - 1;
+    
+    while (start < end) {
+        if ((end - start) * (*start > *end ? *end : *start) > max_area) {
+            max_area = (end - start) * (*start > *end ? *end : *start);
+        }
+        if (*start > *end) {
+            end--;
+        } else {
+            start++;
+        }
+    }
+    return max_area;
+}
+```
+
+# Integer to Roman
+
+```c
+class Solution {
+public:
+    string intToRoman(int num) {
+        int nums[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        string symbol[]={"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"}; 
+        string roman;
+        
+        int i = 0;
+        
+        while (num > 0) {
+            while (num >= nums[i]) {
+                roman.append(symbol[i]);
+                num -= nums[i];
+            }
+            i++;
+        }
+        
+        return roman;
+    }
+    
+};
+```
+
+# 3Sum
+
+key: two pointer
