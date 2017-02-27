@@ -5,13 +5,15 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 27 Feb 2017 09:52:32 +0800</pubDate>
-    <lastBuildDate>Mon, 27 Feb 2017 09:52:32 +0800</lastBuildDate>
+    <pubDate>Mon, 27 Feb 2017 13:44:22 +0800</pubDate>
+    <lastBuildDate>Mon, 27 Feb 2017 13:44:22 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
         <title>链接和装载</title>
-        <description>&lt;h1&gt;概论&lt;/h1&gt;
+        <description>&lt;p&gt;本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。&lt;/p&gt;
+
+&lt;h1&gt;概论&lt;/h1&gt;
 
 &lt;p&gt;从源文件到可执行文件，可以分解为四个过程：&lt;strong&gt;预处理&lt;/strong&gt;，&lt;strong&gt;编译&lt;/strong&gt;，&lt;strong&gt;汇编&lt;/strong&gt;，&lt;strong&gt;链接&lt;/strong&gt;。&lt;/p&gt;
 
@@ -74,7 +76,7 @@ int main(void)
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/linker-loader-library-note/llustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;objdump -h&lt;/code&gt; 只会显示关键的段，可以用 &lt;code&gt;readelf -S&lt;/code&gt; 查看完整的段表信息：&lt;/p&gt;
+&lt;p&gt;注意，&lt;code&gt;objdump -h&lt;/code&gt; 只会显示关键的段，可以用 &lt;code&gt;readelf -S&lt;/code&gt; 查看完整的段表信息：&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/linker-loader-library-note/llustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
 
@@ -124,10 +126,13 @@ int main(void)
 &lt;li&gt;UNDEF：表明该符号未定义，在本目标文件被引用但定义在其他目标文件中&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Value 列含义如下：
-* 如果是符号的定义并且不是 COMMON 块，则表示符号在段中的偏移
-* 如果是 COMMON 块，则表示对齐属性
-* 可执行文件中，表示符号的虚拟地址，该虚拟地址对动态链接器来说非常有用&lt;/p&gt;
+&lt;p&gt;Value 列含义如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;如果是符号的定义并且不是 COMMON 块，则表示符号在段中的偏移&lt;/li&gt;
+&lt;li&gt;如果是 COMMON 块，则表示对齐属性&lt;/li&gt;
+&lt;li&gt;可执行文件中，表示符号的虚拟地址，该虚拟地址对动态链接器来说非常有用&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h1&gt;静态链接&lt;/h1&gt;
 
@@ -219,14 +224,74 @@ void swap(int *a, int *b)
 
 &lt;p&gt;为了提高动态链接的效率，引入了 PLT 来实现延迟绑定。&lt;/p&gt;
 
-&lt;p&gt;全局符号介入&lt;/p&gt;
+&lt;p&gt;动态链接需要注意&lt;strong&gt;全局符号介入&lt;/strong&gt;的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。&lt;/p&gt;
 
-&lt;p&gt;vma 与linux 内核数据结构的对应&lt;/p&gt;
+&lt;h1&gt;内存&lt;/h1&gt;
 
-&lt;p&gt;为什么不能取函数返回值的地址？
-看《程序员的自我修养》 p324 &lt;/p&gt;
+&lt;p&gt;下图为 Linux 进程内存空间的典型布局：&lt;/p&gt;
 
-&lt;p&gt;大于 128k mmap 所以小于128k的效率高&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/images/linker-loader-library-note/llustration-14.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中 dynamic libraries 用于映射装载的动态链接库。&lt;/p&gt;
+
+&lt;h2&gt;栈&lt;/h2&gt;
+
+&lt;p&gt;栈在程序运行中起了举足轻重的地位。栈保存了一个函数调用所需要的维护信息，通常称为堆栈帧（Stack Frame）。通常有以下内容：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;函数的返回地址和参数&lt;/li&gt;
+&lt;li&gt;临时变量，包括函数的非静态局部变量以及编译器自动生成的其他临时变量&lt;/li&gt;
+&lt;li&gt;保存的上下文，包括函数调用前后需要保存的寄存器&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;i386 中，esp 寄存器始终指向栈顶，ebp 寄存器指向了堆栈帧的一个固定位置，因此 ebp 又称为帧指针（Frame Pointer），如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/linker-loader-library-note/llustration-15.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;i386 的函数调用过程如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;把参数压入栈中&lt;/li&gt;
+&lt;li&gt;把当前指令的下一条指令的地址压入栈中&lt;/li&gt;
+&lt;li&gt;跳转到函数体执行&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;i386 的函数体开头大致如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;push ebp: 把旧的 ebp 压入栈中 &lt;/li&gt;
+&lt;li&gt;mov ebp, esp: 将 esp 的值赋给 ebp，此时 ebp 和 esp 都指向栈顶，栈顶保存的就是 old ebp&lt;/li&gt;
+&lt;li&gt;sub esp, XXX: 可选，在栈上分配 XXX 字节的临时空间&lt;/li&gt;
+&lt;li&gt;push XXX: 可选，如有必要，保存名为 XXX 的寄存器 &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;函数返回的流程如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;pop XXX: 可选，如有必要，恢复保存过的寄存器的值&lt;/li&gt;
+&lt;li&gt;mov esp, ebp: 恢复 ESP，回收局部变量的空间&lt;/li&gt;
+&lt;li&gt;pop ebp: 从栈顶恢复旧的 ebp 的值&lt;/li&gt;
+&lt;li&gt;ret: 从栈顶取得返回地址，并跳转到该位置&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;eax 寄存器通常是函数返回值的通道。函数将返回值存储在 eax 中，返回后调用方读取 eax 得到函数的返回值。由于 eax 只有 4 个字节，如果返回的是 5~8 字节对象的情况，惯例是采用 eax 和 edx 联合返回的方式。超过 8 字节的，则通过临时变量的方式来实现：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;调用者在栈上开辟了一片空间，并且将这块空间的一部分作为传递返回值的临时对象 temp&lt;/li&gt;
+&lt;li&gt;将 temp 对象的地址作为隐藏参数传递给被调用的函数&lt;/li&gt;
+&lt;li&gt;被调用的函数将返回值拷贝给 temp 对象，并将 temp 对象的地址用 eax 传出&lt;/li&gt;
+&lt;li&gt;返回后，调用者只需要拷贝 eax 指向的 temp 对象的内容就能得到返回值&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这也是为什么不能直接对函数返回值进行取址的原因，因为函数返回后临时变量 temp 就被释放掉了。&lt;/p&gt;
+
+&lt;h2&gt;堆&lt;/h2&gt;
+
+&lt;p&gt;Linux 提供了两种堆空间分配的方式：brk() 和 mmap()。&lt;/p&gt;
+
+&lt;p&gt;brk() 的作用是设置进程数据段的结束地址，它可以扩大或缩小数据段。mmap() 的作用是向操作系统申请一段虚拟地址空间，可以是映射到某个文件也可以是匿名空间。&lt;/p&gt;
+
+&lt;p&gt;glibc 的 malloc 函数，对小于 128 KB 的请求来说，会在现有的堆空间里按照堆分配算法分配一块空间并返回。对于大于 128 KB 的请求来说，它会使用 mmap() 函数分配一块匿名空间。&lt;/p&gt;
 </description>
         <pubDate>Sat, 25 Feb 2017 10:55:19 +0800</pubDate>
         <link>http://masutangu.com/2017/02/linker-loader-library-note/</link>

@@ -7,16 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <title>链接和装载</title>
-  <meta name="description" content="概论">
+  <meta name="description" content="本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="链接和装载">
-  <meta name="twitter:description" content="概论">
+  <meta name="twitter:description" content="本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。">
   
   <meta property="og:type" content="article">
   <meta property="og:title" content="链接和装载">
-  <meta property="og:description" content="概论">
+  <meta property="og:description" content="本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
   <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -132,7 +132,9 @@
   </header>
 
   <section class="post">
-    <h1>概论</h1>
+    <p>本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。</p>
+
+<h1>概论</h1>
 
 <p>从源文件到可执行文件，可以分解为四个过程：<strong>预处理</strong>，<strong>编译</strong>，<strong>汇编</strong>，<strong>链接</strong>。</p>
 
@@ -195,7 +197,7 @@ int main(void)
 
 <p><img src="/assets/images/linker-loader-library-note/llustration-2.png" width="800" /></p>
 
-<p><code>objdump -h</code> 只会显示关键的段，可以用 <code>readelf -S</code> 查看完整的段表信息：</p>
+<p>注意，<code>objdump -h</code> 只会显示关键的段，可以用 <code>readelf -S</code> 查看完整的段表信息：</p>
 
 <p><img src="/assets/images/linker-loader-library-note/llustration-5.png" width="800" /></p>
 
@@ -245,10 +247,13 @@ int main(void)
 <li>UNDEF：表明该符号未定义，在本目标文件被引用但定义在其他目标文件中</li>
 </ul>
 
-<p>Value 列含义如下：
-* 如果是符号的定义并且不是 COMMON 块，则表示符号在段中的偏移
-* 如果是 COMMON 块，则表示对齐属性
-* 可执行文件中，表示符号的虚拟地址，该虚拟地址对动态链接器来说非常有用</p>
+<p>Value 列含义如下：</p>
+
+<ul>
+<li>如果是符号的定义并且不是 COMMON 块，则表示符号在段中的偏移</li>
+<li>如果是 COMMON 块，则表示对齐属性</li>
+<li>可执行文件中，表示符号的虚拟地址，该虚拟地址对动态链接器来说非常有用</li>
+</ul>
 
 <h1>静态链接</h1>
 
@@ -340,14 +345,74 @@ void swap(int *a, int *b)
 
 <p>为了提高动态链接的效率，引入了 PLT 来实现延迟绑定。</p>
 
-<p>全局符号介入</p>
+<p>动态链接需要注意<strong>全局符号介入</strong>的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。</p>
 
-<p>vma 与linux 内核数据结构的对应</p>
+<h1>内存</h1>
 
-<p>为什么不能取函数返回值的地址？
-看《程序员的自我修养》 p324 </p>
+<p>下图为 Linux 进程内存空间的典型布局：</p>
 
-<p>大于 128k mmap 所以小于128k的效率高</p>
+<p><img src="/assets/images/linker-loader-library-note/llustration-14.png" width="800" /></p>
+
+<p>其中 dynamic libraries 用于映射装载的动态链接库。</p>
+
+<h2>栈</h2>
+
+<p>栈在程序运行中起了举足轻重的地位。栈保存了一个函数调用所需要的维护信息，通常称为堆栈帧（Stack Frame）。通常有以下内容：</p>
+
+<ul>
+<li>函数的返回地址和参数</li>
+<li>临时变量，包括函数的非静态局部变量以及编译器自动生成的其他临时变量</li>
+<li>保存的上下文，包括函数调用前后需要保存的寄存器</li>
+</ul>
+
+<p>i386 中，esp 寄存器始终指向栈顶，ebp 寄存器指向了堆栈帧的一个固定位置，因此 ebp 又称为帧指针（Frame Pointer），如下图：</p>
+
+<p><img src="/assets/images/linker-loader-library-note/llustration-15.png" width="800" /></p>
+
+<p>i386 的函数调用过程如下：</p>
+
+<ul>
+<li>把参数压入栈中</li>
+<li>把当前指令的下一条指令的地址压入栈中</li>
+<li>跳转到函数体执行</li>
+</ul>
+
+<p>i386 的函数体开头大致如下：</p>
+
+<ul>
+<li>push ebp: 把旧的 ebp 压入栈中 </li>
+<li>mov ebp, esp: 将 esp 的值赋给 ebp，此时 ebp 和 esp 都指向栈顶，栈顶保存的就是 old ebp</li>
+<li>sub esp, XXX: 可选，在栈上分配 XXX 字节的临时空间</li>
+<li>push XXX: 可选，如有必要，保存名为 XXX 的寄存器 </li>
+</ul>
+
+<p>函数返回的流程如下：</p>
+
+<ul>
+<li>pop XXX: 可选，如有必要，恢复保存过的寄存器的值</li>
+<li>mov esp, ebp: 恢复 ESP，回收局部变量的空间</li>
+<li>pop ebp: 从栈顶恢复旧的 ebp 的值</li>
+<li>ret: 从栈顶取得返回地址，并跳转到该位置</li>
+</ul>
+
+<p>eax 寄存器通常是函数返回值的通道。函数将返回值存储在 eax 中，返回后调用方读取 eax 得到函数的返回值。由于 eax 只有 4 个字节，如果返回的是 5~8 字节对象的情况，惯例是采用 eax 和 edx 联合返回的方式。超过 8 字节的，则通过临时变量的方式来实现：</p>
+
+<ul>
+<li>调用者在栈上开辟了一片空间，并且将这块空间的一部分作为传递返回值的临时对象 temp</li>
+<li>将 temp 对象的地址作为隐藏参数传递给被调用的函数</li>
+<li>被调用的函数将返回值拷贝给 temp 对象，并将 temp 对象的地址用 eax 传出</li>
+<li>返回后，调用者只需要拷贝 eax 指向的 temp 对象的内容就能得到返回值</li>
+</ul>
+
+<p>这也是为什么不能直接对函数返回值进行取址的原因，因为函数返回后临时变量 temp 就被释放掉了。</p>
+
+<h2>堆</h2>
+
+<p>Linux 提供了两种堆空间分配的方式：brk() 和 mmap()。</p>
+
+<p>brk() 的作用是设置进程数据段的结束地址，它可以扩大或缩小数据段。mmap() 的作用是向操作系统申请一段虚拟地址空间，可以是映射到某个文件也可以是匿名空间。</p>
+
+<p>glibc 的 malloc 函数，对小于 128 KB 的请求来说，会在现有的堆空间里按照堆分配算法分配一块空间并返回。对于大于 128 KB 的请求来说，它会使用 mmap() 函数分配一块匿名空间。</p>
 
   </section>
 </article>
