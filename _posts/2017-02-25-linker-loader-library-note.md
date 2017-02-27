@@ -216,8 +216,143 @@ VMA 除了用以映射可执行文件的各个 segment 以外，还被用来管�
 
 为了提高动态链接的效率，引入了 PLT 来实现延迟绑定。
 
-动态链接需要注意**全局符号介入**的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。
+动态链接需要注意**全局符号介入**的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。来看看下面的例子：
 
+```c
+/* a1.c */
+
+#include <stdio.h>
+
+void a()
+{
+    printf("a1.c\n");
+}
+
+/* a2.c */
+#include <stdio.h>
+
+void a()
+{
+    printf("a2.c\n");
+}
+
+/* b1.c */
+void a();
+
+void b1()
+{
+    a();
+}
+
+/* b2.c */
+void a();
+
+void b2() 
+{
+    a();
+}
+```
+
+假设 b1.so 依赖于 a1.so，b2.so 依赖于 a2.so。将 b1.so 与 a1.so 进行链接，b2.so 与 a2.so 进行链接：
+
+```
+gcc -fPIC -shared a1.c -o a1.so
+gcc -fPIC -shared a2.c -o a2.so
+gcc -fPIC -shared b1.c a1.so -o b1.so
+gcc -fPIC -shared b2.c a2.so -o b2.so
+```
+
+当有程序同时使用 b1.c 的函数 b1 和 b2.c 中的函数 b2 时：
+
+```c
+/* main.c */
+
+#include <stdio.h>
+
+void b1();
+void b2();
+
+int main()
+{
+    b1();
+    b2();
+    return 0;
+}
+```
+
+编译并运行：
+
+<img src="/assets/images/linker-loader-library-note/llustration-16.png" width="800" />
+
+观察到输出是两个 a1.c，意味着 a2.c 的 a() 函数被忽略了。
+
+如果是采用静态编译，则链接时会报重定义的错误：
+
+<img src="/assets/images/linker-loader-library-note/llustration-17.png" width="800" />
+
+```c
+/* foo.c */
+#include <stdio.h>
+ 
+struct {
+    int a;
+    int b;
+} b = { 3, 3 };
+ 
+int main();
+ 
+void foo()
+{
+    b.a = 4;
+    b.b = 4;
+    printf("foo: b.a=%d, b.b=%d\n", b.a, b.b);
+}
+ 
+/* t1.c */
+#include <stdio.h>
+ 
+int b = 1;
+int c = 1;
+ 
+int main()
+{
+    int count = 5;
+    while (count-- > 0) {
+        t2();
+        foo();
+        printf("t1: b=%d, c=%d\n", b, c);
+        sleep(1);
+    }
+    return 0;
+}
+ 
+/* t2.c */
+#include <stdio.h>
+ 
+int b;
+int c;
+ 
+int t2()
+{
+    printf("t2: b=%d, c=%d\n", b, c);
+    return 0;
+}
+```
+
+编译：
+
+```
+gcc -shared -fPIC foo.c -o foo.so 
+gcc  t1.c t2.c foo.so -o test -Xlinker -rpath ./
+```
+
+输出结果：
+
+<img src="/assets/images/linker-loader-library-note/llustration-18.png" width="800" />
+
+其实在动态链接时，foo.c 里定义的 struct b 符号被忽略了（因为 t1.c 里已经定义了符号 b）。因此在后续调用 foo() 时，```b.a = 4``` 中 b.a 的地址其实是 t1.c 文件中变量 b 的地址，```b.b = 4``` 中 b.b 的地址其实是 t1.c 文件中变量 c 的地址（因为 t1.c 中变量 b 和 c 的地址刚好相邻）。
+
+由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。
 
 # 内存
 
