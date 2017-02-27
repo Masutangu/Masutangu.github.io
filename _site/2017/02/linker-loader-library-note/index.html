@@ -293,9 +293,7 @@ void swap(int *a, int *b)
 <p>相似的，调用 swap 的时候使用了临时假地址：</p>
 <figure class="highlight"><pre><code class="language-text" data-lang="text">20: e8 00 00 00 00          callq  25 &lt;main+0x25&gt;
 </code></pre></figure>
-<p>使用 ld 将 a.o 和 b.o 链接起来：</p>
-
-<p><img src="/assets/images/linker-loader-library-note/llustration-7.png" width="800" /></p>
+<p>使用 ld 将 a.o 和 b.o 链接起来：<code>ld a.o b.o -e main -o ab</code></p>
 
 <p>再用 objdump 查看链接前后地址分配的情况：</p>
 
@@ -345,7 +343,130 @@ void swap(int *a, int *b)
 
 <p>为了提高动态链接的效率，引入了 PLT 来实现延迟绑定。</p>
 
-<p>动态链接需要注意<strong>全局符号介入</strong>的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。</p>
+<p>动态链接需要注意<strong>全局符号介入</strong>的问题，当一个符号需要被加入全局符号表时，如果相同的符号名已经存在，则后加入的符号将被忽略。来看看下面的例子：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/* a1.c */
+
+#include &lt;stdio.h&gt;
+
+void a()
+{
+    printf(&quot;a1.c\n&quot;);
+}
+
+/* a2.c */
+#include &lt;stdio.h&gt;
+
+void a()
+{
+    printf(&quot;a2.c\n&quot;);
+}
+
+/* b1.c */
+void a();
+
+void b1()
+{
+    a();
+}
+
+/* b2.c */
+void a();
+
+void b2() 
+{
+    a();
+}
+</code></pre></figure>
+<p>假设 b1.so 依赖于 a1.so，b2.so 依赖于 a2.so。将 b1.so 与 a1.so 进行链接，b2.so 与 a2.so 进行链接：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">gcc -fPIC -shared a1.c -o a1.so
+gcc -fPIC -shared a2.c -o a2.so
+gcc -fPIC -shared b1.c a1.so -o b1.so
+gcc -fPIC -shared b2.c a2.so -o b2.so
+</code></pre></figure>
+<p>当有程序同时使用 b1.c 的函数 b1 和 b2.c 中的函数 b2 时：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/* main.c */
+
+#include &lt;stdio.h&gt;
+
+void b1();
+void b2();
+
+int main()
+{
+    b1();
+    b2();
+    return 0;
+}
+</code></pre></figure>
+<p>编译并运行：</p>
+
+<p><img src="/assets/images/linker-loader-library-note/llustration-16.png" width="800" /></p>
+
+<p>观察到输出是两个 a1.c，意味着 a2.c 的 a() 函数被忽略了。</p>
+
+<p>如果是采用静态编译，则链接时会报重定义的错误：</p>
+
+<p><img src="/assets/images/linker-loader-library-note/llustration-17.png" width="800" /></p>
+
+<p>再来看看另一个有趣的例子：</p>
+<figure class="highlight"><pre><code class="language-c" data-lang="c">/* foo.c */
+#include &lt;stdio.h&gt;
+
+struct {
+    int a;
+    int b;
+} b = { 3, 3 };
+
+int main();
+
+void foo()
+{
+    b.a = 4;
+    b.b = 4;
+    printf(&quot;foo: b.a=%d, b.b=%d\n&quot;, b.a, b.b);
+}
+
+/* t1.c */
+#include &lt;stdio.h&gt;
+
+int b = 1;
+int c = 1;
+
+int main()
+{
+    int count = 5;
+    while (count-- &gt; 0) {
+        t2();
+        foo();
+        printf(&quot;t1: b=%d, c=%d\n&quot;, b, c);
+        sleep(1);
+    }
+    return 0;
+}
+
+/* t2.c */
+#include &lt;stdio.h&gt;
+
+int b;
+int c;
+
+int t2()
+{
+    printf(&quot;t2: b=%d, c=%d\n&quot;, b, c);
+    return 0;
+}
+</code></pre></figure>
+<p>编译：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">gcc -shared -fPIC foo.c -o foo.so 
+gcc  t1.c t2.c foo.so -o test -Xlinker -rpath ./
+</code></pre></figure>
+<p>输出结果：</p>
+
+<p><img src="/assets/images/linker-loader-library-note/llustration-18.png" width="800" /></p>
+
+<p>其实在动态链接时，foo.c 里定义的 struct b 符号被忽略了（因为 t1.c 里已经定义了符号 b）。因此在后续调用 foo() 时，<code>b.a = 4</code> 中 b.a 的地址其实是 t1.c 文件中变量 b 的地址，<code>b.b = 4</code> 中 b.b 的地址其实是 t1.c 文件中变量 c 的地址（因为 t1.c 中变量 b 和 c 的地址刚好相邻）。</p>
+
+<p>由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，<strong>建议使用 static 关键字将被调用的函数设置为编译单元私有函数</strong>。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。</p>
 
 <h1>内存</h1>
 

@@ -166,9 +166,7 @@ void swap(int *a, int *b)
 20: e8 00 00 00 00      	callq  25 <main+0x25>
 ```
 
-使用 ld 将 a.o 和 b.o 链接起来：
-
-<img src="/assets/images/linker-loader-library-note/llustration-7.png" width="800" />
+使用 ld 将 a.o 和 b.o 链接起来：```ld a.o b.o -e main -o ab```
 
 再用 objdump 查看链接前后地址分配的情况：
 
@@ -290,6 +288,9 @@ int main()
 
 <img src="/assets/images/linker-loader-library-note/llustration-17.png" width="800" />
 
+
+再来看看另一个有趣的例子：
+
 ```c
 /* foo.c */
 #include <stdio.h>
@@ -352,7 +353,7 @@ gcc  t1.c t2.c foo.so -o test -Xlinker -rpath ./
 
 其实在动态链接时，foo.c 里定义的 struct b 符号被忽略了（因为 t1.c 里已经定义了符号 b）。因此在后续调用 foo() 时，```b.a = 4``` 中 b.a 的地址其实是 t1.c 文件中变量 b 的地址，```b.b = 4``` 中 b.b 的地址其实是 t1.c 文件中变量 c 的地址（因为 t1.c 中变量 b 和 c 的地址刚好相邻）。
 
-由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，建议使用 static 关键字将被调用的函数设置为编译单元私有函数。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。
+由于可能存在全局符号介入的问题，模块内函数的调用不能用相对地址调用，编译器会将其当做模块外部符号来处理，使用 .got.plt 进行重定位。因此为了提高模块内函数调用的效率，**建议使用 static 关键字将被调用的函数设置为编译单元私有函数**。此时编译器会采用相对地址的编译方式，因为能确保该函数不会被其他模块所覆盖。
 
 # 内存
 
