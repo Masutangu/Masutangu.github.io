@@ -436,3 +436,191 @@ public:
 # 3Sum
 
 key: two pointer
+
+# Letter Combinations of a Phone Number
+
+key: backtracing
+
+# Remove Nth Node From End of List
+
+key: two pointer
+
+# Merge k Sorted Lists
+
+key: Heap
+
+# Remove Element & Remove Duplicates from Sorted Array
+
+key: two pointer
+
+# Swap Nodes in Pairs
+
+```c
+ListNode* swapPairs(ListNode* head) {
+    ListNode **pp = &head, *a, *b;
+    while ((a = *pp) && (b = a->next)) {
+        a->next = b->next;
+        b->next = a;
+        *pp = b;
+        pp = &(a->next);
+    }
+    return head;
+}
+```
+
+# Divide Two Integers
+
+key: bit operation
+
+```c++
+class Solution {
+public:
+    int divide(int dividend, int divisor) {
+        if (!divisor || (dividend == INT_MIN && divisor == -1))
+            return INT_MAX;
+        int sign = ((dividend < 0) ^ (divisor < 0)) ? -1 : 1;
+        long long dvd = labs(dividend);
+        long long dvs = labs(divisor);
+        int res = 0;
+        while (dvd >= dvs) { 
+            long long temp = dvs, multiple = 1;
+            while (dvd >= (temp << 1)) {  // 细节：dvd 和 temp 必须是 long，int 的话 temp << 1 可能溢出，造成死循环
+                temp <<= 1;
+                multiple <<= 1;
+            }
+            dvd -= temp;
+            res += multiple;
+        }
+        return sign == 1 ? res : -res; 
+    }
+};
+```
+
+# Substring with Concatenation of All Words
+
+key node: hash table
+
+# Next Permutation
+
+数学题
+
+# Longest Valid Parentheses
+
+key node: stack O(n)
+
+```c++
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        int max_length = 0;
+        stack<int> st;
+        st.push(-1);
+        for (int i = 0; i < s.size(); i++) {
+            int top = st.top();
+            if (top != -1 && s[top] == '(' && s[i] == ')') {
+                st.pop();
+                max_length = max(max_length, i - st.top());
+            } else {
+                st.push(i);
+            }
+        }
+        return max_length;
+    }
+};
+```
+
+# Search in Rotated Sorted Array
+keyword: 异或
+
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+       int lo = 0, hi = int(nums.size()) - 1;
+       while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            // 456789123  67812345 3456789
+            // 01->1 有且只有一个条件满足，或者全满足
+            // nums[lo] > target && nums[start] > nums[mid] && target > nums[mid] -> lo = mid + 1
+            // nums[lo] > target && nums[start] < nums[mid] && target < nums[mid] -> lo = mid + 1
+            // nums[lo] < target && nums[start]  > nums[mid] && target < nums[mid] -> lo = mid + 1
+            // nums[lo] < target && nums[start]  < nums[mid] && target > nums[mid] -> lo = mid + 1
+            if ((nums[lo] > target) ^ (nums[lo] > nums[mid]) ^ (target > nums[mid]))
+                lo = mid + 1;
+            else
+                hi = mid;
+        }
+        return lo == hi && nums[lo] == target ? lo : -1;
+    }
+    
+};
+```
+
+# Search for a Range
+keyword: binary search
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int start = 0, end = nums.size(), mid;
+        
+        while (start < end) {
+            mid = (start + end) / 2;
+            if (nums[mid] >= target) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
+        }
+        int lo = start;
+        
+        start = 0;
+        end = nums.size();
+        
+        while (start < end) {
+            mid = (start + end) / 2;
+            if (nums[mid] > target) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
+        }
+        int hi = start;
+        
+        return lo == hi ? vector<int>{-1, -1} : vector<int>{lo, hi - 1};
+    }
+};
+```
+
+
+# Valid Sudoku   
+keynode：别想复杂了
+
+# Sudoku Solver
+keynode：回溯
+
+# Combination Sum
+keynode: 回溯 别想复杂
+
+# First Missing Positive
+keynode: 索引
+
+# Trapping Rain Water
+keynode: two pointer / stack
+
+```c++
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int start = 0, end = height.size() - 1, low = 0, level = 0, size = 0;
+        
+        while (start < end) {
+            low = (height[start] < height[end]) ? height[start++] : height[end--];
+            level = max(level, low);
+            size += level - low;
+        }
+        return size;
+    }
+};
+```

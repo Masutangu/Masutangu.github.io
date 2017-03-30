@@ -193,6 +193,10 @@ Swap:      1046524     164376     882148
 
 valgrind 是定位内存泄漏的好工具，使用 ```valgrind --lead-check=full --log-file=valgrind.log ./a.out``` 即可在进程结束运行后输出内存泄露报告。
 
+### maps, smaps and status
+
+参考这篇文章：[maps, smaps and Memory Stats!](https://jameshunt.us/writings/smaps.html)
+
 ### pmap 
 
 待补充
