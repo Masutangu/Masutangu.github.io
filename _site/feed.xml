@@ -5,9 +5,852 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 27 Feb 2017 22:15:16 +0800</pubDate>
-    <lastBuildDate>Mon, 27 Feb 2017 22:15:16 +0800</lastBuildDate>
+    <pubDate>Fri, 23 Jun 2017 18:02:57 +0800</pubDate>
+    <lastBuildDate>Fri, 23 Jun 2017 18:02:57 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>LevelDB 源码阅读（一）</title>
+        <description>&lt;p&gt;这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。&lt;/p&gt;
+
+&lt;h1&gt;模块&lt;/h1&gt;
+
+&lt;h3&gt;Log 文件&lt;/h3&gt;
+
+&lt;p&gt;客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。&lt;/p&gt;
+
+&lt;h3&gt;Memtable 和 Immutable Memtable&lt;/h3&gt;
+
+&lt;p&gt;内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memtable 处理客户端请求。原来的 Memtable 转成 Immutable Memtable，等待归并到 SST 文件中。&lt;/p&gt;
+
+&lt;h3&gt;SST 文件&lt;/h3&gt;
+
+&lt;p&gt;落地到磁盘的存储文件。SST 分为不同的 level，具体参考&lt;a href=&quot;https://github.com/google/leveldb/blob/master/doc/impl.md&quot;&gt;文档&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3&gt;Manifest 文件&lt;/h3&gt;
+
+&lt;p&gt;Manifest 记录不同 level 的 SST 文件，包括每个 SST 文件的 key range、大小等 metadata。&lt;/p&gt;
+
+&lt;h3&gt;Current 文件&lt;/h3&gt;
+
+&lt;p&gt;Current 记录了最新的 Manifest 文件。&lt;/p&gt;
+
+&lt;h1&gt;类成员变量&lt;/h1&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;class DBImpl : public DB {
+  private:
+    TableCache* table_cache_;
+    MemTable* mem_;
+    MemTable* imm_;
+    WritableFile* logfile_;
+    log::Writer* log_;
+    std::deque&amp;lt;Writer*&amp;gt; writers_;
+    VersionSet* versions_;
+
+    // Set of table files to protect from deletion because they are
+    // part of ongoing compactions.
+    std::set&amp;lt;uint64_t&amp;gt; pending_outputs_;
+};
+
+class MemTable {
+  private:
+    typedef SkipList&amp;lt;const char*, KeyComparator&amp;gt; Table;
+    Arena arena_;  // 内存池
+    Table table_;  // 跳表
+};
+
+struct FileMetaData {
+  int refs;
+  int allowed_seek;   // seeks allowed until compaction
+  uint64_t number;    // ?? 
+  uint64_t file_size;
+  InternalKey smallest;
+  InternalKey largest;
+};
+
+class VersionEdit {
+  private:
+    typedef std::set&amp;lt; std::pair&amp;lt;int, uint64_t&amp;gt; &amp;gt; DeletedFileSet;
+
+    std::vector&amp;lt; std::pair&amp;lt;int, InternalKey&amp;gt; &amp;gt; compact_pointers_;
+    DeletedFileSet deleted_files_;
+    std::vector&amp;lt; std::pair&amp;lt;int, FileMetaData&amp;gt; &amp;gt; new_files_;
+};
+
+class Version {
+  public:
+    Status Get(const ReadOptions&amp;amp;, const LookupKey&amp;amp; key, std::string* val, 
+               GetStats* stats);
+  private:
+    VersionSet* vset_;
+    Version* next_;
+    Version* prev_;
+
+    // list of files per level
+    std::vector&amp;lt;FileMetaData*&amp;gt; files_[config::kNumLevels];
+};
+
+class TableCache {
+  public:
+    Status Get(const ReadOptions&amp;amp; options, uint64_t file_number, 
+               uint64_t file_size, const Slice&amp;amp; k, void *arg, 
+               void (*handle_result)(void*, const Slice&amp;amp;, const Slice&amp;amp;));
+
+  private:
+    Cache* cache_;
+};
+
+class VersionSet {
+  private:
+    TableCache* const table_cache_;
+    WritableFile* descriptor_file_;
+    log::Writer* descriptor_log_;
+    Version dummy_versions_;  // Head of circurlar doubly-linked list of versions  
+    Version* current_;        // == dummy_versions_.prev_
+};
+
+class WriteBatch {
+  public:
+    class Handler {
+    public:
+        virtual ~Handler();
+        virtual void Put(const Slice&amp;amp; key, const Slice&amp;amp; value) = 0;
+        virtual void Delete(const Slice&amp;amp; key) = 0;
+    };
+  private:
+    friend class WriteBatchInternal;
+    std::string req_;
+}
+
+struct DBImpl::Writer {
+  Status status;
+  WriteBatch* batch;
+  bool sync;
+  bool done;
+  port::CondVar cv;
+
+  expplicit Writer(port::Mutex* mu) : cv(mu) { }
+};
+
+class Compaction {
+  private:
+    Version* input_version_;
+    VersionEdit edit_;
+
+    // Each compaction reads inputs from &amp;quot;level_&amp;quot; and &amp;quot;level_+1&amp;quot;
+    std::vector&amp;lt;FileMetaData*&amp;gt; inputs_[2];      // The two sets of inputs
+
+    // State used to check for number of of overlapping grandparent files
+    // (parent == level_ + 1, grandparent == level_ + 2)
+    std::vector&amp;lt;FileMetaData*&amp;gt; grandparents_;
+    size_t grandparent_index_;  // Index in grandparent_starts_
+    bool seen_key_;             // Some output key has been seen
+    int64_t overlapped_bytes_;  // Bytes of overlap between current output
+                                // and grandparent files
+
+    // level_ptrs_ holds indices into input_version_-&amp;gt;levels_: our state
+    // is that we are positioned at one of the file ranges for each
+    // higher level than the ones involved in this compaction (i.e. for
+    // all L &amp;gt;= level_ + 2).
+    size_t level_ptrs_[config::kNumLevels];
+};
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h1&gt;主要操作&lt;/h1&gt;
+
+&lt;h3&gt;读操作&lt;/h3&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::Get(const ReadOptions&amp;amp; options,
+                   const Slice&amp;amp; key,
+                   std::string* value) {
+
+  MutexLock l(&amp;amp;mutex_);
+  MemTable* mem = mem_;
+  MemTable* imm = imm_;
+  Version* current = versions_-&amp;gt;current();
+
+  bool have_stat_update = false;
+  Version::GetStats stats;
+
+  // Unlock while reading from files and memtables
+  {
+    mutex_.Unlock();
+    // First look in the memtable, then in the immutable memtable (if any).
+    LookupKey lkey(key, snapshot);
+    if (mem-&amp;gt;Get(lkey, value, &amp;amp;s)) {  // 1）先在 MemTable 中查找
+      // Done
+    } else if (imm != NULL &amp;amp;&amp;amp; imm-&amp;gt;Get(lkey, value, &amp;amp;s)) {  // 2）再在 Imutable MemTable 中查找
+      // Done
+    } else {
+      s = current-&amp;gt;Get(options, lkey, value, &amp;amp;stats);  // 3) 最后在当前 Version 中查找
+      have_stat_update = true;
+    }
+    mutex_.Lock();
+  }
+
+  // UpdateStats 减去 allowed_seeks，如果小于等于 0，则设置 file_to_compact_，准备 compaction
+  if (have_stat_update &amp;amp;&amp;amp; current-&amp;gt;UpdateStats(stats)) {
+    MaybeScheduleCompaction();
+  }
+
+  return s;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// Version 类的 Get 方法
+Status Version::Get(const ReadOptions&amp;amp; options,
+                    const LookupKey&amp;amp; k,
+                    std::string* value,
+                    GetStats* stats) {
+  Slice ikey = k.internal_key();
+  Slice user_key = k.user_key();
+  const Comparator* ucmp = vset_-&amp;gt;icmp_.user_comparator();
+  Status s;
+
+  stats-&amp;gt;seek_file = NULL;
+  stats-&amp;gt;seek_file_level = -1;
+  FileMetaData* last_file_read = NULL;
+  int last_file_read_level = -1;
+
+  // We can search level-by-level since entries never hop across
+  // levels.  Therefore we are guaranteed that if we find data
+  // in an smaller level, later levels are irrelevant.
+  std::vector&amp;lt;FileMetaData*&amp;gt; tmp;
+  FileMetaData* tmp2;
+  for (int level = 0; level &amp;lt; config::kNumLevels; level++) {
+    size_t num_files = files_[level].size();
+    if (num_files == 0) continue;
+
+    // 这里省略一大段代码 files 指向候选文件列表，num_files 为列表的长度。具体实现看源码
+
+    for (uint32_t i = 0; i &amp;lt; num_files; ++i) {
+      if (last_file_read != NULL &amp;amp;&amp;amp; stats-&amp;gt;seek_file == NULL) {
+        // We have had more than one seek for this read.  Charge the 1st file.
+        // last_file_read 保存的其实就是第一个查找未命中的文件，函数返回后会调用 UpdateStats 来减去 allowed_seeks
+        stats-&amp;gt;seek_file = last_file_read;
+        stats-&amp;gt;seek_file_level = last_file_read_level;
+      }
+
+      FileMetaData* f = files[i];
+      last_file_read = f;
+      last_file_read_level = level;
+
+      Saver saver;
+      saver.state = kNotFound;
+      saver.ucmp = ucmp;
+      saver.user_key = user_key;
+      saver.value = value;
+      // 从 TableCache 中读取文件内容
+      s = vset_-&amp;gt;table_cache_-&amp;gt;Get(options, f-&amp;gt;number, f-&amp;gt;file_size,
+                                   ikey, &amp;amp;saver, SaveValue);
+      if (!s.ok()) {
+        return s;
+      }
+      switch (saver.state) {
+        case kNotFound:
+          break;      // Keep searching in other files
+        case kFound:
+          return s;
+        case kDeleted:
+          s = Status::NotFound(Slice());  // Use empty error message for speed
+          return s;
+        case kCorrupt:
+          s = Status::Corruption(&amp;quot;corrupted key for &amp;quot;, user_key);
+          return s;
+      }
+    }
+  }
+
+  return Status::NotFound(Slice());  // Use an empty error message for speed
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status TableCache::Get(const ReadOptions&amp;amp; options, uint64_t file_number, 
+                      uint64_t file_size, const Slice&amp;amp; k, void *arg,
+                      void (*saver)(void* const Slice&amp;amp;, const Slice&amp;amp;)) {
+  Cache::Handle* handle = NULL;
+  Status s = FindTable(file_number, file_size, &amp;amp;handle);
+  if (s.ok()) {
+    Table* t = reinterpret_cast&amp;lt;TableAndFile*&amp;gt;(cache_-&amp;gt;Value(handle))-&amp;gt;table;
+    s = t-&amp;gt;InternalGet(options, k, arg, saver);
+    cache_-&amp;gt;Release(handle);
+  }
+  return s;                        
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;查找顺序如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/leveldb/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h3&gt;写操作&lt;/h3&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DB::Put(const WriteOptions&amp;amp; opt, const Slice&amp;amp; key, const Slice&amp;amp; value) {
+  WriteBatch batch;
+  batch.Put(key, value);
+  return Write(opt, &amp;amp;batch);
+}
+
+Status DBImpl::Write(const WriteOptions&amp;amp; options, WriteBatch* my_batch) {
+  Writer w(&amp;amp;mutex_);
+  w.batch = my_batch;
+  w.sync = options.sync;
+  w.done = false;
+
+  MutexLock l(&amp;amp;mutex_);
+  writers_.push_back(&amp;amp;w);
+  // 生产者消费者模型
+  while (!w.done &amp;amp;&amp;amp; &amp;amp;w != writers_.front()) {
+    w.cv.Wait();
+  }
+  // 写操作有可能被合并处理，因此有可能取到的时候写入已经完成。完成的话直接返回
+  if (w.done) {
+    return w.status;
+  }
+
+  // May temporarily unlock and wait.
+  // MakeRoomForWrite 判断是非需要归并 memtable
+  Status status = MakeRoomForWrite(my_batch == NULL);
+  uint64_t last_sequence = versions_-&amp;gt;LastSequence();
+  Writer* last_writer = &amp;amp;w;
+  if (status.ok() &amp;amp;&amp;amp; my_batch != NULL) {  // NULL batch is for compactions
+    WriteBatch* updates = BuildBatchGroup(&amp;amp;last_writer); // 合并写操作
+    WriteBatchInternal::SetSequence(updates, last_sequence + 1);
+    last_sequence += WriteBatchInternal::Count(updates);
+
+    // Add to log and apply to memtable.  We can release the lock
+    // during this phase since &amp;amp;w is currently responsible for logging
+    // and protects against concurrent loggers and concurrent writes
+    // into mem_.
+    {
+      mutex_.Unlock();
+      status = log_-&amp;gt;AddRecord(WriteBatchInternal::Contents(updates));
+      bool sync_error = false;
+      if (status.ok() &amp;amp;&amp;amp; options.sync) {
+        status = logfile_-&amp;gt;Sync();
+        if (!status.ok()) {
+          sync_error = true;
+        }
+      }
+      if (status.ok()) {
+        status = WriteBatchInternal::InsertInto(updates, mem_);
+      }
+      mutex_.Lock();
+      if (sync_error) {
+        // The state of the log file is indeterminate: the log record we
+        // just added may or may not show up when the DB is re-opened.
+        // So we force the DB into a mode where all future writes fail.
+        RecordBackgroundError(status);
+      }
+    }
+    if (updates == tmp_batch_) tmp_batch_-&amp;gt;Clear();
+
+    versions_-&amp;gt;SetLastSequence(last_sequence);
+  }
+
+  while (true) {
+    Writer* ready = writers_.front();
+    writers_.pop_front();
+    if (ready != &amp;amp;w) {
+      ready-&amp;gt;status = status;
+      ready-&amp;gt;done = true;
+      ready-&amp;gt;cv.Signal();
+    }
+    if (ready == last_writer) break;
+  }
+
+  // Notify new head of write queue
+  if (!writers_.empty()) {
+    writers_.front()-&amp;gt;cv.Signal();
+  }
+
+  return status;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// REQUIRES: Writer list must be non-empty
+// REQUIRES: First writer must have a non-NULL batch
+// 尝试合并写操作
+WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
+  assert(!writers_.empty());
+  Writer* first = writers_.front();
+  WriteBatch* result = first-&amp;gt;batch;
+  assert(result != NULL);
+
+  size_t size = WriteBatchInternal::ByteSize(first-&amp;gt;batch);
+
+  // Allow the group to grow up to a maximum size, but if the
+  // original write is small, limit the growth so we do not slow
+  // down the small write too much.
+  size_t max_size = 1 &amp;lt;&amp;lt; 20;
+  if (size &amp;lt;= (128&amp;lt;&amp;lt;10)) {
+    max_size = size + (128&amp;lt;&amp;lt;10);
+  }
+
+  *last_writer = first;
+  std::deque&amp;lt;Writer*&amp;gt;::iterator iter = writers_.begin();
+  ++iter;  // Advance past &amp;quot;first&amp;quot;
+  for (; iter != writers_.end(); ++iter) {
+    Writer* w = *iter;
+    if (w-&amp;gt;sync &amp;amp;&amp;amp; !first-&amp;gt;sync) {
+      // Do not include a sync write into a batch handled by a non-sync write.
+      break;
+    }
+
+    if (w-&amp;gt;batch != NULL) {
+      size += WriteBatchInternal::ByteSize(w-&amp;gt;batch);
+      if (size &amp;gt; max_size) {
+        // Do not make batch too big
+        break;
+      }
+
+      // Append to *result
+      // 把合并的写请求保存在成员变量 tmp_batch_ 中，避免和调用者的写请求混淆在一起
+      if (result == first-&amp;gt;batch) {
+        // Switch to temporary batch instead of disturbing caller&amp;#39;s batch
+        result = tmp_batch_;
+        assert(WriteBatchInternal::Count(result) == 0);
+        WriteBatchInternal::Append(result, first-&amp;gt;batch);
+      }
+      WriteBatchInternal::Append(result, w-&amp;gt;batch);
+    }
+    *last_writer = w;
+  }
+  return result;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status WriteBatchInternal::InsertInto(const WriteBatch* b,
+                                      MemTable* memtable) {
+  MemTableInserter inserter;
+  inserter.sequence_ = WriteBatchInternal::Sequence(b);
+  inserter.mem_ = memtable;
+  return b-&amp;gt;Iterate(&amp;amp;inserter);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status WriteBatch::Iterate(Handler* handler) const {
+  Slice input(rep_);
+  if (input.size() &amp;lt; kHeader) {
+    return Status::Corruption(&amp;quot;malformed WriteBatch (too small)&amp;quot;);
+  }
+
+  input.remove_prefix(kHeader);
+  Slice key, value;
+  int found = 0;
+  while (!input.empty()) {
+    found++;
+    char tag = input[0];
+    input.remove_prefix(1);
+    switch (tag) {
+      case kTypeValue:
+        if (GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;key) &amp;amp;&amp;amp;
+            GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;value)) {
+          handler-&amp;gt;Put(key, value);
+        } else {
+          return Status::Corruption(&amp;quot;bad WriteBatch Put&amp;quot;);
+        }
+        break;
+      case kTypeDeletion:
+        if (GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;key)) {
+          handler-&amp;gt;Delete(key);
+        } else {
+          return Status::Corruption(&amp;quot;bad WriteBatch Delete&amp;quot;);
+        }
+        break;
+      default:
+        return Status::Corruption(&amp;quot;unknown WriteBatch tag&amp;quot;);
+    }
+  }
+  if (found != WriteBatchInternal::Count(this)) {
+    return Status::Corruption(&amp;quot;WriteBatch has wrong count&amp;quot;);
+  } else {
+    return Status::OK();
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3&gt;Compaction&lt;/h3&gt;
+
+&lt;p&gt;Compaction 触发时机：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Immutable MemTable 不为空&lt;/li&gt;
+&lt;li&gt;指定了 Manual Compaction&lt;/li&gt;
+&lt;li&gt;VersionSet NeedsCompaction 返回 True
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;compaction_score_&lt;/code&gt; 大于 1&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;file_to_compact_&lt;/code&gt; 不为空&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void DBImpl::MaybeScheduleCompaction() {
+  mutex_.AssertHeld();
+  if (bg_compaction_scheduled_) {
+    // Already scheduled
+  } else if (shutting_down_.Acquire_Load()) {
+    // DB is being deleted; no more background compactions
+  } else if (!bg_error_.ok()) {
+    // Already got an error; no more changes
+  } else if (imm_ == NULL &amp;amp;&amp;amp;
+             manual_compaction_ == NULL &amp;amp;&amp;amp;
+             !versions_-&amp;gt;NeedsCompaction()) {
+    // No work to be done
+  } else {
+    bg_compaction_scheduled_ = true;
+    env_-&amp;gt;Schedule(&amp;amp;DBImpl::BGWork, this);
+  }
+}
+
+bool VersionSet::NeedsCompaction() const {
+  Version* v = current_;
+  return (v-&amp;gt;compaction_score_ &amp;gt;= 1) || (v-&amp;gt;file_to_compact_ != NULL);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;compaction_score_ 的计算如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void VersionSet::Finalize(Version* v) {
+  // Precomputed best level for next compaction
+  int best_level = -1;
+  double best_score = -1;
+
+  for (int level = 0; level &amp;lt; config::kNumLevels-1; level++) {
+    double score;
+    if (level == 0) {
+      // We treat level-0 specially by bounding the number of files
+      // instead of number of bytes for two reasons:
+      //
+      // (1) With larger write-buffer sizes, it is nice not to do too
+      // many level-0 compactions.
+      //
+      // (2) The files in level-0 are merged on every read and
+      // therefore we wish to avoid too many files when the individual
+      // file size is small (perhaps because of a small write-buffer
+      // setting, or very high compression ratios, or lots of
+      // overwrites/deletions).
+      score = v-&amp;gt;files_[level].size() /
+          static_cast&amp;lt;double&amp;gt;(config::kL0_CompactionTrigger);
+    } else {
+      // Compute the ratio of current size to size limit.
+      const uint64_t level_bytes = TotalFileSize(v-&amp;gt;files_[level]);
+      score = static_cast&amp;lt;double&amp;gt;(level_bytes) / MaxBytesForLevel(level);
+    }
+
+    if (score &amp;gt; best_score) {
+      best_level = level;
+      best_score = score;
+    }
+  }
+
+  v-&amp;gt;compaction_level_ = best_level;
+  v-&amp;gt;compaction_score_ = best_score;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;file_to_compact_ 则是由 allowed_seeks 来控制。从下面代码的注释可知 25 次 seek 的开销和一次 compaction 的开销差不多。allowed_seeks 可以理解为文件剩余查找次数，每次查找失败allowed_seeks 就会减 1。当 allowed_seeks 小于等于 0，意味着应该启动 compaction 来减少查找未命中带来的 seek 的开销了：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;bool Version::UpdateStats(const GetStats&amp;amp; stats) {
+  FileMetaData* f = stats.seek_file;
+  if (f != NULL) {
+    f-&amp;gt;allowed_seeks--;
+    if (f-&amp;gt;allowed_seeks &amp;lt;= 0 &amp;amp;&amp;amp; file_to_compact_ == NULL) {
+      file_to_compact_ = f;
+      file_to_compact_level_ = stats.seek_file_level;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Apply all of the edits in *edit to the current state.
+void Builder::Apply(VersionEdit* edit) {
+  // Update compaction pointers
+  for (size_t i = 0; i &amp;lt; edit-&amp;gt;compact_pointers_.size(); i++) {
+    const int level = edit-&amp;gt;compact_pointers_[i].first;
+    vset_-&amp;gt;compact_pointer_[level] =
+        edit-&amp;gt;compact_pointers_[i].second.Encode().ToString();
+  }
+
+  // Delete files
+  const VersionEdit::DeletedFileSet&amp;amp; del = edit-&amp;gt;deleted_files_;
+  for (VersionEdit::DeletedFileSet::const_iterator iter = del.begin();
+        iter != del.end();
+        ++iter) {
+    const int level = iter-&amp;gt;first;
+    const uint64_t number = iter-&amp;gt;second;
+    levels_[level].deleted_files.insert(number);
+  }
+
+  // Add new files
+  for (size_t i = 0; i &amp;lt; edit-&amp;gt;new_files_.size(); i++) {
+    const int level = edit-&amp;gt;new_files_[i].first;
+    FileMetaData* f = new FileMetaData(edit-&amp;gt;new_files_[i].second);
+    f-&amp;gt;refs = 1;
+
+    // We arrange to automatically compact this file after
+    // a certain number of seeks.  Let&amp;#39;s assume:
+    //   (1) One seek costs 10ms
+    //   (2) Writing or reading 1MB costs 10ms (100MB/s)
+    //   (3) A compaction of 1MB does 25MB of IO:
+    //         1MB read from this level
+    //         10-12MB read from next level (boundaries may be misaligned)
+    //         10-12MB written to next level
+    // This implies that 25 seeks cost the same as the compaction
+    // of 1MB of data.  I.e., one seek costs approximately the
+    // same as the compaction of 40KB of data.  We are a little
+    // conservative and allow approximately one seek for every 16KB
+    // of data before triggering a compaction.
+    f-&amp;gt;allowed_seeks = (f-&amp;gt;file_size / 16384);
+    if (f-&amp;gt;allowed_seeks &amp;lt; 100) f-&amp;gt;allowed_seeks = 100;
+
+    levels_[level].deleted_files.erase(f-&amp;gt;number);
+    levels_[level].added_files-&amp;gt;insert(f);
+  }
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;看看 Compaction 做了哪些工作：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void DBImpl::BackgroundCompaction() {
+  mutex_.AssertHeld();
+
+  if (imm_ != NULL) {
+    CompactMemTable();
+    return;
+  }
+  // 这里去掉了 manual compaction 的代码 不关心
+  Compaction* c = versions_-&amp;gt;PickCompaction();
+
+  Status status;
+  if (c == NULL) {
+    // Nothing to do
+  } else if (c-&amp;gt;IsTrivialMove()) {
+    // Move file to next level
+    // IsTrivialMove 返回 True 则直接将文件移入 level + 1 层即可
+    assert(c-&amp;gt;num_input_files(0) == 1);
+    FileMetaData* f = c-&amp;gt;input(0, 0);
+    c-&amp;gt;edit()-&amp;gt;DeleteFile(c-&amp;gt;level(), f-&amp;gt;number);
+    c-&amp;gt;edit()-&amp;gt;AddFile(c-&amp;gt;level() + 1, f-&amp;gt;number, f-&amp;gt;file_size,
+                       f-&amp;gt;smallest, f-&amp;gt;largest);
+    status = versions_-&amp;gt;LogAndApply(c-&amp;gt;edit(), &amp;amp;mutex_);
+    if (!status.ok()) {
+      RecordBackgroundError(status);
+    }
+  } else {
+    CompactionState* compact = new CompactionState(c);
+    status = DoCompactionWork(compact);
+    if (!status.ok()) {
+      RecordBackgroundError(status);
+    }
+    CleanupCompaction(compact);
+    c-&amp;gt;ReleaseInputs();
+    DeleteObsoleteFiles();
+  }
+  delete c;
+
+  if (status.ok()) {
+    // Done
+  } else if (shutting_down_.Acquire_Load()) {
+    // Ignore compaction errors found during shutting down
+  } else {
+    Log(options_.info_log,
+        &amp;quot;Compaction error: %s&amp;quot;, status.ToString().c_str());
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Compaction* VersionSet::PickCompaction() {
+  Compaction* c;
+  int level;
+
+  // We prefer compactions triggered by too much data in a level over
+  // the compactions triggered by seeks.
+  // 判断是 size_compaction 还是 seek_compaction
+  const bool size_compaction = (current_-&amp;gt;compaction_score_ &amp;gt;= 1);
+  const bool seek_compaction = (current_-&amp;gt;file_to_compact_ != NULL);
+  if (size_compaction) {
+    level = current_-&amp;gt;compaction_level_;
+    assert(level &amp;gt;= 0);
+    assert(level+1 &amp;lt; config::kNumLevels);
+    c = new Compaction(level);
+
+    // Pick the first file that comes after compact_pointer_[level]
+    // compact_pointer_[level] 记录上次 compact 时最大的 key
+    for (size_t i = 0; i &amp;lt; current_-&amp;gt;files_[level].size(); i++) {
+      FileMetaData* f = current_-&amp;gt;files_[level][i];
+      if (compact_pointer_[level].empty() ||
+          icmp_.Compare(f-&amp;gt;largest.Encode(), compact_pointer_[level]) &amp;gt; 0) {
+        c-&amp;gt;inputs_[0].push_back(f);
+        break;
+      }
+    }
+    if (c-&amp;gt;inputs_[0].empty()) {
+      // Wrap-around to the beginning of the key space
+      c-&amp;gt;inputs_[0].push_back(current_-&amp;gt;files_[level][0]);
+    }
+  } else if (seek_compaction) {
+    level = current_-&amp;gt;file_to_compact_level_;
+    c = new Compaction(level);
+    c-&amp;gt;inputs_[0].push_back(current_-&amp;gt;file_to_compact_);
+  } else {
+    return NULL;
+  }
+
+  c-&amp;gt;input_version_ = current_;
+  c-&amp;gt;input_version_-&amp;gt;Ref();
+
+  // Files in level 0 may overlap each other, so pick up all overlapping ones
+  if (level == 0) {
+    InternalKey smallest, largest;
+    GetRange(c-&amp;gt;inputs_[0], &amp;amp;smallest, &amp;amp;largest);
+    // Note that the next call will discard the file we placed in
+    // c-&amp;gt;inputs_[0] earlier and replace it with an overlapping set
+    // which will include the picked file.
+    current_-&amp;gt;GetOverlappingInputs(0, &amp;amp;smallest, &amp;amp;largest, &amp;amp;c-&amp;gt;inputs_[0]);
+    assert(!c-&amp;gt;inputs_[0].empty());
+  }
+
+  // 填充 level + 1 的文件，更新 compact_pointer_ 
+  SetupOtherInputs(c);
+
+  return c;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;IsTrivialMove 判断能否直接将文件移入 level + 1 层：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;bool Compaction::IsTrivialMove() const {
+  // Avoid a move if there is lots of overlapping grandparent data.
+  // Otherwise, the move could create a parent file that will require
+  // a very expensive merge later on.
+  return (num_input_files(0) == 1 &amp;amp;&amp;amp;
+          num_input_files(1) == 0 &amp;amp;&amp;amp;
+          TotalFileSize(grandparents_) &amp;lt;= kMaxGrandParentOverlapBytes);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;具体的合并操作在 DoCompactionWork 方法：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::DoCompactionWork(CompactionState* compact) {
+  if (snapshots_.empty()) {
+    compact-&amp;gt;smallest_snapshot = versions_-&amp;gt;LastSequence();
+  } else {
+    compact-&amp;gt;smallest_snapshot = snapshots_.oldest()-&amp;gt;number_;
+  }
+
+  // Release mutex while we&amp;#39;re actually doing the compaction work
+  mutex_.Unlock();
+
+  Iterator* input = versions_-&amp;gt;MakeInputIterator(compact-&amp;gt;compaction);
+  input-&amp;gt;SeekToFirst();
+  Status status;
+  ParsedInternalKey ikey;
+  std::string current_user_key;
+  bool has_current_user_key = false;
+  SequenceNumber last_sequence_for_key = kMaxSequenceNumber;
+  for (; input-&amp;gt;Valid() &amp;amp;&amp;amp; !shutting_down_.Acquire_Load(); ) {
+    // Prioritize immutable compaction work
+    if (has_imm_.NoBarrier_Load() != NULL) {
+      mutex_.Lock();
+      if (imm_ != NULL) {
+        CompactMemTable();  // 总是优先处理 CompactMemTable 避免阻塞 MemTable 的写入
+        bg_cv_.SignalAll();  // Wakeup MakeRoomForWrite() if necessary
+      }
+      mutex_.Unlock();
+    }
+
+    Slice key = input-&amp;gt;key();
+    if (compact-&amp;gt;compaction-&amp;gt;ShouldStopBefore(key) &amp;amp;&amp;amp;
+        compact-&amp;gt;builder != NULL) {
+      status = FinishCompactionOutputFile(compact, input);
+      if (!status.ok()) {
+        break;
+      }
+    }
+
+    // Handle key/value, add to state, etc.
+    bool drop = false;
+    if (!ParseInternalKey(key, &amp;amp;ikey)) {
+      // Do not hide error keys
+      current_user_key.clear();
+      has_current_user_key = false;
+      last_sequence_for_key = kMaxSequenceNumber;
+    } else {
+      if (!has_current_user_key ||
+          user_comparator()-&amp;gt;Compare(ikey.user_key,
+                                     Slice(current_user_key)) != 0) {
+        // First occurrence of this user key
+        current_user_key.assign(ikey.user_key.data(), ikey.user_key.size());
+        has_current_user_key = true;
+        last_sequence_for_key = kMaxSequenceNumber;
+      }
+
+      if (last_sequence_for_key &amp;lt;= compact-&amp;gt;smallest_snapshot) {
+        // Hidden by an newer entry for same user key
+        drop = true;    // (A)
+      } else if (ikey.type == kTypeDeletion &amp;amp;&amp;amp;
+                 ikey.sequence &amp;lt;= compact-&amp;gt;smallest_snapshot &amp;amp;&amp;amp;
+                 compact-&amp;gt;compaction-&amp;gt;IsBaseLevelForKey(ikey.user_key)) {
+        // For this user key:
+        // (1) there is no data in higher levels
+        // (2) data in lower levels will have larger sequence numbers
+        // (3) data in layers that are being compacted here and have
+        //     smaller sequence numbers will be dropped in the next
+        //     few iterations of this loop (by rule (A) above).
+        // Therefore this deletion marker is obsolete and can be dropped.
+        // 如果高层还有记录，则 kTypeDeletion 标记不能丢掉。
+        // smallest_snapshot 主要是为了快照功能服务
+        // 但 ikey.sequence &amp;lt;= compact-&amp;gt;smallest_snapshot 这个判断没看懂
+        drop = true;
+      }
+
+      last_sequence_for_key = ikey.sequence;
+    }
+
+    if (!drop) {
+      // Open output file if necessary
+      if (compact-&amp;gt;builder == NULL) {
+        status = OpenCompactionOutputFile(compact);
+        if (!status.ok()) {
+          break;
+        }
+      }
+      if (compact-&amp;gt;builder-&amp;gt;NumEntries() == 0) {
+        compact-&amp;gt;current_output()-&amp;gt;smallest.DecodeFrom(key);
+      }
+      compact-&amp;gt;current_output()-&amp;gt;largest.DecodeFrom(key);
+      compact-&amp;gt;builder-&amp;gt;Add(key, input-&amp;gt;value());
+
+      // Close output file if it is big enough
+      if (compact-&amp;gt;builder-&amp;gt;FileSize() &amp;gt;=
+          compact-&amp;gt;compaction-&amp;gt;MaxOutputFileSize()) {
+        status = FinishCompactionOutputFile(compact, input);  // 输出新的 SST 文件
+        if (!status.ok()) {
+          break;
+        }
+      }
+    }
+
+    input-&amp;gt;Next();
+  }
+
+  // 中间省略一坨代码
+
+  mutex_.Lock();
+  stats_[compact-&amp;gt;compaction-&amp;gt;level() + 1].Add(stats);
+
+  if (status.ok()) {
+    status = InstallCompactionResults(compact);
+  }
+
+  return status;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;最后调用 InstallCompactionResults，记录版本变化：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::InstallCompactionResults(CompactionState* compact) {
+  mutex_.AssertHeld();
+  Log(options_.info_log,  &amp;quot;Compacted %d@%d + %d@%d files =&amp;gt; %lld bytes&amp;quot;,
+      compact-&amp;gt;compaction-&amp;gt;num_input_files(0),
+      compact-&amp;gt;compaction-&amp;gt;level(),
+      compact-&amp;gt;compaction-&amp;gt;num_input_files(1),
+      compact-&amp;gt;compaction-&amp;gt;level() + 1,
+      static_cast&amp;lt;long long&amp;gt;(compact-&amp;gt;total_bytes));
+
+  // Add compaction outputs
+  compact-&amp;gt;compaction-&amp;gt;AddInputDeletions(compact-&amp;gt;compaction-&amp;gt;edit());
+  const int level = compact-&amp;gt;compaction-&amp;gt;level();
+  for (size_t i = 0; i &amp;lt; compact-&amp;gt;outputs.size(); i++) {
+    const CompactionState::Output&amp;amp; out = compact-&amp;gt;outputs[i];
+    compact-&amp;gt;compaction-&amp;gt;edit()-&amp;gt;AddFile(
+        level + 1,
+        out.number, out.file_size, out.smallest, out.largest);
+  }
+  return versions_-&amp;gt;LogAndApply(compact-&amp;gt;compaction-&amp;gt;edit(), &amp;amp;mutex_);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
+        <pubDate>Fri, 23 Jun 2017 15:53:23 +0800</pubDate>
+        <link>http://masutangu.com/2017/06/leveldb_1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/06/leveldb_1/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
     
       <item>
         <title>链接和装载</title>
@@ -612,6 +1455,10 @@ Swap:      1046524     164376     882148
 &lt;h3&gt;valgrind&lt;/h3&gt;
 
 &lt;p&gt;valgrind 是定位内存泄漏的好工具，使用 &lt;code&gt;valgrind --lead-check=full --log-file=valgrind.log ./a.out&lt;/code&gt; 即可在进程结束运行后输出内存泄露报告。&lt;/p&gt;
+
+&lt;h3&gt;maps, smaps and status&lt;/h3&gt;
+
+&lt;p&gt;参考这篇文章：&lt;a href=&quot;https://jameshunt.us/writings/smaps.html&quot;&gt;maps, smaps and Memory Stats!&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3&gt;pmap&lt;/h3&gt;
 
@@ -4550,303 +5397,6 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
         <pubDate>Thu, 13 Oct 2016 15:56:27 +0800</pubDate>
         <link>http://masutangu.com/2016/10/libuv-source-code/</link>
         <guid isPermaLink="true">http://masutangu.com/2016/10/libuv-source-code/</guid>
-        
-        
-        <category>源码阅读</category>
-        
-      </item>
-    
-      <item>
-        <title>浅读 Libco</title>
-        <description>&lt;p&gt;今天花了一天时间，学习了下微信的开源协程库 &lt;a href=&quot;https://github.com/tencent-wechat/libco&quot;&gt;libco&lt;/a&gt;的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。&lt;/p&gt;
-
-&lt;h2&gt;协程的原理&lt;/h2&gt;
-
-&lt;p&gt;协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。&lt;/p&gt;
-
-&lt;p&gt;协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新的协程的 context_buff 即可。&lt;/p&gt;
-
-&lt;h2&gt;hook 系统调用&lt;/h2&gt;
-
-&lt;p&gt;一般会在有 IO 阻塞操作的时候做协程的切换。如何让协程的使用者无需关心这些切换的细节呢？libco 采用 hooking IO 函数的方法。将 IO 设置为非阻塞，提交给 epoll 来管理，并让出 cpu 资源，等到 epoll 事件返回后再 resume 对应的协程。下面的代码会给出相应的例子。&lt;/p&gt;
-
-&lt;h2&gt;libco 源码&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;协程相关数据结构&lt;/p&gt;
-
-&lt;p&gt;stCoRoutineEnv_t 管理协程的结构体，每起一个新的协程就压入 pCallStack 中，每挂起一个协程就将其踢出 pCallStack。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;struct stCoRoutineEnv_t
-{
-    stCoRoutine_t *pCallStack[ 128 ];
-    int iCallStackSize;
-    stCoEpoll_t *pEpoll;
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;stCoRoutine_t 封装了协程对象，coctx_t 保存协程的 context。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;struct stCoRoutine_t
-{
-    stCoRoutineEnv_t *env;
-    pfn_co_routine_t pfn;
-    void *arg;
-    coctx_t ctx;
-    char cStart;
-    char cEnd;
-    stCoSpec_t aSpec[1024];
-    char cIsMain;
-    char cEnableSysHook;
-    char sRunStack[ 1024 * 128 ];
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;epoll 相关数据结构&lt;/p&gt;
-
-&lt;p&gt;管理 epoll 的结构体，pTimeout 管理 Timeout 事件。pstTimeoutList 为超时事件的列表。pstTimeoutList 和 pstActiveList 下面会看到其用法。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;struct stCoEpoll_t
-{
-    int iEpollFd;
-    static const int _EPOLL_SIZE = 1024 * 10;
-    struct stTimeout_t *pTimeout;
-    struct stTimeoutItemLink_t *pstTimeoutList;  
-    struct stTimeoutItemLink_t *pstActiveList;
-    co_epoll_res *result; 
-
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;stTimeout_t 封装了 Timeout 结构体。pItems 是一个链表数组，具体用法可以查看 &lt;code&gt;int AddTimeout( stTimeout_t *apTimeout,stTimeoutItem_t *apItem ,unsigned long long allNow )&lt;/code&gt; 函数。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;struct stTimeout_t
-{
-    stTimeoutItemLink_t *pItems;
-    int iItemSize;
-    unsigned long long ullStart;
-    long long llStartIdx;
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;hooking IO&lt;/p&gt;
-
-&lt;p&gt;下面以 read 函数为例子，看看 libco 是如何将 io 操作通过 epoll 来管理并与协程结合起来。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;ssize_t read( int fd, void *buf, size_t nbyte )
-{
-    HOOK_SYS_FUNC( read );
-    if( !co_is_enable_sys_hook() )  // 如果没开启hook，则返回系统的 read 函数
-    {
-        return g_sys_read_func( fd,buf,nbyte );
-    }
-    rpchook_t *lp = get_by_fd( fd );
-
-    if( !lp || ( O_NONBLOCK &amp;amp; lp-&amp;gt;user_flag ) ) 
-    {
-        ssize_t ret = g_sys_read_func( fd,buf,nbyte );
-        return ret;
-    }
-    int timeout = ( lp-&amp;gt;read_timeout.tv_sec * 1000 ) 
-                + ( lp-&amp;gt;read_timeout.tv_usec / 1000 );
-
-    struct pollfd pf = { 0 };
-    pf.fd = fd;
-    pf.events = ( POLLIN | POLLERR | POLLHUP );
-
-    int pollret = poll( &amp;amp;pf,1,timeout );  // 这里调用 poll 了，注意 poll 会挂起当前协程让出cpu，下面的指令需要等到该协程 resume 才会继续执行了。
-
-    ssize_t readret = g_sys_read_func( fd,(char*)buf ,nbyte );
-
-    return readret;
-
-}
-
-int poll(struct pollfd fds[], nfds_t nfds, int timeout)
-{
-
-    HOOK_SYS_FUNC( poll );
-
-    if( !co_is_enable_sys_hook() )
-    {
-        return g_sys_poll_func( fds,nfds,timeout );
-    }
-
-    return co_poll( co_get_epoll_ct(),fds,nfds,timeout );  // 调用的是 co_poll
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;epoll 逻辑  &lt;/p&gt;
-
-&lt;p&gt;最主要的代码都在 co_poll 函数和 co_eventloop 函数。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;int co_poll( stCoEpoll_t *ctx,struct pollfd fds[], nfds_t nfds, int timeout )
-{
-    int epfd = ctx-&amp;gt;iEpollFd;
-
-    //1.struct change
-    stPoll_t arg;
-    memset( &amp;amp;arg,0,sizeof(arg) );
-
-    arg.iEpollFd = epfd;
-    arg.fds = fds;
-    arg.nfds = nfds;
-
-    stPollItem_t arr[2];
-    if( nfds &amp;lt; sizeof(arr) / sizeof(arr[0]) )
-    {
-        arg.pPollItems = arr;
-    }   
-    else
-    {
-        arg.pPollItems = (stPollItem_t*)malloc( nfds * sizeof( stPollItem_t ) );
-    }
-
-    memset( arg.pPollItems, 0, nfds * sizeof(stPollItem_t) );
-
-    arg.pfnProcess = OnPollProcessEvent;  // 当 epoll 事件被触发，就会调用该函数来 resume 相应的协程。
-    arg.pArg = GetCurrCo( co_get_curr_thread_env() );  // pArg 保存当前的协程，pfnProcess 函数中用该字段来得到需要 resume 的协程对象。
-
-    //2.add timeout
-
-    unsigned long long now = GetTickMS();
-    arg.ullExpireTime = now + timeout;
-    int ret = AddTimeout( ctx-&amp;gt;pTimeout,&amp;amp;arg,now );  // 调用 AddTimeout，由 stCoEpoll_t 管理超时。
-
-    //3. add epoll
-
-    for(nfds_t i = 0; i &amp;lt; nfds; i++)
-    {
-        arg.pPollItems[i].pSelf = fds + i;
-        arg.pPollItems[i].pPoll = &amp;amp;arg;
-
-        arg.pPollItems[i].pfnPrepare = OnPollPreparePfn;
-        struct epoll_event &amp;amp;ev = arg.pPollItems[i].stEvent;
-
-        if( fds[i].fd &amp;gt; -1 )
-        {
-            ev.data.ptr = arg.pPollItems + i;
-            ev.events = PollEvent2Epoll( fds[i].events );
-
-            co_epoll_ctl( epfd,EPOLL_CTL_ADD, fds[i].fd, &amp;amp;ev );  // 添加到 epoll 中监听
-        }
-        //if fail,the timeout would work
-
-    }
-
-    co_yield_env( co_get_curr_thread_env() );  // 让出 cpu，挂起当前协程了。等到 stCoEpoll_t resume 该协程再继续执行下面的指令了
-
-    // 下面都是清理工作 可以不用细看
-    RemoveFromLink&amp;lt;stTimeoutItem_t,stTimeoutItemLink_t&amp;gt;( &amp;amp;arg );
-    for(nfds_t i = 0;i &amp;lt; nfds;i++)
-    {
-        int fd = fds[i].fd;
-        if( fd &amp;gt; -1 )
-        {
-            co_epoll_ctl( epfd,EPOLL_CTL_DEL,fd,&amp;amp;arg.pPollItems[i].stEvent );
-        }
-    }
-
-    if( arg.pPollItems != arr )
-    {
-        free( arg.pPollItems );
-        arg.pPollItems = NULL;
-    }
-    return arg.iRaiseCnt;
-}
-
-// 事件循环
-void co_eventloop( stCoEpoll_t *ctx,pfn_co_eventloop_t pfn,void *arg )
-{
-    if( !ctx-&amp;gt;result )
-    {
-        ctx-&amp;gt;result =  co_epoll_res_alloc( stCoEpoll_t::_EPOLL_SIZE );
-    }
-    co_epoll_res *result = ctx-&amp;gt;result;
-
-    for(;;)
-    {
-        int ret = co_epoll_wait( ctx-&amp;gt;iEpollFd, result, stCoEpoll_t::_EPOLL_SIZE, 1 );
-
-        stTimeoutItemLink_t *active = (ctx-&amp;gt;pstActiveList);
-        stTimeoutItemLink_t *timeout = (ctx-&amp;gt;pstTimeoutList);
-
-        memset( timeout,0,sizeof(stTimeoutItemLink_t) );
-
-        for(int i=0;i&amp;lt;ret;i++)
-        {
-            stTimeoutItem_t *item = (stTimeoutItem_t*)result-&amp;gt;events[i].data.ptr;
-            if( item-&amp;gt;pfnPrepare )
-            {
-                item-&amp;gt;pfnPrepare( item,result-&amp;gt;events[i],active );
-            }
-            else
-            {
-                AddTail( active,item );  // 监听到的事件放到 active 链表里
-            }
-        }
-
-        unsigned long long now = GetTickMS();
-        TakeAllTimeout( ctx-&amp;gt;pTimeout,now,timeout );  // 超时的事件放到 timeout 链表里
-
-        stTimeoutItem_t *lp = timeout-&amp;gt;head;
-        while( lp )
-        {
-            lp-&amp;gt;bTimeout = true;
-            lp = lp-&amp;gt;pNext;
-        }
-
-        Join&amp;lt;stTimeoutItem_t,stTimeoutItemLink_t&amp;gt;( active,timeout );  // 合并 active 和 timeout 链表
-
-        lp = active-&amp;gt;head;
-        while( lp )
-        {
-            PopHead&amp;lt;stTimeoutItem_t,stTimeoutItemLink_t&amp;gt;( active );
-            if( lp-&amp;gt;pfnProcess )
-            {
-                lp-&amp;gt;pfnProcess( lp );  // 一个个拿出来处理，调用 pfnProcess 函数，即 OnPollProcessEvent 函数
-            }
-            lp = active-&amp;gt;head;
-        }
-        if( pfn )
-        {
-            if( -1 == pfn( arg ) )
-            {
-                break;
-            }
-        }
-    }
-}
-
-void OnPollProcessEvent( stTimeoutItem_t * ap )
-{
-    stCoRoutine_t *co = (stCoRoutine_t*)ap-&amp;gt;pArg;  // 从上面知道，pArg 保存了该事件对应的协程
-    co_resume( co );   // resume 相应的协程
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;协程的挂起和恢复&lt;/p&gt;
-
-&lt;p&gt;协程的挂起和恢复由 stCoRoutineEnv_t 的 pCallStack 来管理。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;void co_yield_env( stCoRoutineEnv_t *env )  // 挂起当前协程，恢复其父协程
-{
-    stCoRoutine_t *last = env-&amp;gt;pCallStack[ env-&amp;gt;iCallStackSize - 2 ];  // last 可以认为是父协程
-    stCoRoutine_t *curr = env-&amp;gt;pCallStack[ env-&amp;gt;iCallStackSize - 1 ];  // curr 为当前执行的协程
-    env-&amp;gt;iCallStackSize--;
-    coctx_swap( &amp;amp;curr-&amp;gt;ctx, &amp;amp;last-&amp;gt;ctx );  // 保持 curr 协程的上下文， 并恢复 last 协程的上下文
-}
-
-void co_resume( stCoRoutine_t *co )   // 恢复 co 协程
-{
-    stCoRoutineEnv_t *env = co-&amp;gt;env;
-    stCoRoutine_t *lpCurrRoutine = env-&amp;gt;pCallStack[ env-&amp;gt;iCallStackSize - 1 ];
-    if( !co-&amp;gt;cStart )
-    {
-        coctx_make( &amp;amp;co-&amp;gt;ctx,(coctx_pfn_t)CoRoutineFunc,co,0 );
-        co-&amp;gt;cStart = 1;
-    }
-    env-&amp;gt;pCallStack[ env-&amp;gt;iCallStackSize++ ] = co;  // 执行协程的时候压入 pCallStack 栈中
-    coctx_swap( &amp;amp;(lpCurrRoutine-&amp;gt;ctx),&amp;amp;(co-&amp;gt;ctx) );  // 恢复 co 协程的上下文
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;流程图&lt;/h2&gt;
-
-&lt;p&gt;简化版的流程如下图所示：
-&lt;img src=&quot;/assets/images/learn-libco/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-</description>
-        <pubDate>Wed, 05 Oct 2016 15:59:32 +0800</pubDate>
-        <link>http://masutangu.com/2016/10/learn-libco/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/10/learn-libco/</guid>
         
         
         <category>源码阅读</category>

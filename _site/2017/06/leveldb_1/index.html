@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>LevelDB 源码阅读（一）</title>
+  <meta name="description" content="这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="LevelDB 源码阅读（一）">
+  <meta name="twitter:description" content="这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="LevelDB 源码阅读（一）">
+  <meta property="og:description" content="这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/06/leveldb_1/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-06-23 15:53:23 +0800" itemprop="datePublished" class="post-meta__date date">2017-06-23</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">LevelDB 源码阅读（一）</h1>
+  </header>
+
+  <section class="post">
+    <p>这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。</p>
+
+<h1>模块</h1>
+
+<h3>Log 文件</h3>
+
+<p>客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。</p>
+
+<h3>Memtable 和 Immutable Memtable</h3>
+
+<p>内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memtable 处理客户端请求。原来的 Memtable 转成 Immutable Memtable，等待归并到 SST 文件中。</p>
+
+<h3>SST 文件</h3>
+
+<p>落地到磁盘的存储文件。SST 分为不同的 level，具体参考<a href="https://github.com/google/leveldb/blob/master/doc/impl.md">文档</a>。</p>
+
+<h3>Manifest 文件</h3>
+
+<p>Manifest 记录不同 level 的 SST 文件，包括每个 SST 文件的 key range、大小等 metadata。</p>
+
+<h3>Current 文件</h3>
+
+<p>Current 记录了最新的 Manifest 文件。</p>
+
+<h1>类成员变量</h1>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">class DBImpl : public DB {
+  private:
+    TableCache* table_cache_;
+    MemTable* mem_;
+    MemTable* imm_;
+    WritableFile* logfile_;
+    log::Writer* log_;
+    std::deque&lt;Writer*&gt; writers_;
+    VersionSet* versions_;
+
+    // Set of table files to protect from deletion because they are
+    // part of ongoing compactions.
+    std::set&lt;uint64_t&gt; pending_outputs_;
+};
+
+class MemTable {
+  private:
+    typedef SkipList&lt;const char*, KeyComparator&gt; Table;
+    Arena arena_;  // 内存池
+    Table table_;  // 跳表
+};
+
+struct FileMetaData {
+  int refs;
+  int allowed_seek;   // seeks allowed until compaction
+  uint64_t number;    // ?? 
+  uint64_t file_size;
+  InternalKey smallest;
+  InternalKey largest;
+};
+
+class VersionEdit {
+  private:
+    typedef std::set&lt; std::pair&lt;int, uint64_t&gt; &gt; DeletedFileSet;
+
+    std::vector&lt; std::pair&lt;int, InternalKey&gt; &gt; compact_pointers_;
+    DeletedFileSet deleted_files_;
+    std::vector&lt; std::pair&lt;int, FileMetaData&gt; &gt; new_files_;
+};
+
+class Version {
+  public:
+    Status Get(const ReadOptions&amp;, const LookupKey&amp; key, std::string* val, 
+               GetStats* stats);
+  private:
+    VersionSet* vset_;
+    Version* next_;
+    Version* prev_;
+
+    // list of files per level
+    std::vector&lt;FileMetaData*&gt; files_[config::kNumLevels];
+};
+
+class TableCache {
+  public:
+    Status Get(const ReadOptions&amp; options, uint64_t file_number, 
+               uint64_t file_size, const Slice&amp; k, void *arg, 
+               void (*handle_result)(void*, const Slice&amp;, const Slice&amp;));
+
+  private:
+    Cache* cache_;
+};
+
+class VersionSet {
+  private:
+    TableCache* const table_cache_;
+    WritableFile* descriptor_file_;
+    log::Writer* descriptor_log_;
+    Version dummy_versions_;  // Head of circurlar doubly-linked list of versions  
+    Version* current_;        // == dummy_versions_.prev_
+};
+
+class WriteBatch {
+  public:
+    class Handler {
+    public:
+        virtual ~Handler();
+        virtual void Put(const Slice&amp; key, const Slice&amp; value) = 0;
+        virtual void Delete(const Slice&amp; key) = 0;
+    };
+  private:
+    friend class WriteBatchInternal;
+    std::string req_;
+}
+
+struct DBImpl::Writer {
+  Status status;
+  WriteBatch* batch;
+  bool sync;
+  bool done;
+  port::CondVar cv;
+
+  expplicit Writer(port::Mutex* mu) : cv(mu) { }
+};
+
+class Compaction {
+  private:
+    Version* input_version_;
+    VersionEdit edit_;
+
+    // Each compaction reads inputs from &quot;level_&quot; and &quot;level_+1&quot;
+    std::vector&lt;FileMetaData*&gt; inputs_[2];      // The two sets of inputs
+
+    // State used to check for number of of overlapping grandparent files
+    // (parent == level_ + 1, grandparent == level_ + 2)
+    std::vector&lt;FileMetaData*&gt; grandparents_;
+    size_t grandparent_index_;  // Index in grandparent_starts_
+    bool seen_key_;             // Some output key has been seen
+    int64_t overlapped_bytes_;  // Bytes of overlap between current output
+                                // and grandparent files
+
+    // level_ptrs_ holds indices into input_version_-&gt;levels_: our state
+    // is that we are positioned at one of the file ranges for each
+    // higher level than the ones involved in this compaction (i.e. for
+    // all L &gt;= level_ + 2).
+    size_t level_ptrs_[config::kNumLevels];
+};
+
+</code></pre></figure>
+<h1>主要操作</h1>
+
+<h3>读操作</h3>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status DBImpl::Get(const ReadOptions&amp; options,
+                   const Slice&amp; key,
+                   std::string* value) {
+
+  MutexLock l(&amp;mutex_);
+  MemTable* mem = mem_;
+  MemTable* imm = imm_;
+  Version* current = versions_-&gt;current();
+
+  bool have_stat_update = false;
+  Version::GetStats stats;
+
+  // Unlock while reading from files and memtables
+  {
+    mutex_.Unlock();
+    // First look in the memtable, then in the immutable memtable (if any).
+    LookupKey lkey(key, snapshot);
+    if (mem-&gt;Get(lkey, value, &amp;s)) {  // 1）先在 MemTable 中查找
+      // Done
+    } else if (imm != NULL &amp;&amp; imm-&gt;Get(lkey, value, &amp;s)) {  // 2）再在 Imutable MemTable 中查找
+      // Done
+    } else {
+      s = current-&gt;Get(options, lkey, value, &amp;stats);  // 3) 最后在当前 Version 中查找
+      have_stat_update = true;
+    }
+    mutex_.Lock();
+  }
+
+  // UpdateStats 减去 allowed_seeks，如果小于等于 0，则设置 file_to_compact_，准备 compaction
+  if (have_stat_update &amp;&amp; current-&gt;UpdateStats(stats)) {
+    MaybeScheduleCompaction();
+  }
+
+  return s;
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">// Version 类的 Get 方法
+Status Version::Get(const ReadOptions&amp; options,
+                    const LookupKey&amp; k,
+                    std::string* value,
+                    GetStats* stats) {
+  Slice ikey = k.internal_key();
+  Slice user_key = k.user_key();
+  const Comparator* ucmp = vset_-&gt;icmp_.user_comparator();
+  Status s;
+
+  stats-&gt;seek_file = NULL;
+  stats-&gt;seek_file_level = -1;
+  FileMetaData* last_file_read = NULL;
+  int last_file_read_level = -1;
+
+  // We can search level-by-level since entries never hop across
+  // levels.  Therefore we are guaranteed that if we find data
+  // in an smaller level, later levels are irrelevant.
+  std::vector&lt;FileMetaData*&gt; tmp;
+  FileMetaData* tmp2;
+  for (int level = 0; level &lt; config::kNumLevels; level++) {
+    size_t num_files = files_[level].size();
+    if (num_files == 0) continue;
+
+    // 这里省略一大段代码 files 指向候选文件列表，num_files 为列表的长度。具体实现看源码
+
+    for (uint32_t i = 0; i &lt; num_files; ++i) {
+      if (last_file_read != NULL &amp;&amp; stats-&gt;seek_file == NULL) {
+        // We have had more than one seek for this read.  Charge the 1st file.
+        // last_file_read 保存的其实就是第一个查找未命中的文件，函数返回后会调用 UpdateStats 来减去 allowed_seeks
+        stats-&gt;seek_file = last_file_read;
+        stats-&gt;seek_file_level = last_file_read_level;
+      }
+
+      FileMetaData* f = files[i];
+      last_file_read = f;
+      last_file_read_level = level;
+
+      Saver saver;
+      saver.state = kNotFound;
+      saver.ucmp = ucmp;
+      saver.user_key = user_key;
+      saver.value = value;
+      // 从 TableCache 中读取文件内容
+      s = vset_-&gt;table_cache_-&gt;Get(options, f-&gt;number, f-&gt;file_size,
+                                   ikey, &amp;saver, SaveValue);
+      if (!s.ok()) {
+        return s;
+      }
+      switch (saver.state) {
+        case kNotFound:
+          break;      // Keep searching in other files
+        case kFound:
+          return s;
+        case kDeleted:
+          s = Status::NotFound(Slice());  // Use empty error message for speed
+          return s;
+        case kCorrupt:
+          s = Status::Corruption(&quot;corrupted key for &quot;, user_key);
+          return s;
+      }
+    }
+  }
+
+  return Status::NotFound(Slice());  // Use an empty error message for speed
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status TableCache::Get(const ReadOptions&amp; options, uint64_t file_number, 
+                      uint64_t file_size, const Slice&amp; k, void *arg,
+                      void (*saver)(void* const Slice&amp;, const Slice&amp;)) {
+  Cache::Handle* handle = NULL;
+  Status s = FindTable(file_number, file_size, &amp;handle);
+  if (s.ok()) {
+    Table* t = reinterpret_cast&lt;TableAndFile*&gt;(cache_-&gt;Value(handle))-&gt;table;
+    s = t-&gt;InternalGet(options, k, arg, saver);
+    cache_-&gt;Release(handle);
+  }
+  return s;                        
+}
+</code></pre></figure>
+<p>查找顺序如下图：</p>
+
+<p><img src="/assets/images/leveldb/illustration-1.png" width="800" /></p>
+
+<h3>写操作</h3>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status DB::Put(const WriteOptions&amp; opt, const Slice&amp; key, const Slice&amp; value) {
+  WriteBatch batch;
+  batch.Put(key, value);
+  return Write(opt, &amp;batch);
+}
+
+Status DBImpl::Write(const WriteOptions&amp; options, WriteBatch* my_batch) {
+  Writer w(&amp;mutex_);
+  w.batch = my_batch;
+  w.sync = options.sync;
+  w.done = false;
+
+  MutexLock l(&amp;mutex_);
+  writers_.push_back(&amp;w);
+  // 生产者消费者模型
+  while (!w.done &amp;&amp; &amp;w != writers_.front()) {
+    w.cv.Wait();
+  }
+  // 写操作有可能被合并处理，因此有可能取到的时候写入已经完成。完成的话直接返回
+  if (w.done) {
+    return w.status;
+  }
+
+  // May temporarily unlock and wait.
+  // MakeRoomForWrite 判断是非需要归并 memtable
+  Status status = MakeRoomForWrite(my_batch == NULL);
+  uint64_t last_sequence = versions_-&gt;LastSequence();
+  Writer* last_writer = &amp;w;
+  if (status.ok() &amp;&amp; my_batch != NULL) {  // NULL batch is for compactions
+    WriteBatch* updates = BuildBatchGroup(&amp;last_writer); // 合并写操作
+    WriteBatchInternal::SetSequence(updates, last_sequence + 1);
+    last_sequence += WriteBatchInternal::Count(updates);
+
+    // Add to log and apply to memtable.  We can release the lock
+    // during this phase since &amp;w is currently responsible for logging
+    // and protects against concurrent loggers and concurrent writes
+    // into mem_.
+    {
+      mutex_.Unlock();
+      status = log_-&gt;AddRecord(WriteBatchInternal::Contents(updates));
+      bool sync_error = false;
+      if (status.ok() &amp;&amp; options.sync) {
+        status = logfile_-&gt;Sync();
+        if (!status.ok()) {
+          sync_error = true;
+        }
+      }
+      if (status.ok()) {
+        status = WriteBatchInternal::InsertInto(updates, mem_);
+      }
+      mutex_.Lock();
+      if (sync_error) {
+        // The state of the log file is indeterminate: the log record we
+        // just added may or may not show up when the DB is re-opened.
+        // So we force the DB into a mode where all future writes fail.
+        RecordBackgroundError(status);
+      }
+    }
+    if (updates == tmp_batch_) tmp_batch_-&gt;Clear();
+
+    versions_-&gt;SetLastSequence(last_sequence);
+  }
+
+  while (true) {
+    Writer* ready = writers_.front();
+    writers_.pop_front();
+    if (ready != &amp;w) {
+      ready-&gt;status = status;
+      ready-&gt;done = true;
+      ready-&gt;cv.Signal();
+    }
+    if (ready == last_writer) break;
+  }
+
+  // Notify new head of write queue
+  if (!writers_.empty()) {
+    writers_.front()-&gt;cv.Signal();
+  }
+
+  return status;
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">// REQUIRES: Writer list must be non-empty
+// REQUIRES: First writer must have a non-NULL batch
+// 尝试合并写操作
+WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
+  assert(!writers_.empty());
+  Writer* first = writers_.front();
+  WriteBatch* result = first-&gt;batch;
+  assert(result != NULL);
+
+  size_t size = WriteBatchInternal::ByteSize(first-&gt;batch);
+
+  // Allow the group to grow up to a maximum size, but if the
+  // original write is small, limit the growth so we do not slow
+  // down the small write too much.
+  size_t max_size = 1 &lt;&lt; 20;
+  if (size &lt;= (128&lt;&lt;10)) {
+    max_size = size + (128&lt;&lt;10);
+  }
+
+  *last_writer = first;
+  std::deque&lt;Writer*&gt;::iterator iter = writers_.begin();
+  ++iter;  // Advance past &quot;first&quot;
+  for (; iter != writers_.end(); ++iter) {
+    Writer* w = *iter;
+    if (w-&gt;sync &amp;&amp; !first-&gt;sync) {
+      // Do not include a sync write into a batch handled by a non-sync write.
+      break;
+    }
+
+    if (w-&gt;batch != NULL) {
+      size += WriteBatchInternal::ByteSize(w-&gt;batch);
+      if (size &gt; max_size) {
+        // Do not make batch too big
+        break;
+      }
+
+      // Append to *result
+      // 把合并的写请求保存在成员变量 tmp_batch_ 中，避免和调用者的写请求混淆在一起
+      if (result == first-&gt;batch) {
+        // Switch to temporary batch instead of disturbing caller&#39;s batch
+        result = tmp_batch_;
+        assert(WriteBatchInternal::Count(result) == 0);
+        WriteBatchInternal::Append(result, first-&gt;batch);
+      }
+      WriteBatchInternal::Append(result, w-&gt;batch);
+    }
+    *last_writer = w;
+  }
+  return result;
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status WriteBatchInternal::InsertInto(const WriteBatch* b,
+                                      MemTable* memtable) {
+  MemTableInserter inserter;
+  inserter.sequence_ = WriteBatchInternal::Sequence(b);
+  inserter.mem_ = memtable;
+  return b-&gt;Iterate(&amp;inserter);
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status WriteBatch::Iterate(Handler* handler) const {
+  Slice input(rep_);
+  if (input.size() &lt; kHeader) {
+    return Status::Corruption(&quot;malformed WriteBatch (too small)&quot;);
+  }
+
+  input.remove_prefix(kHeader);
+  Slice key, value;
+  int found = 0;
+  while (!input.empty()) {
+    found++;
+    char tag = input[0];
+    input.remove_prefix(1);
+    switch (tag) {
+      case kTypeValue:
+        if (GetLengthPrefixedSlice(&amp;input, &amp;key) &amp;&amp;
+            GetLengthPrefixedSlice(&amp;input, &amp;value)) {
+          handler-&gt;Put(key, value);
+        } else {
+          return Status::Corruption(&quot;bad WriteBatch Put&quot;);
+        }
+        break;
+      case kTypeDeletion:
+        if (GetLengthPrefixedSlice(&amp;input, &amp;key)) {
+          handler-&gt;Delete(key);
+        } else {
+          return Status::Corruption(&quot;bad WriteBatch Delete&quot;);
+        }
+        break;
+      default:
+        return Status::Corruption(&quot;unknown WriteBatch tag&quot;);
+    }
+  }
+  if (found != WriteBatchInternal::Count(this)) {
+    return Status::Corruption(&quot;WriteBatch has wrong count&quot;);
+  } else {
+    return Status::OK();
+  }
+}
+</code></pre></figure>
+<h3>Compaction</h3>
+
+<p>Compaction 触发时机：</p>
+
+<ul>
+<li>Immutable MemTable 不为空</li>
+<li>指定了 Manual Compaction</li>
+<li>VersionSet NeedsCompaction 返回 True
+
+<ul>
+<li><code>compaction_score_</code> 大于 1</li>
+<li><code>file_to_compact_</code> 不为空</li>
+</ul></li>
+</ul>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">void DBImpl::MaybeScheduleCompaction() {
+  mutex_.AssertHeld();
+  if (bg_compaction_scheduled_) {
+    // Already scheduled
+  } else if (shutting_down_.Acquire_Load()) {
+    // DB is being deleted; no more background compactions
+  } else if (!bg_error_.ok()) {
+    // Already got an error; no more changes
+  } else if (imm_ == NULL &amp;&amp;
+             manual_compaction_ == NULL &amp;&amp;
+             !versions_-&gt;NeedsCompaction()) {
+    // No work to be done
+  } else {
+    bg_compaction_scheduled_ = true;
+    env_-&gt;Schedule(&amp;DBImpl::BGWork, this);
+  }
+}
+
+bool VersionSet::NeedsCompaction() const {
+  Version* v = current_;
+  return (v-&gt;compaction_score_ &gt;= 1) || (v-&gt;file_to_compact_ != NULL);
+}
+</code></pre></figure>
+<p>compaction_score_ 的计算如下：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">void VersionSet::Finalize(Version* v) {
+  // Precomputed best level for next compaction
+  int best_level = -1;
+  double best_score = -1;
+
+  for (int level = 0; level &lt; config::kNumLevels-1; level++) {
+    double score;
+    if (level == 0) {
+      // We treat level-0 specially by bounding the number of files
+      // instead of number of bytes for two reasons:
+      //
+      // (1) With larger write-buffer sizes, it is nice not to do too
+      // many level-0 compactions.
+      //
+      // (2) The files in level-0 are merged on every read and
+      // therefore we wish to avoid too many files when the individual
+      // file size is small (perhaps because of a small write-buffer
+      // setting, or very high compression ratios, or lots of
+      // overwrites/deletions).
+      score = v-&gt;files_[level].size() /
+          static_cast&lt;double&gt;(config::kL0_CompactionTrigger);
+    } else {
+      // Compute the ratio of current size to size limit.
+      const uint64_t level_bytes = TotalFileSize(v-&gt;files_[level]);
+      score = static_cast&lt;double&gt;(level_bytes) / MaxBytesForLevel(level);
+    }
+
+    if (score &gt; best_score) {
+      best_level = level;
+      best_score = score;
+    }
+  }
+
+  v-&gt;compaction_level_ = best_level;
+  v-&gt;compaction_score_ = best_score;
+}
+</code></pre></figure>
+<p>file_to_compact_ 则是由 allowed_seeks 来控制。从下面代码的注释可知 25 次 seek 的开销和一次 compaction 的开销差不多。allowed_seeks 可以理解为文件剩余查找次数，每次查找失败allowed_seeks 就会减 1。当 allowed_seeks 小于等于 0，意味着应该启动 compaction 来减少查找未命中带来的 seek 的开销了：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">bool Version::UpdateStats(const GetStats&amp; stats) {
+  FileMetaData* f = stats.seek_file;
+  if (f != NULL) {
+    f-&gt;allowed_seeks--;
+    if (f-&gt;allowed_seeks &lt;= 0 &amp;&amp; file_to_compact_ == NULL) {
+      file_to_compact_ = f;
+      file_to_compact_level_ = stats.seek_file_level;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Apply all of the edits in *edit to the current state.
+void Builder::Apply(VersionEdit* edit) {
+  // Update compaction pointers
+  for (size_t i = 0; i &lt; edit-&gt;compact_pointers_.size(); i++) {
+    const int level = edit-&gt;compact_pointers_[i].first;
+    vset_-&gt;compact_pointer_[level] =
+        edit-&gt;compact_pointers_[i].second.Encode().ToString();
+  }
+
+  // Delete files
+  const VersionEdit::DeletedFileSet&amp; del = edit-&gt;deleted_files_;
+  for (VersionEdit::DeletedFileSet::const_iterator iter = del.begin();
+        iter != del.end();
+        ++iter) {
+    const int level = iter-&gt;first;
+    const uint64_t number = iter-&gt;second;
+    levels_[level].deleted_files.insert(number);
+  }
+
+  // Add new files
+  for (size_t i = 0; i &lt; edit-&gt;new_files_.size(); i++) {
+    const int level = edit-&gt;new_files_[i].first;
+    FileMetaData* f = new FileMetaData(edit-&gt;new_files_[i].second);
+    f-&gt;refs = 1;
+
+    // We arrange to automatically compact this file after
+    // a certain number of seeks.  Let&#39;s assume:
+    //   (1) One seek costs 10ms
+    //   (2) Writing or reading 1MB costs 10ms (100MB/s)
+    //   (3) A compaction of 1MB does 25MB of IO:
+    //         1MB read from this level
+    //         10-12MB read from next level (boundaries may be misaligned)
+    //         10-12MB written to next level
+    // This implies that 25 seeks cost the same as the compaction
+    // of 1MB of data.  I.e., one seek costs approximately the
+    // same as the compaction of 40KB of data.  We are a little
+    // conservative and allow approximately one seek for every 16KB
+    // of data before triggering a compaction.
+    f-&gt;allowed_seeks = (f-&gt;file_size / 16384);
+    if (f-&gt;allowed_seeks &lt; 100) f-&gt;allowed_seeks = 100;
+
+    levels_[level].deleted_files.erase(f-&gt;number);
+    levels_[level].added_files-&gt;insert(f);
+  }
+}
+
+</code></pre></figure>
+<p>看看 Compaction 做了哪些工作：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">void DBImpl::BackgroundCompaction() {
+  mutex_.AssertHeld();
+
+  if (imm_ != NULL) {
+    CompactMemTable();
+    return;
+  }
+  // 这里去掉了 manual compaction 的代码 不关心
+  Compaction* c = versions_-&gt;PickCompaction();
+
+  Status status;
+  if (c == NULL) {
+    // Nothing to do
+  } else if (c-&gt;IsTrivialMove()) {
+    // Move file to next level
+    // IsTrivialMove 返回 True 则直接将文件移入 level + 1 层即可
+    assert(c-&gt;num_input_files(0) == 1);
+    FileMetaData* f = c-&gt;input(0, 0);
+    c-&gt;edit()-&gt;DeleteFile(c-&gt;level(), f-&gt;number);
+    c-&gt;edit()-&gt;AddFile(c-&gt;level() + 1, f-&gt;number, f-&gt;file_size,
+                       f-&gt;smallest, f-&gt;largest);
+    status = versions_-&gt;LogAndApply(c-&gt;edit(), &amp;mutex_);
+    if (!status.ok()) {
+      RecordBackgroundError(status);
+    }
+  } else {
+    CompactionState* compact = new CompactionState(c);
+    status = DoCompactionWork(compact);
+    if (!status.ok()) {
+      RecordBackgroundError(status);
+    }
+    CleanupCompaction(compact);
+    c-&gt;ReleaseInputs();
+    DeleteObsoleteFiles();
+  }
+  delete c;
+
+  if (status.ok()) {
+    // Done
+  } else if (shutting_down_.Acquire_Load()) {
+    // Ignore compaction errors found during shutting down
+  } else {
+    Log(options_.info_log,
+        &quot;Compaction error: %s&quot;, status.ToString().c_str());
+  }
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-c++" data-lang="c++">Compaction* VersionSet::PickCompaction() {
+  Compaction* c;
+  int level;
+
+  // We prefer compactions triggered by too much data in a level over
+  // the compactions triggered by seeks.
+  // 判断是 size_compaction 还是 seek_compaction
+  const bool size_compaction = (current_-&gt;compaction_score_ &gt;= 1);
+  const bool seek_compaction = (current_-&gt;file_to_compact_ != NULL);
+  if (size_compaction) {
+    level = current_-&gt;compaction_level_;
+    assert(level &gt;= 0);
+    assert(level+1 &lt; config::kNumLevels);
+    c = new Compaction(level);
+
+    // Pick the first file that comes after compact_pointer_[level]
+    // compact_pointer_[level] 记录上次 compact 时最大的 key
+    for (size_t i = 0; i &lt; current_-&gt;files_[level].size(); i++) {
+      FileMetaData* f = current_-&gt;files_[level][i];
+      if (compact_pointer_[level].empty() ||
+          icmp_.Compare(f-&gt;largest.Encode(), compact_pointer_[level]) &gt; 0) {
+        c-&gt;inputs_[0].push_back(f);
+        break;
+      }
+    }
+    if (c-&gt;inputs_[0].empty()) {
+      // Wrap-around to the beginning of the key space
+      c-&gt;inputs_[0].push_back(current_-&gt;files_[level][0]);
+    }
+  } else if (seek_compaction) {
+    level = current_-&gt;file_to_compact_level_;
+    c = new Compaction(level);
+    c-&gt;inputs_[0].push_back(current_-&gt;file_to_compact_);
+  } else {
+    return NULL;
+  }
+
+  c-&gt;input_version_ = current_;
+  c-&gt;input_version_-&gt;Ref();
+
+  // Files in level 0 may overlap each other, so pick up all overlapping ones
+  if (level == 0) {
+    InternalKey smallest, largest;
+    GetRange(c-&gt;inputs_[0], &amp;smallest, &amp;largest);
+    // Note that the next call will discard the file we placed in
+    // c-&gt;inputs_[0] earlier and replace it with an overlapping set
+    // which will include the picked file.
+    current_-&gt;GetOverlappingInputs(0, &amp;smallest, &amp;largest, &amp;c-&gt;inputs_[0]);
+    assert(!c-&gt;inputs_[0].empty());
+  }
+
+  // 填充 level + 1 的文件，更新 compact_pointer_ 
+  SetupOtherInputs(c);
+
+  return c;
+}
+</code></pre></figure>
+<p>IsTrivialMove 判断能否直接将文件移入 level + 1 层：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">bool Compaction::IsTrivialMove() const {
+  // Avoid a move if there is lots of overlapping grandparent data.
+  // Otherwise, the move could create a parent file that will require
+  // a very expensive merge later on.
+  return (num_input_files(0) == 1 &amp;&amp;
+          num_input_files(1) == 0 &amp;&amp;
+          TotalFileSize(grandparents_) &lt;= kMaxGrandParentOverlapBytes);
+}
+</code></pre></figure>
+<p>具体的合并操作在 DoCompactionWork 方法：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status DBImpl::DoCompactionWork(CompactionState* compact) {
+  if (snapshots_.empty()) {
+    compact-&gt;smallest_snapshot = versions_-&gt;LastSequence();
+  } else {
+    compact-&gt;smallest_snapshot = snapshots_.oldest()-&gt;number_;
+  }
+
+  // Release mutex while we&#39;re actually doing the compaction work
+  mutex_.Unlock();
+
+  Iterator* input = versions_-&gt;MakeInputIterator(compact-&gt;compaction);
+  input-&gt;SeekToFirst();
+  Status status;
+  ParsedInternalKey ikey;
+  std::string current_user_key;
+  bool has_current_user_key = false;
+  SequenceNumber last_sequence_for_key = kMaxSequenceNumber;
+  for (; input-&gt;Valid() &amp;&amp; !shutting_down_.Acquire_Load(); ) {
+    // Prioritize immutable compaction work
+    if (has_imm_.NoBarrier_Load() != NULL) {
+      mutex_.Lock();
+      if (imm_ != NULL) {
+        CompactMemTable();  // 总是优先处理 CompactMemTable 避免阻塞 MemTable 的写入
+        bg_cv_.SignalAll();  // Wakeup MakeRoomForWrite() if necessary
+      }
+      mutex_.Unlock();
+    }
+
+    Slice key = input-&gt;key();
+    if (compact-&gt;compaction-&gt;ShouldStopBefore(key) &amp;&amp;
+        compact-&gt;builder != NULL) {
+      status = FinishCompactionOutputFile(compact, input);
+      if (!status.ok()) {
+        break;
+      }
+    }
+
+    // Handle key/value, add to state, etc.
+    bool drop = false;
+    if (!ParseInternalKey(key, &amp;ikey)) {
+      // Do not hide error keys
+      current_user_key.clear();
+      has_current_user_key = false;
+      last_sequence_for_key = kMaxSequenceNumber;
+    } else {
+      if (!has_current_user_key ||
+          user_comparator()-&gt;Compare(ikey.user_key,
+                                     Slice(current_user_key)) != 0) {
+        // First occurrence of this user key
+        current_user_key.assign(ikey.user_key.data(), ikey.user_key.size());
+        has_current_user_key = true;
+        last_sequence_for_key = kMaxSequenceNumber;
+      }
+
+      if (last_sequence_for_key &lt;= compact-&gt;smallest_snapshot) {
+        // Hidden by an newer entry for same user key
+        drop = true;    // (A)
+      } else if (ikey.type == kTypeDeletion &amp;&amp;
+                 ikey.sequence &lt;= compact-&gt;smallest_snapshot &amp;&amp;
+                 compact-&gt;compaction-&gt;IsBaseLevelForKey(ikey.user_key)) {
+        // For this user key:
+        // (1) there is no data in higher levels
+        // (2) data in lower levels will have larger sequence numbers
+        // (3) data in layers that are being compacted here and have
+        //     smaller sequence numbers will be dropped in the next
+        //     few iterations of this loop (by rule (A) above).
+        // Therefore this deletion marker is obsolete and can be dropped.
+        // 如果高层还有记录，则 kTypeDeletion 标记不能丢掉。
+        // smallest_snapshot 主要是为了快照功能服务
+        // 但 ikey.sequence &lt;= compact-&gt;smallest_snapshot 这个判断没看懂
+        drop = true;
+      }
+
+      last_sequence_for_key = ikey.sequence;
+    }
+
+    if (!drop) {
+      // Open output file if necessary
+      if (compact-&gt;builder == NULL) {
+        status = OpenCompactionOutputFile(compact);
+        if (!status.ok()) {
+          break;
+        }
+      }
+      if (compact-&gt;builder-&gt;NumEntries() == 0) {
+        compact-&gt;current_output()-&gt;smallest.DecodeFrom(key);
+      }
+      compact-&gt;current_output()-&gt;largest.DecodeFrom(key);
+      compact-&gt;builder-&gt;Add(key, input-&gt;value());
+
+      // Close output file if it is big enough
+      if (compact-&gt;builder-&gt;FileSize() &gt;=
+          compact-&gt;compaction-&gt;MaxOutputFileSize()) {
+        status = FinishCompactionOutputFile(compact, input);  // 输出新的 SST 文件
+        if (!status.ok()) {
+          break;
+        }
+      }
+    }
+
+    input-&gt;Next();
+  }
+
+  // 中间省略一坨代码
+
+  mutex_.Lock();
+  stats_[compact-&gt;compaction-&gt;level() + 1].Add(stats);
+
+  if (status.ok()) {
+    status = InstallCompactionResults(compact);
+  }
+
+  return status;
+}
+</code></pre></figure>
+<p>最后调用 InstallCompactionResults，记录版本变化：</p>
+<figure class="highlight"><pre><code class="language-c++" data-lang="c++">Status DBImpl::InstallCompactionResults(CompactionState* compact) {
+  mutex_.AssertHeld();
+  Log(options_.info_log,  &quot;Compacted %d@%d + %d@%d files =&gt; %lld bytes&quot;,
+      compact-&gt;compaction-&gt;num_input_files(0),
+      compact-&gt;compaction-&gt;level(),
+      compact-&gt;compaction-&gt;num_input_files(1),
+      compact-&gt;compaction-&gt;level() + 1,
+      static_cast&lt;long long&gt;(compact-&gt;total_bytes));
+
+  // Add compaction outputs
+  compact-&gt;compaction-&gt;AddInputDeletions(compact-&gt;compaction-&gt;edit());
+  const int level = compact-&gt;compaction-&gt;level();
+  for (size_t i = 0; i &lt; compact-&gt;outputs.size(); i++) {
+    const CompactionState::Output&amp; out = compact-&gt;outputs[i];
+    compact-&gt;compaction-&gt;edit()-&gt;AddFile(
+        level + 1,
+        out.number, out.file_size, out.smallest, out.largest);
+  }
+  return versions_-&gt;LogAndApply(compact-&gt;compaction-&gt;edit(), &amp;mutex_);
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/02/linker-loader-library-note/" title="link to 链接和装载">链接和装载</a></h2>
+       <p class="excerpt">本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。概论从源文件到可执行文件，可以分解为四个过程：预处理，编译，汇编，链接。预处理主要完成以下工作：展开所有宏定义，删除 #define处理所有条件预编译指令处理 #include 预编译指令。将被包含的文件插入到该预编译指令的位置删除所有注释添加行号和文件名标识，以便编译时编辑器产生调试用的行号信息以及编译产生错误或警告时的行号信息保留所有 #pragma 编译器指令编译的过程即把预处理完的文件进行一系列的词法分析、语法分析、语...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-02-25 10:55:19 +0800" class="post-list__meta--date date">2017-02-25</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/02/linker-loader-library-note/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/06/leveldb_1/";
+        this.page.identifier = "/2017/06/leveldb_1/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

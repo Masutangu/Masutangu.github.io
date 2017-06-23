@@ -624,3 +624,289 @@ public:
     }
 };
 ```
+
+# Wildcard Matching
+
+```c++
+// 会超时
+class Solution {
+public:
+    bool match(string &s, string &p, int s_idx, int p_idx) {
+        if (p_idx < p.size()) {
+            if (p[p_idx] == '*') {
+                while (p_idx + 1 < p.size() && p[p_idx + 1] == '*') {
+                    p_idx++;
+                }
+            }
+        }
+        if (s_idx == s.size() - 1 && p_idx == p.size() - 1) {
+            if (p[p_idx] == '*' || p[p_idx] == '?' || s[s_idx] == p[p_idx]) {
+                return true;
+            }
+            return false;
+        }
+        if (s_idx >= s.size()) {
+            if (p_idx >= p.size() || (p_idx == p.size() - 1 && p[p_idx] == '*')) {
+                return true;
+            }
+            return false;
+        }
+        if (p_idx >= p.size()) {
+            return false;
+        }
+        
+        if (p[p_idx] == '*') {
+            for (int i = s_idx; i <= s.size(); i++) {
+                if (match(s, p, i, p_idx + 1)) {
+                    return true;
+                }
+            }
+            return false;
+        } else if (p[p_idx] == '?') {
+            return match(s, p, s_idx + 1, p_idx + 1);
+        } else {
+            if (s[s_idx] != p[p_idx]) {
+                return false;
+            }
+            return match(s, p, s_idx + 1, p_idx + 1);
+        }
+    }
+
+    bool isMatch(string s, string p) {
+        return match(s, p, 0, 0);
+    }
+};
+```
+
+```c++
+class Solution {
+public:
+    bool isMatch(string s, string p) {
+        int last_s_idx = -1, last_p_idx = -1, p_idx = 0;
+        
+        for (int i = 0; i < s.size(); i++) {
+            if (p_idx < p.size() && s[i] == p[p_idx] || p[p_idx] == '?') {
+                p_idx++;
+            } else if (p_idx < p.size() && p[p_idx] == '*') {
+                last_s_idx = i;
+                last_p_idx = p_idx;
+                i--;
+                p_idx++;
+            } else {
+                if (last_s_idx != -1 && last_p_idx != -1) {
+                    i = last_s_idx++;
+                    p_idx = last_p_idx + 1;
+                } else {
+                    return false;
+                }
+            }
+        }
+        while (p_idx < p.size() && p[p_idx] == '*') {
+            p_idx++;
+        }
+        if (p_idx >= p.size()) {
+            return true;
+        }
+        
+        return false;
+    }
+};
+```
+
+# Permutations II
+递归解法 和 非递归解法
+向后swap
+
+# Group Anagrams
+优化的点？使用hash
+
+# Pow(x, n)
+keynode: binary search 
+优化：非递归
+
+```c++
+class Solution {
+public:
+    double pow(double x, int n) {
+        if (n == 0) {
+            return 1;
+        } else if (n == 1) {
+            return x;
+        }
+        
+        double p = pow(x, n/2);
+        
+        if (n % 2 == 0) {
+            return p * p;
+        } else {
+            return p * p * x;
+        }
+    }
+
+    double myPow(double x, int n) {
+        if (n < 0) {
+            return 1 / pow(x, -n);
+        }
+        return pow(x, n);
+    }
+};
+```
+
+注意不要溢出
+```c++
+class Solution {
+public:
+    double pow(double x, long n) {
+        double ans = 1;
+        while (n > 0) {
+            if (n & 1) {
+                ans *= x;
+            } 
+            x *= x;
+            n >>= 1;
+        }
+        return ans;
+    }
+    double myPow(double x, int n) {
+        long ln = n;
+        if (ln < 0) {
+            return 1 / pow(x, -ln);
+        } 
+        return pow(x, n);
+    }
+};
+```
+
+
+# Permutation Sequence
+
+```c++
+class Solution {
+public:
+    string getPermutation(int n, int k) {
+        if (n == 0) {
+            return "";
+        }
+        if (n == 1) {
+            return "1";
+        }
+        string result;
+        k -= 1; // start from 0 instead of 1
+        
+        int filter[10] = { 0 }; 
+        int copy_n = n;
+       
+        while (1) {
+            int temp = 1;
+            int base = 1;
+            
+            while (temp++ < n - 1) {
+                base *= temp;
+            }
+            
+            int idx = k / base;
+            
+            int count = 0;
+            for (int i = 1; i <= copy_n; i++) {
+                if (filter[i]) {
+                    continue;
+                }
+                if (count == idx) {
+                    result.push_back('0' + i);
+                    filter[i] = 1;
+                    break;
+                }
+                count++;
+            }
+            
+            k = k - idx * base;
+            n--;
+            
+            if (n == 0) {
+                break;
+            }
+        }
+        
+        return result;
+    }
+};
+```
+
+优化 提前算好 (n-1)!, (n-2)!, ..., 1!, 0!
+
+```c++
+class Solution {
+public:
+    string getPermutation(int n, int k) {
+        if (n == 0) {
+            return "";
+        }
+        if (n == 1) {
+            return "1";
+        }
+        string result;
+        k -= 1; // start from 0 instead of 1
+        
+        int filter[10] = { 0 }; 
+        int copy_n = n;
+        
+        int fract[10] = { 0 };
+        
+         int temp = 1;
+         int base = 1;
+        
+         while (temp <= n) {
+            fract[temp] = base;
+            base *= temp;
+            temp++;
+         }
+       
+        while (1) {
+            int idx = k / fract[n];
+            
+            int count = 0;
+            for (int i = 1; i <= copy_n; i++) {
+                if (filter[i]) {
+                    continue;
+                }
+                if (count == idx) {
+                    result.push_back('0' + i);
+                    filter[i] = 1;
+                    break;
+                }
+                count++;
+            }
+            
+            k = k - idx * fract[n];
+            n--;
+            
+            if (n == 0) {
+                break;
+            }
+        }
+        
+        return result;
+    }
+};
+```
+
+strip string
+
+```c++
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    ltrim(s);
+    rtrim(s);
+}
+```
