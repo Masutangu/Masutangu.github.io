@@ -128,9 +128,9 @@
   <ol class="post-list">
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/06/leveldb_1.1/" title="访问 LevelDB 源码阅读（一）">LevelDB 源码阅读（一）</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2017/06/leveldb_1/" title="访问 LevelDB 源码阅读（一）">LevelDB 源码阅读（一）</a></h2>
       <p class="excerpt">这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。模块Log 文件客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。Memtable 和 Immutable Memtable内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memta...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-06-23 15:53:23 +0800" class="post-list__meta--date date">2017-06-23</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2017/06/leveldb_1.1/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2017-06-23 15:53:23 +0800" class="post-list__meta--date date">2017-06-23</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2017/06/leveldb_1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
