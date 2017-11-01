@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2017-11-01T08:33:41+08:00
-title: 游戏开发中的状态机
+title: 游戏开发之状态机
 category: 工作
 ---
 
