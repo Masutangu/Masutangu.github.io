@@ -89,14 +89,14 @@ func PressButton(prevState State, event Event) State {
 }
 
 func main() {
-	stateMachine := StateMachine{
-			currState:    Off,  // 初始状态为关闭
-			handlers: make(map[int64]Handler),
-	  }
+  stateMachine := StateMachine{
+      currState:    Off,  // 初始状态为关闭
+      handlers: make(map[int64]Handler),
+  }
 
-	stateMachine.AddHandler(EVENT_PRESS, PressButton)
-	stateMachine.Call(&PressEvent{}) // 按下后变成开
-	stateMachine.Call(&PressEvent{}) // 再次按下变为关闭
+  stateMachine.AddHandler(EVENT_PRESS, PressButton)
+  stateMachine.Call(&PressEvent{}) // 按下后变成开
+  stateMachine.Call(&PressEvent{}) // 再次按下变为关闭
 }
 ```
 
@@ -196,17 +196,17 @@ func PressButton(prevState State, event Event) bool {
 }
 
 func main() {
-	stateMachine := StateMachine{
-			currState:    Off,  // 初始状态为关闭
-			handlers: make(map[int64]Handler),
+  stateMachine := StateMachine{
+      currState:    Off,  // 初始状态为关闭
+      handlers: make(map[int64]Handler),
       transitions: make(map[State]map[int64]State),
-	}
+  }
 
-	stateMachine.AddHandler(EVENT_PRESS, PressButton)
-	stateMachine.AddTransition(Off, EVENT_PRESS, On)
-	stateMachine.AddTransition(On, EVENT_PRESS, Off)
-	stateMachine.Call(&PressEvent{}) // 按一次状态不变
-	stateMachine.Call(&PressEvent{}) // 按两次变成 off 状态
+  stateMachine.AddHandler(EVENT_PRESS, PressButton)
+  stateMachine.AddTransition(Off, EVENT_PRESS, On)
+  stateMachine.AddTransition(On, EVENT_PRESS, Off)
+  stateMachine.Call(&PressEvent{}) // 按一次状态不变
+  stateMachine.Call(&PressEvent{}) // 按两次变成 off 状态
 }
 ```
 
@@ -319,17 +319,17 @@ func (h *PressEventHandler) Check() bool {
 }
 
 func main() {
-	stateMachine := StateMachine{
+  stateMachine := StateMachine{
       currState:    Off,  // 初始状态为关闭
       handlers: make(map[int64]Handler),
       transitions: make(map[State]map[int64]State),
-	}
+  }
 
-	stateMachine.AddHandler(EVENT_PRESS, &PressEventHandler{})
-	stateMachine.AddTransition(Off, EVENT_PRESS, On)
-	stateMachine.AddTransition(On, EVENT_PRESS, Off)
-	stateMachine.Call(&PressEvent{}) // 按一次状态不变
-	stateMachine.Call(&PressEvent{}) // 按两次变成 off 状态
+  stateMachine.AddHandler(EVENT_PRESS, &PressEventHandler{})
+  stateMachine.AddTransition(Off, EVENT_PRESS, On)
+  stateMachine.AddTransition(On, EVENT_PRESS, Off)
+  stateMachine.Call(&PressEvent{}) // 按一次状态不变
+  stateMachine.Call(&PressEvent{}) // 按两次变成 off 状态
 }
 ```
 
