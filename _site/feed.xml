@@ -5,12 +5,12 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 01 Nov 2017 20:23:57 +0800</pubDate>
-    <lastBuildDate>Wed, 01 Nov 2017 20:23:57 +0800</lastBuildDate>
+    <pubDate>Wed, 01 Nov 2017 21:10:03 +0800</pubDate>
+    <lastBuildDate>Wed, 01 Nov 2017 21:10:03 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
-        <title>游戏开发中的状态机</title>
+        <title>游戏开发之状态机</title>
         <description>&lt;p&gt;这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。&lt;/p&gt;
 
 &lt;h1&gt;前言&lt;/h1&gt;
@@ -36,7 +36,7 @@
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 1. simple state machine
 // 事件 interface
 type Event interface {
-    EventId() int64
+  EventId() int64
 }
 
 type State int
@@ -45,22 +45,22 @@ type State int
 type Handler func(prevState State, event Event) State
 
 type StateMachine struct {
-    currState    State
-    handlers map[int64]Handler
+  currState    State
+  handlers map[int64]Handler
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-    s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 事件处理
 func (s *StateMachine) Call(event Event)  {
-    fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)
-    if handler, ok := s.handlers[event.EventId()]; ok {
-      s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
-    }
-    fmt.Println(&amp;quot;new state: &amp;quot;, s.currState)
+  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)
+  if handler, ok := s.handlers[event.EventId()]; ok {
+    s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
+  }
+  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState)
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;&lt;code&gt;Handler&lt;/code&gt; 为事件处理函数，输入参数为当前状态和事件，返回处理后的新状态。状态机根据事件找到对应的&lt;code&gt;Handler&lt;/code&gt;，&lt;code&gt;Handler&lt;/code&gt; 根据当前状态和触发的事件，返回下一个新状态，由状态机更新。&lt;/p&gt;
@@ -72,8 +72,8 @@ const (
 )
 
 var (
-    Off = State(0)  // 定义关闭状态
-    On  = State(1)  // 定义开启状态 
+  Off = State(0)  // 定义关闭状态
+  On  = State(1)  // 定义开启状态 
 )
 
 // 定义 press 事件
@@ -81,7 +81,7 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-    return EVENT_PRESS
+  return EVENT_PRESS
 }
 
 // 定义事件 Handler
@@ -94,14 +94,14 @@ func PressButton(prevState State, event Event) State {
 }
 
 func main() {
-    stateMachine := StateMachine{
-            currState:    Off,  // 初始状态为关闭
-            handlers: make(map[int64]Handler),
-      }
+  stateMachine := StateMachine{
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+  }
 
-    stateMachine.AddHandler(EVENT_PRESS, PressButton)
-    stateMachine.Call(&amp;amp;PressEvent{}) // 按下后变成开
-    stateMachine.Call(&amp;amp;PressEvent{}) // 再次按下变为关闭
+  stateMachine.AddHandler(EVENT_PRESS, PressButton)
+  stateMachine.Call(&amp;amp;PressEvent{}) // 按下后变成开
+  stateMachine.Call(&amp;amp;PressEvent{}) // 再次按下变为关闭
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;程序输出：&lt;/p&gt;
@@ -118,7 +118,7 @@ new state:  0
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 2. a little more complicate state machine
 
 type Event interface {
-    EventId() int64
+  EventId() int64
 }
 
 type State int
@@ -127,22 +127,22 @@ type State int
 type Handler func(prevState State, event Event) bool
 
 type StateMachine struct {
-    currState    State
-    handlers map[int64]Handler
+  currState    State
+  handlers map[int64]Handler
   transitions map[State]map[int64]State
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-    s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 添加状态变迁
 func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
   if trans, ok := s.transitions[originState]; !ok {
-     s.transitions[originState] = map[int64]State{eventId: destState}
+    s.transitions[originState] = map[int64]State{eventId: destState}
   } else {
-     trans[eventId] = destState
+    trans[eventId] = destState
   }
 }
 
@@ -179,7 +179,7 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-    return EVENT_PRESS
+  return EVENT_PRESS
 }
 
 // 定义事件 Handler
@@ -192,17 +192,17 @@ func PressButton(prevState State, event Event) bool {
 }
 
 func main() {
-    stateMachine := StateMachine{
-            currState:    Off,  // 初始状态为关闭
-            handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
-    }
+  stateMachine := StateMachine{
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
+  }
 
-    stateMachine.AddHandler(EVENT_PRESS, PressButton)
-    stateMachine.AddTransition(Off, EVENT_PRESS, On)
-    stateMachine.AddTransition(On, EVENT_PRESS, Off)
-    stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
-    stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
+  stateMachine.AddHandler(EVENT_PRESS, PressButton)
+  stateMachine.AddTransition(Off, EVENT_PRESS, On)
+  stateMachine.AddTransition(On, EVENT_PRESS, Off)
+  stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
+  stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;通过&lt;code&gt;stateMachine.AddTransition(Off, EVENT_PRESS, On)&lt;/code&gt;就可以清晰的知道 Press 事件可能会让状态 Off 切换到 状态 On，尽管 Press 事件发生后还是有可能维持当前状态不变（当 Handler 返回 false 时）。&lt;/p&gt;
@@ -219,34 +219,34 @@ new state:  1
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 3. more modular state machine
 
 type Event interface {
-    EventId() int64
+  EventId() int64
 }
 
 type State int
 
 // 事件处理 Handler
 type Handler interface {
-    Process(prevState State, event Event)  // 只处理事件
-    Check() bool                           // 处理完判断下是否应该做状态切换
+  Process(prevState State, event Event)  // 只处理事件
+  Check() bool                           // 处理完判断下是否应该做状态切换
 }
 
 type StateMachine struct {
-    currState    State
-    handlers            map[int64]Handler
+  currState    State
+  handlers          map[int64]Handler
   transitions   map[State]map[int64]State
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-    s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 添加状态变迁
 func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
   if trans, ok := s.transitions[originState]; !ok {
-     s.transitions[originState] = map[int64]State{eventId: destState}
+    s.transitions[originState] = map[int64]State{eventId: destState}
   } else {
-     trans[eventId] = destState
+    trans[eventId] = destState
   }
 }
 
@@ -255,7 +255,6 @@ func (s *StateMachine) Call(event Event) {
   fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
   if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
     handler.Process(s.currState, event) 
-
     if handler.Check() {
       if trans, ok := s.transitions[s.currState]; ok {
         if newState, ok := trans[event.EventId()]; ok { 
@@ -284,12 +283,11 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-    return EVENT_PRESS
+  return EVENT_PRESS
 }
 
-type PressEventHandler struct {
+type PressEventHandler struct {}
 
-}
 // Process 只处理事件带来的内部变量的变化
 func (h *PressEventHandler) Process(prevState State, event Event) {
   COUNT += 1
@@ -305,17 +303,17 @@ func (h *PressEventHandler) Check() bool {
 }
 
 func main() {
-    stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
-    }
+  stateMachine := StateMachine{
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
+  }
 
-    stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
-    stateMachine.AddTransition(Off, EVENT_PRESS, On)
-    stateMachine.AddTransition(On, EVENT_PRESS, Off)
-    stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
-    stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
+  stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
+  stateMachine.AddTransition(Off, EVENT_PRESS, On)
+  stateMachine.AddTransition(On, EVENT_PRESS, Off)
+  stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
+  stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;程序输出：
@@ -348,7 +346,7 @@ func (s *StateMachine) Call(event Event) {
           s.currState.Enter()     // 进入新状态 调用 Enter
         }
       }
-    }
+    } 
   }
   fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
 }
@@ -374,9 +372,9 @@ func (room *Room) DispatchEvent(event Event) {
 
 func main() {
   stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
   }
 
   stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})

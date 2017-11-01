@@ -28,7 +28,7 @@ category: 工作
 // example 1. simple state machine
 // 事件 interface
 type Event interface {
-	EventId() int64
+  EventId() int64
 }
 
 type State int
@@ -37,22 +37,22 @@ type State int
 type Handler func(prevState State, event Event) State
 
 type StateMachine struct {
-	currState    State
-	handlers map[int64]Handler
+  currState    State
+  handlers map[int64]Handler
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-	s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 事件处理
 func (s *StateMachine) Call(event Event)  {
-	fmt.Println("original state: ", s.currState)
-	if handler, ok := s.handlers[event.EventId()]; ok {
-      s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
-	}
-	fmt.Println("new state: ", s.currState)
+  fmt.Println("original state: ", s.currState)
+  if handler, ok := s.handlers[event.EventId()]; ok {
+    s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
+  }
+  fmt.Println("new state: ", s.currState)
 }
 ```
 
@@ -67,8 +67,8 @@ const (
 )
 
 var (
-	Off = State(0)  // 定义关闭状态
-	On  = State(1)  // 定义开启状态 
+  Off = State(0)  // 定义关闭状态
+  On  = State(1)  // 定义开启状态 
 )
 
 // 定义 press 事件
@@ -76,7 +76,7 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-	return EVENT_PRESS
+  return EVENT_PRESS
 }
 
 // 定义事件 Handler
@@ -90,8 +90,8 @@ func PressButton(prevState State, event Event) State {
 
 func main() {
   stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
   }
 
   stateMachine.AddHandler(EVENT_PRESS, PressButton)
@@ -119,7 +119,7 @@ new state:  0
 // example 2. a little more complicate state machine
 
 type Event interface {
-	EventId() int64
+  EventId() int64
 }
 
 type State int
@@ -128,22 +128,22 @@ type State int
 type Handler func(prevState State, event Event) bool
 
 type StateMachine struct {
-	currState    State
-	handlers map[int64]Handler
+  currState    State
+  handlers map[int64]Handler
   transitions map[State]map[int64]State
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-	s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 添加状态变迁
 func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
   if trans, ok := s.transitions[originState]; !ok {
-     s.transitions[originState] = map[int64]State{eventId: destState}
+    s.transitions[originState] = map[int64]State{eventId: destState}
   } else {
-     trans[eventId] = destState
+    trans[eventId] = destState
   }
 }
 
@@ -183,7 +183,7 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-	return EVENT_PRESS
+  return EVENT_PRESS
 }
 
 // 定义事件 Handler
@@ -197,9 +197,9 @@ func PressButton(prevState State, event Event) bool {
 
 func main() {
   stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
   }
 
   stateMachine.AddHandler(EVENT_PRESS, PressButton)
@@ -230,34 +230,34 @@ new state:  1
 // example 3. more modular state machine
 
 type Event interface {
-	EventId() int64
+  EventId() int64
 }
 
 type State int
 
 // 事件处理 Handler
 type Handler interface {
-	Process(prevState State, event Event)  // 只处理事件
-	Check() bool                           // 处理完判断下是否应该做状态切换
+  Process(prevState State, event Event)  // 只处理事件
+  Check() bool                           // 处理完判断下是否应该做状态切换
 }
 
 type StateMachine struct {
-	currState    State
-	handlers 			map[int64]Handler
+  currState    State
+  handlers 			map[int64]Handler
   transitions 	map[State]map[int64]State
 }
 
 // 添加事件处理方法 
 func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-	s.handlers[eventId] = handler
+  s.handlers[eventId] = handler
 }
 
 // 添加状态变迁
 func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
   if trans, ok := s.transitions[originState]; !ok {
-     s.transitions[originState] = map[int64]State{eventId: destState}
+    s.transitions[originState] = map[int64]State{eventId: destState}
   } else {
-     trans[eventId] = destState
+    trans[eventId] = destState
   }
 }
 
@@ -266,7 +266,6 @@ func (s *StateMachine) Call(event Event) {
   fmt.Println("original state: ", s.currState)  
   if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
     handler.Process(s.currState, event) 
-    
     if handler.Check() {
       if trans, ok := s.transitions[s.currState]; ok {
         if newState, ok := trans[event.EventId()]; ok { 
@@ -298,12 +297,11 @@ type PressEvent struct {
 }
 
 func (event *PressEvent) EventId() int64 {
-	return EVENT_PRESS
+  return EVENT_PRESS
 }
 
-type PressEventHandler struct {
+type PressEventHandler struct {}
 
-}
 // Process 只处理事件带来的内部变量的变化
 func (h *PressEventHandler) Process(prevState State, event Event) {
   COUNT += 1
@@ -320,9 +318,9 @@ func (h *PressEventHandler) Check() bool {
 
 func main() {
   stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
   }
 
   stateMachine.AddHandler(EVENT_PRESS, &PressEventHandler{})
@@ -365,7 +363,7 @@ func (s *StateMachine) Call(event Event) {
           s.currState.Enter()     // 进入新状态 调用 Enter
         }
       }
-    }
+    } 
   }
   fmt.Println("new state: ", s.currState) 
 }
@@ -394,9 +392,9 @@ func (room *Room) DispatchEvent(event Event) {
 
 func main() {
   stateMachine := StateMachine{
-      currState:    Off,  // 初始状态为关闭
-      handlers: make(map[int64]Handler),
-      transitions: make(map[State]map[int64]State),
+    currState:    Off,  // 初始状态为关闭
+    handlers: make(map[int64]Handler),
+    transitions: make(map[State]map[int64]State),
   }
 
   stateMachine.AddHandler(EVENT_PRESS, &PressEventHandler{})
