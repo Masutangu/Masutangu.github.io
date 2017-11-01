@@ -5,9 +5,403 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 01 Nov 2017 13:03:12 +0800</pubDate>
-    <lastBuildDate>Wed, 01 Nov 2017 13:03:12 +0800</lastBuildDate>
+    <pubDate>Wed, 01 Nov 2017 20:23:57 +0800</pubDate>
+    <lastBuildDate>Wed, 01 Nov 2017 20:23:57 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>游戏开发中的状态机</title>
+        <description>&lt;p&gt;这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。&lt;/p&gt;
+
+&lt;h1&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;用状态机来实现业务模型，有以下几点好处：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试&lt;/li&gt;
+&lt;li&gt;代码阅读起来更加友好，方便其他读者理解整个业务逻辑&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;状态机可以划分为下面三个模块：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;状态集&lt;/strong&gt;：总共包括哪些状态&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;事件（条件）&lt;/strong&gt;：事件会触发状态机的状态发生变化&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;动作&lt;/strong&gt;：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;实现&lt;/h1&gt;
+
+&lt;h2&gt;一个简单的状态机的实现&lt;/h2&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 1. simple state machine
+// 事件 interface
+type Event interface {
+    EventId() int64
+}
+
+type State int
+
+// 事件处理函数 返回触发事件后的下一个状态 
+type Handler func(prevState State, event Event) State
+
+type StateMachine struct {
+    currState    State
+    handlers map[int64]Handler
+}
+
+// 添加事件处理方法 
+func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
+    s.handlers[eventId] = handler
+}
+
+// 事件处理
+func (s *StateMachine) Call(event Event)  {
+    fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)
+    if handler, ok := s.handlers[event.EventId()]; ok {
+      s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
+    }
+    fmt.Println(&amp;quot;new state: &amp;quot;, s.currState)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;Handler&lt;/code&gt; 为事件处理函数，输入参数为当前状态和事件，返回处理后的新状态。状态机根据事件找到对应的&lt;code&gt;Handler&lt;/code&gt;，&lt;code&gt;Handler&lt;/code&gt; 根据当前状态和触发的事件，返回下一个新状态，由状态机更新。&lt;/p&gt;
+
+&lt;p&gt;下面看看一个开关的例子，初始状态为关，按下按钮状态由关变为开，再次按下由开变为关。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 1. simple state machine
+const (
+  EVENT_PRESS = iota
+)
+
+var (
+    Off = State(0)  // 定义关闭状态
+    On  = State(1)  // 定义开启状态 
+)
+
+// 定义 press 事件
+type PressEvent struct {
+}
+
+func (event *PressEvent) EventId() int64 {
+    return EVENT_PRESS
+}
+
+// 定义事件 Handler
+func PressButton(prevState State, event Event) State {
+  if prevState == Off {
+    return On
+  } else {
+    return Off
+  }
+}
+
+func main() {
+    stateMachine := StateMachine{
+            currState:    Off,  // 初始状态为关闭
+            handlers: make(map[int64]Handler),
+      }
+
+    stateMachine.AddHandler(EVENT_PRESS, PressButton)
+    stateMachine.Call(&amp;amp;PressEvent{}) // 按下后变成开
+    stateMachine.Call(&amp;amp;PressEvent{}) // 再次按下变为关闭
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;程序输出：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;original state:  0
+new state:  1
+original state:  1
+new state:  0
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;这个实现很简单，但不足之处在于状态变迁逻辑都放在&lt;code&gt;Handler&lt;/code&gt;去实现了。对于读代码的人来说，需要读每个Handler的代码，才能整理出整个状态变迁图。&lt;/p&gt;
+
+&lt;h2&gt;一个稍微复杂点的状态机&lt;/h2&gt;
+
+&lt;p&gt;我们希望可以把状态变迁以更直观的方式表现出来，让读者一看就知道状态是如何流转的。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 2. a little more complicate state machine
+
+type Event interface {
+    EventId() int64
+}
+
+type State int
+
+// 事件处理函数 返回 true 表示可以变迁到下一个状态 返回 false 表示维持当前状态
+type Handler func(prevState State, event Event) bool
+
+type StateMachine struct {
+    currState    State
+    handlers map[int64]Handler
+  transitions map[State]map[int64]State
+}
+
+// 添加事件处理方法 
+func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
+    s.handlers[eventId] = handler
+}
+
+// 添加状态变迁
+func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
+  if trans, ok := s.transitions[originState]; !ok {
+     s.transitions[originState] = map[int64]State{eventId: destState}
+  } else {
+     trans[eventId] = destState
+  }
+}
+
+// 事件处理
+func (s *StateMachine) Call(event Event) {
+  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
+  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
+    if handler(s.currState, event) { // 如果事件Handler返回true 则执行状态变迁
+      if trans, ok := s.transitions[s.currState]; ok {
+        if newState, ok := trans[event.EventId()]; ok { 
+          s.currState = newState  // 执行状态变迁
+        }
+      }
+    }
+  }
+  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;这个状态机用&lt;code&gt;transitions&lt;/code&gt; 结构来记录状态流转的关系。初始化时调用方调用&lt;code&gt;AddTransition&lt;/code&gt;方法来添加状态变迁。请看下面的例子：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 2. a little more complicate state machine
+
+const (
+  EVENT_PRESS = iota
+)
+
+var (
+  Off = State(0)  // 关闭
+  On  = State(1)  // 开启 
+  COUNT = 0
+)
+
+
+type PressEvent struct {
+}
+
+func (event *PressEvent) EventId() int64 {
+    return EVENT_PRESS
+}
+
+// 定义事件 Handler
+func PressButton(prevState State, event Event) bool {
+  COUNT += 1
+  if COUNT % 2 == 0 { // 按两下才切换到新状态
+    return true
+  }
+  return false // 只按一次维持当前状态
+}
+
+func main() {
+    stateMachine := StateMachine{
+            currState:    Off,  // 初始状态为关闭
+            handlers: make(map[int64]Handler),
+      transitions: make(map[State]map[int64]State),
+    }
+
+    stateMachine.AddHandler(EVENT_PRESS, PressButton)
+    stateMachine.AddTransition(Off, EVENT_PRESS, On)
+    stateMachine.AddTransition(On, EVENT_PRESS, Off)
+    stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
+    stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;通过&lt;code&gt;stateMachine.AddTransition(Off, EVENT_PRESS, On)&lt;/code&gt;就可以清晰的知道 Press 事件可能会让状态 Off 切换到 状态 On，尽管 Press 事件发生后还是有可能维持当前状态不变（当 Handler 返回 false 时）。&lt;/p&gt;
+
+&lt;p&gt;程序输出：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;original state:  0
+new state:  0
+original state:  0
+new state:  1
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h2&gt;更模块化的状态机&lt;/h2&gt;
+
+&lt;p&gt;最后我们来实现一个更模块化的状态机，把事件和条件这两个逻辑彻底分开。当你在事件触发时，还需要做逻辑判断才能确定是否发生状态变迁时，建议将事件处理和条件判断剥离开来。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 3. more modular state machine
+
+type Event interface {
+    EventId() int64
+}
+
+type State int
+
+// 事件处理 Handler
+type Handler interface {
+    Process(prevState State, event Event)  // 只处理事件
+    Check() bool                           // 处理完判断下是否应该做状态切换
+}
+
+type StateMachine struct {
+    currState    State
+    handlers            map[int64]Handler
+  transitions   map[State]map[int64]State
+}
+
+// 添加事件处理方法 
+func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
+    s.handlers[eventId] = handler
+}
+
+// 添加状态变迁
+func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
+  if trans, ok := s.transitions[originState]; !ok {
+     s.transitions[originState] = map[int64]State{eventId: destState}
+  } else {
+     trans[eventId] = destState
+  }
+}
+
+// 事件处理
+func (s *StateMachine) Call(event Event) {
+  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
+  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
+    handler.Process(s.currState, event) 
+
+    if handler.Check() {
+      if trans, ok := s.transitions[s.currState]; ok {
+        if newState, ok := trans[event.EventId()]; ok { 
+          s.currState = newState  // 执行状态变迁
+        }
+      }
+    }
+  }
+  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;定义&lt;code&gt;Handler&lt;/code&gt;结构体，有两个接口：&lt;code&gt;Process&lt;/code&gt;只负责事件引发的逻辑处理， &lt;code&gt;Check&lt;/code&gt;判断逻辑处理后是否应该做状态变迁。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// example 3. more modular state machine
+
+const (
+  EVENT_PRESS = iota
+)
+
+var (
+  Off = State(0)  // 关闭
+  On  = State(1)  // 开启 
+  COUNT = 0
+)
+
+type PressEvent struct {
+}
+
+func (event *PressEvent) EventId() int64 {
+    return EVENT_PRESS
+}
+
+type PressEventHandler struct {
+
+}
+// Process 只处理事件带来的内部变量的变化
+func (h *PressEventHandler) Process(prevState State, event Event) {
+  COUNT += 1
+}
+
+
+// Check 判断是否应该做状态切换
+func (h *PressEventHandler) Check() bool {
+  if COUNT % 2 == 0 { // 按两下才有作用
+    return true
+  }
+  return false
+}
+
+func main() {
+    stateMachine := StateMachine{
+      currState:    Off,  // 初始状态为关闭
+      handlers: make(map[int64]Handler),
+      transitions: make(map[State]map[int64]State),
+    }
+
+    stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
+    stateMachine.AddTransition(Off, EVENT_PRESS, On)
+    stateMachine.AddTransition(On, EVENT_PRESS, Off)
+    stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
+    stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;程序输出：
+&lt;code&gt;
+original state:  0
+new state:  0
+original state:  0
+new state:  1
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2&gt;一些补充&lt;/h2&gt;
+
+&lt;p&gt;可以把 &lt;code&gt;State&lt;/code&gt; 定义成 interface，提供 &lt;code&gt;Enter&lt;/code&gt; 和 &lt;code&gt;Leave&lt;/code&gt; 接口：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;type State interface {
+  Enter() 
+  Leave()
+}
+
+// 事件处理
+func (s *StateMachine) Call(event Event) {
+  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
+  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
+    handler.Process(s.currState, event) 
+
+    if handler.Check() {
+      if trans, ok := s.transitions[s.currState]; ok {
+        if newState, ok := trans[event.EventId()]; ok { 
+          s.currState.Leave()     // 离开当前状态 调用 Leave 
+          s.currState = newState  // 执行状态变迁
+          s.currState.Enter()     // 进入新状态 调用 Enter
+        }
+      }
+    }
+  }
+  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h2&gt;与 goroutine 的结合&lt;/h2&gt;
+
+&lt;p&gt;涉及到多个 goroutine 时，总会面临数据竞争的问题。通过 channel 来传递事件，由状态机处理，可以让代码变得清晰，避免加锁。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;
+type Room struct {
+  eventCh chan Event // 通过channel 传递事件给状态机
+  st *StateMachine
+}
+
+func (room *Room) Process() {
+  for e := range room.eventCh {
+    room.st.Call(e)
+  }
+}
+
+func (room *Room) DispatchEvent(event Event) {
+  room.eventCh &amp;lt;- event
+}
+
+func main() {
+  stateMachine := StateMachine{
+      currState:    Off,  // 初始状态为关闭
+      handlers: make(map[int64]Handler),
+      transitions: make(map[State]map[int64]State),
+  }
+
+  stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
+  stateMachine.AddTransition(Off, EVENT_PRESS, On)
+  stateMachine.AddTransition(On, EVENT_PRESS, Off)
+
+  room := Room{st: &amp;amp;stateMachine, eventCh: make(chan Event)}
+
+  go room.DispatchEvent(&amp;amp;PressEvent{})
+  go room.DispatchEvent(&amp;amp;PressEvent{})
+  go room.DispatchEvent(&amp;amp;PressEvent{})
+
+  room.Process()  // just sample code
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;即使是多个 goroutine 并发抛出事件，状态机只从&lt;code&gt;eventCh&lt;/code&gt;中串行的取出事件并处理，处理过程中不需要对数据加锁。 &lt;/p&gt;
+</description>
+        <pubDate>Wed, 01 Nov 2017 08:33:41 +0800</pubDate>
+        <link>http://masutangu.com/2017/11/state-machine/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/11/state-machine/</guid>
+        
+        
+        <category>工作</category>
+        
+      </item>
     
       <item>
         <title>LevelDB 源码阅读（一）</title>
@@ -4733,673 +5127,6 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
         
         
         <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>Libuv 源码阅读</title>
-        <description>&lt;p&gt;花了几天时间读了下 libuv 的源码，整理成这篇文章。&lt;a href = #section_1&gt;第一节&lt;/a&gt;是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。&lt;a href = #section_2&gt;第二节&lt;/a&gt;解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。&lt;/p&gt;
-
-&lt;h1&gt;&lt;span id=&quot;section_1&quot;&gt;概念&lt;/span&gt;&lt;/h1&gt;
-
-&lt;h2&gt;handles 和 requests&lt;/h2&gt;
-
-&lt;p&gt;libuv 提供了两个抽象：handles 和 requests。handles 是 long－lived 的，会在其 active 的时候做特定的操作。requests 则为 short-lived 操作，request 可以独自执行或被 handle 调用执行。&lt;/p&gt;
-
-&lt;h2&gt;I/O loop&lt;/h2&gt;
-
-&lt;p&gt;I/O loop（或 event loop）是 libuv 的核心。每个 I/O loop 绑定单一的线程。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;The libuv event loop (or any other API involving the loop or handles, for that matter) is not thread-safe except where stated otherwise.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;event loop 采用单线程异步 IO 的形式：所有网络操作都使用 non-blocking 套接字，并使用各个平台上性能最好的 poll 机制例如 linux 上的 epoll，OSX 的 kqueue 等等。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/libuv-source-code/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;I/O loop 的流程：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;event loop 在每次循环周期开始前都会缓存当前时间，以减少时间相关的系统调用&lt;/li&gt;
-&lt;li&gt;执行到期定时器的 callback &lt;/li&gt;
-&lt;li&gt;执行上一轮循环推迟的 I/O callback &lt;/li&gt;
-&lt;li&gt;执行 Idle handle 的 callback &lt;/li&gt;
-&lt;li&gt;执行 Prepare handle 的 callback&lt;/li&gt;
-&lt;li&gt;计算 poll timeout&lt;/li&gt;
-&lt;li&gt;阻塞处理 I/O，超时时间为上一步计算的 poll timeout &lt;/li&gt;
-&lt;li&gt;执行 Check handle 的 callback&lt;/li&gt;
-&lt;li&gt;执行 Close callback&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;libuv uses a thread pool to make asynchronous file I/O operations possible, but network I/O is always performed in a single thread, each loop’s thread.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;File I/O&lt;/h2&gt;
-
-&lt;p&gt;libuv 的异步文件 I/O 是通过线程池实现的。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;libuv provides a threadpool which can be used to run user code and get notified in the loop thread. &lt;strong&gt;This thread pool is internally used to run all filesystem operations&lt;/strong&gt;, as well as getaddrinfo and getnameinfo requests.&lt;/p&gt;
-
-&lt;p&gt;The threadpool is global and shared across all event loops. When a particular function makes use of the threadpool (i.e. when using &lt;code&gt;uv_queue_work()&lt;/code&gt;) libuv preallocates and initializes the maximum number of threads allowed by UV_THREADPOOL_SIZE.&lt;/p&gt;
-
-&lt;p&gt;libuv currently uses a global thread pool on which all loops can queue work on. 3 types of operations are currently run on this pool:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Filesystem operations&lt;/li&gt;
-&lt;li&gt;DNS functions (getaddrinfo and getnameinfo)&lt;/li&gt;
-&lt;li&gt;User specified code via uv_queue_work()&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-
-&lt;h2&gt;主要结构体&lt;/h2&gt;
-
-&lt;h3&gt;uv_loop_t&lt;/h3&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;The event loop is the central part of libuv’s functionality. It takes care of polling for i/o and scheduling callbacks to be run based on different sources of events.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;uv_loop_t 执行的三种模式&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;UV_RUN_DEFAULT&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Runs the event loop until there are no more active and referenced handles or requests. Returns non-zero if uv_stop() was called and there are still active handles or requests. Returns zero in all other cases.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;UV_RUN_ONCE&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Poll for i/o once. Note that this function blocks if there are no pending callbacks. Returns zero when done (no active handles or requests left), or non-zero if more callbacks are expected (meaning you should run the event loop again sometime in the future).&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;UV_RUN_NOWAIT&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Poll for i/o once but don’t block if there are no pending callbacks. Returns zero if done (no active handles or requests left), or non-zero if more callbacks are expected (meaning you should run the event loop again sometime in the future).&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;uv_handle_t&lt;/h3&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;uv_handle_t is the base type for all libuv handle types.&lt;/p&gt;
-
-&lt;p&gt;Structures are aligned so that any libuv handle can be cast to uv_handle_t. All API functions defined here work with any handle type.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;void uv_ref(uv_handle_t* handle)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Reference the given handle. References are idempotent, that is, if a handle is already referenced calling this function again will have no effect.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;void uv_unref(uv_handle_t* handle)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Un-reference the given handle. References are idempotent, that is, if a handle is not referenced calling this function again will have no effect.&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;uv_unref 主要用于计时器。&lt;a href=&quot;https://nikhilm.github.io/uvbook/utilities.html#reference-count&quot;&gt;例子在此&lt;/a&gt;，摘抄如下：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;These functions can be used to allow a loop to exit even when a watcher is active or to use custom objects to keep the loop alive.&lt;/p&gt;
-
-&lt;p&gt;The latter can be used with interval timers. You might have a garbage collector which runs every X seconds, or your network service might send a heartbeat to others periodically, but you don’t want to have to stop them along all clean exit paths or error scenarios. Or you want the program to exit when all your other watchers are done. In that case just unref the timer immediately after creation so that if it is the only watcher running then uv_run will still exit.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;uv_loop_t *loop;
-uv_timer_t gc_req;
-uv_timer_t fake_job_req;
-
-int main() {
-    loop = uv_default_loop();
-
-    uv_timer_init(loop, &amp;amp;gc_req);
-    uv_unref((uv_handle_t*) &amp;amp;gc_req);
-
-    uv_timer_start(&amp;amp;gc_req, gc, 0, 2000);
-
-    // could actually be a TCP download or something
-    uv_timer_init(loop, &amp;amp;fake_job_req);
-    uv_timer_start(&amp;amp;fake_job_req, fake_job, 9000, 0);
-    return uv_run(loop, UV_RUN_DEFAULT);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;blockquote&gt;
-&lt;p&gt;We initialize the garbage collector timer, then immediately unref it. Observe how after 9 seconds, when the fake job is done, the program automatically exits, even though the garbage collector is still running.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3&gt;uv_req_t&lt;/h3&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;uv_req_t is the base type for all libuv request types.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1&gt;&lt;span id=&quot;section_2&quot;&gt;代码解读&lt;/span&gt;&lt;/h1&gt;
-
-&lt;h2&gt;队列&lt;/h2&gt;
-
-&lt;p&gt;libuv 的队列是循环双向链表，队列在 libuv 中用到的地方很多，例如 event loop 用队列来存储 handle（handle_queue)，待监听的io事件（watcher_queue）等等。&lt;/p&gt;
-
-&lt;h3&gt;定义&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;typedef void *QUEUE[2];
-#define QUEUE_NEXT(q)       (*(QUEUE **) &amp;amp;((*(q))[0]))
-#define QUEUE_PREV(q)       (*(QUEUE **) &amp;amp;((*(q))[1]))
-#define QUEUE_PREV_NEXT(q)  (QUEUE_NEXT(QUEUE_PREV(q)))
-#define QUEUE_NEXT_PREV(q)  (QUEUE_PREV(QUEUE_NEXT(q)))
-
-#define QUEUE_INIT(q)                                                         \
-  do {                                                                        \
-    QUEUE_NEXT(q) = (q);                                                      \
-    QUEUE_PREV(q) = (q);                                                      \
-  }                                                                           \
-  while (0)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这段定义了 QUEUE 是元素类型为 void* 的数组，数组长度为 2。
-如果按下面这样定义：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#define QUEUE_NEXT(q)       ((QUEUE *) ((*(q))[0]))
-#define QUEUE_PREV(q)       ((QUEUE *) ((*(q))[1]))
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;返回值不是左值，在 QUEUE_INIT 函数中对 QUEUE_NEXT 和 QUEUE_PREV 的赋值会编译失败。
-C/C++ 中类型转换有可能会返回左值（可以看 &lt;a href=&quot;http://stackoverflow.com/questions/26508609/is-the-result-of-a-cast-an-rvalue&quot;&gt;stackoverflow&lt;/a&gt; 的讲解)：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;The result of the expression (T) cast-expression is of type T. The result is an lvalue if T is an lvalue reference type or an rvalue reference to function type and an xvalue if T is an rvalue reference to object type; &lt;strong&gt;otherwise the result is a prvalue.&lt;/strong&gt;[ Note: if T is a non-class type that is cv-qualified, the cv-qualifiers are ignored when determining the type of the resulting prvalue; see 3.10. —end note ]&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;因此需要先将 ((*(q))[0])) 取址再解引用（解引用返回左值）。&lt;/p&gt;
-
-&lt;h3&gt;接口&lt;/h3&gt;
-
-&lt;p&gt;下面是 QUEUE 几个重要的接口：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;
-// 取出数据，具体例子可参考：https://gist.github.com/bodokaiser/5657156
-#define QUEUE_DATA(ptr, type, field)                                          \
-  ((type *) ((char *) (ptr) - offsetof(type, field)))
-
-// 将 n 队列的元素添加到 h 队列，保留 h 队列原先的元素。注意操作后 n 队列的结构被破坏，不能在遍历 n 队列
-#define QUEUE_ADD(h, n)                                                       \
-  do {                                                                        \
-    QUEUE_PREV_NEXT(h) = QUEUE_NEXT(n);                                       \
-    QUEUE_NEXT_PREV(n) = QUEUE_PREV(h);                                       \
-    QUEUE_PREV(h) = QUEUE_PREV(n);                                            \
-    QUEUE_PREV_NEXT(h) = (h);                                                 \
-  }                                                                           \
-  while (0)
-
-// QUEUE_MOVE 的 helper 函数
-#define QUEUE_SPLIT(h, q, n)                                                  \
-  do {                                                                        \
-    QUEUE_PREV(n) = QUEUE_PREV(h);                                            \
-    QUEUE_PREV_NEXT(n) = (n);                                                 \
-    QUEUE_NEXT(n) = (q);                                                      \
-    QUEUE_PREV(h) = QUEUE_PREV(q);                                            \
-    QUEUE_PREV_NEXT(h) = (h);                                                 \
-    QUEUE_PREV(q) = (n);                                                      \
-  }                                                                           \
-  while (0)
-
-// 将 h 队列的元素添加到 n 队列， h 队列被清空，n 队列原先的元素也被清空
-#define QUEUE_MOVE(h, n)                                                      \
-  do {                                                                        \
-    if (QUEUE_EMPTY(h))                                                       \
-      QUEUE_INIT(n);                                                          \
-    else {                                                                    \
-      QUEUE* q = QUEUE_HEAD(h);                                               \
-      QUEUE_SPLIT(h, q, n);                                                   \
-    }                                                                         \
-  }                                                                           \
-  while (0)
-
-// 添加元素 q 到 h 队列的尾部，QUEUE_PREV(h) 为原先队列的 tail 节点
-#define QUEUE_INSERT_TAIL(h, q)                                               \
-  do {                                                                        \
-    QUEUE_NEXT(q) = (h);                                                      \
-    QUEUE_PREV(q) = QUEUE_PREV(h);                                            \
-    QUEUE_PREV_NEXT(q) = (q);                                                 \
-    QUEUE_PREV(h) = (q);                                                      \
-  }                                                                           \
-  while (0)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;上面提到了 QUEUE 是一个循环链表。定义 h 为队列的哨兵节点，则 QUEUE_NEXT(h) 指向队列的 head 节点，QUEUE_PREV(h) 指向队列的 tail 节点。&lt;/p&gt;
-
-&lt;p&gt;结合图例来看看 QUEUE_INSERT_TAIL 的实现。&lt;/p&gt;
-
-&lt;p&gt;原队列，因为只有一个元素（h节点为哨兵节点，不算在内），因此其即是 head 也是 tail：
-&lt;img src=&quot;/assets/images/libuv-source-code/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;新增一个新元素后如下所示：
-&lt;img src=&quot;/assets/images/libuv-source-code/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;下面是 QUEUE_MOVE 的图例。
-h 队列 和 n 队列 QUEUE_MOVE 操作前如下图：
-&lt;img src=&quot;/assets/images/libuv-source-code/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;QUEUE_MOVE 后，h 队列被清空，n 队列的哨兵节点连接到原 h 队列的 head 和 tail：
-&lt;img src=&quot;/assets/images/libuv-source-code/illustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;最后是 QUEUE_ADD 的图例，原理就是将 n 队列的 head 和 h 队列的 tail 相连，并把 h 队列的 tail 重置指向 n 队列的 tail：
-&lt;img src=&quot;/assets/images/libuv-source-code/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h2&gt;epoll 事件管理&lt;/h2&gt;
-
-&lt;p&gt;IO 事件都会调用 &lt;code&gt;uv__io_start&lt;/code&gt; 函数，该函数将需要监听的事件保存到 event loop 的 watcher_queue 队列中：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
-  ...
-
-  if (QUEUE_EMPTY(&amp;amp;w-&amp;gt;watcher_queue))
-    QUEUE_INSERT_TAIL(&amp;amp;loop-&amp;gt;watcher_queue, &amp;amp;w-&amp;gt;watcher_queue);  // 添加到 loop-&amp;gt;watcher_queue 队列
-
-  ...
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后在 event loop 的循环中，会调用 &lt;code&gt;uv__io_poll&lt;/code&gt;。该函数将 loop-&amp;gt;watcher_queue 队列中的事件取出，添加到 epoll 进行监听：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void uv__io_poll(uv_loop_t* loop, int timeout) {
-  ...
-  uv__io_t* w;
-
-  while (!QUEUE_EMPTY(&amp;amp;loop-&amp;gt;watcher_queue)) {  // 遍历取出 loop-&amp;gt;watcher_queue 队列中待监听的事件，直至队列为空
-    q = QUEUE_HEAD(&amp;amp;loop-&amp;gt;watcher_queue);
-    QUEUE_REMOVE(q);
-    QUEUE_INIT(q);
-
-    w = QUEUE_DATA(q, uv__io_t, watcher_queue);  // 取出 uv__io_t 结构，该结构保存了用户注册的回调函数
-
-    e.events = w-&amp;gt;pevents;
-    e.data = w-&amp;gt;fd;
-
-    if (w-&amp;gt;events == 0)
-      op = UV__EPOLL_CTL_ADD;
-    else
-      op = UV__EPOLL_CTL_MOD;
-
-    /* XXX Future optimization: do EPOLL_CTL_MOD lazily if we stop watching
-     * events, skip the syscall and squelch the events after epoll_wait().
-     */
-    if (uv__epoll_ctl(loop-&amp;gt;backend_fd, op, w-&amp;gt;fd, &amp;amp;e)) {  // 添加到 epoll
-      if (errno != EEXIST)
-        abort();
-
-      assert(op == UV__EPOLL_CTL_ADD);
-
-      /* We&amp;#39;ve reactivated a file descriptor that&amp;#39;s been watched before. */
-      if (uv__epoll_ctl(loop-&amp;gt;backend_fd, UV__EPOLL_CTL_MOD, w-&amp;gt;fd, &amp;amp;e))
-        abort();
-    }
-
-    w-&amp;gt;events = w-&amp;gt;pevents;
-  }
-
-  ... 
-
-
-  // 阻塞等待 epoll 返回直到超时
-  for (;;) {
-    if (no_epoll_wait != 0 || (sigmask != 0 &amp;amp;&amp;amp; no_epoll_pwait == 0)) {
-      nfds = uv__epoll_pwait(loop-&amp;gt;backend_fd,
-                             events,
-                             ARRAY_SIZE(events),
-                             timeout,
-                             sigmask);
-      if (nfds == -1 &amp;amp;&amp;amp; errno == ENOSYS)
-        no_epoll_pwait = 1;
-    } else {
-      nfds = uv__epoll_wait(loop-&amp;gt;backend_fd,
-                            events,
-                            ARRAY_SIZE(events),
-                            timeout);
-      if (nfds == -1 &amp;amp;&amp;amp; errno == ENOSYS)
-        no_epoll_wait = 1;
-    }
-    ...
-
-    loop-&amp;gt;watchers[loop-&amp;gt;nwatchers] = (void*) events;  // 将 events 保存在 loop-&amp;gt;watchers，为了在 uv__io_close 中可以将对应 fd 的 event 删掉
-    loop-&amp;gt;watchers[loop-&amp;gt;nwatchers + 1] = (void*) (uintptr_t) nfds;
-    for (i = 0; i &amp;lt; nfds; i++) {
-      pe = events + i;
-      fd = pe-&amp;gt;data;
-
-      /* Skip invalidated events, see uv__platform_invalidate_fd */
-      if (fd == -1)
-        continue;
-
-      assert(fd &amp;gt;= 0);
-      assert((unsigned) fd &amp;lt; loop-&amp;gt;nwatchers);
-
-      w = loop-&amp;gt;watchers[fd];
-
-      if (w == NULL) {
-        /* File descriptor that we&amp;#39;ve stopped watching, disarm it.
-         *
-         * Ignore all errors because we may be racing with another thread
-         * when the file descriptor is closed.
-         */
-        uv__epoll_ctl(loop-&amp;gt;backend_fd, UV__EPOLL_CTL_DEL, fd, pe);
-        continue;
-      }
-
-      /* Give users only events they&amp;#39;re interested in. Prevents spurious
-       * callbacks when previous callback invocation in this loop has stopped
-       * the current watcher. Also, filters out events that users has not
-       * requested us to watch.
-       */
-      pe-&amp;gt;events &amp;amp;= w-&amp;gt;pevents | POLLERR | POLLHUP;
-
-      /* Work around an epoll quirk where it sometimes reports just the
-       * EPOLLERR or EPOLLHUP event.  In order to force the event loop to
-       * move forward, we merge in the read/write events that the watcher
-       * is interested in; uv__read() and uv__write() will then deal with
-       * the error or hangup in the usual fashion.
-       *
-       * Note to self: happens when epoll reports EPOLLIN|EPOLLHUP, the user
-       * reads the available data, calls uv_read_stop(), then sometime later
-       * calls uv_read_start() again.  By then, libuv has forgotten about the
-       * hangup and the kernel won&amp;#39;t report EPOLLIN again because there&amp;#39;s
-       * nothing left to read.  If anything, libuv is to blame here.  The
-       * current hack is just a quick bandaid; to properly fix it, libuv
-       * needs to remember the error/hangup event.  We should get that for
-       * free when we switch over to edge-triggered I/O.
-       */
-      if (pe-&amp;gt;events == POLLERR || pe-&amp;gt;events == POLLHUP)
-        pe-&amp;gt;events |= w-&amp;gt;pevents &amp;amp; (POLLIN | POLLOUT);
-
-      if (pe-&amp;gt;events != 0) {
-        /* Run signal watchers last.  This also affects child process watchers
-         * because those are implemented in terms of signal watchers.
-         */
-        if (w == &amp;amp;loop-&amp;gt;signal_io_watcher)
-          have_signals = 1;
-        else
-          w-&amp;gt;cb(loop, w, pe-&amp;gt;events);  // 调用用户注册的回调
-
-        nevents++;
-      }
-    }
-
-    loop-&amp;gt;watchers[loop-&amp;gt;nwatchers] = NULL;
-    loop-&amp;gt;watchers[loop-&amp;gt;nwatchers + 1] = NULL;
-
-    ...
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;线程池实现异步文件 IO&lt;/h2&gt;
-
-&lt;p&gt;libuv 中文件操作的异步 IO 是通过线程池实现的。原理是将文件操作由工作线程来完成，当操作完成后工作线程通过 fd 通知主线程（该 fd 同样由 epoll 管理），主线程监听该 fd，当有 epoll 事件时根据层层回调，最终会调用到用户注册的回调函数。&lt;/p&gt;
-
-&lt;p&gt;下面看看这块逻辑，所有文件操作都调用了 POST 定义的宏。POST 判断是否注册了回调，如果有则表示该操作为异步调用，此时调用 &lt;code&gt;uv__work_submit&lt;/code&gt; 向线程池提交任务。                                            &lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#define POST                                                                  \
-  do {                                                                        \
-    if (cb != NULL) {                                                         \
-      uv__work_submit(loop, &amp;amp;req-&amp;gt;work_req, uv__fs_work, uv__fs_done);        \
-      return 0;                                                               \
-    }                                                                         \
-    else {                                                                    \
-      // 回调为 null 是同步调用                                                  \
-      uv__fs_work(&amp;amp;req-&amp;gt;work_req);                                            \
-      return req-&amp;gt;result;                                                     \
-    }                                                                         \
-  }                                                                           \
-  while (0)
-
-// 操作完成后的回调函数
-static void uv__fs_done(struct uv__work* w, int status) {
-  uv_fs_t* req;
-
-  req = container_of(w, uv_fs_t, work_req);
-  uv__req_unregister(req-&amp;gt;loop, req);
-
-  if (status == -ECANCELED) {
-    assert(req-&amp;gt;result == 0);
-    req-&amp;gt;result = -ECANCELED;
-  }
-
-  req-&amp;gt;cb(req);  // 调用用户注册的回调
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;uv__work_submit&lt;/code&gt; 先调用 &lt;code&gt;init_once&lt;/code&gt; 初始化工作线程池，再调用 &lt;code&gt;post&lt;/code&gt; 提交任务给工作线程：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void uv__work_submit(uv_loop_t* loop,
-                     struct uv__work* w,
-                     void (*work)(struct uv__work* w),
-                     void (*done)(struct uv__work* w, int status)) {
-  uv_once(&amp;amp;once, init_once);
-  w-&amp;gt;loop = loop;
-  w-&amp;gt;work = work;
-  w-&amp;gt;done = done;
-  post(&amp;amp;w-&amp;gt;wq);
-}
-
-
-static void init_once(void) {
-  unsigned int i;
-  const char* val;
-
-  nthreads = ARRAY_SIZE(default_threads);
-  val = getenv(&amp;quot;UV_THREADPOOL_SIZE&amp;quot;);
-  if (val != NULL)
-    nthreads = atoi(val);
-  if (nthreads == 0)
-    nthreads = 1;
-  if (nthreads &amp;gt; MAX_THREADPOOL_SIZE)
-    nthreads = MAX_THREADPOOL_SIZE;
-
-  threads = default_threads;
-  if (nthreads &amp;gt; ARRAY_SIZE(default_threads)) {
-    threads = uv__malloc(nthreads * sizeof(threads[0]));
-    if (threads == NULL) {
-      nthreads = ARRAY_SIZE(default_threads);
-      threads = default_threads;
-    }
-  }
-
-  if (uv_cond_init(&amp;amp;cond))  // 初始化条件变量
-    abort();
-
-  if (uv_mutex_init(&amp;amp;mutex))  // 初始化互斥锁
-    abort();
-
-  QUEUE_INIT(&amp;amp;wq);
-
-  for (i = 0; i &amp;lt; nthreads; i++)
-    if (uv_thread_create(threads + i, worker, NULL))  // 创建工作线程
-      abort();
-
-  initialized = 1;
-}
-
-// 工作线程
-static void worker(void* arg) {
-  struct uv__work* w;
-  QUEUE* q;
-
-  (void) arg;
-
-  for (;;) {
-    uv_mutex_lock(&amp;amp;mutex);
-
-    while (QUEUE_EMPTY(&amp;amp;wq)) {
-      idle_threads += 1;
-      uv_cond_wait(&amp;amp;cond, &amp;amp;mutex);   // wq 保存任务队列，当 wq 为空时阻塞等待任务，有新任务提交就会唤醒该 worker
-      idle_threads -= 1;
-    }
-
-    q = QUEUE_HEAD(&amp;amp;wq);
-
-    if (q == &amp;amp;exit_message)
-      uv_cond_signal(&amp;amp;cond);  
-    else {
-      QUEUE_REMOVE(q);
-      QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
-                             executing. */
-    }
-
-    uv_mutex_unlock(&amp;amp;mutex);
-
-    if (q == &amp;amp;exit_message)
-      break;
-
-    w = QUEUE_DATA(q, struct uv__work, wq);
-    w-&amp;gt;work(w);   // work 执行文件操作
-
-    uv_mutex_lock(&amp;amp;w-&amp;gt;loop-&amp;gt;wq_mutex);
-    w-&amp;gt;work = NULL;  /* Signal uv_cancel() that the work req is done
-                        executing. */
-    QUEUE_INSERT_TAIL(&amp;amp;w-&amp;gt;loop-&amp;gt;wq, &amp;amp;w-&amp;gt;wq);  // 将已完成的 uv__work 添加到 loop-&amp;gt;wq 队列
-    uv_async_send(&amp;amp;w-&amp;gt;loop-&amp;gt;wq_async);  // 通知主线程该任务已经执行完成
-    uv_mutex_unlock(&amp;amp;w-&amp;gt;loop-&amp;gt;wq_mutex);
-  }
-}
-
-// 提交任务 
-static void post(QUEUE* q) {
-  uv_mutex_lock(&amp;amp;mutex);
-  QUEUE_INSERT_TAIL(&amp;amp;wq, q);  // 将任务提交到 wq 队列
-  if (idle_threads &amp;gt; 0)
-    uv_cond_signal(&amp;amp;cond);  // 有空闲工作线程时就唤醒 worker
-  uv_mutex_unlock(&amp;amp;mutex);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;最后看看工作线程和主线程的通信，在文件操作完成后，工作线程调用 &lt;code&gt;uv__async_send&lt;/code&gt; ，该函数会往 wa-&amp;gt;wfd 或 wa-&amp;gt;io_watcher.fd 写一个空子节：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;int uv_async_send(uv_async_t* handle) {
-  /* Do a cheap read first. */
-  if (ACCESS_ONCE(int, handle-&amp;gt;pending) != 0)
-    return 0;
-
-  if (cmpxchgi(&amp;amp;handle-&amp;gt;pending, 0, 1) == 0)
-    uv__async_send(&amp;amp;handle-&amp;gt;loop-&amp;gt;async_watcher);
-
-  return 0;
-}
-
-void uv__async_send(struct uv__async* wa) {
-  const void* buf;
-  ssize_t len;
-  int fd;
-  int r;
-
-  buf = &amp;quot;&amp;quot;;
-  len = 1;
-  fd = wa-&amp;gt;wfd;
-
-#if defined(__linux__)
-  if (fd == -1) {
-    static const uint64_t val = 1;
-    buf = &amp;amp;val;
-    len = sizeof(val);
-    fd = wa-&amp;gt;io_watcher.fd;  /* eventfd */
-  }
-#endif
-
-  do
-    r = write(fd, buf, len);
-  while (r == -1 &amp;amp;&amp;amp; errno == EINTR);
-
-  if (r == len)
-    return;
-
-  if (r == -1)
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
-      return;
-
-  abort();
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;主线程监听 io_watcher.fd，当有 epoll 事件时回调的顺序如下：&lt;/p&gt;
-
-&lt;p&gt;调用 uv__io_t 的 cb 即 &lt;code&gt;uv__async_io&lt;/code&gt; --&amp;gt; 调用 uv__async 的 cb 即 &lt;code&gt;uv__async_event&lt;/code&gt;  --&amp;gt; 调用 uv_async_t 的 cb 即 &lt;code&gt;uv__work_done&lt;/code&gt; --&amp;gt; 调用 uv__work 的 done 即用户提交的回调函数。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;int uv_loop_init(uv_loop_t* loop) {
-  ...
-  err = uv_async_init(loop, &amp;amp;loop-&amp;gt;wq_async, uv__work_done);  // 初始化 async 
-  ...
-}
-
-void uv__work_done(uv_async_t* handle) {
-  struct uv__work* w;
-  uv_loop_t* loop;
-  QUEUE* q;
-  QUEUE wq;
-  int err;
-
-  loop = container_of(handle, uv_loop_t, wq_async);
-  uv_mutex_lock(&amp;amp;loop-&amp;gt;wq_mutex);
-  QUEUE_MOVE(&amp;amp;loop-&amp;gt;wq, &amp;amp;wq);  // 因为访问 loop-&amp;gt;wq 需要锁，为了避免长时间锁，所以拷贝一份副本出来，下面的遍历直接操作该副本
-  uv_mutex_unlock(&amp;amp;loop-&amp;gt;wq_mutex);
-
-  while (!QUEUE_EMPTY(&amp;amp;wq)) {  // 遍历 loop-&amp;gt;wq 的副本
-    q = QUEUE_HEAD(&amp;amp;wq);
-    QUEUE_REMOVE(q);
-
-    w = container_of(q, struct uv__work, wq);
-    err = (w-&amp;gt;work == uv__cancelled) ? UV_ECANCELED : 0;
-    w-&amp;gt;done(w, err);  // 调用 done，即 uv__fs_done 函数，最终会调用用户注册的回调
-  }
-}
-
-//  uv__async_start 函数会调用 uv__io_start，监听 wa-&amp;gt;io_watcher.fd
-int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
-  int err;
-
-  err = uv__async_start(loop, &amp;amp;loop-&amp;gt;async_watcher, uv__async_event);
-  if (err)
-    return err;
-
-  uv__handle_init(loop, (uv_handle_t*)handle, UV_ASYNC);
-  handle-&amp;gt;async_cb = async_cb;
-  handle-&amp;gt;pending = 0;
-
-  QUEUE_INSERT_TAIL(&amp;amp;loop-&amp;gt;async_handles, &amp;amp;handle-&amp;gt;queue);
-  uv__handle_start(handle);
-
-  return 0;
-}
-
-// 创建 wa-&amp;gt;io_watcher.fd 
-int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
-  int pipefd[2];
-  int err;
-
-  if (wa-&amp;gt;io_watcher.fd != -1)
-    return 0;
-
-  // 下面一大段是创建 io_watcher.fd 的逻辑
-  err = uv__async_eventfd();
-  if (err &amp;gt;= 0) {
-    pipefd[0] = err;
-    pipefd[1] = -1;
-  }
-  else if (err == -ENOSYS) {
-    err = uv__make_pipe(pipefd, UV__F_NONBLOCK);
-#if defined(__linux__)
-    /* Save a file descriptor by opening one of the pipe descriptors as
-     * read/write through the procfs.  That file descriptor can then
-     * function as both ends of the pipe.
-     */
-    if (err == 0) {
-      char buf[32];
-      int fd;
-
-      snprintf(buf, sizeof(buf), &amp;quot;/proc/self/fd/%d&amp;quot;, pipefd[0]);
-      fd = uv__open_cloexec(buf, O_RDWR);
-      if (fd &amp;gt;= 0) {
-        uv__close(pipefd[0]);
-        uv__close(pipefd[1]);
-        pipefd[0] = fd;
-        pipefd[1] = fd;
-      }
-    }
-#endif
-  }
-
-  if (err &amp;lt; 0)
-    return err;
-
-  uv__io_init(&amp;amp;wa-&amp;gt;io_watcher, uv__async_io, pipefd[0]);  // 注册 async io 事件的 callback 为 uv__async_io
-  uv__io_start(loop, &amp;amp;wa-&amp;gt;io_watcher, POLLIN);  // 将该 io_watcher 添加到 loop-&amp;gt;watcher_queue，参考上文的 uv__io_start 
-  wa-&amp;gt;wfd = pipefd[1];
-  wa-&amp;gt;cb = cb;  // 注册 uv__async 的 cb 为 uv__async_event
-
-  return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Thu, 13 Oct 2016 15:56:27 +0800</pubDate>
-        <link>http://masutangu.com/2016/10/libuv-source-code/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/10/libuv-source-code/</guid>
-        
-        
-        <category>源码阅读</category>
         
       </item>
     

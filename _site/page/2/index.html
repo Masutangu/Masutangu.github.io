@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2016/10/libuv-source-code/" title="访问 Libuv 源码阅读">Libuv 源码阅读</a></h2>
+      <p class="excerpt">花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。概念handles 和 requestslibuv 提供了两个抽象：handles 和 requests。handles 是 long－lived 的，会在其 active 的时候做特定的操作。requests 则为 short-lived 操作，request 可以独自执行或被...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2016-10-13 15:56:27 +0800" class="post-list__meta--date date">2016-10-13</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/libuv-source-code/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="访问 浅读 Libco">浅读 Libco</a></h2>
       <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/04/ios-introduction/" title="访问 iOS 初体验">iOS 初体验</a></h2>
       <p class="excerpt">客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：ToDo。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。What’s in iOS?iOS处于底层硬件和...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-04-28 23:10:00 +0800" class="post-list__meta--date date">2016-04-28</time> &#8226; <span class="post-list__meta--tags tags">iOS</span><a class="btn-border-small" href=/2016/04/ios-introduction/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/04/python-pickling-error/" title="访问 Python 进程池的坑：Pickling Error!">Python 进程池的坑：Pickling Error!</a></h2>
-      <p class="excerpt">前阵子在跑Elric下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingError: can’t pickle &lt;type ‘thread.lock’&gt;: attribute...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-04-15 16:07:58 +0800" class="post-list__meta--date date">2016-04-15</time> &#8226; <span class="post-list__meta--tags tags">编程语言</span><a class="btn-border-small" href=/2016/04/python-pickling-error/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
