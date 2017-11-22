@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>MIT 6.824 学习笔记（一）</title>
+  <meta name="description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="MIT 6.824 学习笔记（一）">
+  <meta name="twitter:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="MIT 6.824 学习笔记（一）">
+  <meta property="og:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/11/mit-6824-note-1/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-11-05 15:40:29 +0800" itemprop="datePublished" class="post-meta__date date">2017-11-05</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">MIT 6.824 学习笔记（一）</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章是对 <a href="https://pdos.csail.mit.edu/6.824/schedule.html">MIT 6.824</a> 课程的学习笔记。</p>
+
+<h1>Introduction</h1>
+
+<p>本课程涵盖以下主题：</p>
+
+<ul>
+<li>RPC、线程、并发控制</li>
+<li>性能 </li>
+<li>容灾：<strong>Availability</strong>, <strong>Durability</strong>. replicated servers 是不错的选择。</li>
+<li>一致性：replica如何保持一致？ <strong>Consistency</strong> 和 <strong>Performance</strong> 不可兼得</li>
+</ul>
+
+<h1>MapReduce</h1>
+
+<p>Map funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapReduce 库将相同 intermediate key 的 intermediate values 打包起来传给 Reduce function。</p>
+
+<p><img src="/assets/images/mit-6824-note-1/illustration-1.png" width="800" /></p>
+
+<p>Reduce function 接收 intermediate key 和与其关联的一系列 intermediate values。Reduce function 将这些 intermediate values 合并成更小的 values set。The intermediate values are supplied to the user’s reduce function via an iterator。</p>
+
+<p>Map Reduce function 的输入输出参数通常如下：</p>
+
+<ul>
+<li>map (k1,v1) → list(k2,v2)</li>
+<li>reduce (k2,list(v2)) → list(v2)</li>
+</ul>
+
+<p>容错：worker 挂掉，重跑任务。master挂掉？直接暂停，由用户决定是否重跑。</p>
+
+<blockquote>
+<p>MR re-runs just the failed Map()s and Reduce()s. MR requires them to be pure functions:</p>
+
+<ul>
+<li>they don&#39;t keep state across calls,</li>
+<li>they don&#39;t read or write files other than expected MR inputs/outputs,</li>
+<li>there&#39;s no hidden communication among tasks.</li>
+</ul>
+
+<p>So re-execution yields the same output.</p>
+</blockquote>
+
+<p>重跑如何保持一致：</p>
+
+<blockquote>
+<p>Rely on atomic commits of map and reduce task outputs 细节？</p>
+</blockquote>
+
+<p>不确定性？</p>
+
+<p>实现一个精简map reduce</p>
+
+<h1>RPC</h1>
+
+<blockquote>
+<p>Better RPC behavior: &quot;at most once&quot;</p>
+
+<p>idea: server RPC code detects duplicate requests, returns previous reply instead of re-running handler</p>
+</blockquote>
+
+<p><strong>如何检测重复的请求？</strong></p>
+
+<ul>
+<li>Client 在每个请求都带上唯一的 Request ID，重试时使用相同的 Request ID：</li>
+</ul>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">server:
+    if seen[xid]:
+      r = old[xid]
+    else
+      r = handler()
+      old[xid] = r
+      seen[xid] = true
+</code></pre></figure>
+<p><strong>Request ID 如何保证唯一？</strong></p>
+
+<ul>
+<li>请求 id 包含客户端 ip，以区分不同客户端</li>
+</ul>
+
+<p><strong>Server 端何时可以删掉保存的请求 id？</strong></p>
+
+<ul>
+<li>unique client IDs, per-client RPC sequence numbers, client includes &quot;seen all replies &lt;= X&quot; with every RPC, much like TCP sequence #s and acks （客户端带上 ack_req_id，服务端可以把 &lt;= ack_req_id 的请求 id 都删掉）</li>
+<li>only allow client one outstanding RPC at a time arrival of seq + 1 allows server to discard all &lt;= seq</li>
+<li>client agrees to keep retrying for &lt; 5 minutes, server discards after 5+ minutes</li>
+</ul>
+
+<p>Server 应该把 Dupliate Request 信息写入磁盘，也应该同步到 replica。万一 server crash 或者重启，才不会丢失。</p>
+
+<h1>GFS</h1>
+
+<p>GFS 重新审视了传统文件系统的设计，并总结了以下几点：</p>
+
+<ul>
+<li>组件挂掉是常态事件，因此文件系统必须集成监控、错误侦测、容灾以及自动恢复的机制</li>
+<li>几 GB 的大文件很普遍。</li>
+<li>随机写的场景非常少。一旦写入完成，文件通常只会被顺序读取</li>
+<li>co-designing the applications and the file system API benefits the overall system by increasing our flexibility（不理解，是说简化 API 的设计么？）</li>
+</ul>
+
+<p>GFS 集群由单一 master 和多个 chunkserver 构成，可同时被多个 client 访问。文件被划为固定大小的 chunks。每个 chunk 在创建时由 master 分配一个不可修改且全局唯一的 chunk handle 标记。chunkservers 以 linux 文件形式保存 chunks，读写 chunks 时client 指定 chunk handle 和 byte range。每个 chunk 被复制多份以实现 reliability。</p>
+
+<p><img src="/assets/images/mit-6824-note-1/illustration-2.png" width="800" /></p>
+
+<p>Master 维护整个文件系统的 metadata，包括命名空间，访问控制，文件到 chunks 的映射和 chunks 所在的位置。Master 还管理系统范围内的活动，例如 chunk 租用管理， orphaned chunk 的回收，以及 chunks 在 chunkservers 之间的迁移。Master 使用心跳信息周期地和每个 chunkserver 通讯，发送指令并收集 chunkserver 的状态信息。</p>
+
+<p>Client 和 master 的通信只涉及元数据，所有的数据操作都直接和 chunkservers 通信。</p>
+
+<p>Master 主要保存下面三种元数据：</p>
+
+<ul>
+<li>文件和 chunk 的命名空间</li>
+<li>文件到 chunk 的映射关系</li>
+<li>chunk 复本的位置</li>
+</ul>
+
+<p>前两种通过 logging mutations 持久化。chunk 复本的位置则是启动时 master 向每个 chunkserver 询问的。</p>
+
+<p>容灾：通过 <strong>snapshot</strong> 和 <strong>logging mutations</strong>。</p>
+
+<p>一致性：</p>
+
+<ul>
+<li>A file region is <strong>consistent</strong> if all clients will always see the same data, regardless of which replicas they read from. </li>
+<li>A region is <strong>defined</strong> after a file data mutation if it is consistent and clients will see what the mutation writes in
+its entirety.</li>
+</ul>
+
+<p>GFS 通过以下措施确保被修改的文件 region 是已定义的，并且包含最后一次修改操作写入的数据：</p>
+
+<ul>
+<li>chunk 的所有副本的修改操作顺序保持一致</li>
+<li>使用 chunk 的版本号来检测副本是否有效</li>
+</ul>
+
+<p>为了应对记录追加的 at-least-once 特性，readers 可以使用下面的方法来处理 padding 和重复的 record。Writers （应用层 writer）在每条写入的记录中都包含了额外的信息例如 Checksum，用来验证它的有效性。Reader 使用 Checksum 识别和丢弃额外的 padding 和记录片段。应用程序还可以用记录的唯一标识符来过滤重复 record。 </p>
+
+<p>GFS 使用租约（lease）来保证多个副本间变更顺序的一致性。Master 节点给其中一个 replica 分配 chunk 租约，该 replica 变成 primary。Mutations 的顺序由 primary 决定。</p>
+
+<p>Master 维护了每个 chunk 的版本号，用以分辨出过时的 replicas。 每次 master 下发新的 lease 都会提升 chunk 的版本号。当 chunkserver 上报自身 chunk 集合和相关的版本号时，master 就可以检测出失效的 replica。 </p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/11/state-machine/" title="link to 游戏开发之状态机">游戏开发之状态机</a></h2>
+       <p class="excerpt">这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。前言用状态机来实现业务模型，有以下几点好处：不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试代码阅读起来更加友好，方便其他读者理解整个业务逻辑状态机可以划分为下面三个模块：状态集：总共包括哪些状态事件（条件）：事件会触发状态机的状态发生变化动作：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态实现一个简单的状态机的实现// example 1. simp...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-11-01 08:33:41 +0800" class="post-list__meta--date date">2017-11-01</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/11/state-machine/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/11/mit-6824-note-1/";
+        this.page.identifier = "/2017/11/mit-6824-note-1/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>
