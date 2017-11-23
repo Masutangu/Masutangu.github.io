@@ -273,6 +273,38 @@ its entirety.</li>
 
 <p>Master 维护了每个 chunk 的版本号，用以分辨出过时的 replicas。 每次 master 下发新的 lease 都会提升 chunk 的版本号。当 chunkserver 上报自身 chunk 集合和相关的版本号时，master 就可以检测出失效的 replica。 </p>
 
+<h1>Fault-Tolerant Virtual Machines</h1>
+
+<p>实现容错系统最常见的一种方法是主备方法，备机必须与主机保持接近一致。实现主备一致的一个普遍的做法是将主机状态的变化都同步给备机，包括 CPU、内存、I/O，但这种方式需要大量的带宽。另一种方式是将服务器建模成 deterministic state machine，如果输入相同，那最终的状态也会相同。通过同步输入序列的方式，对带宽的要求远低于同步状态的方式。</p>
+
+<p>Primary VM 的输入将通过 logging channel 同步给 backup VM。backup 的输出会被 hypervisor 丢弃，只有 primary VM 的输出会返回给客户端。</p>
+
+<p>Log all hardware events into a log: clock interrupts, network interrupts, i/o interrupts, etc.</p>
+
+<ul>
+<li><p><strong>For non-deterministic instructions, record additional info</strong></p>
+
+<p>e.g., log the value of the time stamp register</p>
+
+<p>on replay: return the value from the log instead of the actual register</p></li>
+<li><p><strong>Replay: delivery inputs in the same order at the same instructions</strong></p>
+
+<p>if during recording delivered clock interrupt at nth instruction executed
+during replay also delivers the clock interrupt at the nth instruction</p></li>
+</ul>
+
+<blockquote>
+<p><strong>Output Requirement</strong>: if the backup VM ever takes over after a failure of the primary, the backup VM will continu executing in a way that is entirely consistent with all outputs that the primary VM has sent to the external world.</p>
+</blockquote>
+
+<p>要满足 Output Requirement，所有的输出都必须延迟直到 backup VM 收到和该输出相关联的信息以便其可以回放。确保 Output Requirement 的一个简单的做法是给每个 output 操作创建一个特殊的log entry，当 backup VM 接收并 ack 该 log entry 时 primary VM 才会输出结果。</p>
+
+<p><img src="/assets/images/mit-6824-note-1/illustration-3.png" width="800" /></p>
+
+<p>FT 使用 UDP 发送心跳包来检测 server 是否存活。另外 FT 还会通过监控从 primary 发往 backup 的流量的方式来检测。</p>
+
+<p>为了避免 split-brain 的问题，在切换主的时候，需要在 shared storage 上执行原子的 test-and-set 操作，执行成功的才能升为 primary。</p>
+
   </section>
 </article>
 
