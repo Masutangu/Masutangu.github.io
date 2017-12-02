@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>MIT 6.824 学习笔记（二）</title>
+  <meta name="description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="MIT 6.824 学习笔记（二）">
+  <meta name="twitter:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="MIT 6.824 学习笔记（二）">
+  <meta property="og:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/11/mit-6824-note-2/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-11-05 15:40:29 +0800" itemprop="datePublished" class="post-meta__date date">2017-11-05</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">MIT 6.824 学习笔记（二）</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章是对 <a href="https://pdos.csail.mit.edu/6.824/schedule.html">MIT 6.824</a> 课程的学习笔记。</p>
+
+<h1>Raft</h1>
+
+<h2>Introduction</h2>
+
+<p>Raft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：<strong>Leader 选举</strong>、<strong>日志复制</strong>和<strong>安全性</strong>，同时<strong>通过更强的一致性来减少需要考虑的状态</strong>。</p>
+
+<p>一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。</p>
+
+<p>Raft 和许多一致性算法类似，但他也有自己的新特性：</p>
+
+<ul>
+<li><p><strong>Strong leader</strong></p>
+
+<p>Raft 使用比其他一致性算法更强的 leadership 形式。举例来说，log entries 只能从 leader 发往其他 server。</p></li>
+<li><p><strong>Leader election</strong></p>
+
+<p>Raft 使用随机 timer 来选举 leader，简洁地解决了冲突的问题。</p></li>
+<li><p><strong>Membership changes</strong></p>
+
+<p>Raft 使用 joint consensus 的方式来处理成员变化的问题。在变迁的过程中，两个不同的配置可以共存，以此来实现在变迁过程中集群仍然能持续运转。</p></li>
+</ul>
+
+<p><strong>Replicated state machines 通常用 replicated log 实现。一致性算法起的作用是保证多个 replicas 上的 replicated log 一致。</strong></p>
+
+<p>实际系统中使用的一致性算法通常有下列特性：</p>
+
+<ul>
+<li><p><strong>安全性保证</strong>（绝对不会返回一个错误的结果）</p>
+
+<p>在非拜占庭错误情况下，网络延迟、分区、丢包、冗余和乱序等错误都可以保证不返回错误的结果。</p></li>
+<li><p><strong>可用性</strong></p>
+
+<p>集群中只要大多数的机器可运行并且能够相互通信、和客户端通信，服务就可用。</p></li>
+<li><p><strong>不依赖时序来保证一致性</strong></p></li>
+<li><p>通常情况下，小部分 slow servers 不会影响系统整体的性能</p></li>
+</ul>
+
+<h2>Raft basics</h2>
+
+<blockquote>
+<p>Raft implements consensus by first electing a distinguished leader, then giving the leader complete responsibility for managing the replicated log. The leader accepts log entries from clients, replicates them on other servers, and tells servers when it is safe to apply log entries to their state machines</p>
+</blockquote>
+
+<p>Raft 在任何时候都保证以下的特性：</p>
+
+<ul>
+<li><p><strong>Election Safety</strong>: at most one leader can be elected in a given term.</p></li>
+<li><p><strong>Leader Append-Only</strong>: a leader never overwrites or deletes entries in its log; it only appends new entries. </p></li>
+<li><p><strong>Log Matching</strong>: if two logs contain an entry with the same index and term, then the logs are identical in all entries up through the given index. </p></li>
+<li><p><strong>Leader Completeness</strong>: if a log entry is committed in a given term, then that entry will be present in the logs of the leaders for all higher-numbered terms. </p></li>
+<li><p><strong>State Machine Safety</strong>: if a server has applied a log entry at a given index to its state machine, no other server will ever apply a different log entry for the same index.</p></li>
+</ul>
+
+<p>Raft 中每个 server 在任意时刻都处于 <strong>leader</strong>、<strong>follower</strong>、<strong>candidate</strong> 这三种状态之一。Followers 被动的接收 leader 或 candidate 的请求，leader 处理所有客户端请求，candidate 则起了选举 leader 的角色。</p>
+
+<p><img src="/assets/images/mit-6824-note-2/illustration-1.png" width="800" /></p>
+
+<p>Raft 把时间划分为<strong>任期（Terms）</strong>，并保证每个任期内只有一个 leader。</p>
+
+<p><img src="/assets/images/mit-6824-note-2/illustration-2.png" width="800" /></p>
+
+<blockquote>
+<p><strong>Terms act as a logical clock in Raft</strong>, and they allow servers to detect obsolete information such as stale leaders. <strong>Each server stores a current term number, which increases monotonically over time. Current terms are exchanged whenever servers communicate</strong></p>
+</blockquote>
+
+<p>Raft 服务器之间使用 RPC 进行通信，<strong>RequestVote RPC 用于选举，AppendEntries 用于 leader 向 followers 复制日志和心跳。</strong></p>
+
+<h2>Log replication</h2>
+
+<p>Raft 的日志机制维护下面两个特性：</p>
+
+<ul>
+<li><strong>If two entries in different logs have the same index and term, then they store the same command.</strong></li>
+<li><strong>If two entries in different logs have the same index and term, then the logs are identical in all preceding entries.</strong></li>
+</ul>
+
+<h2>Safty</h2>
+
+<p>在任何 leader-based 的一致性算法中，leader 都必须存储所有已经提交的日志条目。Raft 使用了一种简单的办法，保证之前任期中已经提交的日志都会出现在新的 leader 中，不需要将这些日志传给新的 leader。这意味着<strong>日志的传送是单向的从 leader 发往 followers，并且 leader 从不覆盖本地已经存在的日志。</strong></p>
+
+<p>Raft 在投票过程中只允许<strong>包含全部已提交日志的 server 当选 leader</strong>。Raft 通过比较日志中最后一条日志条目的索引值和任期来判断哪份日志更新。<strong>任期大的日志更加新，如果任期相同，那么日志索引值更大的新。</strong></p>
+
+<p><strong>Leader 不能断定之前任期里的日志条目被保存到大多数服务器上的时候就一定已经提交了。</strong>（请看论文的 figure 8）Raft 永远不会通过计算副本数目的方式提交一个之前任期内的日志条目。<strong>只有当前任期里的日志条目是通过计算副本数目的方式被提交。</strong>一旦当前任期的日志条目以这种方式被提交，那么由于日志匹配特性，之前的日志条目也都会被间接的提交。</p>
+
+<h2>Timing and availability</h2>
+
+<p>Raft 要求系统满足以下时间限制：</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">broadcastTime ≪ electionTimeout ≪ MTBF
+</code></pre></figure>
+<p>BroadcastTime 指的是并行发送 RPCs 给集群中的其他服务器并接收到响应的平均时间。MTBF 是单台服务器两次故障之间的平均时间。</p>
+
+<p>Raft 的 RPCs 通常耗时在 0.5ms 到 20ms 之间。因此 electionTimeout 最好处于 10ms 到 500ms 之间。</p>
+
+<h2>Cluster membership changes</h2>
+
+<p>为了保证配置修改机制的安全，在转换的过程中同一个任期中任何一个时间点都不能出现超过一个 leader。</p>
+
+<p><img src="/assets/images/mit-6824-note-2/illustration-3.png" width="800" /></p>
+
+<p>Raft 使用 two-phase 的方式来保证安全性。集群首先切换到过渡的配置，我们称其为 <strong>joint consensus</strong>。一旦 joint consensus 被提交，集群再切换到新的配置。<strong>Joint consensus</strong> 是新老配置的结合：</p>
+
+<ul>
+<li>日志条目被复制给集群中新、老配置的所有服务器</li>
+<li>新、旧配置的服务器都可以成为领导人</li>
+<li>Agreement (for elections and entry commitment) 需要分别在两种配置上获得大多数的支持</li>
+</ul>
+
+<p>集群配置以特殊的日志条目保存在 replicated log 中来存储和通信，下图展示了配置转换的过程。一旦一个服务器将新的配置日志条目添加到本地日志中，它就会用这个配置来做决定（服务器总是使用最新的配置，无论该配置是否已经被提交）。这意味着 leader 要使用 C-old,new 的规则来决定日志条目 C-old,new 什么时候需要被提交。</p>
+
+<p><img src="/assets/images/mit-6824-note-2/illustration-4.png" width="800" /></p>
+
+<p>一旦 C-old,new 被提交，那么无论是 C-old 还是 C-new 都不能单独做出决定，并且 Leader Completeness 的特性保证了只有拥有 C-old,new 日志条目的服务器才有可能被选举为 leader。这时 leader 创建一条 C-new 配置的日志条目并复制给集群就是安全的了，每个服务器在见到新的配置的时候就会立即生效。当新的配置在 C-new 的规则下被提交，不在新的配置内的服务器就可以关闭了。</p>
+
+<h2>Client interaction</h2>
+
+<p>Raft 的目标是要实现 linearizable semantics(each operation appears to execute instantaneously, exactly once, at some point between its invocation and its response) 但 Raft 是可能执行同一条命令多次的。解决方法是<strong>客户端对于每一条指令都赋予一个唯一的序列号，状态机记录每条指令最新的序列号和相应的响应。</strong>如果接收到一条指令其序列号已经被执行了，那么就立即返回响应，无需重复执行指令。</p>
+
+<p>只读的操作可以直接处理而不需要写入日志，但可能返回脏数据。Raft 采用额外的机制在不写入日志的情况下保证读操作的正确性：</p>
+
+<ul>
+<li>Leader 必须知道最新的被提交日志。Raft 中通过 leader 在任期开始的时候提交一个空白的日志条目到日志中去来实现。</li>
+<li>Leader 在处理只读的请求之前需要检查自己是否已经被废黜了。Raft 中通过让 leader 在响应只读请求之前，先和集群中的大多数节点交换一次心跳信息来处理这个问题。</li>
+</ul>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/11/mit-6824-note-1/" title="link to MIT 6.824 学习笔记（一）">MIT 6.824 学习笔记（一）</a></h2>
+       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。Introduction本课程涵盖以下主题：RPC、线程、并发控制性能 容灾：Availability, Durability. replicated servers 是不错的选择。一致性：replica如何保持一致？ Consistency 和 Performance 不可兼得MapReduceMap funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapRedu...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-11-05 15:40:29 +0800" class="post-list__meta--date date">2017-11-05</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/11/mit-6824-note-1/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/11/mit-6824-note-2/";
+        this.page.identifier = "/2017/11/mit-6824-note-2/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-2/" title="访问 Linux 内核系列－进程通信和同步">Linux 内核系列－进程通信和同步</a></h2>
+      <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念竞争条件多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。忙等待的互斥几种实现互斥的方案：屏蔽中断在单处理器系统中，最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，包括时钟中断。CPU 只有在发生中断的时候才会进行进程切换，这样在中断被屏蔽后 CPU 将不会被切换到其他进程...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-2/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-1/" title="访问 Linux 内核系列－进程">Linux 内核系列－进程</a></h2>
       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念进程即处于运行中的程序，除了程序的代码外，还包括打开的文件、挂起的信号、进程状态、内存地址空间以及用以存储全局变量的数据段等。执行线程，简称线程，是在进程中活动的对象。每个线程都拥有独立的程序计数器、进程栈和一组进程寄存器。内核的调度对象是线程，而不是进程。在现代操作系统中，进程提供两种虚拟机制：虚拟处理器和虚拟...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-1/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/07/matplot-note/" title="访问 Matplotlib 笔记">Matplotlib 笔记</a></h2>
       <p class="excerpt">最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：用Matplotlib生成图表并保存成文件将图片添加为邮件的附件最后通过src=&quot;cid:0&quot;的方式将图片嵌入到邮件正文中这篇文章主要对 Matplotlib 的使用做些总结，包括 Matplotlib 如何配置显示中文字体，折线图／柱状图／圆饼图相关介绍，matplot子图的概念。配置中文字体支持确定系统已有哪些支持中文字体linux下运行 fc-list :lang=zh 命令会输出所...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-07-04 08:06:35 +0800" class="post-list__meta--date date">2016-07-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/matplot-note/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/05/read-tcpcopy-source-code/" title="访问 Tcpcopy 源码阅读">Tcpcopy 源码阅读</a></h2>
-      <p class="excerpt">tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。架构第一种架构：实现原理：从数据链路层捕获客户端的请求包，修改目的IP地址为压测机器，再从IP层发送出去。从数据链路层捕获压测机器的响应包，保持tcp会话的状态（seq number，ack numb...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-05-05 10:00:25 +0800" class="post-list__meta--date date">2016-05-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/05/read-tcpcopy-source-code/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

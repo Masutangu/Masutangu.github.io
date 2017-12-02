@@ -5,9 +5,146 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 23 Nov 2017 09:37:42 +0800</pubDate>
-    <lastBuildDate>Thu, 23 Nov 2017 09:37:42 +0800</lastBuildDate>
+    <pubDate>Sat, 02 Dec 2017 15:09:27 +0800</pubDate>
+    <lastBuildDate>Sat, 02 Dec 2017 15:09:27 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>MIT 6.824 学习笔记（二）</title>
+        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
+
+&lt;h1&gt;Raft&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Raft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：&lt;strong&gt;Leader 选举&lt;/strong&gt;、&lt;strong&gt;日志复制&lt;/strong&gt;和&lt;strong&gt;安全性&lt;/strong&gt;，同时&lt;strong&gt;通过更强的一致性来减少需要考虑的状态&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。&lt;/p&gt;
+
+&lt;p&gt;Raft 和许多一致性算法类似，但他也有自己的新特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Strong leader&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用比其他一致性算法更强的 leadership 形式。举例来说，log entries 只能从 leader 发往其他 server。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader election&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用随机 timer 来选举 leader，简洁地解决了冲突的问题。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Membership changes&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用 joint consensus 的方式来处理成员变化的问题。在变迁的过程中，两个不同的配置可以共存，以此来实现在变迁过程中集群仍然能持续运转。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Replicated state machines 通常用 replicated log 实现。一致性算法起的作用是保证多个 replicas 上的 replicated log 一致。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;实际系统中使用的一致性算法通常有下列特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;安全性保证&lt;/strong&gt;（绝对不会返回一个错误的结果）&lt;/p&gt;
+
+&lt;p&gt;在非拜占庭错误情况下，网络延迟、分区、丢包、冗余和乱序等错误都可以保证不返回错误的结果。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;可用性&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;集群中只要大多数的机器可运行并且能够相互通信、和客户端通信，服务就可用。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;不依赖时序来保证一致性&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;通常情况下，小部分 slow servers 不会影响系统整体的性能&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Raft basics&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Raft implements consensus by first electing a distinguished leader, then giving the leader complete responsibility for managing the replicated log. The leader accepts log entries from clients, replicates them on other servers, and tells servers when it is safe to apply log entries to their state machines&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Raft 在任何时候都保证以下的特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Election Safety&lt;/strong&gt;: at most one leader can be elected in a given term.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader Append-Only&lt;/strong&gt;: a leader never overwrites or deletes entries in its log; it only appends new entries. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Log Matching&lt;/strong&gt;: if two logs contain an entry with the same index and term, then the logs are identical in all entries up through the given index. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader Completeness&lt;/strong&gt;: if a log entry is committed in a given term, then that entry will be present in the logs of the leaders for all higher-numbered terms. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;State Machine Safety&lt;/strong&gt;: if a server has applied a log entry at a given index to its state machine, no other server will ever apply a different log entry for the same index.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Raft 中每个 server 在任意时刻都处于 &lt;strong&gt;leader&lt;/strong&gt;、&lt;strong&gt;follower&lt;/strong&gt;、&lt;strong&gt;candidate&lt;/strong&gt; 这三种状态之一。Followers 被动的接收 leader 或 candidate 的请求，leader 处理所有客户端请求，candidate 则起了选举 leader 的角色。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 把时间划分为&lt;strong&gt;任期（Terms）&lt;/strong&gt;，并保证每个任期内只有一个 leader。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Terms act as a logical clock in Raft&lt;/strong&gt;, and they allow servers to detect obsolete information such as stale leaders. &lt;strong&gt;Each server stores a current term number, which increases monotonically over time. Current terms are exchanged whenever servers communicate&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Raft 服务器之间使用 RPC 进行通信，&lt;strong&gt;RequestVote RPC 用于选举，AppendEntries 用于 leader 向 followers 复制日志和心跳。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;Log replication&lt;/h2&gt;
+
+&lt;p&gt;Raft 的日志机制维护下面两个特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;If two entries in different logs have the same index and term, then they store the same command.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;If two entries in different logs have the same index and term, then the logs are identical in all preceding entries.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Safty&lt;/h2&gt;
+
+&lt;p&gt;在任何 leader-based 的一致性算法中，leader 都必须存储所有已经提交的日志条目。Raft 使用了一种简单的办法，保证之前任期中已经提交的日志都会出现在新的 leader 中，不需要将这些日志传给新的 leader。这意味着&lt;strong&gt;日志的传送是单向的从 leader 发往 followers，并且 leader 从不覆盖本地已经存在的日志。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 在投票过程中只允许&lt;strong&gt;包含全部已提交日志的 server 当选 leader&lt;/strong&gt;。Raft 通过比较日志中最后一条日志条目的索引值和任期来判断哪份日志更新。&lt;strong&gt;任期大的日志更加新，如果任期相同，那么日志索引值更大的新。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Leader 不能断定之前任期里的日志条目被保存到大多数服务器上的时候就一定已经提交了。&lt;/strong&gt;（请看论文的 figure 8）Raft 永远不会通过计算副本数目的方式提交一个之前任期内的日志条目。&lt;strong&gt;只有当前任期里的日志条目是通过计算副本数目的方式被提交。&lt;/strong&gt;一旦当前任期的日志条目以这种方式被提交，那么由于日志匹配特性，之前的日志条目也都会被间接的提交。&lt;/p&gt;
+
+&lt;h2&gt;Timing and availability&lt;/h2&gt;
+
+&lt;p&gt;Raft 要求系统满足以下时间限制：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;broadcastTime ≪ electionTimeout ≪ MTBF
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;BroadcastTime 指的是并行发送 RPCs 给集群中的其他服务器并接收到响应的平均时间。MTBF 是单台服务器两次故障之间的平均时间。&lt;/p&gt;
+
+&lt;p&gt;Raft 的 RPCs 通常耗时在 0.5ms 到 20ms 之间。因此 electionTimeout 最好处于 10ms 到 500ms 之间。&lt;/p&gt;
+
+&lt;h2&gt;Cluster membership changes&lt;/h2&gt;
+
+&lt;p&gt;为了保证配置修改机制的安全，在转换的过程中同一个任期中任何一个时间点都不能出现超过一个 leader。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用 two-phase 的方式来保证安全性。集群首先切换到过渡的配置，我们称其为 &lt;strong&gt;joint consensus&lt;/strong&gt;。一旦 joint consensus 被提交，集群再切换到新的配置。&lt;strong&gt;Joint consensus&lt;/strong&gt; 是新老配置的结合：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;日志条目被复制给集群中新、老配置的所有服务器&lt;/li&gt;
+&lt;li&gt;新、旧配置的服务器都可以成为领导人&lt;/li&gt;
+&lt;li&gt;Agreement (for elections and entry commitment) 需要分别在两种配置上获得大多数的支持&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;集群配置以特殊的日志条目保存在 replicated log 中来存储和通信，下图展示了配置转换的过程。一旦一个服务器将新的配置日志条目添加到本地日志中，它就会用这个配置来做决定（服务器总是使用最新的配置，无论该配置是否已经被提交）。这意味着 leader 要使用 C-old,new 的规则来决定日志条目 C-old,new 什么时候需要被提交。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;一旦 C-old,new 被提交，那么无论是 C-old 还是 C-new 都不能单独做出决定，并且 Leader Completeness 的特性保证了只有拥有 C-old,new 日志条目的服务器才有可能被选举为 leader。这时 leader 创建一条 C-new 配置的日志条目并复制给集群就是安全的了，每个服务器在见到新的配置的时候就会立即生效。当新的配置在 C-new 的规则下被提交，不在新的配置内的服务器就可以关闭了。&lt;/p&gt;
+
+&lt;h2&gt;Client interaction&lt;/h2&gt;
+
+&lt;p&gt;Raft 的目标是要实现 linearizable semantics(each operation appears to execute instantaneously, exactly once, at some point between its invocation and its response) 但 Raft 是可能执行同一条命令多次的。解决方法是&lt;strong&gt;客户端对于每一条指令都赋予一个唯一的序列号，状态机记录每条指令最新的序列号和相应的响应。&lt;/strong&gt;如果接收到一条指令其序列号已经被执行了，那么就立即返回响应，无需重复执行指令。&lt;/p&gt;
+
+&lt;p&gt;只读的操作可以直接处理而不需要写入日志，但可能返回脏数据。Raft 采用额外的机制在不写入日志的情况下保证读操作的正确性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Leader 必须知道最新的被提交日志。Raft 中通过 leader 在任期开始的时候提交一个空白的日志条目到日志中去来实现。&lt;/li&gt;
+&lt;li&gt;Leader 在处理只读的请求之前需要检查自己是否已经被废黜了。Raft 中通过让 leader 在响应只读请求之前，先和集群中的大多数节点交换一次心跳信息来处理这个问题。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 05 Nov 2017 15:40:29 +0800</pubDate>
+        <link>http://masutangu.com/2017/11/mit-6824-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/11/mit-6824-note-2/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>MIT 6.824 学习笔记（一）</title>
@@ -3649,426 +3786,6 @@ static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
         <pubDate>Thu, 01 Dec 2016 16:40:36 +0800</pubDate>
         <link>http://masutangu.com/2016/12/linux-kernel-serial-3/</link>
         <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-3/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>Linux 内核系列－进程通信和同步</title>
-        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
-
-&lt;h1&gt;概念&lt;/h1&gt;
-
-&lt;h2&gt;竞争条件&lt;/h2&gt;
-
-&lt;p&gt;多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。&lt;/p&gt;
-
-&lt;h2&gt;忙等待的互斥&lt;/h2&gt;
-
-&lt;p&gt;几种实现互斥的方案：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;屏蔽中断&lt;/p&gt;
-
-&lt;p&gt;在单处理器系统中，最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，包括时钟中断。CPU 只有在发生中断的时候才会进行进程切换，这样在中断被屏蔽后 CPU 将不会被切换到其他进程。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;锁变量&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;严格轮换法&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;while (TRUE) {
-    while (turn != 0) 
-    critical_region(); 
-    turn = 1;
-    noncritical_region();
-}
-
-while (TRUE) {
-    while (turn != 1) 
-    critical_region(); 
-    turn = 0;
-    noncritical_region();
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;忙等待检查变量。使用忙等待的锁称为自旋锁。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Peterson 解法&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#define FALSE 0 
-#define TRUE  1
-#define N     2                    /* number of processes */
-
-int turn;                          /* whose turn is it? */
-int interested[N];                 /* all values initially 0 (FALSE) */
-
-void enter_region(int process);    /* process is 0 or 1 */
-{
-    int other;
-
-    other = 1 - process;
-    interested[process] = TRUE;
-    turn = process;
-    while (turn == process &amp;amp;&amp;amp; interested[other] == TRUE); 
-}
-
-void leave_region(int process)     /* process: who is leaving */ 
-{
-    interested[process] = FALSE;   /* indicate departure from critical region */ 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;TSL 指令&lt;/p&gt;
-
-&lt;p&gt;TSL（测试并加锁）指令将一个内存字 lock 读到寄存器 RX 中，然后在该内存地址上存一个非零值。读字和写字操作保证是不可分割的，即在该指令结束前其他处理器均不允许访问该内存字。执行 TSL 指令的 CPU 将锁住内存总线，以防止其他 CPU 在本指令结束前访问内存。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;enter region:
-    TSL REGISTER, LOCK      | copy lock to register and set lock to 1
-    CMP REGISTER, #0        | was lock zero?
-    JNE enter_region        | if it was not zero, lock was set, so loop
-    RET                     | return to caller; critical region entered
-
-leave region:
-    MOVE LOCK, #0           | store a 0 in lock
-    RET                     | return to caller  
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;一个可替代 TSL 的指令是 XCHG，它原子性的交换了两个位置的内容，例如寄存器和内存字。代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;enter region:
-    MOVE REGISTER, #1       | put a 1 in the register
-    XCHG REGISTER, LOCK     | swap the contents of the register and lock variable
-    CMP REGISTER, #0        | was lock zero?
-    JNE enter_region        | if it was non zero, lock was set, so loop
-    RET                     | return to caller; critical region entered
-
-leave region:
-    MOVE LOCK, #0           | store a 0 in lock
-    RET                     | return to caller
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;忙等待存在优先级反转的问题。假设存在 H 和 L 两个进程，L 优先级较低，调度规则规定只要 H 处于就绪状态就可以允许。在某一时刻，L 处于临界区中，此时 H 变到就绪态，然后开始忙等待。但由于 H 就绪时 L 不会被调度，也就无法离开临界区，所以 H 将永远忙等待下去。&lt;/p&gt;
-
-&lt;h2&gt;信号量&lt;/h2&gt;
-
-&lt;p&gt;信号量使用整型变量来累计唤醒次数。信号量的取值可以为 0 或者为正值。信号量有 up 和 down 这两种操作。&lt;/p&gt;
-
-&lt;p&gt;使用信号量解决生产者－消费者问题：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#define N 100                   /* number of slots in the buffer */
-typedef int semaphore;          /* semaphores are a special kind of int */
-semaphore mutex = 1;            /* controls access to critical region */
-semaphore empty = N;            /* counts empty buffer slots */
-semaphore full = 0;             /* counts full buffer slots */
-
-void producer(void) {
-  int item;
-  while (TRUE) {                /* TRUE is the constant 1 */
-    item = produce_item();      /* generate something to put in buffer */
-    down(&amp;amp;empty);               /* decrement empty count */
-    down(&amp;amp;mutex);               /* enter critical region */
-    insert_item(item);          /* put new item in buffer */
-    up(&amp;amp;mutex);                 /* leavecriticalregion */
-    up(&amp;amp;full);                  /* increment count of full slots */
-  } 
-}
-
-void consumer(void) {
-  int item;
-  while (TRUE) {                /* infinite loop */
-    down(&amp;amp;full);                /* decrement full count */
-    down(&amp;amp;mutex);               /* enter critical region */
-    item = remove_item();       /* take item from buffer */
-    up(&amp;amp;mutex);                 /* leavecriticalregion */
-    up(&amp;amp;empty);                 /* increment count of empty slots */
-    consume item(item);         /* do something with the item */
-  } 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;中断可以用信号量来实现，最自然的方法是为每个 I/O 设备设置一个信号量，初始值为 0。在启动 I/O 设备后，管理进程就立即对相关信号量执行一个 down 操作，于是进程被阻塞。当中断到来时，中断处理程序随后对相关信号量执行一个 up 操作，从而使进程变成就绪态。&lt;/p&gt;
-
-&lt;p&gt;信号量可以用以实现互斥，也可以用于事件同步。&lt;/p&gt;
-
-&lt;h2&gt;互斥量&lt;/h2&gt;
-
-&lt;p&gt;互斥量是信号量的简化版本，称为互斥量。常用于用户线程包。互斥量只有两个状态：解锁和加锁。&lt;/p&gt;
-
-&lt;p&gt;TSL 或 XCHG 指令可以方便的在用户空间中实现互斥量：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;mutex_lock:
-    TSL REGISTER, MUTEX                 | copy mutex to register and set mutex to 1
-    CMP REGISTER, #0                    | was mutex zero?
-    JZE ok                              | if it was zero, mutex was unlocked, so return
-    CALL thread_yield                   | mutex is busy; schedule another thread
-    JMP mutex_lock                      | try again 
-ok: RET                                 | return to caller; critical region entered
-
-
-mutex_unlock:
-    MOVE MUTEX, #0                      | store a 0 in mutex
-    RET                                 | return to caller
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;mutex_lock 和 enter_region 很类似，但有个关键的区别。当 enter_region 进入临界区失败时，进程始终在重复测试锁（忙等待），直到时钟超时，重新调度其他进程运行。&lt;/p&gt;
-
-&lt;p&gt;在用户线程中，由于没有时钟来停止运行过长的线程，因此需要调用 thread_yield 来让出 CPU。&lt;/p&gt;
-
-&lt;p&gt;Pthread 提供多种同步机制，包括互斥量和条件变量。&lt;strong&gt;条件变量总是结合互斥量一起使用。&lt;/strong&gt;另外条件变量不会存在内存中，需要避免丢失信号。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;pthread.h&amp;gt;
-#define MAX 1000000000                                  /* how many numbers to produce */
-pthread_mutex_t the mutex; 
-pthread_cond_t condc, condp;                            /* used for signaling */
-int buffer = 0;                                         /* buffer used between producer and consumer */
-
-void *producer(void *ptr) {                             /* produce data */
-    int i;
-
-    for (i= 1; i &amp;lt;= MAX; i++) {
-        pthread_mutex_lock(&amp;amp;the_mutex);                 /* get exclusive access to buffer */            
-        while (buffer != 0) 
-            pthread_cond_wait(&amp;amp;condp, &amp;amp;the_mutex);
-        buffer = i;                                     /* put item in buffer */    
-        pthread_cond_signal(&amp;amp;condc);                    /* wakeupconsumer */
-        pthread_mutex_unlock(&amp;amp;the_mutex);               /* release access to buffer */
-    }
-    pthread exit(0); 
-}
-
-
-void *consumer(void *ptr) {                             /* consume data */
-    int i;
-    for (i = 1; i &amp;lt;= MAX; i++) {
-        pthread_mutex_lock(&amp;amp;the_mutex);                 /* get exclusive access to buffer */ 
-        while (buffer ==0 ) 
-            pthread_cond_wait(&amp;amp;condc, &amp;amp;the_mutex);      /* wakeupproducer */
-        buffer = 0;
-        pthread_cond_signal(&amp;amp;condp);  
-        pthread_mutex_unlock(&amp;amp;the_mutex);               /* release access to buffer */
-    }
-    pthread exit(0); 
-}
-
-int main(int argc, char **argv) {
-    pthread_t pro, con;
-    pthread_mutex_init(&amp;amp;the_mutex, 0); 
-    pthread_cond_init(&amp;amp;condc, 0); 
-    pthread_cond_init(&amp;amp;condp, 0); 
-    pthread_create(&amp;amp;con, 0, consumer, 0); 
-    pthread_create(&amp;amp;pro, 0, producer, 0); 
-    pthread_join(pro, 0);
-    pthread_join(con, 0);
-    pthread_cond_destroy(&amp;amp;condc); 
-    pthread_cond_destroy(&amp;amp;condp); 
-    pthread_mutex_destroy(&amp;amp;the_mutex);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h1&gt;系统调用及库函数&lt;/h1&gt;
-
-&lt;h2&gt;线程同步&lt;/h2&gt;
-
-&lt;h3&gt;互斥量&lt;/h3&gt;
-
-&lt;p&gt;可以使用 pthread 的互斥接口来保护数据。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;pthread.h&amp;gt;
-
-int pthread_mutex_lock(pthread_mutex_t *mutex);
-
-int pthread_mutex_trylock(pthread_mutex_t *mutex);
-
-int pthread_mutex_unlock(pthread_mutex_t *mutex);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;读写锁&lt;/h3&gt;
-
-&lt;p&gt;读写锁可以有三个状态：读模式下加锁状态，写模式下加锁状态，不加锁状态。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;pthread.h&amp;gt;
-
-int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
-
-int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
-
-int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;条件变量&lt;/h3&gt;
-
-&lt;p&gt;条件变量与互斥量一起使用时，允许线程以无竞争的方式等待特定的条件发生。&lt;strong&gt;条件本身是由互斥量保护的，线程在改变条件状态前必须先锁住互斥量&lt;/strong&gt;。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;
-#include &amp;lt;pthread.h&amp;gt;
-
-int pthread_cond_wait(pthread_cond_t *restrict cond,
-                     pthread_mutex_t *restrict mutex);
-
-int pthread_cond_signal(pthread_cond_t *cond);
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;传递给 pthread_cond_wait 的互斥量对条件进行保护。调用者把锁住的互斥量传给函数，函数自动把调用线程放到等待条件的线程列表上，再对互斥量解锁。这就&lt;strong&gt;关闭了条件检查和线程进入休眠状态等待条件改变这两个操作之间的时间通道，因此线程不会错过条件的任何变化&lt;/strong&gt;。pthread_cond_wait 返回时，互斥量再次被锁住。&lt;/p&gt;
-
-&lt;h3&gt;自旋锁&lt;/h3&gt;
-
-&lt;p&gt;自旋锁与互斥量类似，但其不是通过休眠使进程阻塞，而是获得锁之前一直处于忙等待。自锁锁可以用于以下情况：锁被持有时间短，而且线程不希望在重新调度上花费太多成本。&lt;/p&gt;
-
-&lt;p&gt;自旋锁通常用于底层原语用于实现其它类型的锁。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;pthread.h&amp;gt;
-
-int pthread_spin_lock(pthread_spinlock_t *lock);
-
-int pthread_spin_trylock(pthread_spinlock_t *lock);
-
-int pthread_spin_unlock(pthread_spinlock_t *lock);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;屏障&lt;/h3&gt;
-
-&lt;p&gt;屏障是用户协调多个线程并行工作的同步机制。屏障允许每个线程等待，直到所有的合作线程都到达某一个点，然后从该点继续执行。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;pthread.h&amp;gt;
-
-int pthread_barrier_init(pthread_barrier_t *restrict barrier,
-                        const pthread_barrierattr_t *restrict attr,
-                        unsigned int count);
-
-int pthread_barrier_wait(pthread_barrier_t *barrier);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;进程同步与通信&lt;/h2&gt;
-
-&lt;h3&gt;管道&lt;/h3&gt;
-
-&lt;p&gt;管道是 UNIX 系统 IPC 的最古老方式。管道是半双工的，只能在具有公共祖先的两个进程之间使用。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;unistd.h&amp;gt;
-
-int pipe(int fd[2]);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;常量 PIPE_BUF 规定了内核的管道缓冲区大小，如果写管道的字节数小于等于 PIPE_BUF，则此操作不会与其它进程对同一管道的写操作交叉进行。&lt;/p&gt;
-
-&lt;h3&gt;FIFO&lt;/h3&gt;
-
-&lt;p&gt;通过 FIFO 不相关的进程也能交换数据。创建 FIFO 类似创建文件：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;#include &amp;lt;sys/stat.h&amp;gt;
-
-int mkfifo(const char *path, mode_t mode);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;XSI IPC&lt;/h3&gt;
-
-&lt;p&gt;消息队列，信号量以及共享存储器称为 XSI IPC。&lt;/p&gt;
-
-&lt;h4&gt;标识符和键&lt;/h4&gt;
-
-&lt;p&gt;每个内核中的 IPC 结构都用一个非负整数的标识符加以引用。标识符是 IPC 对象的内部名，每个 IPC 对象都与一个键关联，将这个键作为该对象的外部名。&lt;/p&gt;
-
-&lt;h4&gt;权限结构&lt;/h4&gt;
-
-&lt;p&gt;每个 IPC 结构关联了一个 ipc_perm 结构，该结构规定了权限和所有者，其至少包括了以下成员：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct ipc_perm {
-    uid_t   uid;   /* owner&amp;#39;s effective user id */
-    gid_t   gid;   /* owner&amp;#39;s effective group id */
-    uid_t   cuid;  /* creator&amp;#39;s effective user id */
-    gid_t   cgid;  /* creator&amp;#39;s effective group id */
-    mode_t  mode;  /* access modes */
-    ...
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4&gt;优缺点&lt;/h4&gt;
-
-&lt;p&gt;XSI IPC 是在系统范围内起作用的，没有引用计数。例如，消息队列在引用进程终止后其内容不会被删除。与管道相比，当最后一个引用管道的进程终止时，管道就被完全的删除了。另一个问题是，XSI IPC 结构在文件系统中没有名字，无法使用文件系统的函数来访问或修改它们的属性，因此内核增加了十几个全新的系统调用（msgget、semop、shmat等）来支持这些 IPC 对象。&lt;/p&gt;
-
-&lt;p&gt;消息队列的优点是：可靠、流控制的。&lt;/p&gt;
-
-&lt;h4&gt;信号量、记录锁和互斥量的比较&lt;/h4&gt;
-
-&lt;p&gt;如果在多个进程间共享一个资源，则可使用信号量、记录锁或互斥量来协调访问。&lt;/p&gt;
-
-&lt;p&gt;若使用信号量，则先创建包含一个成员的信号量集合，分配资源调用 sem_op 为 -1 的 semop。释放资源调用 sem_op 为 +1 的 semop。对每个操作都指定 SEM_UNDO，以处理未释放资源条件下进程终止的情况。&lt;/p&gt;
-
-&lt;p&gt;若使用记录锁，则先创建一个空文件，并使用该文件的第一个字节（无需存在）为锁字节。记录锁的性质确保当锁的持有者终止时，内核会自动释放锁。&lt;/p&gt;
-
-&lt;p&gt;若使用互斥量，需要所有进程将相同文件映射到各自的地址空间，并使用 PTHREAD_PROCESS_SHARED 互斥量属性在文件的相同偏移处初始化互斥量。如果一个进程没有释放互斥量而终止，要恢复将是非常困难的。&lt;/p&gt;
-
-&lt;p&gt;下图显示在 Linux 上，使用这三种不同技术进行锁操作所需要的时间。在每一种情况下，资源都被分配、释放 1 000 000 次：&lt;/p&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;操作&lt;/th&gt;
-&lt;th&gt;用户时间&lt;/th&gt;
-&lt;th&gt;系统时间&lt;/th&gt;
-&lt;th&gt;时钟&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;带undo的信号量&lt;/td&gt;
-&lt;td&gt;0.50&lt;/td&gt;
-&lt;td&gt;6.08&lt;/td&gt;
-&lt;td&gt;7.55&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;建议性记录锁&lt;/td&gt;
-&lt;td&gt;0.51&lt;/td&gt;
-&lt;td&gt;9.06&lt;/td&gt;
-&lt;td&gt;4.38&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;共享存储中的互斥量&lt;/td&gt;
-&lt;td&gt;0.21&lt;/td&gt;
-&lt;td&gt;0.40&lt;/td&gt;
-&lt;td&gt;0.25&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;如果我们仅需要对单一资源加锁，不需要 XSI 信号量的所有花哨功能，记录锁将比信号量更好，使用起来更简单、速度更快，当进程终止时系统会管理遗留下来的锁。除非特别考虑性能，否则不会使用共享存储中的互斥量。首先，在多个进程间共享内存中使用互斥量来恢复一个终止的进程更困难，其次，进程共享的互斥量属性还没得到普遍的支持。&lt;/p&gt;
-
-&lt;h3&gt;POSIX 信号量&lt;/h3&gt;
-
-&lt;p&gt;POSIX 信号量接口意在解决 XSI 信号量接口的几个缺陷：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;更高性能的实现&lt;/li&gt;
-&lt;li&gt;接口使用更简单，没有信号量集&lt;/li&gt;
-&lt;li&gt;删除时表现更完美&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;尽可能避免使用消息队列和信号量，应当考虑全双工管道和记录锁，它们使用起来更简单。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
-
-&lt;p&gt;内核提供了一系列实现同步的方法，包括原子操作、自旋锁、信号量、序列锁等。&lt;/p&gt;
-
-&lt;h2&gt;自旋锁&lt;/h2&gt;
-
-&lt;p&gt;自旋锁可以在中断上下文中使用，而信号量不能，因为信号量可能会休眠。在中断处理中使用了锁的话，需要禁止本地中断，否则可能会因为重复申请锁而导致死锁。&lt;/p&gt;
-
-&lt;p&gt;内核提供了一个方便的方法以禁止中断并申请锁：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;spin_lock_irqsave(&amp;amp;mr_lock, flags);
-/* critical region ... */ 
-spin_unlock_irqrestore(&amp;amp;mr_lock, flags);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;spin_lock_irqsave 保存当前的中断状态，禁止本地中断并获取自旋锁。&lt;/p&gt;
-
-&lt;p&gt;在单处理器系统，自旋锁的实现仅仅是禁止本地中断，并禁止抢占。&lt;/p&gt;
-
-&lt;h2&gt;完成变量（Completion Variables）&lt;/h2&gt;
-
-&lt;p&gt;Completion Variables 类似信号量，可以认为是信号量的简化版本。在内核中 Completion Variables 用于 vfork 系统调用：当子进程终止时通过 Completion Variables 通知父进程。&lt;/p&gt;
-
-&lt;h2&gt;顺序锁（Sequential Locks）&lt;/h2&gt;
-
-&lt;p&gt;顺序锁提供了一个简单的机制用以读写共享的数据，其基于一个顺序计数器。当数据被写入的时候，就会获得一把锁，并且序列值会增加。在读取数据之前和之后，读取序列值。如果序列值相同的话，那么在读数据的时候，并没有写操作发生。更进一步将，如果序列值是偶数的话，说明当前没有写操作正在进行（由于初始值为0，写操作获得和释放锁时均会让序列值加1）。&lt;/p&gt;
-
-&lt;p&gt;顺序锁非常轻量级，适用于以下场景：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;数据拥有非常多的读取者。&lt;/li&gt;
-&lt;li&gt;数据有很少的写入者。&lt;/li&gt;
-&lt;li&gt;数据更倾向于写，并且不允许读造成写饥饿。&lt;/li&gt;
-&lt;li&gt;数据非常的简单，但是因为某些原因，不能使用atomic变量。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;内核中存储 uptime 的变量 jiffies 的读写就使用了顺序锁。在某些不能原子读取 64 位 jiffies_64 变量的系统上，使用顺序锁来读取：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;u64 get_jiffies_64(void) {
-    unsigned long seq; 
-    u64 ret;
-
-    do {
-        seq = read_seqbegin(&amp;amp;xtime_lock);
-        ret = jiffies_64;
-    } while (read_seqretry(&amp;amp;xtime_lock, seq)); 
-    return ret;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;更新 jiffies_64 的代码如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;write_seqlock(&amp;amp;xtime_lock); 
-jiffies_64 += 1; 
-write_sequnlock(&amp;amp;xtime_lock);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Sun, 27 Nov 2016 13:49:16 +0800</pubDate>
-        <link>http://masutangu.com/2016/11/linux-kernel-serial-2/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/11/linux-kernel-serial-2/</guid>
         
         
         <category>读书笔记</category>
