@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 02 Dec 2017 15:09:27 +0800</pubDate>
-    <lastBuildDate>Sat, 02 Dec 2017 15:09:27 +0800</lastBuildDate>
+    <pubDate>Sat, 02 Dec 2017 15:39:00 +0800</pubDate>
+    <lastBuildDate>Sat, 02 Dec 2017 15:39:00 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -136,10 +136,39 @@
 &lt;li&gt;Leader 必须知道最新的被提交日志。Raft 中通过 leader 在任期开始的时候提交一个空白的日志条目到日志中去来实现。&lt;/li&gt;
 &lt;li&gt;Leader 在处理只读的请求之前需要检查自己是否已经被废黜了。Raft 中通过让 leader 在响应只读请求之前，先和集群中的大多数节点交换一次心跳信息来处理这个问题。&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Raft makes a few design choices that sacrifice performance for simplicity:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Raft follower rejects out-of-order AppendEntries RPCs&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Rather than saving for use after hole is filled. Might be important if network re-orders packets a lot
+And makes leader-&amp;gt;follower RPC pipelining harder&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Snapshotting is wasteful for big slowly-changing states&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A slow leader may hurt Raft, e.g. in geo-replication&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Experience suggests these have a big effect on performance:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Disk writes for persistence&lt;/li&gt;
+&lt;li&gt;Message/packet/RPC overhead&lt;/li&gt;
+&lt;li&gt;Need to execute logged commands sequentially&lt;/li&gt;
+&lt;li&gt;Fast path for read-only operations&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Appendix&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://thesecretlivesofdata.com/raft/&quot;&gt;http://thesecretlivesofdata.com/raft/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://thesquareplanet.com/blog/students-guide-to-raft/&quot;&gt;https://thesquareplanet.com/blog/students-guide-to-raft/&lt;/a&gt;&lt;/p&gt;
 </description>
-        <pubDate>Sun, 05 Nov 2017 15:40:29 +0800</pubDate>
-        <link>http://masutangu.com/2017/11/mit-6824-note-2/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/11/mit-6824-note-2/</guid>
+        <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
+        <link>http://masutangu.com/2017/12/mit-6824-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/12/mit-6824-note-2/</guid>
         
         
         <category>读书笔记</category>

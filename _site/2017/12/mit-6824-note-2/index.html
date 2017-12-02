@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://masutangu.com/2017/11/mit-6824-note-2/">
+  <link rel="canonical" href="http://masutangu.com/2017/12/mit-6824-note-2/">
   <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -126,7 +126,7 @@
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="2017-11-05 15:40:29 +0800" itemprop="datePublished" class="post-meta__date date">2017-11-05</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+      <time datetime="2017-12-02 15:19:31 +0800" itemprop="datePublished" class="post-meta__date date">2017-12-02</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
     </div>
     <h1 class="post-title">MIT 6.824 学习笔记（二）</h1>
   </header>
@@ -258,6 +258,35 @@
 <li>Leader 在处理只读的请求之前需要检查自己是否已经被废黜了。Raft 中通过让 leader 在响应只读请求之前，先和集群中的大多数节点交换一次心跳信息来处理这个问题。</li>
 </ul>
 
+<h2>Conclusion</h2>
+
+<p>Raft makes a few design choices that sacrifice performance for simplicity:</p>
+
+<ul>
+<li><p><strong>Raft follower rejects out-of-order AppendEntries RPCs</strong></p>
+
+<p>Rather than saving for use after hole is filled. Might be important if network re-orders packets a lot
+And makes leader-&gt;follower RPC pipelining harder</p></li>
+<li><p><strong>Snapshotting is wasteful for big slowly-changing states</strong></p>
+
+<p>A slow leader may hurt Raft, e.g. in geo-replication</p></li>
+</ul>
+
+<p>Experience suggests these have a big effect on performance:</p>
+
+<ul>
+<li>Disk writes for persistence</li>
+<li>Message/packet/RPC overhead</li>
+<li>Need to execute logged commands sequentially</li>
+<li>Fast path for read-only operations</li>
+</ul>
+
+<h2>Appendix</h2>
+
+<p><a href="http://thesecretlivesofdata.com/raft/">http://thesecretlivesofdata.com/raft/</a></p>
+
+<p><a href="https://thesquareplanet.com/blog/students-guide-to-raft/">https://thesquareplanet.com/blog/students-guide-to-raft/</a></p>
+
   </section>
 </article>
 
@@ -281,8 +310,8 @@
     <script>
     
     var disqus_config = function () {
-        this.page.url = "http://masutangu.com/2017/11/mit-6824-note-2/";
-        this.page.identifier = "/2017/11/mit-6824-note-2/";
+        this.page.url = "http://masutangu.com/2017/12/mit-6824-note-2/";
+        this.page.identifier = "/2017/12/mit-6824-note-2/";
     };
 
     var disqus_shortname = 'masutangu';
