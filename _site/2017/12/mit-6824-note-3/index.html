@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>MIT 6.824 学习笔记（三）</title>
+  <meta name="description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="MIT 6.824 学习笔记（三）">
+  <meta name="twitter:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="MIT 6.824 学习笔记（三）">
+  <meta property="og:description" content="本系列文章是对 MIT 6.824 课程的学习笔记。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2017/12/mit-6824-note-3/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2017-12-02 15:19:31 +0800" itemprop="datePublished" class="post-meta__date date">2017-12-02</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">MIT 6.824 学习笔记（三）</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章是对 <a href="https://pdos.csail.mit.edu/6.824/schedule.html">MIT 6.824</a> 课程的学习笔记。</p>
+
+<h1>Spinnaker</h1>
+
+<h2>Introduction</h2>
+
+<blockquote>
+<p>Spinnaker is an experimental datastore that is designed to run on a large cluster of commodity servers in a single datacenter. This paper describes Spinnaker’s Paxos-based replication protocol. The use of Paxos ensures that a data partition in Spinnaker will be available for reads and writes as long a majority of its replicas are alive.</p>
+</blockquote>
+
+<p>实现持续可用性的一个解决方案是<strong>主从复制</strong>，但主从复制存在以下缺陷：</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-1.png" width="800" /></p>
+
+<p>在上图的例子中，主从节点都从 LSN=10 开始（a），之后 slave 节点挂了（b），master 节点继续接收写请求，一直到 LSN=20。之后 master 节点也挂了（c），之后 slave 节点恢复（d），然而，在此时 slave 节点不能接收任何读写请求因为它缺失了 LSN=11 到LSN＝20 之间的记录。如果要避免这种情况，只有在任意节点挂掉的时候，都阻塞写请求。但这样就降低了整个系统的 availability。</p>
+
+<p>分布式系统中，<strong>一致性模型描述了如何使不同的 relicas 保持同步</strong>。<strong>强一致性</strong>保证了所有的 replicas 都是一致的，但要实现强一致性需要牺牲 availability 或网络分区容忍性。CAP 理论提出 <strong>Consistency</strong>、<strong>Availability</strong> 和 <strong>Partition tolerance</strong> 三者最多只能同时满足两项。</p>
+
+<p>比如 Dynamo 这样的系统，使用<strong>最终一致性</strong>模型来提供高可用性和分区容忍性。Dynamo 是一个 AP 系统，牺牲了 Consistency。</p>
+
+<p>Spinnaker 使用基于 Paxos 的协议来实现日志提交和故障恢复。Paxos 确保了系统在大多数节点存活的情况下可以运作。Spinnaker 是一个 CA 系统，用于单一的 datacenter，并使用另外的 replication strategy 来保证跨 datacenter 的容错性。 </p>
+
+<h2>Related work</h2>
+
+<p><strong>Two-phase commit (2PC)</strong> 是保持 replicas 一致的一种方式。但 2PC 更偏向于将每个 participant 当作一个独立的资源管理者，而不仅仅是 replica。使用 2PC 来实现 replication 有些 overkill，并且还有不少缺陷。首先单一节点失败会导致系统 abort。其次每个 transaction 都发起 2PC 会导致极差的性能。每次 2PC 都需要两次磁盘强制写和传输两条信息的时延。最后，2PC 在 coordinator 挂掉时无法运作。</p>
+
+<p>Amazon 的 Dynamo 通过<strong>分布式时钟</strong>来解决最终一致性的问题。</p>
+
+<p>Google 的 Bigtable 提供了强一致性，和 spinnaker 不同的是，Bigtable 依赖 GFS 来存储数据和日志，还有实现 replication。这样每个 transaction 的 workload 就加重了（需要和 gfs 的 master 交互）。</p>
+
+<h2>Architecture</h2>
+
+<blockquote>
+<p>Like Bigtable and PNUTS, Spinnaker distributes the rows of a table across its cluster using range partitioning. Each node is assigned a base key range, which is replicated on the next N − 1 nodes (N = 3 by default).</p>
+</blockquote>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-2.png" width="800" /></p>
+
+<blockquote>
+<p>Each group of nodes involved in replicating a key range is denoted as a <strong>cohort</strong>. Note that cohorts overlap.</p>
+</blockquote>
+
+<p>每个日志由一个 LSN 唯一的标记。Commit queue 是在内存的数据结构，用于存放 pending writes。写操作只有在接收到大多数 cohort 的 ack 之后才能提交。在此之前都存放在 commit queue 中。</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-3.png" width="800" /></p>
+
+<p>已经提交的写操作存于 memtable 中，并被定期刷到被称为 SSTable 的 immutable disk structure。SSTable 会被定期合并以提升读性能并删除不需要的数据。</p>
+
+<h2>The replication protocol</h2>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-4.png" width="800" /></p>
+
+<p>提交一个写操作需要三次日志强制写和四条信息交互，不过大多数操作都是重叠的（可以并行）。</p>
+
+<h2>Recovery</h2>
+
+<p>Follower 的恢复需要两个阶段：<strong>local recovery</strong> 和 <strong>catch up</strong>。定义 f.cmt 表示 follower 的最后一个提交日志的 LSN，f.lst 表示 follower 的最后一个日志的 LSN。Local recovery 阶段，follower 从最近一次 checkpoint 开始重新执行日志直到 f.cmt，之后进入 catch up 阶段。Catch up 阶段，follower 通知 leader 自己的 f.cmt，leader 回复 f.cmt 之后所有的 commit writes。Leader 将会阻塞所有新的写请求直到 follower 已经跟上。</p>
+
+<p>当 leader 挂掉，新的 leader 将被选举，并且会确保新的 leader 会包含所有已提交的写操作。在老的 leader 挂掉时，有可能其提交的写操作在某些 followers 还处于 pending 的状态。新 leader 将使用下图的算法，继续提交所有 unresolved 写操作。</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-5.png" width="800" /></p>
+
+<h2>Leader election</h2>
+
+<p>选举算法如下图：</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-6.png" width="800" /></p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/12/mit-6824-note-2/" title="link to MIT 6.824 学习笔记（二）">MIT 6.824 学习笔记（二）</a></h2>
+       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。RaftIntroductionRaft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：Leader 选举、日志复制和安全性，同时通过更强的一致性来减少需要考虑的状态。一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。Raft 和许多一致性算法类似，但他也有自己的新特性：Strong leaderRaft 使用比其他一致性算法更强的 ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-12-02 15:19:31 +0800" class="post-list__meta--date date">2017-12-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/12/mit-6824-note-2/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2017/12/mit-6824-note-3/";
+        this.page.identifier = "/2017/12/mit-6824-note-3/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2017</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

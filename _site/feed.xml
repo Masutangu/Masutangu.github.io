@@ -5,9 +5,88 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 02 Dec 2017 15:39:00 +0800</pubDate>
-    <lastBuildDate>Sat, 02 Dec 2017 15:39:00 +0800</lastBuildDate>
+    <pubDate>Sun, 03 Dec 2017 15:24:22 +0800</pubDate>
+    <lastBuildDate>Sun, 03 Dec 2017 15:24:22 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>MIT 6.824 学习笔记（三）</title>
+        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
+
+&lt;h1&gt;Spinnaker&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Spinnaker is an experimental datastore that is designed to run on a large cluster of commodity servers in a single datacenter. This paper describes Spinnaker’s Paxos-based replication protocol. The use of Paxos ensures that a data partition in Spinnaker will be available for reads and writes as long a majority of its replicas are alive.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;实现持续可用性的一个解决方案是&lt;strong&gt;主从复制&lt;/strong&gt;，但主从复制存在以下缺陷：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在上图的例子中，主从节点都从 LSN=10 开始（a），之后 slave 节点挂了（b），master 节点继续接收写请求，一直到 LSN=20。之后 master 节点也挂了（c），之后 slave 节点恢复（d），然而，在此时 slave 节点不能接收任何读写请求因为它缺失了 LSN=11 到LSN＝20 之间的记录。如果要避免这种情况，只有在任意节点挂掉的时候，都阻塞写请求。但这样就降低了整个系统的 availability。&lt;/p&gt;
+
+&lt;p&gt;分布式系统中，&lt;strong&gt;一致性模型描述了如何使不同的 relicas 保持同步&lt;/strong&gt;。&lt;strong&gt;强一致性&lt;/strong&gt;保证了所有的 replicas 都是一致的，但要实现强一致性需要牺牲 availability 或网络分区容忍性。CAP 理论提出 &lt;strong&gt;Consistency&lt;/strong&gt;、&lt;strong&gt;Availability&lt;/strong&gt; 和 &lt;strong&gt;Partition tolerance&lt;/strong&gt; 三者最多只能同时满足两项。&lt;/p&gt;
+
+&lt;p&gt;比如 Dynamo 这样的系统，使用&lt;strong&gt;最终一致性&lt;/strong&gt;模型来提供高可用性和分区容忍性。Dynamo 是一个 AP 系统，牺牲了 Consistency。&lt;/p&gt;
+
+&lt;p&gt;Spinnaker 使用基于 Paxos 的协议来实现日志提交和故障恢复。Paxos 确保了系统在大多数节点存活的情况下可以运作。Spinnaker 是一个 CA 系统，用于单一的 datacenter，并使用另外的 replication strategy 来保证跨 datacenter 的容错性。 &lt;/p&gt;
+
+&lt;h2&gt;Related work&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Two-phase commit (2PC)&lt;/strong&gt; 是保持 replicas 一致的一种方式。但 2PC 更偏向于将每个 participant 当作一个独立的资源管理者，而不仅仅是 replica。使用 2PC 来实现 replication 有些 overkill，并且还有不少缺陷。首先单一节点失败会导致系统 abort。其次每个 transaction 都发起 2PC 会导致极差的性能。每次 2PC 都需要两次磁盘强制写和传输两条信息的时延。最后，2PC 在 coordinator 挂掉时无法运作。&lt;/p&gt;
+
+&lt;p&gt;Amazon 的 Dynamo 通过&lt;strong&gt;分布式时钟&lt;/strong&gt;来解决最终一致性的问题。&lt;/p&gt;
+
+&lt;p&gt;Google 的 Bigtable 提供了强一致性，和 spinnaker 不同的是，Bigtable 依赖 GFS 来存储数据和日志，还有实现 replication。这样每个 transaction 的 workload 就加重了（需要和 gfs 的 master 交互）。&lt;/p&gt;
+
+&lt;h2&gt;Architecture&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Like Bigtable and PNUTS, Spinnaker distributes the rows of a table across its cluster using range partitioning. Each node is assigned a base key range, which is replicated on the next N − 1 nodes (N = 3 by default).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Each group of nodes involved in replicating a key range is denoted as a &lt;strong&gt;cohort&lt;/strong&gt;. Note that cohorts overlap.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;每个日志由一个 LSN 唯一的标记。Commit queue 是在内存的数据结构，用于存放 pending writes。写操作只有在接收到大多数 cohort 的 ack 之后才能提交。在此之前都存放在 commit queue 中。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;已经提交的写操作存于 memtable 中，并被定期刷到被称为 SSTable 的 immutable disk structure。SSTable 会被定期合并以提升读性能并删除不需要的数据。&lt;/p&gt;
+
+&lt;h2&gt;The replication protocol&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;提交一个写操作需要三次日志强制写和四条信息交互，不过大多数操作都是重叠的（可以并行）。&lt;/p&gt;
+
+&lt;h2&gt;Recovery&lt;/h2&gt;
+
+&lt;p&gt;Follower 的恢复需要两个阶段：&lt;strong&gt;local recovery&lt;/strong&gt; 和 &lt;strong&gt;catch up&lt;/strong&gt;。定义 f.cmt 表示 follower 的最后一个提交日志的 LSN，f.lst 表示 follower 的最后一个日志的 LSN。Local recovery 阶段，follower 从最近一次 checkpoint 开始重新执行日志直到 f.cmt，之后进入 catch up 阶段。Catch up 阶段，follower 通知 leader 自己的 f.cmt，leader 回复 f.cmt 之后所有的 commit writes。Leader 将会阻塞所有新的写请求直到 follower 已经跟上。&lt;/p&gt;
+
+&lt;p&gt;当 leader 挂掉，新的 leader 将被选举，并且会确保新的 leader 会包含所有已提交的写操作。在老的 leader 挂掉时，有可能其提交的写操作在某些 followers 还处于 pending 的状态。新 leader 将使用下图的算法，继续提交所有 unresolved 写操作。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h2&gt;Leader election&lt;/h2&gt;
+
+&lt;p&gt;选举算法如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
+        <link>http://masutangu.com/2017/12/mit-6824-note-3/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/12/mit-6824-note-3/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>MIT 6.824 学习笔记（二）</title>
@@ -3277,544 +3356,6 @@ struct fs_struct {
         <pubDate>Sun, 11 Dec 2016 10:21:16 +0800</pubDate>
         <link>http://masutangu.com/2016/12/linux-kernel-serial-4/</link>
         <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-4/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>Linux 内核系列－进程调度</title>
-        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
-
-&lt;h1&gt;概念&lt;/h1&gt;
-
-&lt;p&gt;许多适用于进程调度的处理方法同样适用于线程调度。当内核管理线程的时候，调度经常是按照线程级别的，与线程所属的进程基本没有关联。&lt;/p&gt;
-
-&lt;p&gt;调度需要考虑 CPU 的利用率，因为进程切换的代价比较高，进程需要从用户态切换到内核态，保存当前状态，包括在进程表中存储寄存器以便之后加载。接着，调度算法选定一个新进程，将新进程的内存映像载入 MMU。除此之外，进程切换会使整个内存高速缓存失效，强迫缓存从内存中动态重新载入两次。&lt;/p&gt;
-
-&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
-
-&lt;p&gt;Linux 提供了抢占式的多任务模式。进程调度策略通常要在两个矛盾的目标中间寻找平衡：&lt;strong&gt;进程响应迅速（响应时间短）&lt;/strong&gt; 和 &lt;strong&gt;最大系统利用率（高吞吐量）&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;进程调度的常用策略如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;进程优先级&lt;/p&gt;
-
-&lt;p&gt;基于优先级的调度是最基本的一类调度算法。优先级高的先运行，相同优先级的进程按轮转方式进行调度。&lt;/p&gt;
-
-&lt;p&gt;Linux 中采用了两种不同的优先级范围。第一种是用 nice 值，他的范围是从 -20 到 +19，默认为 0。越大的 nice 值意味着更低的优先级。Linux 中，nice 值代表时间片比例。可以通过 ps-el 命令来查看，NI 标记位表示进程的 nice 值。第二种是实时优先级，默认情况下变化范围从 0 到 99。越高的实时优先级值意味着进程优先级越高。任何实时进程的优先级都高于普通进程。可以通过 ps-eo 指定 rtprio 查看进程的实时优先级。显示 “-” 表示该进程不是实时进程。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;时间片&lt;/p&gt;
-
-&lt;p&gt;时间片表示进程在被抢占前可以持续运行的时间。Linux 的 CFS 调度器并不是直接分配时间片到进程，而是将处理器的使用比例分给进程，这个比例还会受 nice 值的影响。Linux 的 CFS 调度器，抢占时机取决于新进程消耗的处理器使用比，如果消耗的使用比比当前进程小，则新进程立刻投入运行，抢占当前进程。否则将推迟运行。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;Linux 调度算法&lt;/h2&gt;
-
-&lt;p&gt;Linux 调度器是以模块方式提供的，这种模块化结构被称为&lt;strong&gt;调度器类&lt;/strong&gt;。每个调度器都有一个优先级，基础的调度器代码定义在 kernel/sched.c 文件中，其会按照优先级顺序遍历调度类，拥有一个可执行进程的最高优先级的调度器类胜出，由其选择下一个执行的程序。&lt;/p&gt;
-
-&lt;p&gt;完全公平调度（CFS）是一个针对普通进程的调度类，在 Linux 中称为 SCHED_NORMAL，CFS 算法实现定义在 kernel/sched_fair.c 中。&lt;/p&gt;
-
-&lt;p&gt;CFS 基于一个简单的理念：进程调度的效果应如同系统具备一个理想的多进程任务处理器，每个进程都能获得 1/n 的处理器时间（n是指可运行进程的数量）。同时，我们可以调度给他们无限小的时间周期，所以在任何可测量周期内，我们给予 n 个进程中每个进程同样多的运行时间。&lt;/p&gt;
-
-&lt;p&gt;CFS 的做法是允许每个进程运行一段时间、循环轮转、选择运行最少的进程做为下一个运行进程，而不再采用分配给每个进程时间片的做法了。CFS 在所有可运行进程总数的基础上计算出一个进程应该运行多久，而不是依靠 nice 值来计算时间片。nice 值在 CFS 中被作为进程获得处理器运行比的权重。CFS 为完美多任务中的无限小周期的近似值设立了一个小目标。而这个目标称为“目标延迟”。CFS 还引入每个进程获得的时间片底线，称为最小粒度，默认值为 1ms。任何进程获得的处理器时间是由自己和其他可运行所有可运行进程 nice 值的相对差值决定的。nice 值对时间片的作用是几何加权，nice 值对应的绝对时间是处理器的使用比。&lt;/p&gt;
-
-&lt;h2&gt;Linux 调度的实现&lt;/h2&gt;
-
-&lt;h3&gt;时间记账&lt;/h3&gt;
-
-&lt;p&gt;每次系统时钟节拍发送时，时间片都会被减少一个节拍。当进程的时间片被减少到 0 时，它就会被另一个时间片尚未为 0 的可运行进程抢占。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;调度器结构&lt;/p&gt;
-
-&lt;p&gt;CFS 使用调度器结构（定义在&lt;linux/sched.h&gt; 的 &lt;code&gt;struct sched_entity&lt;/code&gt; 中）来追踪进程运行记账。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct sched_entity {
-    struct load_weight  load;       /* for load-balancing */
-    struct rb_node      run_node;
-    struct list_head    group_node;
-    unsigned int        on_rq;
-
-    u64         exec_start;
-    u64         sum_exec_runtime;
-    u64         vruntime;
-    u64         prev_sum_exec_runtime;
-
-    u64         last_wakeup;
-    u64         avg_overlap;
-
-    u64         nr_migrations;
-
-    u64         start_runtime;
-    u64         avg_wakeup;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;进程描述符 &lt;code&gt;struct task_struct&lt;/code&gt; 的成员变量 se 即为 &lt;code&gt;sched_entity&lt;/code&gt; 类型。&lt;/p&gt;
-
-&lt;p&gt;vruntime 变量存放进程的虚拟运行时间，该运行时间的计算经过了所有可运行进程总数的标准化。虚拟时间是以 ns 为单位的，所以 vruntime 和定时器节拍不再相关。定义在 kernel/sched_fair.c 文件的 &lt;code&gt;update_curr()&lt;/code&gt; 函数实现了记账功能：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;/* cpu runqueue to which this cfs_rq is attached */
-static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
-{
-    return cfs_rq-&amp;gt;rq;
-}
-
-static void update_curr(struct cfs_rq *cfs_rq)
-{
-    struct sched_entity *curr = cfs_rq-&amp;gt;curr;
-    u64 now = rq_of(cfs_rq)-&amp;gt;clock;
-    unsigned long delta_exec;
-
-    if (unlikely(!curr))
-        return;
-
-    /*
-    * Get the amount of time the current task was running
-    * since the last time we changed load (this cannot
-    * overflow on 32 bits):
-    */
-    delta_exec = (unsigned long)(now - curr-&amp;gt;exec_start);
-    if (!delta_exec)
-        return;
-
-    __update_curr(cfs_rq, curr, delta_exec);
-    curr-&amp;gt;exec_start = now;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;update_curr()&lt;/code&gt; 计算了当前进程的执行时间，保存在变量 &lt;code&gt;delta_exec&lt;/code&gt; 中，然后又将其传给 &lt;code&gt;__update_curr()&lt;/code&gt; 进行加权计算，最后将权重值与当前运行进程的 vruntime 相加。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;/*
-* Update the current task&amp;#39;s runtime statistics. Skip current tasks that
-* are not in our scheduling class.
-*/
-static inline void
-__update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
-        unsigned long delta_exec)
-{
-    unsigned long delta_exec_weighted;
-
-    schedstat_set(curr-&amp;gt;exec_max, max((u64)delta_exec, curr-&amp;gt;exec_max));
-
-    curr-&amp;gt;sum_exec_runtime += delta_exec;
-    schedstat_add(cfs_rq, exec_clock, delta_exec);
-    delta_exec_weighted = calc_delta_fair(delta_exec, curr);
-
-    curr-&amp;gt;vruntime += delta_exec_weighted;
-    update_min_vruntime(cfs_rq);
-}
-
-static void update_min_vruntime(struct cfs_rq *cfs_rq)
-{
-    u64 vruntime = cfs_rq-&amp;gt;min_vruntime;
-
-    if (cfs_rq-&amp;gt;curr)
-        vruntime = cfs_rq-&amp;gt;curr-&amp;gt;vruntime;
-
-    if (cfs_rq-&amp;gt;rb_leftmost) {
-        struct sched_entity *se = rb_entry(cfs_rq-&amp;gt;rb_leftmost,
-                        struct sched_entity,
-                        run_node);
-
-        if (!cfs_rq-&amp;gt;curr)
-            vruntime = se-&amp;gt;vruntime;
-        else
-            vruntime = min_vruntime(vruntime, se-&amp;gt;vruntime);
-    }
-
-    cfs_rq-&amp;gt;min_vruntime = max_vruntime(cfs_rq-&amp;gt;min_vruntime, vruntime);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;update_curr()&lt;/code&gt; 是由系统定时器周期性调用的，无论是在进程处于可运行状态还是阻塞处于不可运行状态。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;进程选择&lt;/h3&gt;
-
-&lt;p&gt;当 CFS 需要选择下一个运行进程时，它会挑选一个具有最小 vruntime 的进程。CFS 使用红黑树来组织可运行进程队列，其节点的键值是可运行进程的 vruntime。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;挑选下一个任务&lt;/p&gt;
-
-&lt;p&gt;CFS 选择 vruntime 最小的那个，对应的就是树中最左侧的叶子节点。实现这一过程的函数是 &lt;code&gt;__pick_next_entity()&lt;/code&gt;，定义在 &lt;code&gt;kernel/sched_fair.c&lt;/code&gt; 中：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
-{
-    struct rb_node *left = cfs_rq-&amp;gt;rb_leftmost;
-
-    if (!left)
-        return NULL;
-
-    return rb_entry(left, struct sched_entity, run_node);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;注意 &lt;code&gt;__pick_next_entity()&lt;/code&gt; 函数并不会遍历数找到最左叶子节点，该值已经缓存在 &lt;code&gt;rb_leftmost&lt;/code&gt; 字段中。如果该函数返回 NULL，表示没有可运行进程，CFS 调度器选择 idle 任务运行。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;添加进程&lt;/p&gt;
-
-&lt;p&gt;添加进程和缓存最左叶子节点，发生在进程变成可运行状态（被唤醒）或者通过 &lt;code&gt;fork()&lt;/code&gt; 调用第一次创建进程时，由调用 &lt;code&gt;enqueue_entity()&lt;/code&gt; 实现：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;static void enqueue_entity(
-    struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-{
-    /*
-    * Update the normalized vruntime before updating min_vruntime
-    * through callig update_curr().
-    */
-    if (!(flags &amp;amp; ENQUEUE_WAKEUP) || (flags &amp;amp; ENQUEUE_MIGRATE))
-        se-&amp;gt;vruntime += cfs_rq-&amp;gt;min_vruntime;  // 这里在下文有解释
-
-    /*
-    * Update run-time statistics of the &amp;#39;current&amp;#39;.
-    */
-    update_curr(cfs_rq);
-    account_entity_enqueue(cfs_rq, se);
-
-    if (flags &amp;amp; ENQUEUE_WAKEUP) {
-        place_entity(cfs_rq, se, 0);
-        enqueue_sleeper(cfs_rq, se);
-    }
-
-    update_stats_enqueue(cfs_rq, se);
-    check_spread(cfs_rq, se);
-    if (se != cfs_rq-&amp;gt;curr)
-        __enqueue_entity(cfs_rq, se);
-}
-
-static void
-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
-{
-    u64 vruntime = cfs_rq-&amp;gt;min_vruntime;
-
-    /*
-    * The &amp;#39;current&amp;#39; period is already promised to the current tasks,
-    * however the extra weight of the new task will slow them down a
-    * little, place the new task so that it fits in the slot that
-    * stays open at the end.
-    */
-    if (initial &amp;amp;&amp;amp; sched_feat(START_DEBIT))
-        vruntime += sched_vslice(cfs_rq, se);
-
-    /* sleeps up to a single latency don&amp;#39;t count. */
-    if (!initial &amp;amp;&amp;amp; sched_feat(FAIR_SLEEPERS)) {
-        unsigned long thresh = sysctl_sched_latency;
-
-        /*
-        * Convert the sleeper threshold into virtual time.
-        * SCHED_IDLE is a special sub-class.  We care about
-        * fairness only relative to other SCHED_IDLE tasks,
-        * all of which have the same weight.
-        */
-        if (sched_feat(NORMALIZED_SLEEPER) &amp;amp;&amp;amp; (!entity_is_task(se) ||
-                task_of(se)-&amp;gt;policy != SCHED_IDLE))
-            thresh = calc_delta_fair(thresh, se);
-
-        /*
-        * Halve their sleep time&amp;#39;s effect, to allow
-        * for a gentler effect of sleepers:
-        */
-        if (sched_feat(GENTLE_FAIR_SLEEPERS))
-            thresh &amp;gt;&amp;gt;= 1;  // /* 补偿减为调度周期的一半 */
-
-        vruntime -= thresh;
-    }
-
-    /* ensure we never gain time by being placed backwards. */
-    vruntime = max_vruntime(se-&amp;gt;vruntime, vruntime);
-
-    se-&amp;gt;vruntime = vruntime;
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;enqueue_entity 更新运行时间和一些统计数据，然后调用 &lt;code&gt;__enqueue_entity()&lt;/code&gt; 进行插入操作。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;/*
-* Enqueue an entity into the rb-tree:
-*/
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-    struct rb_node **link = &amp;amp;cfs_rq-&amp;gt;tasks_timeline.rb_node;
-    struct rb_node *parent = NULL;
-    struct sched_entity *entry;
-    s64 key = entity_key(cfs_rq, se);
-    int leftmost = 1;
-
-    /*
-    * Find the right place in the rbtree:
-    */
-    while (*link) {
-        parent = *link;
-        entry = rb_entry(parent, struct sched_entity, run_node);
-        /*
-        * We dont care about collisions. Nodes with
-        * the same key stay together.
-        */
-        if (key &amp;lt; entity_key(cfs_rq, entry)) {
-            link = &amp;amp;parent-&amp;gt;rb_left;
-        } else {
-            link = &amp;amp;parent-&amp;gt;rb_right;
-            leftmost = 0;
-        }
-    }
-
-    /*
-    * Maintain a cache of leftmost tree entries (it is frequently
-    * used):
-    */
-    if (leftmost)
-        cfs_rq-&amp;gt;rb_leftmost = &amp;amp;se-&amp;gt;run_node;
-
-    rb_link_node(&amp;amp;se-&amp;gt;run_node, parent, link);
-    rb_insert_color(&amp;amp;se-&amp;gt;run_node, &amp;amp;cfs_rq-&amp;gt;tasks_timeline);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;blockquote&gt;
-&lt;p&gt;如果新进程的 vruntime 初值为 0 的话，那么它在相当长的时间内都会保持抢占CPU的优势，老的进程就会饿死，因此 CFS 在每个 CPU 的运行队列 cfs_rq 都维护一个 min_vruntime 字段，记录该运行队列中所有进程的 vruntime 最小值，新进程的初始 vruntime 值就以它所在运行队列的 min_vruntime 为基础来设置，与老进程保持在合理的差距范围内。&lt;/p&gt;
-
-&lt;p&gt;如果休眠进程的 vruntime 保持不变，而其他运行进程的 vruntime 一直在增加，那么等到休眠进程被唤醒的时候，它的 vruntime 比别人小很多，会使其长时间拥有抢占 CPU 的优势。因此 CFS 在休眠进程被唤醒时重新设置 vruntime 值，以 min_vruntime 值为基础，给予一定的补偿，但不能补偿太多。&lt;/p&gt;
-
-&lt;p&gt;在多 CPU 的系统上，不同的CPU的负载不一样，有的 CPU 更忙一些，而每个 CPU 都有自己的运行队列，每个队列中的进程的 vruntime 也走得有快有慢。如果一个进程从 min_vruntime 更小的 CPU A上迁移到 min_vruntime 更大的 CPU B 上，可能就会占便宜了，因为 CPU B 的运行队列中进程的 vruntime 普遍比较大，迁移过来的进程就会获得更多的 CPU 时间片。为了避免这种场景，当进程从一个 CPU 的运行队列中出来 (调用 &lt;code&gt;dequeue_entity&lt;/code&gt;) 的时候，它的 vruntime 要减去队列的 min_vruntime 值；而当进程加入另一个CPU的运行队列 (调用 &lt;code&gt;enqueue_entity&lt;/code&gt;) 时，它的 vruntime 要加上该队列的 min_vruntime 值。这样，进程从一个 CPU 迁移到另一个 CPU 之后，vruntime 保持相对公平。&lt;/p&gt;
-
-&lt;p&gt;参考自&lt;a href=&quot;http://linuxperf.com/?p=42&quot;&gt;《从几个问题开始理解CFS调度器》&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;删除进程&lt;/p&gt;
-
-&lt;p&gt;删除进程发生在进程阻塞或终止时：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;static void
-dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
-{
-    /*
-    * Update run-time statistics of the &amp;#39;current&amp;#39;.
-    */
-    update_curr(cfs_rq);
-
-    update_stats_dequeue(cfs_rq, se);
-    if (sleep) {
-#ifdef CONFIG_SCHEDSTATS
-        if (entity_is_task(se)) {
-            struct task_struct *tsk = task_of(se);
-
-            if (tsk-&amp;gt;state &amp;amp; TASK_INTERRUPTIBLE)
-                se-&amp;gt;sleep_start = rq_of(cfs_rq)-&amp;gt;clock;
-            if (tsk-&amp;gt;state &amp;amp; TASK_UNINTERRUPTIBLE)
-                se-&amp;gt;block_start = rq_of(cfs_rq)-&amp;gt;clock;
-        }
-#endif
-    }
-
-    clear_buddies(cfs_rq, se);
-
-    if (se != cfs_rq-&amp;gt;curr)
-        __dequeue_entity(cfs_rq, se);
-    account_entity_dequeue(cfs_rq, se);
-    update_min_vruntime(cfs_rq);
-
-    /*
-    * Normalize the entity after updating the min_vruntime because the
-    * update can refer to the -&amp;gt;curr item and we need to reflect this
-    * movement in our normalized position.
-    */
-    if (!sleep)
-        se-&amp;gt;vruntime -= cfs_rq-&amp;gt;min_vruntime;
-}
-
-static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-    if (cfs_rq-&amp;gt;rb_leftmost == &amp;amp;se-&amp;gt;run_node) {
-        struct rb_node *next_node;
-
-        next_node = rb_next(&amp;amp;se-&amp;gt;run_node);
-        cfs_rq-&amp;gt;rb_leftmost = next_node;
-    }
-
-    rb_erase(&amp;amp;se-&amp;gt;run_node, &amp;amp;cfs_rq-&amp;gt;tasks_timeline);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;调度器的入口&lt;/h3&gt;
-
-&lt;p&gt;进程调度的主要入口是函数 &lt;code&gt;schedule()&lt;/code&gt;，定义在 kernel/sched.c 中。schedule() 先找到一个最高优先级的调度类，调度类有各自的可运行队列，由调度类返回最高优先级的进程：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;static inline struct task_struct *
-    pick_next_task(struct rq *rq)
-    {
-        const struct sched_class *class;
-        struct task_struct *p;
-
-        /*
-        * Optimization: we know that if all tasks are in
-        * the fair class we can call that function directly:
-        */
-        if (likely(rq-&amp;gt;nr_running == rq-&amp;gt;cfs.nr_running)) {
-            p = fair_sched_class.pick_next_task(rq);
-            if (likely(p))
-                return p;
-        }
-
-        class = sched_class_highest;
-        for ( ; ; ) {
-            p = class-&amp;gt;pick_next_task(rq);
-            if (p)
-                return p;
-            /*
-            * Will never be NULL as the idle class always
-            * returns a non-NULL p:
-            */
-            class = class-&amp;gt;next;
-        }
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;函数开始部分的优化，CFS 是普通进程的调度类，如果所有可运行进程数量等于 CFS 类对应的可运行进程数，意味着可以直接选择 CFS 为调度类。&lt;/p&gt;
-
-&lt;p&gt;每个调度类都实现了 &lt;code&gt;pick_next_task()&lt;/code&gt; 函数，其返回下一个可运行进程的指针。&lt;code&gt;pick_next_task()&lt;/code&gt; 实现中会调用 &lt;code&gt;pick_next_entity()&lt;/code&gt;，该函数会调用 &lt;code&gt;__pick_next_entity()&lt;/code&gt; 函数。&lt;/p&gt;
-
-&lt;h3&gt;睡眠和唤醒&lt;/h3&gt;
-
-&lt;p&gt;睡眠时进程把自己标记成休眠状态，从可执行红黑树中移出，放入等待队列中，然后调用 &lt;code&gt;schedule()&lt;/code&gt; 选择和执行下一个进程。唤醒的过程刚好相反：进程被设置为可运行状态，然后从等待队列中移到可执行红黑树中。&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;等待队列&lt;/p&gt;
-
-&lt;p&gt;内核用 wake_queue_head_t 表示等待队列。休眠和唤醒实现比较复杂，因为要避免竞争条件:&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;DEFINE_WAIT(wait);
-
-add_wait_queue(q, &amp;amp;wait);
-while (!condition) {  /* condition 是我们等待的事件 */
-    prepare_to_wait(&amp;amp;q, &amp;amp;wait, TASK_INTERRUPTIBLE);
-    if (signal_pending(current))
-        /* 处理信号 */
-        schedule();
-}
-finish_wait(&amp;amp;q, &amp;amp;wait);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;步骤如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;1. 调用宏 DEFINE_WAIT() 创建一个等待队列的项
-2. 调用 add_wait_queue() 把自己加入到队列中，该队列会在进程等待条件满足时唤醒它
-3. 调用 prepare_to_wait() 方法将进程的状态变更为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE
-4. 如果状态被设置为 TASK_INTERRUPTIBLE，则信号唤醒进程，检查并处理信号
-5. 当进程被唤醒时，会再次检查条件是否为真。如果是，则退出循环。如果不是，再次调用 schedule() 
-6. 当条件满足后，进程设置为 TASK_RUNNING 并调用 finish_wait() 方法将自己移出等待队列
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;位于 fs/notify/inotify/inotify_user.c 的 &lt;code&gt;inotify_read()&lt;/code&gt;，负责从通知文件描述符中读取信息。其实现是等待队列的典型用法：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;static ssize_t inotify_read(struct file *file, char __user *buf,
-            size_t count, loff_t *pos)
-{
-    struct fsnotify_group *group;
-    struct fsnotify_event *kevent;
-    char __user *start;
-    int ret;
-    DEFINE_WAIT(wait);
-
-    start = buf;
-    group = file-&amp;gt;private_data;
-
-    while (1) {
-        prepare_to_wait(&amp;amp;group-&amp;gt;notification_waitq, &amp;amp;wait, TASK_INTERRUPTIBLE);
-
-        mutex_lock(&amp;amp;group-&amp;gt;notification_mutex);
-        kevent = get_one_event(group, count);
-        mutex_unlock(&amp;amp;group-&amp;gt;notification_mutex);
-
-        if (kevent) {
-            ret = PTR_ERR(kevent);
-            if (IS_ERR(kevent))
-                break;
-            ret = copy_event_to_user(group, kevent, buf);
-            fsnotify_put_event(kevent);
-            if (ret &amp;lt; 0)
-                break;
-            buf += ret;
-            count -= ret;
-            continue;
-        }
-
-        ret = -EAGAIN;
-        if (file-&amp;gt;f_flags &amp;amp; O_NONBLOCK)
-            break;
-        ret = -EINTR;
-        if (signal_pending(current))
-            break;
-
-        if (start != buf)
-            break;
-
-        schedule();
-    }
-
-    finish_wait(&amp;amp;group-&amp;gt;notification_waitq, &amp;amp;wait);
-    if (start != buf &amp;amp;&amp;amp; ret != -EFAULT)
-        ret = buf - start;
-    return ret;
-}
-
-void
-prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
-{
-    unsigned long flags;
-
-    wait-&amp;gt;flags &amp;amp;= ~WQ_FLAG_EXCLUSIVE;
-    spin_lock_irqsave(&amp;amp;q-&amp;gt;lock, flags);
-    if (list_empty(&amp;amp;wait-&amp;gt;task_list))
-        __add_wait_queue(q, wait);
-    set_current_state(state);
-    spin_unlock_irqrestore(&amp;amp;q-&amp;gt;lock, flags);
-}
-
-static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
-{
-    list_add(&amp;amp;new-&amp;gt;task_list, &amp;amp;head-&amp;gt;task_list);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;唤醒&lt;/p&gt;
-
-&lt;p&gt;唤醒操作通过函数 &lt;code&gt;wake_up()&lt;/code&gt; 进行，他会唤醒指定的等待队列上的所有进程。其调用 &lt;code&gt;try_to_wake_up()&lt;/code&gt;，该函数负责将进程设置为 TASK_RUNNING 状态，调用 &lt;code&gt;enqueue_task()&lt;/code&gt; 将进程放入红黑树。如果被唤醒的进程优先级比当前正在执行的进程优先级高，还需要设置 need_resched 标志。通常哪段代码促使条件达成，就负责调用 &lt;code&gt;wake_up()&lt;/code&gt; 函数。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;抢占和上下文切换&lt;/h2&gt;
-
-&lt;p&gt;上下文切换由定义在 kernel/sched.c 中的 &lt;code&gt;context_switch()&lt;/code&gt; 函数负责。每当新进程准备投入运行时，&lt;code&gt;schedule()&lt;/code&gt; 就会调用该函数，它完成两项基本工作：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;调用声明在 &lt;asm/mmu_context.h&gt; 中的 switch_mm()，该函数负责把虚拟内存从上一个进程映射切换到新进程中。&lt;/li&gt;
-&lt;li&gt;调用声明在 &lt;asm/system.h&gt; 中的 switch_to()，该函数负责从上一个进程的处理器状态切换到新进程的处理器状态，包括保存、恢复栈信息和寄存器信息，还有其他和体系结构相关的状态信息，都必须以每个进程为对象进行管理和保存。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;内核提供 need_resched 标志来表明是否需要重新调度。当某个进程应该被抢占时，&lt;code&gt;scheduler_tick()&lt;/code&gt; 就会设置这个标志；当一个优先级高的进程进入可执行状态时，&lt;code&gt;try_to_wake_up()&lt;/code&gt; 也会设置这个标志。内核检查该标志，当其被设置时调用 &lt;code&gt;schedule()&lt;/code&gt; 来切换到新进程。&lt;/p&gt;
-
-&lt;p&gt;再次返回到用户空间以及从中断返回的时候，内核也会检查 need_resched 标志。如果已被设置，内核会在继续执行前调用调度程序。&lt;/p&gt;
-
-&lt;p&gt;每个进程都包含一个 need_resched 标志，这是因为访问进程描述符内的数值要比访问一个全局变量快（因为 current 宏速度很快并且描述符通常都在高速缓存中）。2.6 版本中 need_resched 被移到 thread_info 结构体里，用一个特别的标志变量中的一位来表示。&lt;/p&gt;
-
-&lt;h3&gt;用户抢占&lt;/h3&gt;
-
-&lt;p&gt;内核即将返回用户空间时，如果 need_resched 标识被设置，会导致 schedule() 被调用，此时就会发生用户抢占。简而言之，用户抢占在以下情况产生：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;从系统调用返回用户空间时&lt;/li&gt;
-&lt;li&gt;从中断处理程序返回用户空间时&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;内核抢占&lt;/h3&gt;
-
-&lt;p&gt;Linux 系统中，只要重新调度是安全的，内核就可以在任何时间抢占正在执行的任务。只要没有持有锁，内核就可以抢占。&lt;/p&gt;
-
-&lt;p&gt;为了支持内核抢占，每个进程的 thread_info 引入 preempt_count 计数器。该计数器初始值为 0，每当使用锁的时候数值加 1，释放锁时数值减 1。当数值为 0 时，内核就可以抢占。从中断返回内核空间时，内核会检查 need_resched 和 preempt_count 的值。如果 need_resched 被设置，并且 preempt_count 为 0，此时调度程序会被调用。&lt;/p&gt;
-
-&lt;p&gt;如果内核中的进程被阻塞了，或显式调用了 &lt;code&gt;schedule()&lt;/code&gt;，内核抢占也会显式地发生。 &lt;/p&gt;
-
-&lt;p&gt;简而言之，内核抢占会发生在：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;中断处理程序正在执行，且返回内核空间之前&lt;/li&gt;
-&lt;li&gt;内核代码再一次具有可抢占性&lt;/li&gt;
-&lt;li&gt;如果内核中的任务显式调用 schedule()&lt;/li&gt;
-&lt;li&gt;如果内核中的任务阻塞&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;实时调度策略&lt;/h2&gt;
-
-&lt;p&gt;Linux 提供了两种实时调度策略：SCHED_FIFO 和 SCHED_RR。而普通的、非实时的调度策略是 SCHED_NORMAL。&lt;/p&gt;
-
-&lt;p&gt;SCHED_FIFO 实现了一种简单的先入先出的调度算法。处于可运行状态的 SCHED_FIFO 级的进程会比任何 SCHED_NORMAL 级的进程都先得到调度。一旦一个 SCHED_FIFO 级进程处于可执行状态，就会一直执行，直到受阻塞或显式释放处理器。只有更高优先级的 SCHED_FIFO 或者 SCHED_RR 任务才能抢占 SCHED_FIFO 任务。&lt;/p&gt;
-
-&lt;p&gt;SCHED_RR 与 SCHED_FIFO 大体相同，只是 SCHED_RR 级的进程在耗尽事先分配的时间片后就不再继续执行。SCHED_RR 即带有时间片的 SCHED_FIFO，时间片只能用来重新调度同一优先级的进程。&lt;/p&gt;
-</description>
-        <pubDate>Thu, 01 Dec 2016 16:40:36 +0800</pubDate>
-        <link>http://masutangu.com/2016/12/linux-kernel-serial-3/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-3/</guid>
         
         
         <category>读书笔记</category>
