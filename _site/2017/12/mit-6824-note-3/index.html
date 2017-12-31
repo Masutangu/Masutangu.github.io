@@ -200,10 +200,526 @@
 
 <p><img src="/assets/images/mit-6824-note-3/illustration-6.png" width="800" /></p>
 
+<h1>Time, Clocks, and the Ordering of Events in a Distributed System</h1>
+
+<h2>Introduction</h2>
+
+<p>A system is distributed if the message transmission delay is not negligible compared
+to the time between events in a single process. </p>
+
+<p>In a distributed system, it is sometimes impossible to say that one of two events occurred first. The relation &quot;happened before&quot; is therefore only a partial ordering
+of the events in the system. </p>
+
+<h2>The Partial Ordering</h2>
+
+<p>Most people would probably say that an event a
+happened before an event b if a happened at an earlier
+time than b. They might justify this definition in terms
+of physical theories of time. 
+ there is still the problem that such
+clocks are not perfectly accurate and do not keep precise
+physical time. We will therefore define the &quot;happened
+before&quot; relation without using physical clocks.</p>
+
+<p>Most people would probably say that an event a
+happened before an event b if a happened at an earlier
+time than b. They might justify this definition in terms
+of physical theories of time.  We are assuming that the events of a process form
+a sequence, where a occurs before b in this sequence if
+a happens before b. In other words, a single process is
+defined to be a set of events with an a priori total
+ordering. </p>
+
+<p>Definition. The relation &quot;-&gt;&quot; on the set of events of
+a system is the smallest relation satisfying the following
+three conditions: (1) If a and b are events in the same
+process, and a comes before b, then a -&gt; b. (2) If a is the
+sending of a message by one process and b is the receipt
+of the same message by another process, then a -&gt; b. (3)
+If a -&gt; b and b -&gt; c then a -&gt; c. Two distinct events a
+and b are said to be concurrent if a is not -&gt; b and b is not -&gt; a.</p>
+
+<p>-&gt; is an
+irreflexive partial ordering on the set of all events in the
+system</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-7.png" width="800" /></p>
+
+<p>Another way of viewing the definition is to say that
+a -&gt; b means that it is possible for event a to causally
+affect event b. Two events are concurrent if neither can
+causally affect the other. </p>
+
+<p>For example, events pa and q:~
+of Figure 1 are concurrent. Even though we have drawn
+the diagram to imply that q3 occurs at an earlier physical
+time than 1)3, process P cannot know what process Q did
+at qa until it receives the message at p, </p>
+
+<h2>Logical Clocks</h2>
+
+<p>We now introduce clocks into the system. We begin
+with an abstract point of view in which a clock is just a
+way of assigning a number to an event, where the number
+is thought of as the time at which the event occurred. 
+More precisely, we define a clock Ci for each process Pi
+to be a function which assigns a number Ci(a) to any
+event a in that process. The entire system ofclbcks is
+represented by the function C which assigns to any event
+b the number C(b), where C(b) = C/(b) if b is an event
+in process Pj. </p>
+
+<p>Clock Condition. For any events a, b:
+if a---&gt; b then C(a) &lt; C(b). </p>
+
+<p>It is easy to see from our definition of the relation
+&quot;---~&quot; that the Clock Condition is satisfied if the following
+two conditions hold.
+C 1. If a and b are events in process P~, and a comes
+before b, then Ci(a) &lt; Ci(b).
+C2. If a is the sending of a message by process Pi
+and b is the receipt of that message by process Pi, then
+Ci(a) &lt; Ci(b). </p>
+
+<p>We will show how to introduce clocks into the
+processes which satisfy the Clock Condition. Process Pi&#39;s
+clock is represented by a register Ci, so that C~(a) is the
+value contained by C~ during the event a. The value of
+C~ will change between events, so changing Ci does not
+itself constitute an event. </p>
+
+<p>To guarantee that the system of clocks satisfies the
+Clock Condition, we will insure that it satisfies conditions
+C 1 and C2. Condition C 1 is simple; the processes need
+only obey the following implementation rule:</p>
+
+<p>IR1. Each process P~ increments Ci between any
+two successive events. </p>
+
+<p>To meet condition C2, we require that each message
+m contain a timestamp Tm which equals the time at which
+the message was sent. Upon receiving a message timestamped
+Tin, a process must advance its clock to be later
+than Tin. </p>
+
+<p>IR2. (a) If event a is the sending of a message m
+by process P~, then the message m contains a timestamp
+Tm= Ci(a). (b) Upon receiving a message m, process
+Pi sets Ci greater than or equal to its present value and
+greater than Tin. </p>
+
+<h2>Ordering the Events Totally</h2>
+
+<p>We can use a system of clocks satisfying the Clock
+Condition to place a total ordering on the set of all
+system events. We simply order the events by the times </p>
+
+<p>we
+define a relation ~ as follows: if a is an event in process
+Pi and b is an event in process Pj, then a ~ b if and only
+if either (i) Ci{a) &lt; Cj(b) or (ii) El(a) ----&quot; Cj(b) and Pi
+&lt; Py</p>
+
+<p>Consider
+a system composed of a fixed collection of processes
+which share a single resource. Only one process can use
+the resource at a time, so the processes must synchronize
+themselves to avoid conflict. We wish to find an algorithm
+for granting the resource to a process which satisfies
+the following three conditions: (I) A process which
+has been granted the resource must release it before it
+can be granted to another process. (II) Different requests
+for the resource must be granted in the order in which
+they are made. (III) If every process which is granted the
+resource eventually releases it, then every request is
+eventually granted. </p>
+
+<p>Using a central scheduling process which grants
+requests in the order they are received will not work,
+unless additional assumptions are made. </p>
+
+<p>To solve the problem, we implement a system of clocks with&#39;rules IR 1 and IR2, and use them to define a total ordering ~ of all events.</p>
+
+<p>We assume first of all
+that for any two processes P/and Pj, the messages sent
+from Pi to Pi are received in the same order as they are
+sent. Moreover, we assume that every message is eventually
+received.  We also assume that a process can send
+messages directly to every other process. </p>
+
+<p>Each process maintains its own request queue. We assume that the
+request queues initially contain the single message To:Po
+requests resource, where Po is the process initially granted
+the resource and To is less than the initial value of any
+clock. </p>
+
+<p>The algorithm is then defined by the following five
+rules. For convenience, the actions defined by each rule
+are assumed to form a single event. </p>
+
+<ol>
+<li>To request the resource, process Pi sends the message
+TIn:P/requests resource to every other process, and
+puts that message on its request queue, where T,~ is the
+timestamp of the message.</li>
+<li>When process Pj receives the message T,~:P~ requests
+resource, it places it on its request queue and sends
+a (timestamped) acknowledgment message to P~.&#39;~</li>
+<li>To release the resource, process P~ removes any
+Tm:Pi requests resource message from its request queue
+and sends a (timestamped) Pi releases resource message
+to every other process.</li>
+<li><p>When process Pj receives a Pi releases resource
+message, it removes any Tm:P~ requests resource message
+from its request queue. </p></li>
+<li><p>Process P/is granted the resource when the following
+two conditions are satisfied: (i) There is a Tm:Pi
+requests resource message in its request queue which is
+ordered before any other request in its queue by the
+relation ~. 
+(ii)
+P~ has received a message from every other process timestamped
+later than Tin</p></li>
+</ol>
+
+<p>因为任一进程都要把自己的请求，不管是申请资源还是释放资源，通知到其他所有进程。如果规则5(ii)成立，说明Pi已经得知了其他所有进程至少在Tm之前的所有请求状态。假设此时不应该是Pi获得资源而应该是Pj获得资源，则Pj申请资源的事件的逻辑时钟序应该小于Tm，因此在Pi本地队列中有这一个消息，而且该消息在全序关系中比(Tm:Pi request resource)小，这跟规则5(i)矛盾。所以Pi仅根据本地判定自己获得资源是符合要求的。所以要求I是满足的。
+因为只有3和4会删除消息，所以除非Pi释放了资源，否则(Tm:Pi request resource)就会一直在消息队列中，且占据着全序最小的位置，其他进程是不会判定自己可以获得资源的。
+因为我们是按照全序关系来判定的，而全序又是从偏序扩展来的，因此不会违背偏序定义的顺序。要求II因此满足。规则3、4在删除了(Tm:Pi request resource)之后，必定有另外一个进程Pj的申请消息会占据全序的最小值位置，而ack消息也能保证5(ii)成立。因此III成立。</p>
+
+<p>This is a distributed algorithm. Each process independently
+follows these rules, and there is no central
+synchronizing process or central storage. </p>
+
+<p>The
+synchronization is specified in terms of a State Machine,
+consisting of a set C of possible commands, a set S of
+possible states, and a function e: C× S--~ S. The relation
+e(C, S) -- S&#39; means that executing the command C with
+the machine in state S causes the machine state to change
+to S&#39;. In our example, the set C consists of all the
+commands Pi requests resource and P~ releases resource,
+and the state consists of a queue of waiting request
+commands, where the request at the head of the queue
+is the currently granted one. Executing a request command
+adds the request to the tail of the queue, and
+executing a release command removes a command from
+&#39;he queue</p>
+
+<p>Each process independently simulates the execution
+of the State Machine, using the commands issued by all
+the processes. Synchronization is achieved because all
+processes order the commands according to their timestamps
+(using the relation ~), so each process uses the
+same sequence of commands. </p>
+
+<h2>Anomalous Behavior</h2>
+
+<p>This permits
+the following type of &quot;anomalous behavior.&quot; Consider a
+nationwide system of interconnected computers. Suppose
+a person issues a request A on a computer A, and then
+telephones a friend in another city to have him issue a
+request B on a different computer B. It is quite possible
+for request B to receive a lower timestamp and be ordered
+before request A. This can happen because the system
+has no way of knowing that A actually preceded B, since
+that precedence informatiori is based on messages external
+to the system.</p>
+
+<p>There are two possible ways to avoid such anomalous
+behavior. The first way is to explicitly introduce into the
+system the necessary information about the ordering-&gt;. </p>
+
+<p>The second approach is to construct a system of
+clocks which satisfies the following condition. </p>
+
+<h2>Physical Clocks</h2>
+
+<p><a href="http://loopjump.com/time_clock_order/">http://loopjump.com/time_clock_order/</a></p>
+
+<h1>Dynamo: Amazon’s Highly Available Key-value Store</h1>
+
+<h2>Introduction</h2>
+
+<p>一个系统的<strong>可靠性</strong>和<strong>可扩展性</strong>取决于如何管理应用状态。Amazon 采用一种高度去中心化，松耦合，由数百个服务组成的面向服务架构。在这种环境中尤其需要一个高可用的存储技术。</p>
+
+<p>Dynamo 被设计用于管理服务状态，要求具备非常高的可靠性，而且需要严格控制<strong>可用性、一致性、成本效益和性能</strong>的之间的权衡。</p>
+
+<p>Amazon 服务平台中许多服务只需要主键访问数据存储。通常关系数据库模式会导致效率低下，且可扩展性和可用性也有限。Dynamo 提供了一个简单且唯一的主键接口，以满足这些应用的要求。</p>
+
+<p>Dynamo 综合一些著名的技术来实现可伸缩性和可用性：使用一致性哈希划分和复制数据，一致性由对象版本来实现。更新时副本之间的一致性是由类似仲裁（quorum-like）的技术和去中心化的副本同步协议来保证。Dynamo 采用了基于 gossip 的分布式故障检测和 membership protocol。</p>
+
+<h2>System Assumptions and Requirements</h2>
+
+<p>Dynamo 的目标应用程序是通过较弱的一致性（ACID中的“C”）来达到高可用性。Dynamo 不提供任何数据隔离（ACID中的“I”）保证，只允许单一主键更新。</p>
+
+<h2>Design Considerations</h2>
+
+<p>Data replication algorithms used in commercial systems
+traditionally perform synchronous replica coordination in order to
+provide a strongly consistent data access interface. To achieve this
+level of consistency, these algorithms are forced to tradeoff the
+availability of the data under certain failure scenarios.</p>
+
+<p>对于容易出现的服务器和网络故障的系统，可使用乐观复制技术来提高系统的可用性，其变化可以在后台传播到副本，同时，并发和断开(disconnected)是可以容忍的。这种方法的挑战在于，它会导致更改冲突，而这些冲突必须检测并协调解决。这种协调冲突的过程引入了两个问题：何时协调它们，谁协调它们。Dynamo被设计成最终一致性(eventually consistent)的数据存储，即所有的更新操作，最终达到所有副本。</p>
+
+<p>This process of conflict resolution
+introduces two problems: when to resolve them and who resolves
+them. Dynamo is designed to be an eventually consistent data
+store; that is all updates reach all replicas eventually. </p>
+
+<p>An important design consideration is to decide when to perform
+the process of resolving update conflicts, i.e., whether conflicts
+should be resolved during reads or writes. Dynamo targets the design space of an “always writeable” data store. This requirement forces us to push the
+complexity of conflict resolution to the reads in order to ensure
+that writes are never rejected. </p>
+
+<p>Other key principles embraced in the design are:</p>
+
+<ul>
+<li>Incremental scalability:  Dynamo should be able to scale out one
+storage host (henceforth, referred to as “node”) at a time, with
+minimal impact on both operators of the system and the system
+itself. </li>
+<li>Symmetry:  Every node in Dynamo should have the same set of
+responsibilities as its peers; there should be no distinguished node
+or nodes that take special roles or extra set of responsibilities.</li>
+<li>Decentralization:  An extension of symmetry, the design should
+favor decentralized peer-to-peer techniques over centralized
+control. </li>
+<li>Heterogeneity: The system needs to be able to exploit
+heterogeneity in the infrastructure it runs on.   the work
+distribution must be proportional to the capabilities of the
+individual servers. </li>
+</ul>
+
+<h2>RELATED WORK</h2>
+
+<p>Dynamo differs from the aforementioned decentralized storage
+systems in terms of its target requirements. First, Dynamo is
+targeted mainly at applications that need an “always writeable”
+data store where no updates are rejected due to failures or
+concurrent writes. </p>
+
+<p>Dynamo is built for
+latency sensitive applications that require at least 99.9% of read
+and write operations to be performed within a few hundred
+milliseconds. To meet these stringent latency requirements, it was
+imperative for us to avoid routing requests through multiple nodes </p>
+
+<p>This is because multihop
+routing increases variability in response times, thereby
+increasing the latency at higher percentiles. Dynamo can be
+characterized as a zero-hop DHT, where each node maintains
+enough routing information locally to route a request to the
+appropriate node directly. </p>
+
+<h2>SYSTEM ARCHITECTURE</h2>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-8.png" width="800" /></p>
+
+<p>Dynamo stores objects associated with a key through a simple
+interface; it exposes two operations: get() and put(). The get(key)
+operation locates the object replicas associated with the key in the
+storage system and returns a single object or a list of objects with
+conflicting versions along with a context. </p>
+
+<p>The put(key, context,
+object) operation determines where the replicas of the object
+should be placed based on the associated key, and writes the
+replicas to disk. The context encodes system metadata about the
+object that is opaque to the caller and includes information such as
+the version of the object. </p>
+
+<p>One of the key design requirements for Dynamo is that it must
+scale incrementally. This requires a mechanism to dynamically
+partition the data over the set of nodes (i.e., storage hosts) in the
+system. Dynamo’s partitioning scheme relies on consistent
+hashing to distribute the load across multiple storage hosts. </p>
+
+<p>The principle
+advantage of consistent hashing is that departure or arrival of a
+node only affects its immediate neighbors and other nodes remain
+unaffected. </p>
+
+<p>The basic consistent hashing algorithm presents some challenges.
+First, the random position assignment of each node on the ring
+leads to non-uniform data and load distribution. Second, the basic
+algorithm is oblivious to the heterogeneity in the performance of
+nodes.</p>
+
+<p>To address these issues, Dynamo uses a variant of
+consistent hashing (similar to the one used in [10, 20]): instead of
+mapping a node to a single point in the circle, each node gets
+assigned to multiple points in the ring. To this end, Dynamo uses
+the concept of “virtual nodes”. A virtual node looks like a single
+node in the system, but each node can be responsible for more
+than one virtual node. Effectively, when a new node is added to
+the system, it is assigned multiple positions (henceforth, “tokens”)
+in the ring. </p>
+
+<p>In order to provide this kind of guarantee, Dynamo treats the
+result of each modification as a new and immutable version of the
+data. It allows for multiple versions of an object to be present in
+the system at the same time. </p>
+
+<p>Most of the time, new versions
+subsume the previous version(s), and the system itself can
+determine the authoritative version (syntactic reconciliation).
+However, version branching may happen, in the presence of
+failures combined with concurrent updates, resulting in
+conflicting versions of an object. In these cases, the system cannot
+reconcile the multiple versions of the same object and the client
+must perform the reconciliation in order to collapse multiple
+branches of data evolution back into one (semantic
+reconciliation).</p>
+
+<p>A node handling a read or write operation is known as the
+coordinator. Typically, this is the first among the top N nodes in
+the preference list.</p>
+
+<p>If the requests are received through a load
+balancer, requests to access a key may be routed to any random
+node in the ring. In this scenario, the node that receives the
+request will not coordinate it if the node is not in the top N of the
+requested key’s preference list. Instead, that node will forward the
+request to the first among the top N nodes in the preference list. </p>
+
+<p>To maintain consistency among its replicas, Dynamo uses a
+consistency protocol similar to those used in quorum systems.
+This protocol has two key configurable values: R and W. R is the
+minimum number of nodes that must participate in a successful
+read operation. W is the minimum number of nodes that must
+participate in a successful write operation. Setting R and W such that R + W &gt; N yields a quorum-like system.  In this model, the
+latency of a get (or put) operation is dictated by the slowest of the
+R (or W) replicas. For this reason, R and W are usually
+configured to be less than N, to provide better latency. </p>
+
+<p>Upon receiving a put() request for a key, the coordinator generates
+the vector clock for the new version and writes the new version
+locally. The coordinator then sends the new version (along with the new vector clock) to the N highest-ranked reachable nodes. If
+at least W-1 nodes respond then the write is considered
+successful. </p>
+
+<p>Similarly, for a get() request, the coordinator requests all existing
+versions of data for that key from the N highest-ranked reachable
+nodes in the preference list for that key, and then waits for R
+responses before returning the result to the client.  If the
+coordinator ends up gathering multiple versions of the data, it
+returns all the versions it deems to be causally unrelated. The
+divergent versions are then reconciled and the reconciled version
+superseding the current versions is written back. </p>
+
+<p>If Dynamo used a traditional quorum approach it would be
+unavailable during server failures and network partitions, and
+would have reduced durability even under the simplest of failure
+conditions. To remedy this it does not enforce strict quorum
+membership and instead it uses a “sloppy quorum”. all read and
+write operations are performed on the first N healthy nodes from
+the preference list, which may not always be the first N nodes
+encountered while walking the consistent hashing ring. </p>
+
+<p>If node A is temporarily down or
+unreachable during a write operation then a replica that would
+normally have lived on A will now be sent to node D. This is done
+to maintain the desired availability and durability guarantees. The
+replica sent to D will have a hint in its metadata that suggests
+which node was the intended recipient of the replica (in this case
+A). Nodes that receive hinted replicas will keep them in a
+separate local database that is scanned periodically. Upon
+detecting that A has recovered, D will attempt to deliver the
+replica to A. </p>
+
+<p>Using hinted handoff, Dynamo ensures that the read and write
+operations are not failed due to temporary node or network
+failures. </p>
+
+<p>Dynamo is configured such that
+each object is replicated across multiple data centers. In essence,
+the preference list of a key is constructed such that the storage
+nodes are spread across multiple data centers. These datacenters
+are connected through high speed network links. This scheme of
+replicating across multiple datacenters allows us to handle entire
+data center failures without a data outage. </p>
+
+<p>Dynamo implements an anti-entropy (replica
+synchronization) protocol to keep the replicas synchronized. </p>
+
+<p>To detect the inconsistencies between replicas faster and to
+minimize the amount of transferred data, Dynamo uses Merkle
+trees [13]. A Merkle tree is a hash tree where leaves are hashes of
+the values of individual keys. The principal advantage of
+Merkle tree is that each branch of the tree can be checked
+independently without requiring nodes to download the entire tree
+or the entire data set. Moreover, Merkle trees help in reducing the
+amount of data that needs to be transferred while checking for
+inconsistencies among replicas. </p>
+
+<p>Dynamo uses Merkle trees for anti-entropy as follows: Each node
+maintains a separate Merkle tree for each key range.</p>
+
+<p>A gossip-based protocol
+propagates membership changes and maintains an eventually
+consistent view of membership. Each node contacts a peer chosen
+at random every second and the two nodes efficiently reconcile
+their persisted membership change histories. </p>
+
+<p>When a node starts for the first time, it chooses its set of tokens
+(virtual nodes in the consistent hash space) and maps nodes to
+their respective token sets. The mapping is persisted on disk and initially contains only the local node and token set. The mappings
+stored at different Dynamo nodes are reconciled during the same
+communication exchange that reconciles the membership change
+histories. Therefore, partitioning and placement information also
+propagates via the gossip-based protocol and each storage node is
+aware of the token ranges handled by its peers. This allows each
+node to forward a key’s read/write operations to the right set of
+nodes directly. </p>
+
+<p>a purely local notion of failure detection is entirely sufficient: node
+A may consider node B failed if node B does not respond to node
+A’s messages (even if B is responsive to node C&#39;s messages). </p>
+
+<p>Decentralized failure detection protocols use a simple gossip-style
+protocol that enable each node in the system to learn about the
+arrival (or departure) of other nodes. </p>
+
+<h2>IMPLEMENTATION</h2>
+
+<p>In Dynamo, each storage node has three main software
+components: request coordination, membership and failure
+detection, and a local persistence engine. </p>
+
+<p>Dynamo’s local persistence component allows for different
+storage engines to be plugged in. The main reason for designing a pluggable
+persistence component is to choose the storage engine best suited
+for an application’s access patterns. </p>
+
+<p>The request coordination component is built on top of an eventdriven
+messaging substrate where the message processing pipeline
+is split into multiple stages.</p>
+
+<p>Each
+client request results in the creation of a state machine on the node
+that received the client request. The state machine contains all the
+logic for identifying the nodes responsible for a key, sending the
+requests, waiting for responses, potentially doing retries,
+processing the replies and packaging the response to the client.
+Each state machine instance handles exactly one client request.</p>
+
+<p><a href="http://blog.csdn.net/yfkiss/article/details/39966087">http://blog.csdn.net/yfkiss/article/details/39966087</a></p>
+
   </section>
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2017/12/2017-review/" title="link to 再见，2017">再见，2017</a></h2>
+       <p class="excerpt">回看起去年的总结 我的2016，心里挺有感慨的。17 年是出现转机的一年，在这最后一天，按照惯例，整理下这一年的历程和想法。关于自己在去年的时候，我总觉得自己在工作上挺失意的，各种原因下达不到自己的期望。还好，今年在工作方面对自己还算满意。最大的进步是对工作的心态上，不再有一些困惑和纠结。工作上努力去争取有挑战的需求，空闲的时候则抽更多的时间在个人学习上，维持好工作和自学的平衡。我挺喜欢这样的节奏，忙的时候全心全意把工作做好，不忙的时候就把更多的时间投入到自己感兴趣的领域。在经历 16 年...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2017-12-31 16:28:17 +0800" class="post-list__meta--date date">2017-12-31</time> &#8226; <span class="post-list__meta--tags tags">随笔</span><a class="btn-border-small" href=/2017/12/2017-review/>继续阅读</a></div>
+   </div>
    
    
    

@@ -5,9 +5,48 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 03 Dec 2017 15:24:22 +0800</pubDate>
-    <lastBuildDate>Sun, 03 Dec 2017 15:24:22 +0800</lastBuildDate>
+    <pubDate>Sun, 31 Dec 2017 16:29:38 +0800</pubDate>
+    <lastBuildDate>Sun, 31 Dec 2017 16:29:38 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>再见，2017</title>
+        <description>&lt;p&gt;回看起去年的总结 &lt;a href=&quot;http://masutangu.com/2016/12/review/&quot;&gt;我的2016&lt;/a&gt;，心里挺有感慨的。17 年是出现转机的一年，在这最后一天，按照惯例，整理下这一年的历程和想法。&lt;/p&gt;
+
+&lt;h1&gt;关于自己&lt;/h1&gt;
+
+&lt;p&gt;在去年的时候，我总觉得自己在工作上挺失意的，各种原因下达不到自己的期望。还好，今年在工作方面对自己还算满意。&lt;strong&gt;最大的进步是对工作的心态上，不再有一些困惑和纠结。&lt;/strong&gt;工作上努力去争取有挑战的需求，空闲的时候则抽更多的时间在个人学习上，维持好工作和自学的平衡。我挺喜欢这样的节奏，忙的时候全心全意把工作做好，不忙的时候就把更多的时间投入到自己感兴趣的领域。&lt;/p&gt;
+
+&lt;p&gt;在经历 16 年那段纠结的时间，如今自己努力一点点扭转，我也更加相信，&lt;strong&gt;在任何时候都要把主动权握在自己手里&lt;/strong&gt;。不管自己处在一个什么样的环境，对你是有利或者是不利的、有没有机遇、公不公平，&lt;strong&gt;把自己能控制的做好，在任何时候都会有选择权&lt;/strong&gt;。但另一方面，环境也是至关重要的一个因素，是金子总会发光，我觉得是悖论。或者说，&lt;strong&gt;是金子的话，应该主动寻找能让自己发光的机会&lt;/strong&gt;，而不是呆在沙堆中，等着别人来发掘你，该争取的东西就一定要去争取。&lt;/p&gt;
+
+&lt;p&gt;个人学习上，下半年的主要精力都放在分布式系统上，跟着 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 的课程，读论文，做实验，记&lt;a href=&quot;http://masutangu.com/2017/11/mit-6824-note-1/&quot;&gt;笔记&lt;/a&gt;。这个课程受益匪浅，有些思路我也能顺利运用到工作上，这样的感觉挺不错的。&lt;/p&gt;
+
+&lt;h1&gt;关于团队&lt;/h1&gt;
+
+&lt;p&gt;平时喜欢篮球，也经常关注 NBA。在我看来，团队氛围和文化及其重要。勇士、马刺的成功，和他们的球队文化、管理层的理念是分不开的。&lt;strong&gt;球队的凝聚力、球员之间的化学反应，是无法体现在冷冰冰的数据上的。&lt;/strong&gt;读到这篇文章&lt;a href=&quot;https://zhuanlan.zhihu.com/p/31997176&quot;&gt;《你可能见证了勇士队的成功，却很少了解他们背后的球队文化》&lt;/a&gt;的时候，我内心有点被触动：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;即便克拉克离开了勇士队，勇士的主场球馆内依然挂着他身穿勇士球衣的照片，而克拉克自己也表示，虽然自己不在勇士，但是还是会和这些球员保持紧密的关系。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;一支球队中，有不同的角色：全明星、先发、替补、饮水机管理员。但相信我，&lt;strong&gt;无论你在球队中扮演什么样的角色，每个人都希望自己是球队的一部分，是比赛的一部分，每个人都希望球队的胜利，也有自己贡献的那部分因素。&lt;/strong&gt;在这一年，我参与了项目组新项目的研发，大家一起对需求、讨论方案、前后台定协议、联调、改bug，没有什么撕逼、甩锅，我感觉到自己在团队中的角色，我知道自己能做些什么，这些都让我更加有动力去扮演好团队中的一份子。&lt;/p&gt;
+
+&lt;h1&gt;一些不足&lt;/h1&gt;
+
+&lt;p&gt;一直以来，我都比较难以保持稳定的状态。有时状态好的时候，就一头扎进去。前阵子有一段时间，每天都 6 点就自然醒，那段时间就天天很早到公司，吃完早餐后开始读论文，就这样每天都抽更多的时间去学习。但持续了大概一个月之后就累垮了，低迷了一两周。而且状态低迷的时候，自己也经常会焦虑，导致有些恶性循环。新的一年，希望自己能维持稳定些的状态，对自己也更有耐心些。&lt;strong&gt;细水长流&lt;/strong&gt;，做长远打算。&lt;/p&gt;
+
+&lt;h1&gt;新年展望&lt;/h1&gt;
+
+&lt;p&gt;新的一年，希望自己能在&lt;strong&gt;工作上能有更大的突破&lt;/strong&gt;，个人学习上继续按自己规划的路线走，&lt;strong&gt;扩展更多领域的知识，提升自己的核心竞争力&lt;/strong&gt;。还是相信那句话：&lt;strong&gt;Pursue excellence, and success will follow！&lt;/strong&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 31 Dec 2017 16:28:17 +0800</pubDate>
+        <link>http://masutangu.com/2017/12/2017-review/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/12/2017-review/</guid>
+        
+        
+        <category>随笔</category>
+        
+      </item>
     
       <item>
         <title>MIT 6.824 学习笔记（三）</title>
@@ -78,6 +117,514 @@
 &lt;p&gt;选举算法如下图：&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h1&gt;Time, Clocks, and the Ordering of Events in a Distributed System&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;A system is distributed if the message transmission delay is not negligible compared
+to the time between events in a single process. &lt;/p&gt;
+
+&lt;p&gt;In a distributed system, it is sometimes impossible to say that one of two events occurred first. The relation &amp;quot;happened before&amp;quot; is therefore only a partial ordering
+of the events in the system. &lt;/p&gt;
+
+&lt;h2&gt;The Partial Ordering&lt;/h2&gt;
+
+&lt;p&gt;Most people would probably say that an event a
+happened before an event b if a happened at an earlier
+time than b. They might justify this definition in terms
+of physical theories of time. 
+ there is still the problem that such
+clocks are not perfectly accurate and do not keep precise
+physical time. We will therefore define the &amp;quot;happened
+before&amp;quot; relation without using physical clocks.&lt;/p&gt;
+
+&lt;p&gt;Most people would probably say that an event a
+happened before an event b if a happened at an earlier
+time than b. They might justify this definition in terms
+of physical theories of time.  We are assuming that the events of a process form
+a sequence, where a occurs before b in this sequence if
+a happens before b. In other words, a single process is
+defined to be a set of events with an a priori total
+ordering. &lt;/p&gt;
+
+&lt;p&gt;Definition. The relation &amp;quot;-&amp;gt;&amp;quot; on the set of events of
+a system is the smallest relation satisfying the following
+three conditions: (1) If a and b are events in the same
+process, and a comes before b, then a -&amp;gt; b. (2) If a is the
+sending of a message by one process and b is the receipt
+of the same message by another process, then a -&amp;gt; b. (3)
+If a -&amp;gt; b and b -&amp;gt; c then a -&amp;gt; c. Two distinct events a
+and b are said to be concurrent if a is not -&amp;gt; b and b is not -&amp;gt; a.&lt;/p&gt;
+
+&lt;p&gt;-&amp;gt; is an
+irreflexive partial ordering on the set of all events in the
+system&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-7.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Another way of viewing the definition is to say that
+a -&amp;gt; b means that it is possible for event a to causally
+affect event b. Two events are concurrent if neither can
+causally affect the other. &lt;/p&gt;
+
+&lt;p&gt;For example, events pa and q:~
+of Figure 1 are concurrent. Even though we have drawn
+the diagram to imply that q3 occurs at an earlier physical
+time than 1)3, process P cannot know what process Q did
+at qa until it receives the message at p, &lt;/p&gt;
+
+&lt;h2&gt;Logical Clocks&lt;/h2&gt;
+
+&lt;p&gt;We now introduce clocks into the system. We begin
+with an abstract point of view in which a clock is just a
+way of assigning a number to an event, where the number
+is thought of as the time at which the event occurred. 
+More precisely, we define a clock Ci for each process Pi
+to be a function which assigns a number Ci(a) to any
+event a in that process. The entire system ofclbcks is
+represented by the function C which assigns to any event
+b the number C(b), where C(b) = C/(b) if b is an event
+in process Pj. &lt;/p&gt;
+
+&lt;p&gt;Clock Condition. For any events a, b:
+if a---&amp;gt; b then C(a) &amp;lt; C(b). &lt;/p&gt;
+
+&lt;p&gt;It is easy to see from our definition of the relation
+&amp;quot;---~&amp;quot; that the Clock Condition is satisfied if the following
+two conditions hold.
+C 1. If a and b are events in process P~, and a comes
+before b, then Ci(a) &amp;lt; Ci(b).
+C2. If a is the sending of a message by process Pi
+and b is the receipt of that message by process Pi, then
+Ci(a) &amp;lt; Ci(b). &lt;/p&gt;
+
+&lt;p&gt;We will show how to introduce clocks into the
+processes which satisfy the Clock Condition. Process Pi&amp;#39;s
+clock is represented by a register Ci, so that C~(a) is the
+value contained by C~ during the event a. The value of
+C~ will change between events, so changing Ci does not
+itself constitute an event. &lt;/p&gt;
+
+&lt;p&gt;To guarantee that the system of clocks satisfies the
+Clock Condition, we will insure that it satisfies conditions
+C 1 and C2. Condition C 1 is simple; the processes need
+only obey the following implementation rule:&lt;/p&gt;
+
+&lt;p&gt;IR1. Each process P~ increments Ci between any
+two successive events. &lt;/p&gt;
+
+&lt;p&gt;To meet condition C2, we require that each message
+m contain a timestamp Tm which equals the time at which
+the message was sent. Upon receiving a message timestamped
+Tin, a process must advance its clock to be later
+than Tin. &lt;/p&gt;
+
+&lt;p&gt;IR2. (a) If event a is the sending of a message m
+by process P~, then the message m contains a timestamp
+Tm= Ci(a). (b) Upon receiving a message m, process
+Pi sets Ci greater than or equal to its present value and
+greater than Tin. &lt;/p&gt;
+
+&lt;h2&gt;Ordering the Events Totally&lt;/h2&gt;
+
+&lt;p&gt;We can use a system of clocks satisfying the Clock
+Condition to place a total ordering on the set of all
+system events. We simply order the events by the times &lt;/p&gt;
+
+&lt;p&gt;we
+define a relation ~ as follows: if a is an event in process
+Pi and b is an event in process Pj, then a ~ b if and only
+if either (i) Ci{a) &amp;lt; Cj(b) or (ii) El(a) ----&amp;quot; Cj(b) and Pi
+&amp;lt; Py&lt;/p&gt;
+
+&lt;p&gt;Consider
+a system composed of a fixed collection of processes
+which share a single resource. Only one process can use
+the resource at a time, so the processes must synchronize
+themselves to avoid conflict. We wish to find an algorithm
+for granting the resource to a process which satisfies
+the following three conditions: (I) A process which
+has been granted the resource must release it before it
+can be granted to another process. (II) Different requests
+for the resource must be granted in the order in which
+they are made. (III) If every process which is granted the
+resource eventually releases it, then every request is
+eventually granted. &lt;/p&gt;
+
+&lt;p&gt;Using a central scheduling process which grants
+requests in the order they are received will not work,
+unless additional assumptions are made. &lt;/p&gt;
+
+&lt;p&gt;To solve the problem, we implement a system of clocks with&amp;#39;rules IR 1 and IR2, and use them to define a total ordering ~ of all events.&lt;/p&gt;
+
+&lt;p&gt;We assume first of all
+that for any two processes P/and Pj, the messages sent
+from Pi to Pi are received in the same order as they are
+sent. Moreover, we assume that every message is eventually
+received.  We also assume that a process can send
+messages directly to every other process. &lt;/p&gt;
+
+&lt;p&gt;Each process maintains its own request queue. We assume that the
+request queues initially contain the single message To:Po
+requests resource, where Po is the process initially granted
+the resource and To is less than the initial value of any
+clock. &lt;/p&gt;
+
+&lt;p&gt;The algorithm is then defined by the following five
+rules. For convenience, the actions defined by each rule
+are assumed to form a single event. &lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;To request the resource, process Pi sends the message
+TIn:P/requests resource to every other process, and
+puts that message on its request queue, where T,~ is the
+timestamp of the message.&lt;/li&gt;
+&lt;li&gt;When process Pj receives the message T,~:P~ requests
+resource, it places it on its request queue and sends
+a (timestamped) acknowledgment message to P~.&amp;#39;~&lt;/li&gt;
+&lt;li&gt;To release the resource, process P~ removes any
+Tm:Pi requests resource message from its request queue
+and sends a (timestamped) Pi releases resource message
+to every other process.&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;When process Pj receives a Pi releases resource
+message, it removes any Tm:P~ requests resource message
+from its request queue. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Process P/is granted the resource when the following
+two conditions are satisfied: (i) There is a Tm:Pi
+requests resource message in its request queue which is
+ordered before any other request in its queue by the
+relation ~. 
+(ii)
+P~ has received a message from every other process timestamped
+later than Tin&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因为任一进程都要把自己的请求，不管是申请资源还是释放资源，通知到其他所有进程。如果规则5(ii)成立，说明Pi已经得知了其他所有进程至少在Tm之前的所有请求状态。假设此时不应该是Pi获得资源而应该是Pj获得资源，则Pj申请资源的事件的逻辑时钟序应该小于Tm，因此在Pi本地队列中有这一个消息，而且该消息在全序关系中比(Tm:Pi request resource)小，这跟规则5(i)矛盾。所以Pi仅根据本地判定自己获得资源是符合要求的。所以要求I是满足的。
+因为只有3和4会删除消息，所以除非Pi释放了资源，否则(Tm:Pi request resource)就会一直在消息队列中，且占据着全序最小的位置，其他进程是不会判定自己可以获得资源的。
+因为我们是按照全序关系来判定的，而全序又是从偏序扩展来的，因此不会违背偏序定义的顺序。要求II因此满足。规则3、4在删除了(Tm:Pi request resource)之后，必定有另外一个进程Pj的申请消息会占据全序的最小值位置，而ack消息也能保证5(ii)成立。因此III成立。&lt;/p&gt;
+
+&lt;p&gt;This is a distributed algorithm. Each process independently
+follows these rules, and there is no central
+synchronizing process or central storage. &lt;/p&gt;
+
+&lt;p&gt;The
+synchronization is specified in terms of a State Machine,
+consisting of a set C of possible commands, a set S of
+possible states, and a function e: C× S--~ S. The relation
+e(C, S) -- S&amp;#39; means that executing the command C with
+the machine in state S causes the machine state to change
+to S&amp;#39;. In our example, the set C consists of all the
+commands Pi requests resource and P~ releases resource,
+and the state consists of a queue of waiting request
+commands, where the request at the head of the queue
+is the currently granted one. Executing a request command
+adds the request to the tail of the queue, and
+executing a release command removes a command from
+&amp;#39;he queue&lt;/p&gt;
+
+&lt;p&gt;Each process independently simulates the execution
+of the State Machine, using the commands issued by all
+the processes. Synchronization is achieved because all
+processes order the commands according to their timestamps
+(using the relation ~), so each process uses the
+same sequence of commands. &lt;/p&gt;
+
+&lt;h2&gt;Anomalous Behavior&lt;/h2&gt;
+
+&lt;p&gt;This permits
+the following type of &amp;quot;anomalous behavior.&amp;quot; Consider a
+nationwide system of interconnected computers. Suppose
+a person issues a request A on a computer A, and then
+telephones a friend in another city to have him issue a
+request B on a different computer B. It is quite possible
+for request B to receive a lower timestamp and be ordered
+before request A. This can happen because the system
+has no way of knowing that A actually preceded B, since
+that precedence informatiori is based on messages external
+to the system.&lt;/p&gt;
+
+&lt;p&gt;There are two possible ways to avoid such anomalous
+behavior. The first way is to explicitly introduce into the
+system the necessary information about the ordering-&amp;gt;. &lt;/p&gt;
+
+&lt;p&gt;The second approach is to construct a system of
+clocks which satisfies the following condition. &lt;/p&gt;
+
+&lt;h2&gt;Physical Clocks&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://loopjump.com/time_clock_order/&quot;&gt;http://loopjump.com/time_clock_order/&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1&gt;Dynamo: Amazon’s Highly Available Key-value Store&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;一个系统的&lt;strong&gt;可靠性&lt;/strong&gt;和&lt;strong&gt;可扩展性&lt;/strong&gt;取决于如何管理应用状态。Amazon 采用一种高度去中心化，松耦合，由数百个服务组成的面向服务架构。在这种环境中尤其需要一个高可用的存储技术。&lt;/p&gt;
+
+&lt;p&gt;Dynamo 被设计用于管理服务状态，要求具备非常高的可靠性，而且需要严格控制&lt;strong&gt;可用性、一致性、成本效益和性能&lt;/strong&gt;的之间的权衡。&lt;/p&gt;
+
+&lt;p&gt;Amazon 服务平台中许多服务只需要主键访问数据存储。通常关系数据库模式会导致效率低下，且可扩展性和可用性也有限。Dynamo 提供了一个简单且唯一的主键接口，以满足这些应用的要求。&lt;/p&gt;
+
+&lt;p&gt;Dynamo 综合一些著名的技术来实现可伸缩性和可用性：使用一致性哈希划分和复制数据，一致性由对象版本来实现。更新时副本之间的一致性是由类似仲裁（quorum-like）的技术和去中心化的副本同步协议来保证。Dynamo 采用了基于 gossip 的分布式故障检测和 membership protocol。&lt;/p&gt;
+
+&lt;h2&gt;System Assumptions and Requirements&lt;/h2&gt;
+
+&lt;p&gt;Dynamo 的目标应用程序是通过较弱的一致性（ACID中的“C”）来达到高可用性。Dynamo 不提供任何数据隔离（ACID中的“I”）保证，只允许单一主键更新。&lt;/p&gt;
+
+&lt;h2&gt;Design Considerations&lt;/h2&gt;
+
+&lt;p&gt;Data replication algorithms used in commercial systems
+traditionally perform synchronous replica coordination in order to
+provide a strongly consistent data access interface. To achieve this
+level of consistency, these algorithms are forced to tradeoff the
+availability of the data under certain failure scenarios.&lt;/p&gt;
+
+&lt;p&gt;对于容易出现的服务器和网络故障的系统，可使用乐观复制技术来提高系统的可用性，其变化可以在后台传播到副本，同时，并发和断开(disconnected)是可以容忍的。这种方法的挑战在于，它会导致更改冲突，而这些冲突必须检测并协调解决。这种协调冲突的过程引入了两个问题：何时协调它们，谁协调它们。Dynamo被设计成最终一致性(eventually consistent)的数据存储，即所有的更新操作，最终达到所有副本。&lt;/p&gt;
+
+&lt;p&gt;This process of conflict resolution
+introduces two problems: when to resolve them and who resolves
+them. Dynamo is designed to be an eventually consistent data
+store; that is all updates reach all replicas eventually. &lt;/p&gt;
+
+&lt;p&gt;An important design consideration is to decide when to perform
+the process of resolving update conflicts, i.e., whether conflicts
+should be resolved during reads or writes. Dynamo targets the design space of an “always writeable” data store. This requirement forces us to push the
+complexity of conflict resolution to the reads in order to ensure
+that writes are never rejected. &lt;/p&gt;
+
+&lt;p&gt;Other key principles embraced in the design are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Incremental scalability:  Dynamo should be able to scale out one
+storage host (henceforth, referred to as “node”) at a time, with
+minimal impact on both operators of the system and the system
+itself. &lt;/li&gt;
+&lt;li&gt;Symmetry:  Every node in Dynamo should have the same set of
+responsibilities as its peers; there should be no distinguished node
+or nodes that take special roles or extra set of responsibilities.&lt;/li&gt;
+&lt;li&gt;Decentralization:  An extension of symmetry, the design should
+favor decentralized peer-to-peer techniques over centralized
+control. &lt;/li&gt;
+&lt;li&gt;Heterogeneity: The system needs to be able to exploit
+heterogeneity in the infrastructure it runs on.   the work
+distribution must be proportional to the capabilities of the
+individual servers. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;RELATED WORK&lt;/h2&gt;
+
+&lt;p&gt;Dynamo differs from the aforementioned decentralized storage
+systems in terms of its target requirements. First, Dynamo is
+targeted mainly at applications that need an “always writeable”
+data store where no updates are rejected due to failures or
+concurrent writes. &lt;/p&gt;
+
+&lt;p&gt;Dynamo is built for
+latency sensitive applications that require at least 99.9% of read
+and write operations to be performed within a few hundred
+milliseconds. To meet these stringent latency requirements, it was
+imperative for us to avoid routing requests through multiple nodes &lt;/p&gt;
+
+&lt;p&gt;This is because multihop
+routing increases variability in response times, thereby
+increasing the latency at higher percentiles. Dynamo can be
+characterized as a zero-hop DHT, where each node maintains
+enough routing information locally to route a request to the
+appropriate node directly. &lt;/p&gt;
+
+&lt;h2&gt;SYSTEM ARCHITECTURE&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-8.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dynamo stores objects associated with a key through a simple
+interface; it exposes two operations: get() and put(). The get(key)
+operation locates the object replicas associated with the key in the
+storage system and returns a single object or a list of objects with
+conflicting versions along with a context. &lt;/p&gt;
+
+&lt;p&gt;The put(key, context,
+object) operation determines where the replicas of the object
+should be placed based on the associated key, and writes the
+replicas to disk. The context encodes system metadata about the
+object that is opaque to the caller and includes information such as
+the version of the object. &lt;/p&gt;
+
+&lt;p&gt;One of the key design requirements for Dynamo is that it must
+scale incrementally. This requires a mechanism to dynamically
+partition the data over the set of nodes (i.e., storage hosts) in the
+system. Dynamo’s partitioning scheme relies on consistent
+hashing to distribute the load across multiple storage hosts. &lt;/p&gt;
+
+&lt;p&gt;The principle
+advantage of consistent hashing is that departure or arrival of a
+node only affects its immediate neighbors and other nodes remain
+unaffected. &lt;/p&gt;
+
+&lt;p&gt;The basic consistent hashing algorithm presents some challenges.
+First, the random position assignment of each node on the ring
+leads to non-uniform data and load distribution. Second, the basic
+algorithm is oblivious to the heterogeneity in the performance of
+nodes.&lt;/p&gt;
+
+&lt;p&gt;To address these issues, Dynamo uses a variant of
+consistent hashing (similar to the one used in [10, 20]): instead of
+mapping a node to a single point in the circle, each node gets
+assigned to multiple points in the ring. To this end, Dynamo uses
+the concept of “virtual nodes”. A virtual node looks like a single
+node in the system, but each node can be responsible for more
+than one virtual node. Effectively, when a new node is added to
+the system, it is assigned multiple positions (henceforth, “tokens”)
+in the ring. &lt;/p&gt;
+
+&lt;p&gt;In order to provide this kind of guarantee, Dynamo treats the
+result of each modification as a new and immutable version of the
+data. It allows for multiple versions of an object to be present in
+the system at the same time. &lt;/p&gt;
+
+&lt;p&gt;Most of the time, new versions
+subsume the previous version(s), and the system itself can
+determine the authoritative version (syntactic reconciliation).
+However, version branching may happen, in the presence of
+failures combined with concurrent updates, resulting in
+conflicting versions of an object. In these cases, the system cannot
+reconcile the multiple versions of the same object and the client
+must perform the reconciliation in order to collapse multiple
+branches of data evolution back into one (semantic
+reconciliation).&lt;/p&gt;
+
+&lt;p&gt;A node handling a read or write operation is known as the
+coordinator. Typically, this is the first among the top N nodes in
+the preference list.&lt;/p&gt;
+
+&lt;p&gt;If the requests are received through a load
+balancer, requests to access a key may be routed to any random
+node in the ring. In this scenario, the node that receives the
+request will not coordinate it if the node is not in the top N of the
+requested key’s preference list. Instead, that node will forward the
+request to the first among the top N nodes in the preference list. &lt;/p&gt;
+
+&lt;p&gt;To maintain consistency among its replicas, Dynamo uses a
+consistency protocol similar to those used in quorum systems.
+This protocol has two key configurable values: R and W. R is the
+minimum number of nodes that must participate in a successful
+read operation. W is the minimum number of nodes that must
+participate in a successful write operation. Setting R and W such that R + W &amp;gt; N yields a quorum-like system.  In this model, the
+latency of a get (or put) operation is dictated by the slowest of the
+R (or W) replicas. For this reason, R and W are usually
+configured to be less than N, to provide better latency. &lt;/p&gt;
+
+&lt;p&gt;Upon receiving a put() request for a key, the coordinator generates
+the vector clock for the new version and writes the new version
+locally. The coordinator then sends the new version (along with the new vector clock) to the N highest-ranked reachable nodes. If
+at least W-1 nodes respond then the write is considered
+successful. &lt;/p&gt;
+
+&lt;p&gt;Similarly, for a get() request, the coordinator requests all existing
+versions of data for that key from the N highest-ranked reachable
+nodes in the preference list for that key, and then waits for R
+responses before returning the result to the client.  If the
+coordinator ends up gathering multiple versions of the data, it
+returns all the versions it deems to be causally unrelated. The
+divergent versions are then reconciled and the reconciled version
+superseding the current versions is written back. &lt;/p&gt;
+
+&lt;p&gt;If Dynamo used a traditional quorum approach it would be
+unavailable during server failures and network partitions, and
+would have reduced durability even under the simplest of failure
+conditions. To remedy this it does not enforce strict quorum
+membership and instead it uses a “sloppy quorum”. all read and
+write operations are performed on the first N healthy nodes from
+the preference list, which may not always be the first N nodes
+encountered while walking the consistent hashing ring. &lt;/p&gt;
+
+&lt;p&gt;If node A is temporarily down or
+unreachable during a write operation then a replica that would
+normally have lived on A will now be sent to node D. This is done
+to maintain the desired availability and durability guarantees. The
+replica sent to D will have a hint in its metadata that suggests
+which node was the intended recipient of the replica (in this case
+A). Nodes that receive hinted replicas will keep them in a
+separate local database that is scanned periodically. Upon
+detecting that A has recovered, D will attempt to deliver the
+replica to A. &lt;/p&gt;
+
+&lt;p&gt;Using hinted handoff, Dynamo ensures that the read and write
+operations are not failed due to temporary node or network
+failures. &lt;/p&gt;
+
+&lt;p&gt;Dynamo is configured such that
+each object is replicated across multiple data centers. In essence,
+the preference list of a key is constructed such that the storage
+nodes are spread across multiple data centers. These datacenters
+are connected through high speed network links. This scheme of
+replicating across multiple datacenters allows us to handle entire
+data center failures without a data outage. &lt;/p&gt;
+
+&lt;p&gt;Dynamo implements an anti-entropy (replica
+synchronization) protocol to keep the replicas synchronized. &lt;/p&gt;
+
+&lt;p&gt;To detect the inconsistencies between replicas faster and to
+minimize the amount of transferred data, Dynamo uses Merkle
+trees [13]. A Merkle tree is a hash tree where leaves are hashes of
+the values of individual keys. The principal advantage of
+Merkle tree is that each branch of the tree can be checked
+independently without requiring nodes to download the entire tree
+or the entire data set. Moreover, Merkle trees help in reducing the
+amount of data that needs to be transferred while checking for
+inconsistencies among replicas. &lt;/p&gt;
+
+&lt;p&gt;Dynamo uses Merkle trees for anti-entropy as follows: Each node
+maintains a separate Merkle tree for each key range.&lt;/p&gt;
+
+&lt;p&gt;A gossip-based protocol
+propagates membership changes and maintains an eventually
+consistent view of membership. Each node contacts a peer chosen
+at random every second and the two nodes efficiently reconcile
+their persisted membership change histories. &lt;/p&gt;
+
+&lt;p&gt;When a node starts for the first time, it chooses its set of tokens
+(virtual nodes in the consistent hash space) and maps nodes to
+their respective token sets. The mapping is persisted on disk and initially contains only the local node and token set. The mappings
+stored at different Dynamo nodes are reconciled during the same
+communication exchange that reconciles the membership change
+histories. Therefore, partitioning and placement information also
+propagates via the gossip-based protocol and each storage node is
+aware of the token ranges handled by its peers. This allows each
+node to forward a key’s read/write operations to the right set of
+nodes directly. &lt;/p&gt;
+
+&lt;p&gt;a purely local notion of failure detection is entirely sufficient: node
+A may consider node B failed if node B does not respond to node
+A’s messages (even if B is responsive to node C&amp;#39;s messages). &lt;/p&gt;
+
+&lt;p&gt;Decentralized failure detection protocols use a simple gossip-style
+protocol that enable each node in the system to learn about the
+arrival (or departure) of other nodes. &lt;/p&gt;
+
+&lt;h2&gt;IMPLEMENTATION&lt;/h2&gt;
+
+&lt;p&gt;In Dynamo, each storage node has three main software
+components: request coordination, membership and failure
+detection, and a local persistence engine. &lt;/p&gt;
+
+&lt;p&gt;Dynamo’s local persistence component allows for different
+storage engines to be plugged in. The main reason for designing a pluggable
+persistence component is to choose the storage engine best suited
+for an application’s access patterns. &lt;/p&gt;
+
+&lt;p&gt;The request coordination component is built on top of an eventdriven
+messaging substrate where the message processing pipeline
+is split into multiple stages.&lt;/p&gt;
+
+&lt;p&gt;Each
+client request results in the creation of a state machine on the node
+that received the client request. The state machine contains all the
+logic for identifying the nodes responsible for a key, sending the
+requests, waiting for responses, potentially doing retries,
+processing the replies and packaging the response to the client.
+Each state machine instance handles exactly one client request.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://blog.csdn.net/yfkiss/article/details/39966087&quot;&gt;http://blog.csdn.net/yfkiss/article/details/39966087&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
         <link>http://masutangu.com/2017/12/mit-6824-note-3/</link>
@@ -2975,387 +3522,6 @@ struct fs_struct {
         <pubDate>Fri, 16 Dec 2016 21:37:16 +0800</pubDate>
         <link>http://masutangu.com/2016/12/linux-kernel-serial-5/</link>
         <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-5/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>Linux 内核系列－内存管理</title>
-        <description>&lt;p&gt;本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。&lt;/p&gt;
-
-&lt;h1&gt;概念&lt;/h1&gt;
-
-&lt;p&gt;操作系统存储管理方案的演进：&lt;/p&gt;
-
-&lt;h2&gt;无存储抽象&lt;/h2&gt;
-
-&lt;p&gt;早期计算机并没有存储抽象，程序直接访问物理内存地址。使用这种模型，想要同时运行多个程序非常困难。&lt;/p&gt;
-
-&lt;h2&gt;存储抽象：地址空间&lt;/h2&gt;
-
-&lt;h3&gt;地址空间的概念&lt;/h3&gt;
-
-&lt;p&gt;要保证多个应用程序同时处于内存并且互不影响，则需要解决两个问题：&lt;strong&gt;保护&lt;/strong&gt;和&lt;strong&gt;重定位&lt;/strong&gt;。内存块加上保护键并通过装载时重定位程序虽然可以做到，但是是个缓慢和复杂的解决方案。一个更好的方法是创造一个新的内存抽象：地址空间。地址空间是一个进程可用于寻址内存的一套地址集合。进程的地址空间独立于其他进程的地址空间。&lt;/p&gt;
-
-&lt;h3&gt;交换技术&lt;/h3&gt;
-
-&lt;p&gt;有两种处理内存超载的通用方法，最简单的策略是交接（swapping）技术，即把一个进程完整调入内存，运行一段时间后，存回磁盘。另一种策略是虚拟内存。&lt;/p&gt;
-
-&lt;h3&gt;空闲内存管理&lt;/h3&gt;
-
-&lt;p&gt;在动态分配内存时，操作系统通常有两种方式跟踪内存使用情况：&lt;strong&gt;位图&lt;/strong&gt;和&lt;strong&gt;空闲链表&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;虚拟内存&lt;/h2&gt;
-
-&lt;p&gt;虚拟内存的基本思想是：每个程序拥有自己的地址空间，这个空间被分割为许多块，每一块被称为页面（page）。这些页被映射到物理内存，但不是所有页都在内存才能运行程序。&lt;/p&gt;
-
-&lt;h3&gt;分页&lt;/h3&gt;
-
-&lt;p&gt;大部分虚拟内存系统都使用了&lt;strong&gt;分页&lt;/strong&gt;技术。程序产生的地址称为虚拟地址，访问时不是直接由内存总线处理，而是通过内存管理单元（MMU)，MMU 把虚拟地址映射到物理内存。&lt;/p&gt;
-
-&lt;p&gt;虚拟地址空间按照固定大小划分页面，物理内存对应的单元称为页框（page frame）。页面和页框的大小通常是一样的。RAM 和磁盘之间的交换总是以整个页面为单元进行的。&lt;/p&gt;
-
-&lt;p&gt;当进程访问了一个未映射的页面，MMU 注意到该页面没有被映射，于是使 CPU 陷入到操作系统（缺页中断），操作系统找到一个很少使用的页框，将其内容写入磁盘，并把需要访问的页面的内容读到该页框中，修改映射关系后，重新启动引起陷进的指令。&lt;/p&gt;
-
-&lt;h3&gt;页表&lt;/h3&gt;
-
-&lt;p&gt;页表的简单实现：虚拟地址被分成&lt;strong&gt;虚拟页号&lt;/strong&gt;（高位部分）和&lt;strong&gt;偏移量&lt;/strong&gt;（低位部分）。虚拟页号可用作页表的索引，以找到相应的页表项。由页表项可以找到页框号。页框号加上偏移量就是实际的内存物理地址。&lt;/p&gt;
-
-&lt;p&gt;页表项的结构同城包含页框号、“在／不在”位、“保护”位（读写执行权限）、“修改”位、“访问”位和“高速缓存禁止”位。&lt;/p&gt;
-
-&lt;p&gt;若页面不在内存时，该页面对应的磁盘地址不是页表的一部分。这部分信息保存在操作系统内部的软件表格中，硬件不需要。&lt;/p&gt;
-
-&lt;h3&gt;加速分页过程&lt;/h3&gt;
-
-&lt;p&gt;大多数程序总是对少量页面进行多次访问，因此优化方案是为计算机配置一个小型硬件设备 TLB，将虚拟地址直接映射成物理地址，而不必访问页表。&lt;/p&gt;
-
-&lt;h3&gt;针对大内存的页表&lt;/h3&gt;
-
-&lt;p&gt;64位机器上，多级页表不是个好主意。解决方案之一是使用倒排页表。在这种设计中，每一个页框有一个表项，而不是每个页面有一个表项。倒排页表的不足在于从虚拟地址到物理地址的转换变得很困难。可以通过 TLB 和散列表来提升效率。&lt;/p&gt;
-
-&lt;h2&gt;分页系统中的设计问题&lt;/h2&gt;
-
-&lt;h3&gt;分离的指令空间和数据空间&lt;/h3&gt;
-
-&lt;p&gt;大多数计算机只有一个地址空间，即存放程序也存放数据。如果地址空间太小的话，PDP-11的解决方案是为指令和数据设置分离的地址空间，分别称为 I 空间和 D 空间。此时链接器必须将数据重定位到虚拟地址 0，而不是指令段后。&lt;/p&gt;
-
-&lt;h3&gt;共享库&lt;/h3&gt;
-
-&lt;p&gt;传统的链接，会将被调用的外部库的函数加载到二进制文件，当程序载入内存开始执行时，它所需的所有函数都已经准备就绪。&lt;/p&gt;
-
-&lt;p&gt;为了节省磁盘和内存空间，引入了共享库。当程序和共享库链接时，链接器没有加载被调用的函数，而是加载了一小段能够在运行时绑定所调用函数的存根例程（stbu routine）。共享库或和程序一起加载，或在第一次被调用时加载。当其他程序已经加载过，就没有必要再次加载了。共享库不是一次性读入内存，而是以页面为单位装载的。&lt;/p&gt;
-
-&lt;h3&gt;内存映射文件&lt;/h3&gt;
-
-&lt;p&gt;共享库其实是一种更通用的机制：内存映射文件的一个特例。其思想是：进程可以通过系统调用，将一个文件映射到其虚拟地址空间的一部分。在映射共享的页面时不会实际读入页面的内容，而是访问页面时才会被读入，磁盘文件当作后备存储，当进程退出或显式解除文件映射时，所有改动才会写回文件。&lt;/p&gt;
-
-&lt;p&gt;如果两个或以上的进程同时映射了一个文件，它们就可以通过共享内存来通信。&lt;/p&gt;
-
-&lt;h1&gt;Linux 中的实现&lt;/h1&gt;
-
-&lt;h2&gt;内存管理&lt;/h2&gt;
-
-&lt;h3&gt;页&lt;/h3&gt;
-
-&lt;p&gt;内核把物理页作为内存管理的基本单位。尽管处理器最小可寻址单位通常为字，但内存管理单元（MMU)通常以页为单位进行处理。体系结构不同，支持的页大小也不同。大多数 32 位体系结构支持 4 KB 的页，而 64 位体系结构一般支持 8 KB 的页。&lt;/p&gt;
-
-&lt;p&gt;内核用 &lt;code&gt;struct page&lt;/code&gt; 结构表示系统中的每个物理页，该结构位于 &lt;linux/mm_types.h&gt; 中：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct page {
-    unsigned long flags;    /* Atomic flags, some possibly updated asynchronously */
-    atomic_t _count;        /* Usage count, see below. */
-
-    atomic_t _mapcount;     /* Count of ptes mapped in mms,
-                             * to show when page is mapped
-                             * &amp;amp; limit reverse map searches.
-                             */
-    };
-    union {
-        struct {
-        unsigned long private;  /* Mapping-private opaque data:
-                                 * usually used for buffer_heads
-                                 * if PagePrivate set; used for
-                                 * swp_entry_t if PageSwapCache;
-                                 * indicates order in the buddy
-                                 * system if PG_buddy is set.
-                                 */
-        struct address_space *mapping;  /* If low bit clear, points to
-                                         * inode address_space, or NULL.
-                                         * If page mapped as anonymous
-                                         * memory, low bit is set, and
-                                         * it points to anon_vma object:
-                                         * see PAGE_MAPPING_ANON below.
-                                         */
-        };
-    union {
-        pgoff_t index;      /* Our offset within mapping. */
-        void *freelist;     /* SLUB: freelist req. slab lock */
-    };
-    struct list_head lru;   /* Pageout list, eg. active_list
-                             * protected by zone-&amp;gt;lru_lock !
-                             */
-    void *virtual;          /* Kernel virtual address (NULL if not kmapped, ie. highmem) */
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;flage 域用来存放页的状态。这些状态包括页是不是脏的，是不是被锁定在内存中等等。_count 域存放页的引用计数，变成 0 说明当前内核没有引用这一页。页可以由页缓存使用（此时 mapping 域指向和这个页关联的 address_space 对象)，或者作为私有数据（由 private 指向），或者作为进程页表中的映射。&lt;/p&gt;
-
-&lt;p&gt;virtual 域是页的虚拟地址，通常情况下，就是页在虚拟内存中的地址。高端内存并不会永久映射到内核地址空间上，这种情况下，virtual 域的值为 NULL。&lt;/p&gt;
-
-&lt;p&gt;page 结构与物理页相关，并非与虚拟页相关。&lt;/p&gt;
-
-&lt;h3&gt;区&lt;/h3&gt;
-
-&lt;p&gt;由于硬件的限制，内核把页划分为不同的区（zone）。内核使用区对具有相似特性的页进行分组。Linux 必须处理以下两种因硬件存在的缺陷而引起的内存寻址问题：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;一些硬件只能用特定的内存地址来执行 DMA（直接内存访问）&lt;/li&gt;
-&lt;li&gt;一些体系结构其内存的物理寻址范围比虚拟寻址范围大得多，这样就有些内存不能永久地映射到内核空间上&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;因为存在这些制约条件，Linux 使用三种区：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;ZONE_DMA： 这个区包含的页能用来执行 DMA 操作&lt;/li&gt;
-&lt;li&gt;ZONE_NORMAL： 这个区包含的都是能正常映射的页&lt;/li&gt;
-&lt;li&gt;ZONE_HIGHMEM： 这个区包含“高端内存”，其中的页并不能永久地映射到内核地址空间。这些区定义于 &lt;linux/mmzone.h&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Linux 把系统的页划分为区，形成不同的内存池。每个区都用 &lt;code&gt;struct zone&lt;/code&gt; 表示，定义在 &lt;linux/mmzone.h&gt; 中。&lt;/p&gt;
-
-&lt;h3&gt;获得页&lt;/h3&gt;
-
-&lt;p&gt;内核提供一种请求内存的底层机制，并提供了对它进行访问的几个接口。所有这些接口都以页为单位分配内存，定义于 &lt;linux/gfp.h&gt;。最核心的函数是：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struc page * alloc_pages(unsigned int gfp_mask, unsigned int order)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;该函数分配 2&lt;sup&gt;order&lt;/sup&gt; 个连续的物理页，并返回一个指针，该指针指向第一个页的 page 结构体；如果出错就返回 NULL。&lt;/p&gt;
-
-&lt;p&gt;下面的函数：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void *page_address(struct page *page)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;把给定的物理页转换成逻辑地址。如果你不需要使用 struct page，可以直接调用&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;unsigned long__get_free_pages(unsigned int gfp_mask, unsigned int order)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;该函数与 &lt;code&gt;alloc_page()&lt;/code&gt; 作用相同，不过它直接返回请求的第一个页的逻辑地址，因为页是连续的，其他页也会紧随其后。&lt;/p&gt;
-
-&lt;h2&gt;kmalloc()&lt;/h2&gt;
-
-&lt;p&gt;&lt;code&gt;kmalloc()&lt;/code&gt; 函数与用户空间的 &lt;code&gt;malloc()&lt;/code&gt; 一族非常类似，只不过它多了一个 flags 参数。&lt;code&gt;kmalloc()&lt;/code&gt; 函数是一个简单的接口，用它可以获得以字节为单位的一块内核内存。&lt;code&gt;kmalloc()&lt;/code&gt; 在 &lt;linux/slab.h&gt; 中声明：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;void *kmalloc(size_t size, int flags)
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这个函数返回一个指向内存块的指针，其内存块至少要有 size 大小。所分配的内存区在物理上是连续的。在出错时返回 NULL。&lt;/p&gt;
-
-&lt;h3&gt;vmalloc()&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;vmalloc()&lt;/code&gt; 函数的工作方式类似于 &lt;code&gt;kmalloc()&lt;/code&gt;，只不过前者分配的内存虚拟地址是连续的，而物理地址无需连续。这也是用户空间分配函数的工作方式：由 &lt;code&gt;malloc()&lt;/code&gt; 返回的页在进程的虚拟地址空间内是连续的，但并不保证它们在物理 RAM 中也连续。&lt;code&gt;kmalloc()&lt;/code&gt; 函数确保页在物理地址上是连续的。&lt;/p&gt;
-
-&lt;p&gt;大多数情况下，只有硬件设备需要得到物理地址连续的内存，硬件设备存在于内存管理单元之外，它根本不理解什么是虚拟内存。因此硬件设备用到的任何内存区都必须是物理上连续的块，而不仅仅是虚拟地址连续的块。而仅供软件使用的内存块（例如进程相关的缓冲区）就可以使用只有虚拟地址连续的内存块。&lt;/p&gt;
-
-&lt;p&gt;尽管在某些情况下才需要物理上连续的内存块，但很多内核代码都用 &lt;code&gt;kmalloc()&lt;/code&gt; 来获得内存，而不是 &lt;code&gt;vmalloc()&lt;/code&gt;。这主要是出于性能的考虑。&lt;code&gt;vmalloc()&lt;/code&gt; 为了把物理上不连续的页转换为虚拟空间上连续的页，必须专门建立页表项，通过 &lt;code&gt;vmalloc()&lt;/code&gt; 获得的页必须一个个进行映射，这会导致比直接内存映射大得多的 TLB 抖动。因此 &lt;code&gt;vmalloc()&lt;/code&gt; 仅在不得已的时候才使用，一般是在为了获得大块内存，例如当模块被动态插入到内核中时，就把模块装载到由 &lt;code&gt;vmalloc()&lt;/code&gt; 分配的内存上。&lt;/p&gt;
-
-&lt;h3&gt;slab 层&lt;/h3&gt;
-
-&lt;p&gt;Linux 内核提供了 slab 层（即 slab 分配器），slab 分配器扮演了通用数据结构缓存层的角色。&lt;/p&gt;
-
-&lt;h4&gt;slab 层的设计&lt;/h4&gt;
-
-&lt;p&gt;slab 层把不同的对象划分为所谓的&lt;strong&gt;高速缓存组&lt;/strong&gt;，其中每个高速缓存都存放不同类型的对象，每种对象类型对应一个高速缓存。例如一个高速缓存用于存放进程描述符，另一个高速缓存存放索引节点对象（struct inode）。&lt;code&gt;kmalloc()&lt;/code&gt; 接口建立在 slab 层之上，使用了一组通用高速缓存。&lt;/p&gt;
-
-&lt;p&gt;这些高速缓存又被划分为 slab。slab 由一个或多个物理上连续的页组成。每个高速缓存由多个 slab 组成。每个 slab 都包含一些对象成员，即被缓存的数据结构。每个 slab 处于三种状态之一：满、部分满或空。当内核需要一个新对象时，先从部分满的 slab 中进行分配，如果没有部分满的 slab，就从空的 slab 进行分配。如果没有空的 slab，就要创建一个 slab。&lt;/p&gt;
-
-&lt;h2&gt;进程地址空间&lt;/h2&gt;
-
-&lt;p&gt;内核除了管理自身的内存外，还必须管理进程的地址空间。Linux 操作系统采用虚拟内存技术，对每个进程来说，它们好像都可以访问整个系统的所有物理内存，即使单独一个进程，它拥有的地址空间也可远大于系统物理内存。&lt;/p&gt;
-
-&lt;p&gt;每个进程都有一个 32 或 64 位的平坦地址空间，空间的具体大小取决于体系结构。每个进程有唯一的平坦地址空间，而且进程地址空间之间彼此互不相干。两个不同的进程可以在它们各自地址空间中国年相同的地址内存存放不同的数据，进程之间也可以选择共享地址空间（线程）。&lt;/p&gt;
-
-&lt;p&gt;进程地址空间中，可被访问的合法地址区间称为内存区域（memory area）。进程只能访问有效范围内的内存地址。每个内存区域也具有进程必须遵循的特定访问属性，如只读、只写、可执行等属性。如果进程访问了不在有效范围中的地址，或以不正确的方式访问有效地址，那么内核就会终止该进程，并返回“段错误”。&lt;/p&gt;
-
-&lt;p&gt;内存区域可以包含各种内存对象：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;可执行文件代码的内存映射，称为代码段（text section）&lt;/li&gt;
-&lt;li&gt;可执行文件的已初始化全局变量的内存映射，称为数据段（data section）&lt;/li&gt;
-&lt;li&gt;包含未初始化全局变量，即 bss 段的零页的内存映射&lt;/li&gt;
-&lt;li&gt;用于进程用户空间栈的零页的内存映射&lt;/li&gt;
-&lt;li&gt;每个共享库的代码段、数据段和 bss 也会载入进程的地址空间&lt;/li&gt;
-&lt;li&gt;任何内存映射文件&lt;/li&gt;
-&lt;li&gt;任何共享内存段&lt;/li&gt;
-&lt;li&gt;任何匿名的内存映射，比如由 malloc() 分配的内存&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;内存描述符&lt;/h3&gt;
-
-&lt;p&gt;内核使用内存描述符结构体表示进程的地址空间，该结构包含了和进程地址空间有关的全部心血。内存描述法由 mm_struct 结构体表示，定义在文件 &lt;linux/sched.h&gt; 中。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct mm_struct {
-    struct vm_area_struct * mmap;       /* list of VMAs */
-    struct rb_root mm_rb;
-    struct vm_area_struct * mmap_cache; /* last find_vma result */
-
-    unsigned long free_area_cache;      /* first hole of size cached_hole_size or larger */
-    pgd_t * pgd;
-    atomic_t mm_users;          /* How many users with user space? */
-    atomic_t mm_count;          /* How many references to &amp;quot;struct mm_struct&amp;quot; (users count as 1) */
-    int map_count;              /* number of VMAs */
-    struct rw_semaphore mmap_sem;
-    spinlock_t page_table_lock;     /* Protects page tables and some counters */
-
-    struct list_head mmlist;        /* List of maybe swapped mm&amp;#39;s.  These are globally strung
-                                     * together off init_mm.mmlist, and are protected
-                                     * by mmlist_lock
-                                     */
-    unsigned long hiwater_rss;  /* High-watermark of RSS usage */
-    unsigned long hiwater_vm;   /* High-water virtual memory usage */
-
-    unsigned long total_vm, locked_vm, shared_vm, exec_vm;
-    unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
-    unsigned long start_code, end_code, start_data, end_data;
-    unsigned long start_brk, brk, start_stack;
-    unsigned long arg_start, arg_end, env_start, env_end;   
-
-    cpumask_t cpu_vm_mask;
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;mm_users 域纪录正在使用该地址的进程数目。mm_count 域是 mm_struct 结构体的主引用数。只有当 mm_users 为 0，mm_count 值才会变成 0，表示已经没有任何指向该 mm_struct 结构体的引用，这时该结构体就会被销毁。&lt;/p&gt;
-
-&lt;p&gt;mmap 和 mm_rb 这两个不同数据结构体描述的对象是相同的：该地址空间中的全部内存区域。前者以链表形式存放而后者以红黑树的形式存放。mmap 结构体作为链表，方便简单、高效地遍历所有元素；而 mm_rb 结构体作为红黑树，方便搜索指定元素。&lt;/p&gt;
-
-&lt;p&gt;所有 mm_struct 结构体都通过自身的 mmlist 域链接在一个双向链表中。该链表的首元素是 init_mm 内存描述符，他代表 init 进程的地址空间。&lt;/p&gt;
-
-&lt;h3&gt;分配内存描述符&lt;/h3&gt;
-
-&lt;p&gt;在进程的进程描述符中，mm 域存放着该进程使用的内存描述符。&lt;code&gt;fork()&lt;/code&gt; 函数利用 &lt;code&gt;copy_mm()&lt;/code&gt; 函数复制父进程的内存描述符，也就是 current-&amp;gt;mm 域给其子进程。而子进程的 mm_struct 结构体是通过文件 kernel/fork.c 中的 &lt;code&gt;allcote_mm()&lt;/code&gt; 宏从 mm_cachep slab 缓存中分配得到的。通常每个进程都有唯一的 mm_struct 结构体，即唯一的进程地址空间。&lt;/p&gt;
-
-&lt;p&gt;如果父子进程共享地址空间，可以调用 &lt;code&gt;clone()&lt;/code&gt; 时，设置 CLONE_VM 标志。我们把这样的进程称为线程：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;if (clone_flags &amp;amp; CLONE_VM) {
-    atomic_inc(&amp;amp;current-&amp;gt;mm-&amp;gt;mm_users);
-    tsk-&amp;gt;mm = current-&amp;gt;mm;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;销毁内存描述符&lt;/h3&gt;
-
-&lt;p&gt;进程退出时，内核会调用 &lt;code&gt;exit_mm()&lt;/code&gt; 函数，该函数会调用 &lt;code&gt;mmput()&lt;/code&gt; 函数来减少内存描述符中的 mm_users 用户计数，如果为 0 则调用 &lt;code&gt;mmdrop()&lt;/code&gt; 函数，减少 mm_count 使用计数。如果使用计数也等于 0 了，则调用 &lt;code&gt;free_mm()&lt;/code&gt; 宏通过 &lt;code&gt;kmem_cache_free()&lt;/code&gt; 函数将 mm_struct 结构体归还到 mm_cachep slab 缓存中。&lt;/p&gt;
-
-&lt;h3&gt;mm_struct 与内核线程&lt;/h3&gt;
-
-&lt;p&gt;内核线程没有进程地址空间，也没有相关的内存描述符。所以内核线程对应的进程描述符中的 mm 域为空。&lt;/p&gt;
-
-&lt;p&gt;当进程被调度时，该进程的 mm 域指向的地址空间被装载到内存，进程描述符中的 active_mm 域会被更新，指向新的地址空间。当内核线程被调度时，内核发现他的 mm 域为 NULL，就会保留前一个进程的地址空间，随后更新内核线程对应进程描述符中的 active_mm 域，使其指向前一个进程的内存描述符。因此在需要时，内核线程可以使用前一个进程的页表。因为内核线程不访问用户空间的内存，仅仅使用地址空间中和内核内存相关的信息。&lt;/p&gt;
-
-&lt;h2&gt;内存区域&lt;/h2&gt;
-
-&lt;p&gt;内存区域由 vm_area_struct 结构体描述，定义在文件 &lt;linux/mm.h&gt; 中，内存区域在内核中也经常被称做虚拟内存区域或 VMA。&lt;/p&gt;
-
-&lt;p&gt;vm_area_struct 结构体描述了指定地址空间内连续区间上的一个独立内存范围。内核将每个内存区域作为一个单独的内存对象管理，每个内存区域都拥有一致的属性，比如访问权限等。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;struct vm_area_struct {
-    struct mm_struct * vm_mm;   /* The address space we belong to. */
-    unsigned long vm_start;     /* Our start address within vm_mm. */
-    unsigned long vm_end;       /* The first byte after our end address within vm_mm. */
-
-    /* linked list of VM areas per task, sorted by address */
-    struct vm_area_struct *vm_next;
-
-    pgprot_t vm_page_prot;      /* Access permissions of this VMA. */
-    unsigned long vm_flags;     /* Flags, see mm.h. */
-
-    struct rb_node vm_rb;
-
-    /*
-     * For areas with an address space and backing store,
-     * linkage into the address_space-&amp;gt;i_mmap prio tree, or
-     * linkage to the list of like vmas hanging off its node, or
-     * linkage of vma in the address_space-&amp;gt;i_mmap_nonlinear list.
-     */
-    union {
-        struct {  
-            struct list_head list;
-            void *parent;   /* aligns with prio_tree_node parent */
-            struct vm_area_struct *head;
-        } vm_set;
-
-        struct raw_prio_tree_node prio_tree_node;
-    } shared;
-
-    /*
-     * A file&amp;#39;s MAP_PRIVATE vma can be in both i_mmap tree and anon_vma
-     * list, after a COW of one of the file pages.  A MAP_SHARED vma
-     * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
-     * or brk vma (with NULL file) can only be in an anon_vma list.
-     */
-    struct list_head anon_vma_chain; /* Serialized by mmap_sem &amp;amp; page_table_lock */
-    struct anon_vma *anon_vma;       /* Serialized by page_table_lock */
-
-    /* Function pointers to deal with this struct. */
-    const struct vm_operations_struct *vm_ops;
-
-    /* Information about our backing store: */
-    unsigned long vm_pgoff;     /* Offset (within vm_file) in PAGE_SIZE units, *not* PAGE_CACHE_SIZE */
-    struct file * vm_file;      /* File we map to (can be NULL). */
-    void * vm_private_data;     /* was vm_pte (shared mem) */
-    unsigned long vm_truncate_count;/* truncate_count or restart_addr */
-};
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;vm_mm 域指向和 VMA 相关的 mm_struct 结构体，注意每个 VMA 对其相关的 mm_struct 结构体来说都是唯一的。即使两个独立的进程将同一个文件映射到各自的地址空间，它们分别都有一个 vm_area_struct 结构体来标志自己的内存区域。但如果两个线程共享一个地址空间，那么它们也同时共享其中的所有 vm_area_struct 结构体。&lt;/p&gt;
-
-&lt;h3&gt;VMA 标志&lt;/h3&gt;
-
-&lt;p&gt;VMA 标志是一种位标志，包含在 vm_flags 域内，标志了内存区域所包含的页面的行为和信息：&lt;/p&gt;
-
-&lt;table&gt;&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;标志&lt;/th&gt;
-&lt;th&gt;对 VMA 及其页面的影响&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;VM_READ&lt;/td&gt;
-&lt;td&gt;页面可读取&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;VM_WRITE&lt;/td&gt;
-&lt;td&gt;页面可写&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;VM_EXEC&lt;/td&gt;
-&lt;td&gt;页面可执行&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;VM_SHARED&lt;/td&gt;
-&lt;td&gt;页面可共享&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-&lt;p&gt;当访问 VMA 时，需要查看其访问权限。比如进程的对象代码映射区域可能会标志为 VM_READ 和 VM_EXEC，而不会标志为 VM_WRITE。另一方面，可执行对象数据段的映射区域被标志为 VM_READ 和 VM_WRITE，而 VM_EXEC 标志对它毫无意义。只读文件数据段的映射区域仅可被标志为 VM_READ。VM_SHARED 指明了内存区域包含的映射是否可以在多进程间共享，如果该标志被设置，则称其为共享映射。如果未被设置，则只有一个进程可以使用该映射的内容，称其为私有映射。&lt;/p&gt;
-
-&lt;p&gt;VM_IO 标志内存区域中的包含对设备 I/O 空间的映射。该标志通常在设备驱动程序执行 &lt;code&gt;mmap()&lt;/code&gt; 函数进行 I/O 空间映射时才被设置。同时该标志也表示该内存区域不能被包含在任何进程的 coredump 中。&lt;/p&gt;
-
-&lt;h3&gt;实际使用中的内存区域&lt;/h3&gt;
-
-&lt;p&gt;可以使用 /proc 文件系统和 pmap 工具查看给定进程的内存空间和其中所含的内存区域。&lt;/p&gt;
-
-&lt;h2&gt;页表&lt;/h2&gt;
-
-&lt;p&gt;当应用程序访问一个虚拟地址时，必须将虚拟地址转化为物理地址，然后处理器才能解析地址访问请求。&lt;/p&gt;
-
-&lt;p&gt;Linux 中使用三级页表完成地址转换。利用多级页表能够节约地址转换需占用的存放空间。&lt;/p&gt;
-
-&lt;p&gt;顶级页表是页全局目录(PGD)，PGD 包含了一个 pgd_t 类型数组，PGD 中的表项指向二级页目录中的表项：PMD。&lt;/p&gt;
-
-&lt;p&gt;二级页表是中间页目录（PMD)，PMD 是一个 pmd_t 类型数组，其中表项指向 PTE 中的表项。&lt;/p&gt;
-
-&lt;p&gt;最后一级的页表简称页表，其中包含 pte_t 类型的页表项，该页表项指向物理页面。&lt;/p&gt;
-
-&lt;p&gt;每个进程都有自己的页表，内存描述符的 pgd 域指向的就是进程的页全局目录。操作和检索页表时必须使用 page_table_lock 锁。&lt;/p&gt;
-
-&lt;p&gt;由于每次对虚拟内存中的页面访问都必须先解析，所以页表操作的性能非常关键。为了加快搜索，多数体系结构都实现了一个翻译后缓冲器（TLB)。TLB 是一个将虚拟地址映射到物理地址的硬件缓存。&lt;/p&gt;
-
-&lt;h1&gt;相关资料&lt;/h1&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/&quot;&gt;《How the Kernel Manages Your Memory》&lt;/a&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sun, 11 Dec 2016 10:21:16 +0800</pubDate>
-        <link>http://masutangu.com/2016/12/linux-kernel-serial-4/</link>
-        <guid isPermaLink="true">http://masutangu.com/2016/12/linux-kernel-serial-4/</guid>
         
         
         <category>读书笔记</category>
