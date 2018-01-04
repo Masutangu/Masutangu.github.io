@@ -305,6 +305,37 @@
 <p>去中心化的故障检测协议使用一个简单的 Gossip 式的协议，使系统中的每个节点可以了解其他节点加入或离开。详细可以参考论文《On
 scalable and efficient distributed failure detectors》</p>
 
+<h2>Ensuring Uniform Load distribution</h2>
+
+<p>随着时间和负载分布的影响，Dynamo 的划分方案也逐渐演化：</p>
+
+<p><img src="/assets/images/mit-6824-note-3/illustration-7.png" width="800" /></p>
+
+<ul>
+<li><p>策略 1：每个节点随机分配 T 个 token ，且基于 token 值进行分割</p>
+
+<p>使用这一策略会出现以下问题。首先，当新的节点加入系统时，它需要从其他节点上“窃取”其负责的 key ranges。然而，这些需要移交key ranges 给新节点的节点必须扫描他们的本地持久化存储。第二，当一个节点加入/离开系统，许多节点的 key range 发生变化，MertkleTree 需要重新计算，在生产系统上，这不是一个简单的操作。最后，由于 key range 的随机性，没有简单的办法为整个 key space 做快照，这使得归档过程变得复杂。在这个方案中，归档整个 key space 需要分别检索每个节点的 key，这是非常低效的。</p>
+
+<p>这个策略的根本问题是，<strong>数据划分</strong>和<strong>数据安置</strong>交织在一起。 </p></li>
+<li><p>策略 2：每个节点随机分配 T 个 token，每个分区同等大小</p>
+
+<p>在此策略中，哈希空间被划分为 Q 个同样大小的分区/范围，每个节点随机分配 T 个 token。通常设置 Q 使得 Q &gt;&gt; N 且 Q &gt;&gt; S * T，其中 S 为系统的节点个数。在这一策略中，token 只是用来构造映射函数，该函数将哈希空间的值映射到一个有序列的节点列表，而不决定分区。A partition is placed on the first N unique nodes that are encountered while walking the consistent hashing ring clockwise from the end of the partition. </p></li>
+<li><p>策略 3：每个节点分配 Q/S 个 token，每个分区同等大小</p>
+
+<p>Each node is assigned Q/S tokens where S is the number of nodes in the system. When a node leaves the system, its tokens are randomly distributed to the remaining nodes such that these properties are preserved. Similarly, when a node joins the system it &quot;steals&quot; tokens from nodes in the system in a way that preserves these properties. </p></li>
+</ul>
+
+<p>相对于策略 1，策略 3 达到更好的效率，每个节点需要维持的信息的大小降低了三个数量级。虽然存储不是一个主要问题，但节点间周期地gossip 成员信息，因此尽可能简化信息。除此之外，策略 3 更易于部署，理由如下：</p>
+
+<ul>
+<li><p>更快的 bootstrapping/recovery</p>
+
+<p>由于分区范围是固定的，它们可以保存在单独的文件，这意味着转移分区仅需要简单地转移文件。</p></li>
+<li><p>易于归档</p>
+
+<p>对数据集定期归档是 Amazon 存储服务的强制性要求。策略 3 归档整个数据集很简单，因为分区的文件可以被分别归档。相反，策略1 中 token 是随机选取的，归档存储的数据需要分别检索各个节点的 key，这通常是低效和缓慢的。</p></li>
+</ul>
+
   </section>
 </article>
 
