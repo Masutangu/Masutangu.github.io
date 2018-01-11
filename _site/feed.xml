@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 10 Jan 2018 19:58:56 +0800</pubDate>
-    <lastBuildDate>Wed, 10 Jan 2018 19:58:56 +0800</lastBuildDate>
+    <pubDate>Thu, 11 Jan 2018 09:44:48 +0800</pubDate>
+    <lastBuildDate>Thu, 11 Jan 2018 09:44:48 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -209,6 +209,51 @@ system, the actions of a transaction (an atomic unit of consistency and recovery
 &lt;p&gt;There will not be a second phase of the protocol if the root process is readonly and it gets only READ VOTES. In this case the root process, just like the other processes, writes no log records for the transaction. &lt;/p&gt;
 
 &lt;p&gt;总结下，完全只读事务，所有进程都不需要写任何 log record。每个 nonleaf 进程发送一条 PREPARE 消息，每个 nonroot 进程发送一条信息 READ VOTE 消息。&lt;/p&gt;
+
+&lt;h2&gt;Note&lt;/h2&gt;
+
+&lt;p&gt;What about concurrent transactions?&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;x and y are bank balances
+x and y start out as $10
+
+T1 is doing a transfer of $1 from x to y
+T1:
+  add(x, 1)  -- server A
+  add(y, -1) -- server B
+T2:
+  tmp1 = get(x)
+  tmp2 = get(y)
+  print tmp1, tmp2
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;Problem: &lt;strong&gt;What if T2 runs between the two add() RPCs?&lt;/strong&gt; Then T2 will print 11, 10 money will have been created!  T2 should print 10,10 or 9,11.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The traditional correctness definition is &amp;quot;serializability&amp;quot;.&lt;/strong&gt;  Results should be as if transactions ran one at a time in some order as if T1, then T2; or T2, then T1. The results for the two differ, either is OK.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&amp;quot;Two-phase locking&amp;quot; is one way to implement serializability&lt;/strong&gt;. Each database record has a lock. The lock is stored at the server that stores the record. Transaction must wait for and acquire a record&amp;#39;s lock before using it. Thus add() handler implicitly acquires lock when it uses record. x or y transaction holds its locks until &lt;em&gt;after&lt;/em&gt; commit or abort.&lt;/p&gt;
+
+&lt;p&gt;What are locks really doing?&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;When transactions conflict, locks delay one to force serial execution.&lt;/li&gt;
+&lt;li&gt;When transactions don&amp;#39;t conflict, locks allow fast parallel execution.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Raft and two-phase commit solve different problems!&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Use Raft to get high availability by replicating&lt;/strong&gt;, i.e. to be able to operate when some servers are crashed. The servers all do the &lt;em&gt;same&lt;/em&gt; thing&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Use 2PC when each subordinate does something different&lt;/strong&gt; and &lt;strong&gt;all of them must do their part&lt;/strong&gt;. &lt;strong&gt;2PC does not help availability&lt;/strong&gt; since all servers must be up to get anything done. &lt;strong&gt;Raft does not ensure that all servers do something&lt;/strong&gt; since only a majority have to be alive.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;What if you want &lt;strong&gt;high availability and distributed commit&lt;/strong&gt;?&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Each &amp;quot;server&amp;quot; should be a Raft-replicated service&lt;/li&gt;
+&lt;li&gt;And the TC should be Raft-replicated&lt;/li&gt;
+&lt;li&gt;Run two-phase commit among the replicated services&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Then you can tolerate failures and still make progress.&lt;/p&gt;
 </description>
         <pubDate>Wed, 10 Jan 2018 19:53:45 +0800</pubDate>
         <link>http://masutangu.com/2018/01/mit-6824-note-4/</link>

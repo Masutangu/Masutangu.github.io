@@ -331,6 +331,51 @@ system, the actions of a transaction (an atomic unit of consistency and recovery
 
 <p>总结下，完全只读事务，所有进程都不需要写任何 log record。每个 nonleaf 进程发送一条 PREPARE 消息，每个 nonroot 进程发送一条信息 READ VOTE 消息。</p>
 
+<h2>Note</h2>
+
+<p>What about concurrent transactions?</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">x and y are bank balances
+x and y start out as $10
+
+T1 is doing a transfer of $1 from x to y
+T1:
+  add(x, 1)  -- server A
+  add(y, -1) -- server B
+T2:
+  tmp1 = get(x)
+  tmp2 = get(y)
+  print tmp1, tmp2
+</code></pre></figure>
+<p>Problem: <strong>What if T2 runs between the two add() RPCs?</strong> Then T2 will print 11, 10 money will have been created!  T2 should print 10,10 or 9,11.</p>
+
+<p><strong>The traditional correctness definition is &quot;serializability&quot;.</strong>  Results should be as if transactions ran one at a time in some order as if T1, then T2; or T2, then T1. The results for the two differ, either is OK.</p>
+
+<p><strong>&quot;Two-phase locking&quot; is one way to implement serializability</strong>. Each database record has a lock. The lock is stored at the server that stores the record. Transaction must wait for and acquire a record&#39;s lock before using it. Thus add() handler implicitly acquires lock when it uses record. x or y transaction holds its locks until <em>after</em> commit or abort.</p>
+
+<p>What are locks really doing?</p>
+
+<ul>
+<li>When transactions conflict, locks delay one to force serial execution.</li>
+<li>When transactions don&#39;t conflict, locks allow fast parallel execution.</li>
+</ul>
+
+<p>Raft and two-phase commit solve different problems!</p>
+
+<ul>
+<li><p><strong>Use Raft to get high availability by replicating</strong>, i.e. to be able to operate when some servers are crashed. The servers all do the <em>same</em> thing</p></li>
+<li><p><strong>Use 2PC when each subordinate does something different</strong> and <strong>all of them must do their part</strong>. <strong>2PC does not help availability</strong> since all servers must be up to get anything done. <strong>Raft does not ensure that all servers do something</strong> since only a majority have to be alive.</p></li>
+</ul>
+
+<p>What if you want <strong>high availability and distributed commit</strong>?</p>
+
+<ul>
+<li>Each &quot;server&quot; should be a Raft-replicated service</li>
+<li>And the TC should be Raft-replicated</li>
+<li>Run two-phase commit among the replicated services</li>
+</ul>
+
+<p>Then you can tolerate failures and still make progress.</p>
+
   </section>
 </article>
 
