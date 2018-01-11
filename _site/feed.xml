@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 11 Jan 2018 09:44:48 +0800</pubDate>
-    <lastBuildDate>Thu, 11 Jan 2018 09:44:48 +0800</lastBuildDate>
+    <pubDate>Thu, 11 Jan 2018 12:43:07 +0800</pubDate>
+    <lastBuildDate>Thu, 11 Jan 2018 12:43:07 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -210,7 +210,71 @@ system, the actions of a transaction (an atomic unit of consistency and recovery
 
 &lt;p&gt;总结下，完全只读事务，所有进程都不需要写任何 log record。每个 nonleaf 进程发送一条 PREPARE 消息，每个 nonroot 进程发送一条信息 READ VOTE 消息。&lt;/p&gt;
 
-&lt;h2&gt;Note&lt;/h2&gt;
+&lt;h2&gt;ZooKeeper Note&lt;/h2&gt;
+
+&lt;p&gt;Zookeeper: &lt;strong&gt;a generic &amp;quot;master&amp;quot; service&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Design challenges:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;What API?&lt;/li&gt;
+&lt;li&gt;How to make master fault tolerant?&lt;/li&gt;
+&lt;li&gt;How to get good performance?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Challenges interact: good performance may influence API e.g., asynchronous interface to allow pipelining&lt;/p&gt;
+
+&lt;p&gt;Sessions: clients sign into zookeeper&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Session allows a client to fail-over to another zookeeper service
+Client know the term and index of last completed operationsend it on each request. &lt;strong&gt;Service performs operation only if caught up with what client has seen.&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Sessions can timeout
+Client must refresh a session continuously send a heartbeat to the server (like a lease). &lt;strong&gt;Zookeeper considers client &amp;quot;dead&amp;quot; if doesn&amp;#39;t hear from a client.&lt;/strong&gt; Client may keep doing its thing (e.g., network partition) but cannot perform other zookeeper ops in that session&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Challenge: Duplicates client requests&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Scenario
+Primary receives client request, fails
+Client resends client request to new primary&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Lab 3: 
+&lt;strong&gt;Table to detect duplicates&lt;/strong&gt;
+&lt;strong&gt;Limitation: one outstanding op per client&lt;/strong&gt;
+Problem problem: cannot pipeline client requests&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Zookeeper:
+Some ops are idempotent period
+Some ops are easy to make idempotent: &lt;strong&gt;test-version-and-then-do-op&lt;/strong&gt;
+Some ops &lt;strong&gt;the client is responsible for detecting dups&lt;/strong&gt;
+ Consider the lock example.
+   Create a file name that includes its session ID
+     &amp;quot;app/lock/request-sessionID-seqno&amp;quot;
+     zookeeper informs client when switch to new primary
+ client runs getChildren()
+   if new requests is there, all set
+   if not, re-issue create&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Problem: read may return stale data if only master performs it&lt;/p&gt;
+
+&lt;p&gt;Zookeeper solution: don&amp;#39;t promise non-stale data (by default)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Reads are allowed to return stale data&lt;/li&gt;
+&lt;li&gt;Reads can be executed by any replica&lt;/li&gt;
+&lt;li&gt;Read throughput increases as number of servers increases&lt;/li&gt;
+&lt;li&gt;Read returns the last zxid it has seen
+ So that new primary can catch up to zxid before serving the read
+ Avoids reading from past&lt;/li&gt;
+&lt;li&gt;Only sync-read() guarantees data is not stale&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Sync optimization: &lt;strong&gt;avoid ZAB layer for sync-read&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Must ensure that read observes last committed txn. &lt;strong&gt;Leader puts sync in queue between it and replica.&lt;/strong&gt; If ops ahead of in the queue commit, then leader must be leader, otherwise, issue null transaction.(&lt;strong&gt;In same spirit read optimization in Raft paper&lt;/strong&gt;, see last par section 8 of raft paper)&lt;/p&gt;
+
+&lt;h2&gt;2P Note&lt;/h2&gt;
 
 &lt;p&gt;What about concurrent transactions?&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;x and y are bank balances
@@ -249,7 +313,7 @@ T2:
 
 &lt;ul&gt;
 &lt;li&gt;Each &amp;quot;server&amp;quot; should be a Raft-replicated service&lt;/li&gt;
-&lt;li&gt;And the TC should be Raft-replicated&lt;/li&gt;
+&lt;li&gt;And the Transaction Coordinator(TC) should be Raft-replicated&lt;/li&gt;
 &lt;li&gt;Run two-phase commit among the replicated services&lt;/li&gt;
 &lt;/ul&gt;
 

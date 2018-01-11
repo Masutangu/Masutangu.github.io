@@ -331,7 +331,71 @@ system, the actions of a transaction (an atomic unit of consistency and recovery
 
 <p>总结下，完全只读事务，所有进程都不需要写任何 log record。每个 nonleaf 进程发送一条 PREPARE 消息，每个 nonroot 进程发送一条信息 READ VOTE 消息。</p>
 
-<h2>Note</h2>
+<h2>ZooKeeper Note</h2>
+
+<p>Zookeeper: <strong>a generic &quot;master&quot; service</strong></p>
+
+<p>Design challenges:</p>
+
+<ul>
+<li>What API?</li>
+<li>How to make master fault tolerant?</li>
+<li>How to get good performance?</li>
+</ul>
+
+<p>Challenges interact: good performance may influence API e.g., asynchronous interface to allow pipelining</p>
+
+<p>Sessions: clients sign into zookeeper</p>
+
+<ul>
+<li><p>Session allows a client to fail-over to another zookeeper service
+Client know the term and index of last completed operationsend it on each request. <strong>Service performs operation only if caught up with what client has seen.</strong></p></li>
+<li><p>Sessions can timeout
+Client must refresh a session continuously send a heartbeat to the server (like a lease). <strong>Zookeeper considers client &quot;dead&quot; if doesn&#39;t hear from a client.</strong> Client may keep doing its thing (e.g., network partition) but cannot perform other zookeeper ops in that session</p></li>
+</ul>
+
+<p>Challenge: Duplicates client requests</p>
+
+<ul>
+<li><p>Scenario
+Primary receives client request, fails
+Client resends client request to new primary</p></li>
+<li><p>Lab 3: 
+<strong>Table to detect duplicates</strong>
+<strong>Limitation: one outstanding op per client</strong>
+Problem problem: cannot pipeline client requests</p></li>
+<li><p>Zookeeper:
+Some ops are idempotent period
+Some ops are easy to make idempotent: <strong>test-version-and-then-do-op</strong>
+Some ops <strong>the client is responsible for detecting dups</strong>
+ Consider the lock example.
+   Create a file name that includes its session ID
+     &quot;app/lock/request-sessionID-seqno&quot;
+     zookeeper informs client when switch to new primary
+ client runs getChildren()
+   if new requests is there, all set
+   if not, re-issue create</p></li>
+</ul>
+
+<p>Problem: read may return stale data if only master performs it</p>
+
+<p>Zookeeper solution: don&#39;t promise non-stale data (by default)</p>
+
+<ul>
+<li>Reads are allowed to return stale data</li>
+<li>Reads can be executed by any replica</li>
+<li>Read throughput increases as number of servers increases</li>
+<li>Read returns the last zxid it has seen
+ So that new primary can catch up to zxid before serving the read
+ Avoids reading from past</li>
+<li>Only sync-read() guarantees data is not stale</li>
+</ul>
+
+<p>Sync optimization: <strong>avoid ZAB layer for sync-read</strong></p>
+
+<p>Must ensure that read observes last committed txn. <strong>Leader puts sync in queue between it and replica.</strong> If ops ahead of in the queue commit, then leader must be leader, otherwise, issue null transaction.(<strong>In same spirit read optimization in Raft paper</strong>, see last par section 8 of raft paper)</p>
+
+<h2>2P Note</h2>
 
 <p>What about concurrent transactions?</p>
 <figure class="highlight"><pre><code class="language-text" data-lang="text">x and y are bank balances
@@ -370,7 +434,7 @@ T2:
 
 <ul>
 <li>Each &quot;server&quot; should be a Raft-replicated service</li>
-<li>And the TC should be Raft-replicated</li>
+<li>And the Transaction Coordinator(TC) should be Raft-replicated</li>
 <li>Run two-phase commit among the replicated services</li>
 </ul>
 
