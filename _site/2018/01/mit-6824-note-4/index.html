@@ -362,7 +362,7 @@ Primary receives client request, fails
 Client resends client request to new primary</p></li>
 <li><p>Lab 3: 
 <strong>Table to detect duplicates</strong>
-<strong>Limitation: one outstanding op per client</strong>
+<strong>Limitation: one outstanding op per client</strong>（缓存回包，所以需要等上一个请求处理完，才能处理下一个请求，对比是否重复，重复的话返回已经缓存好的回包）
 Problem problem: cannot pipeline client requests</p></li>
 <li><p>Zookeeper:
 Some ops are idempotent period
@@ -444,6 +444,14 @@ T2:
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/01/mit-6824-note-5/" title="link to MIT 6.824 学习笔记（五）">MIT 6.824 学习笔记（五）</a></h2>
+       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。FaRM NoteFaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  Ju...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-01-11 22:14:04 +0800" class="post-list__meta--date date">2018-01-11</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/01/mit-6824-note-5/>继续阅读</a></div>
+   </div>
    
    
    

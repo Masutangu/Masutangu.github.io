@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>基于 Replicated State Machine 实现游戏进程恢复</title>
+  <meta name="description" content="Introduction">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="基于 Replicated State Machine 实现游戏进程恢复">
+  <meta name="twitter:description" content="Introduction">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="基于 Replicated State Machine 实现游戏进程恢复">
+  <meta property="og:description" content="Introduction">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/01/game-recover-based-on-replicated-state-machine/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-01-13 11:30:24 +0800" itemprop="datePublished" class="post-meta__date date">2018-01-13</time> &#8226; <span class="post-meta__tags tags">工作</span>
+    </div>
+    <h1 class="post-title">基于 Replicated State Machine 实现游戏进程恢复</h1>
+  </header>
+
+  <section class="post">
+    <h2>Introduction</h2>
+
+<p>游戏服务器实现的业务逻辑普遍比较复杂，且大部分是带有状态的。如果进程重启或意外崩溃，会导致该服务器上的玩家断线，丢失进行中的游戏数据，带来极差的游戏体验。为了避免这种情况出现，一般游戏服务器都会持久化玩家数据以实现进程恢复，当重启或进程意外崩溃时，重新拉起进程后可以恢复到之前的状态。<strong>常用的做法是将玩家的状态信息保存在共享内存中，重启时加载共享内存进行恢复。</strong></p>
+
+<p>共享内存虽然方便，但会有许多限制。比如 C++ 涉及到<strong>多态（虚函数表）、STL容器（heap分配）</strong>，都不能直接映射到共享内存中：</p>
+
+<p><img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-1.png" width="800"/></p>
+
+<p>这篇文章提供了新的思路，提出一个实现游戏进程恢复更简洁的做法。</p>
+
+<h2>Replicated State Machine</h2>
+
+<p>在分布式系统中，<strong>replicated State Machine 是实现 fault tolerance 的一个重要方式</strong>，通常由复制日志来实现。每一台服务器保存一份日志，日志中包含一系列的命令，状态机会按顺序执行这些命令。因为每一台计算机的状态机都是确定的（deterministic state machine），执行的命令相同，最后输出的结果也相同。</p>
+
+<h2>Combine</h2>
+
+<p>如果我们能<strong>以确定状态机（deterministic state machine）来实现游戏逻辑</strong>，就可以运用 replicated State Machine 的思想。只要我们把所有触发状态机状态变更的 event 都保存下来，重启时直接重放一遍，就可以回到重启前的状态了。</p>
+
+<p>假设实现一个回合制 pvp 的对战游戏逻辑。RoomSvr 上有若干个房间。我们<strong>以 state machine 来实现业务逻辑，每个房间通过 state machine 维护自己的状态信息，将玩家的请求和定时器超时都转化为 event，通过 event distributer 分发给相应房间处理，并且将 event 通过 logging module 序列化保存到本地</strong>：</p>
+
+<p><img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-2.png" width="800"/></p>
+
+<p>进程重启时直接加载日志，读取 event 丢给房间的 state machine 进行重放，就能将每个房间恢复到进程重启/挂掉之前的状态了。</p>
+
+<h2>How to Snapshot</h2>
+
+<p>日积月累，序列化的日志会越来越多，如何能清理到不再需要的日志，提高重启时加载的速度呢？由于游戏逻辑不是简单的 kv 存储，无法直接做 snapshot，也无法参考 leveldb LSM-Tree 的做法，需要换一种方式来减少日志的堆积。</p>
+
+<p>当这一局已经结束时，这局的相关 event 就可以全部删掉了。如果将 event 序列化到日志中，要删除会比较麻烦。所以考虑利用共享内存来实现。</p>
+
+<p><img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-3.png" width="800"/></p>
+
+<p>实现 ShmStore 来管理共享内存的存储，替换掉上图的 Logging Module。<code>ShmArr</code> 为映射到共享内存的 <code>RoomInfo</code>数组，<code>RoomInfo</code> 是 C struct 结构，记录了房间id 和房间的所有 event。  <code>room_idx_map_</code> 维护着房间 id 到 <code>ShmArr</code> 下标的关系，<code>free_idx_</code> 保存着 <code>ShmArr</code> 中空闲的下标。当创建新房间时，从 <code>free_idx_</code> 中取一个空闲下标，并把房间 id 到该下标的映射关系保存于 <code>room_idx_map_</code> 中，之后该房间的所有 event 就保存在对应的 <code>RoomInfo</code> 结构里。当房间销毁时，将对应的 <code>RoomInfo</code> 结构清空，同时从<code>room_idx_map_</code>删除对应的映射关系，并把该 <code>RoomInfo</code> 的下标添加回 <code>free_idx_</code>。</p>
+
+<h2>Conclusion</h2>
+
+<p>最终模块图如下：</p>
+
+<p><img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-4.png" width="800"/></p>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/01/mit-6824-note-5/" title="link to MIT 6.824 学习笔记（五）">MIT 6.824 学习笔记（五）</a></h2>
+       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。FaRM NoteFaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  Ju...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-01-11 22:14:04 +0800" class="post-list__meta--date date">2018-01-11</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/01/mit-6824-note-5/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2018/01/game-recover-based-on-replicated-state-machine/";
+        this.page.identifier = "/2018/01/game-recover-based-on-replicated-state-machine/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>
