@@ -39,7 +39,9 @@ category: 工作
 
 <img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-3.png" width="800"/>
 
-实现 ShmStore 来管理共享内存的存储，替换掉上图的 Logging Module。```ShmArr``` 为映射到共享内存的 ```RoomInfo```数组，```RoomInfo``` 是 C struct 结构，记录了房间id 和房间的所有 event。  ```room_idx_map_``` 维护着房间 id 到 ```ShmArr``` 下标的关系，```free_idx_``` 保存着 ```ShmArr``` 中空闲的下标。当创建新房间时，从 ```free_idx_``` 中取一个空闲下标，并把房间 id 到该下标的映射关系保存于 ```room_idx_map_``` 中，之后该房间的所有 event 就保存在对应的 ```RoomInfo``` 结构里。当房间销毁时，将对应的 ```RoomInfo``` 结构清空，同时从```room_idx_map_```删除对应的映射关系，并把该 ```RoomInfo``` 的下标添加回 ```free_idx_```。
+实现 ShmStore 来管理共享内存的存储，替换掉上图的 Logging Module。```ShmArr``` 为映射到共享内存的 ```RoomInfo```数组，```RoomInfo``` 是 C struct 结构，记录了房间id、房间的状态（是否有效）和房间的所有 event。  ```room_idx_map_``` 维护着房间 id 到 ```ShmArr``` 下标的关系，```free_idx_``` 保存着 ```ShmArr``` 中空闲的下标。当创建新房间时，从 ```free_idx_``` 中取一个空闲下标，并把房间 id 到该下标的映射关系保存于 ```room_idx_map_``` 中，将 ```RoomInfo``` 的 status 置为有效。之后该房间的所有 event 就保存在对应的 ```RoomInfo``` 结构里。当房间销毁时，将对应的 ```RoomInfo``` 结构清空，同时从```room_idx_map_```删除对应的映射关系，并把该 ```RoomInfo``` 的下标添加回 ```free_idx_```。
+
+当读取共享内存重建房间状态时，只加载 status 为有效的 ```RoomInfo``` 结构。
 
 ## Conclusion
 

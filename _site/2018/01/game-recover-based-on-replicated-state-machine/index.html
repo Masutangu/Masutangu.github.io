@@ -164,7 +164,9 @@
 
 <p><img src="/assets/images/game-recover-based-on-replicated-state-machine/illustration-3.png" width="800"/></p>
 
-<p>实现 ShmStore 来管理共享内存的存储，替换掉上图的 Logging Module。<code>ShmArr</code> 为映射到共享内存的 <code>RoomInfo</code>数组，<code>RoomInfo</code> 是 C struct 结构，记录了房间id 和房间的所有 event。  <code>room_idx_map_</code> 维护着房间 id 到 <code>ShmArr</code> 下标的关系，<code>free_idx_</code> 保存着 <code>ShmArr</code> 中空闲的下标。当创建新房间时，从 <code>free_idx_</code> 中取一个空闲下标，并把房间 id 到该下标的映射关系保存于 <code>room_idx_map_</code> 中，之后该房间的所有 event 就保存在对应的 <code>RoomInfo</code> 结构里。当房间销毁时，将对应的 <code>RoomInfo</code> 结构清空，同时从<code>room_idx_map_</code>删除对应的映射关系，并把该 <code>RoomInfo</code> 的下标添加回 <code>free_idx_</code>。</p>
+<p>实现 ShmStore 来管理共享内存的存储，替换掉上图的 Logging Module。<code>ShmArr</code> 为映射到共享内存的 <code>RoomInfo</code>数组，<code>RoomInfo</code> 是 C struct 结构，记录了房间id、房间的状态（是否有效）和房间的所有 event。  <code>room_idx_map_</code> 维护着房间 id 到 <code>ShmArr</code> 下标的关系，<code>free_idx_</code> 保存着 <code>ShmArr</code> 中空闲的下标。当创建新房间时，从 <code>free_idx_</code> 中取一个空闲下标，并把房间 id 到该下标的映射关系保存于 <code>room_idx_map_</code> 中，将 <code>RoomInfo</code> 的 status 置为有效。之后该房间的所有 event 就保存在对应的 <code>RoomInfo</code> 结构里。当房间销毁时，将对应的 <code>RoomInfo</code> 结构清空，同时从<code>room_idx_map_</code>删除对应的映射关系，并把该 <code>RoomInfo</code> 的下标添加回 <code>free_idx_</code>。</p>
+
+<p>当读取共享内存重建房间状态时，只加载 status 为有效的 <code>RoomInfo</code> 结构。</p>
 
 <h2>Conclusion</h2>
 
