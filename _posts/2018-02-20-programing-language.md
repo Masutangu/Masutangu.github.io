@@ -1,9 +1,11 @@
 ---
 layout: post
 date: 2018-01-13T11:30:24+08:00
-title: Programming Language
+title: Programming Language 课程笔记
 category: 读书笔记
 ---
+
+本文是学习[Coursera Programming Language](https://www.coursera.org/learn/programming-languages/home/info)课程的学习笔记，文章内容及代码均取自课程材料。
 
 ## 一. 声明式编程和命令式编程
 

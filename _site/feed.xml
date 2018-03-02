@@ -5,13 +5,15 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 02 Mar 2018 20:44:30 +0800</pubDate>
-    <lastBuildDate>Fri, 02 Mar 2018 20:44:30 +0800</lastBuildDate>
+    <pubDate>Fri, 02 Mar 2018 20:53:38 +0800</pubDate>
+    <lastBuildDate>Fri, 02 Mar 2018 20:53:38 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
-        <title>Programming Language</title>
-        <description>&lt;h2&gt;一. 声明式编程和命令式编程&lt;/h2&gt;
+        <title>Programming Language 课程笔记</title>
+        <description>&lt;p&gt;本文是学习&lt;a href=&quot;https://www.coursera.org/learn/programming-languages/home/info&quot;&gt;Coursera Programming Language&lt;/a&gt;课程的学习笔记，文章内容及代码均取自课程材料。&lt;/p&gt;
+
+&lt;h2&gt;一. 声明式编程和命令式编程&lt;/h2&gt;
 
 &lt;h4&gt;声明式编程（Declarative Programming）&lt;/h4&gt;
 
