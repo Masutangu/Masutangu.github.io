@@ -448,9 +448,9 @@ T2:
    
    <div class="read-more-item">
        <span class="read-more-item-dim">最近的文章</span>
-       <h2 class="post-list__post-title post-title"><a href="/2018/01/mit-6824-note-5/" title="link to MIT 6.824 学习笔记（五）">MIT 6.824 学习笔记（五）</a></h2>
-       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。FaRM NoteFaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  Ju...&hellip;</p>
-       <div class="post-list__meta"><time datetime="2018-01-11 22:14:04 +0800" class="post-list__meta--date date">2018-01-11</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/01/mit-6824-note-5/>继续阅读</a></div>
+       <h2 class="post-list__post-title post-title"><a href="/2018/01/game-recover-based-on-replicated-state-machine/" title="link to 基于 Replicated State Machine 实现游戏进程恢复">基于 Replicated State Machine 实现游戏进程恢复</a></h2>
+       <p class="excerpt">Introduction游戏服务器实现的业务逻辑普遍比较复杂，且大部分是带有状态的。如果进程重启或意外崩溃，会导致该服务器上的玩家断线，丢失进行中的游戏数据，带来极差的游戏体验。为了避免这种情况出现，一般游戏服务器都会持久化玩家数据以实现进程恢复，当重启或进程意外崩溃时，重新拉起进程后可以恢复到之前的状态。常用的做法是将玩家的状态信息保存在共享内存中，重启时加载共享内存进行恢复。共享内存虽然方便，但会有许多限制。比如 C++ 涉及到多态（虚函数表）、STL容器（heap分配），都不能直接映...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-01-13 11:30:24 +0800" class="post-list__meta--date date">2018-01-13</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/01/game-recover-based-on-replicated-state-machine/>继续阅读</a></div>
    </div>
    
    
