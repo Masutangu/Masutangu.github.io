@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://masutangu.com/2018/01/programing-language/">
+  <link rel="canonical" href="http://masutangu.com/2018/03/programing-language/">
   <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -126,7 +126,7 @@
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="2018-01-13 11:30:24 +0800" itemprop="datePublished" class="post-meta__date date">2018-01-13</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+      <time datetime="2018-03-02 19:45:24 +0800" itemprop="datePublished" class="post-meta__date date">2018-03-02</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
     </div>
     <h1 class="post-title">Programming Language 课程笔记</h1>
   </header>
@@ -403,6 +403,14 @@ int countNs(list_t * xs, intptr_t n) {
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="link to 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
+       <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">
@@ -420,8 +428,8 @@ int countNs(list_t * xs, intptr_t n) {
     <script>
     
     var disqus_config = function () {
-        this.page.url = "http://masutangu.com/2018/01/programing-language/";
-        this.page.identifier = "/2018/01/programing-language/";
+        this.page.url = "http://masutangu.com/2018/03/programing-language/";
+        this.page.identifier = "/2018/03/programing-language/";
     };
 
     var disqus_shortname = 'masutangu';
