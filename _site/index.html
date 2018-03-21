@@ -128,9 +128,16 @@
   <ol class="post-list">
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="访问 The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
+      <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-03-16 09:00:42 +0800" class="post-list__meta--date date">2018-03-16</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design.1/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
       <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design.1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2017/11/state-machine/" title="访问 游戏开发之状态机">游戏开发之状态机</a></h2>
       <p class="excerpt">这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。前言用状态机来实现业务模型，有以下几点好处：不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试代码阅读起来更加友好，方便其他读者理解整个业务逻辑状态机可以划分为下面三个模块：状态集：总共包括哪些状态事件（条件）：事件会触发状态机的状态发生变化动作：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态实现一个简单的状态机的实现// example 1. simp...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-11-01 08:33:41 +0800" class="post-list__meta--date date">2017-11-01</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/11/state-machine/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/06/leveldb_1/" title="访问 LevelDB 源码阅读（一）">LevelDB 源码阅读（一）</a></h2>
-      <p class="excerpt">这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。模块Log 文件客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。Memtable 和 Immutable Memtable内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memta...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-06-23 15:53:23 +0800" class="post-list__meta--date date">2017-06-23</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2017/06/leveldb_1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

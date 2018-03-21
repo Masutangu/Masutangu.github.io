@@ -5,9 +5,185 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 04 Mar 2018 11:33:32 +0800</pubDate>
-    <lastBuildDate>Sun, 04 Mar 2018 11:33:32 +0800</lastBuildDate>
+    <pubDate>Wed, 21 Mar 2018 20:35:11 +0800</pubDate>
+    <lastBuildDate>Wed, 21 Mar 2018 20:35:11 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>The Part-Time Parliament 论文笔记</title>
+        <description>&lt;h1&gt;背景&lt;/h1&gt;
+
+&lt;p&gt;Paxos 岛兼职议会类似容错式分布式系统面对的问题：&lt;strong&gt;议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1&gt;The Single-Decree Synod&lt;/h1&gt;
+
+&lt;p&gt;单一法令的神会协议的演化如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;首先由几个&lt;strong&gt;能保证一致性和允许进展性的约束&lt;/strong&gt;推导出&lt;strong&gt;初级协议（preliminary protocol)&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;preliminary protocol&lt;/strong&gt;的约束版本得到&lt;strong&gt;基本协议（basic protocol）&lt;/strong&gt;，其满足一致性但不保证进展性&lt;/li&gt;
+&lt;li&gt;进一步约束&lt;strong&gt;basic protocol&lt;/strong&gt;得到完整的神会协议，既满足一致性又保证进展性&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;接下来四小节先讲解保证一致性的约束，再依次得出 preliminary protocol、basic protocol 和完整的神会协议。&lt;/p&gt;
+
+&lt;h2&gt;一致性的约束条件&lt;/h2&gt;
+
+&lt;p&gt;神会法令通过多轮带编号的&lt;strong&gt;表决（ballot）&lt;/strong&gt;选出。每一轮 ballot 是对单一法令的投票。每轮 ballot 牧师只能选择投票（表示赞成）或不投票（表示不赞成）。每轮 ballot 都关联一个&lt;strong&gt;法定人数集（quorum）&lt;/strong&gt;的牧师集合。只有当 quorum 中的每一位牧师都投票，这轮 ballot 才算成功。一轮 ballot B 包括以下四个元素：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;B(dec): 被投票的法令&lt;/li&gt;
+&lt;li&gt;B(qrm): 该轮 ballot 的 quorum&lt;/li&gt;
+&lt;li&gt;B(vot): 投票的牧师集合&lt;/li&gt;
+&lt;li&gt;B(bal): ballot 的编号&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;当且仅当 B(qrm) ⊆ B(vot) 时，这轮 ballot 才算成功。&lt;strong&gt;B(bal) 值的大小和进行 ballot 的顺序无关，B(bal) 比较大的 ballot 有可能在 B(bal) 比较小的 ballot 之前发生。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Paxos 数学家在由多轮 ballot 组成的集合 𝜷 上定义了三个约束条件，如果集合中的 ballot 都满足这些条件，则可以保证一致性会：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;B1(𝜷): 𝜷 中的每一轮 ballot 都拥有唯一的编号&lt;/li&gt;
+&lt;li&gt;B2(𝜷): 𝜷 中任意两轮 ballot 的 quorum 至少有一个公共成员&lt;/li&gt;
+&lt;li&gt;B3(𝜷): 𝜷 中任意一轮 ballot B，如果 B(qrm) 中任何一个牧师在 𝜷 中更早的 ballot 中投过票，则 B(dec) 与所有更早的 ballots 中最后那轮 ballot 的法令相同&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下图是对 B3(𝜷) 的图解。五轮 ballot 组成集合 𝜷，A、B、Γ、∆ 和 E 表示五位牧师，方框圈起的表示投票的牧师。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/the-part-time-parliament-note/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;编号 2 是最早的一轮 ballot，因此显而易见三个条件都满足（没有比他更早的 ballot了）&lt;/li&gt;
+&lt;li&gt;编号 5 的 ballot，四位 quorum 都没有在更早的 ballot 中投过票，因此三个条件也满足&lt;/li&gt;
+&lt;li&gt;编号 14 的 ballot 中，∆ 是 quorum 中唯一一位在更早的 ballot 中投过票的，因此这一轮的法令必须和编号为 2 的 ballot 一致，都为 𝜶&lt;/li&gt;
+&lt;li&gt;编号 27 是一轮成功的 ballot，A、Γ 和 ∆ 为该轮的 quorum 成员。Γ 在编号 5 的 ballot 中投过票，∆ 在编号为 2 的 ballot 中投过票，根据 B3(𝜷)，这一轮的法令必须和编号 5 的法令一致（编号 5 比编号 2 更新）&lt;/li&gt;
+&lt;li&gt;编号 29 的 quorum 成员为 B、Γ 和 ∆。B 在编号 14 的 ballot 投过票，Γ 在编号 5 和 27 的 ballots 都投过票，∆ 在编号为 2 和 27 的ballots 也投过票，这些 ballots 中最新的编号为 27，因此这轮 ballot 的法令必须和编号 27 的法令一致&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面给出 B1(𝜷) B2(𝜷) B3(𝜷) 的数学定义：&lt;/p&gt;
+
+&lt;p&gt;符号 v 表示一次投票，其中 v(pst) 表示投票的牧师，v(bal) 表示投票的编号，v(dec) 表示投票的法令。集合 Votes(𝜷) 表示满足以下条件的投票 v 的集合：v(pst) ∈ B(vot)，v(bal) = B(bal)，v(dec) = B(dec)，B ∈ 𝜷。定义 p 为牧师，b 为 ballot 编号，则 MaxVote(b, p, 𝜷) 表示集合 &lt;strong&gt;{ v ∈ Votes(B): (v(pst) = p) ∧ (v(bal) &amp;lt; b) } ∪ { null(p) }&lt;/strong&gt; 中 ballot 最大的投票。&lt;em&gt;注：null(p) 表示 null 投票，即 v(bal) 为-∞, v(dec) 为 BLANK 且 v(pst) = p&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;对任意非空的牧师集合 Q，MaxVote(b, Q, 𝜷) 定义为 Q 中的所有牧师 p 的 MaxVote(b, p, 𝜷) 的最大值。&lt;em&gt;注：翻译得不太妥当，原文：For any nonempty set Q of priests, MaxVote(b, Q, B) was defined to equal the maximum of all votes MaxVote(b, p, B) with p in Q.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;B1(𝜷) B2(𝜷) B3(𝜷) 的数学定义如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;B1(𝜷) ≜ ∀B, B&amp;#39; ∈ 𝜷 : (B ≠ B&amp;#39;) ⇒ (B(bal) ≠ B&amp;#39;(bal))&lt;/li&gt;
+&lt;li&gt;B2(𝜷) ≜ ∀B, B&amp;#39; ∈ 𝜷 : B(qrm) ∩ B&amp;#39;(qrm) ≠ ∅&lt;/li&gt;
+&lt;li&gt;B3(𝜷) ≜ ∀B ∈ 𝜷 : (MaxVote(B(bal) , B(qrm), 𝜷)bal ≠ −∞) ⇒ (B(dec) = MaxVote(B(bal) , B(qrm) , 𝜷)dec)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;引理：如果满足 B1(𝜷) B2(𝜷) B3(𝜷)，则 ((B(qrm) ⊆ B(vot)) ∧ (B&amp;#39;(bal) &amp;gt; B(bal))) ⇒ (B(dec) = B&amp;#39;(dec))&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;引理证明如下：&lt;/p&gt;
+
+&lt;p&gt;对 𝜷 中任意 ballot B，定义 Ψ(B, 𝜷) 表示 𝜷 中所有编号大于 B(bal) 且法令不等于 B(dec) 的 ballot 的集合：&lt;strong&gt;Ψ(B, 𝜷) ≜ {B&amp;#39; ∈ 𝜷 : (B&amp;#39;(bal) &amp;gt; B(bal) ∧ (B&amp;#39;(dec) ≠ B(dec))}&lt;/strong&gt;。如果证明 B(qrm) ⊆ B(vot) 则 Ψ(B, 𝜷) 为空，引理即成立。下面是反证法，假设存在 B 满足 B(qrm) ⊆ B(vot) 且 Ψ(B, 𝜷) 不为空，下面推导得出矛盾的结论：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;选择 C ∈ Ψ(B, B) 满足 C(bal) = min{ B&amp;#39;(bal) : B&amp;#39; ∈ Ψ(B, 𝜷)}&lt;/li&gt;
+&lt;li&gt;C(bal) &amp;gt; B(bal)：由 1 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
+&lt;li&gt;B(vot) ∩ C(qrm) ≠ ∅：由 B2(𝜷) 和 B(qrm) ⊆ B(vot) 得出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal ≥ B(bal)：由 2、3 和 MaxVote 的定义得出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷) ∈ Votes(B)：由 4 知道 MaxVote(C(bal), C(qrm) , 𝜷) 不是 null 投票&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)dec = C(dec)：由 5 和 B3(𝜷) 得出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)dec ≠ B(dec)：由 6、1 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal &amp;gt; B(bal)：由 4 7 和 B1(𝜷) 的出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷) ∈ Votes(Ψ(B, 𝜷))：由 7 8 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
+&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal &amp;lt; C(bal)：由 MaxVote(C(bal), C(qrm), 𝜷) 的定义得出&lt;/li&gt;
+&lt;li&gt;由 9 10 1 得出矛盾，因为 1 中定义了 C(bal) 是 Ψ(B, 𝜷) 中编号最小的，由 9 知道 MaxVote(C(bal), C(qrm), 𝜷) 属于 Votes(Ψ(B, 𝜷))，那么 MaxVote(C(bal), C(qrm), 𝜷) 必须大于等于 C(bal)，这与 10 得到的 MaxVote(C(bal), C(qrm), 𝜷)bal &amp;lt; C(bal) 矛盾&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;由引理得出，如果满足 B1(𝜷) B2(𝜷) B3(𝜷)，则任意两轮成功的 ballots 都是相同的法令，数学表示：&lt;strong&gt;((B(qrm) ⊆ B(vot)) ∧ (B&amp;#39;(qrm) ⊆ B&amp;#39;(vot))) ⇒ (B&amp;#39;dec = Bdec)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;The Preliminary Protocol&lt;/h2&gt;
+
+&lt;p&gt;为了遵守 B3(𝜷)，牧师在发起表决前需要先确定 MaxVote(b, Q, 𝜷)dec，因此需要确定 Q 中的每一个 p 的 MaxVote(b, q, 𝜷)dec。Preliminary protocol 的前两步如下：&lt;/p&gt;
+
+&lt;p&gt;(1) 牧师 p 选择新的 ballot number b，发送一条 NextBallot(b) 消息给某些牧师&lt;/p&gt;
+
+&lt;p&gt;(2) 牧师 q 收到 NextBallot(b) 消息后，发送 LastVote(b, v) 消息给 p，v 为 MaxVote(b, q, 𝜷)&lt;/p&gt;
+
+&lt;p&gt;发送完 LastVote(b, v)，&lt;strong&gt;q 承诺不再给编号在 [v(bal), b] 区间的表决投票。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;注：这个承诺是为了解决乱序的问题， ballot 编号大的投票发生在编号小的之前时，如下图，B 和 C 投票的法令出现了不一致［参考自&lt;a href=&quot;https://zhuanlan.zhihu.com/p/21438357&quot;&gt;Paxos理论介绍(1): 朴素Paxos算法理论推导与证明&lt;/a&gt;］：&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/the-part-time-parliament-note/illustration-2.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来两个步骤是：&lt;/p&gt;
+
+&lt;p&gt;(3) 在收到 majority 的 LastVote(b, v) 之后，p 发起一轮编号为 b，quorum 为 Q 且法令为 d（d 需要满足B3(𝜷)）的表决，给 Q 中每一个牧师发送 BeginBallot(b, d) 消息&lt;/p&gt;
+
+&lt;p&gt;(4) 在收到 BeginBallot(b, d) 消息后，q 决定是否投票，如果可以投票（不违背上面的承诺），则发送 Voted(b, q) 消息给 p&lt;/p&gt;
+
+&lt;p&gt;步骤 3 将表决 B 加入到集合 𝜷 中，其中 B(bal) = b，B(qrm) = Q，B(vot) = ∅。步骤 4 中，如果牧师 q 投票了，则将 q 加入 B(vot) 中。&lt;/p&gt;
+
+&lt;p&gt;协议的剩余步骤如下：&lt;/p&gt;
+
+&lt;p&gt;(5) 如果 p 收到了 Q 中每一个 q 的 Voted(b, q) 消息，那么 p 在律簿上记录下法令 d，并且发送 Success(d) 给每一个牧师&lt;/p&gt;
+
+&lt;p&gt;(6) 牧师 q 收到 Success(d) 消息后，将法令 d 记录在自己的律簿上&lt;/p&gt;
+
+&lt;h2&gt;The Basic Protocol&lt;/h2&gt;
+
+&lt;p&gt;在 preliminary protocol 中，每一个牧师都必须记录 &lt;strong&gt;(i) 他发起的每一个ballot number (ii) 他投过的每一次票 (iii) 他发送过的每一个 LastVote 消息&lt;/strong&gt;。要记录这么多信息是非常困难的，因此 Paxos 人对 preliminary protocol 做了进一步约束，得到更实用的 basic protocol，每个牧师只需要在律簿上记录下面三个信息：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;lastTried[p]&lt;/strong&gt;：p 发起的最后一个表决的编号&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;prevVote[p]&lt;/strong&gt;：p 投过的所有表决中编号最大的那次投票&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;nextBal[p]&lt;/strong&gt;：p 发过的所有 LastVote(b, v) 消息中 b 的最大值&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Preliminary protocol 允许牧师并行管理任意数量的表决，basic protocol 中牧师在一个时间内只管理一个表决，编号为 lastTried[p]，忽略和之前发起的表决相关的消息。Basic protocol 中对 LastVote 做了更强的承诺：&lt;strong&gt;不再对编号小于 b 的表决进行投票。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Basic protocol 步骤如下：&lt;/p&gt;
+
+&lt;p&gt;(1) 牧师 p 选择新的 ballot number b，必须大于 lastTried[p]，并更新 lastTried[p] 置为 b，然后发送 NextBallot(b) 消息给某些牧师&lt;/p&gt;
+
+&lt;p&gt;(2) 牧师 q 收到 NextBallot(b) 消息，如果 b 大于 nextBal(q)，则更新 nextBal(q) 置为 b 并发送 LastVote(b, v) 消息给 p，v 即 prevVote[q]。如果 b 小于等于 nextBal(q) 则忽略该 NextBallot 消息。&lt;/p&gt;
+
+&lt;p&gt;(3) 在收到 majority 的 LastVote(b, v) 消息后，如果 b 等于 lastTried[p]，则 p 发起一轮新的表决，指定编号为 b，quorum 为 Q，法令为 d，d 需要满足 B3(𝜷)。p 发送 BeginBallot(b, d) 消息给 Q 中所有牧师。&lt;/p&gt;
+
+&lt;p&gt;(4) 在收到 BeginBallot(b, d) 消息后，如果 b 等于 nextBal[q]，牧师 q 投票，并将 prevVote[q] 设置为本次投票，然后发送 Voted(b, q) 消息给 p。如果 b 不等于 nextBal[q]，则忽略该 BeginBallot 消息&lt;/p&gt;
+
+&lt;p&gt;(5) 如果 p 收到 Q 中所有牧师的 Voted(b, q) 消息，并且 b 等于 lastTried[p]，他在律簿上记录下法令 d，并发送 Success(d) 消息给所有的牧师。&lt;/p&gt;
+
+&lt;p&gt;(6) 在收到 Success(d) 消息后，牧师在律簿上记录下法令 d&lt;/p&gt;
+
+&lt;p&gt;Basic protocol 是 preliminary protocol 的约束版本，preliminary protocol 满足一致性的条件，那么 basic protocol 也一定满足。不过和 preliminary protocol 一样，basic protocol 也没要求必须执行某个操作，因此同样没有解决进展性的问题。&lt;/p&gt;
+
+&lt;h2&gt;The Complete Synod Protocol&lt;/h2&gt;
+
+&lt;p&gt;为了保证进展性，&lt;strong&gt;关键在于决定牧师什么时候应该发起表决&lt;/strong&gt;。永远不发起表决和太频繁的发起表决都会影响进展性。完整的神会协议在 basic protocol 的基础上新增一个流程来选择唯一的牧师--总统，来发起表决。这部分细节参照论文的 2.4 节。&lt;/p&gt;
+
+&lt;h1&gt;The Multi-Decree Parliament&lt;/h1&gt;
+
+&lt;h2&gt;The Protocol&lt;/h2&gt;
+
+&lt;p&gt;Paxos 议会需要通过一系列法令而不仅仅单一一个法令。法令提议给总统，由总统赋予 ballot number 并尝试通过它。协议对每个法令使用不同实例的 Complete Synod Protocol，但这系列实例只需要一位总统来负责，并且神会协议的前两步只需要执行一次。&lt;/p&gt;
+
+&lt;p&gt;在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息（这条消息包含所有待表决的实例的信息），议员回复一条 LastVote 消息，LastVote 包含待表决的实例的信息。&lt;/p&gt;
+
+&lt;p&gt;当总统收到 majority 的回复后，就为每个待表决的实例执行 Complete Synod Protocol 的第三步。&lt;/p&gt;
+
+&lt;p&gt;因此 Paxon 的议会协议如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;已经知道结果的表决不再需要再走一遍 Complete Synod Protocol 的流程，因此当新选举的总统 p 在律簿上已经记录有编号小于等于 n 的法令，那他将发送 NextBallot(b, n) 代替之前的 NextBallot(b) 消息。议员收到 NextBallot 消息后，将他律簿上所有编号大于 n 的法令返回给 p，并且告诉 p 他缺失的编号小于等于 n 的法令。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Properties of the Protocol&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;在总统提议任何法令之前，必须先向 majority 学习他们已经投过票的法令。&lt;/strong&gt;任何一个已经通过的法令一定被至少一个多数集合中的议员投过票。这样就保证了总统在提议新法令前律簿上不会有空缺。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 16 Mar 2018 09:00:42 +0800</pubDate>
+        <link>http://masutangu.com/2018/03/the-part-time-parliament-note/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/03/the-part-time-parliament-note/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>多排行榜数据刷新方案</title>
@@ -116,13 +292,15 @@ message GetPlayerInfoRes {
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/multi-rank-refresh-design/illustration-5.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
 
+&lt;p&gt;每次客户端请求，rank svr 都需要到 data svr 查询玩家信息。可以在 rank svr 上缓存玩家的信息，到 data svr 查询时如果玩家数据无变化，则返回特定错误码，rank svr 继续使用本地的玩家信息缓存。&lt;/p&gt;
+
 &lt;h2&gt;三. 总结&lt;/h2&gt;
 
 &lt;p&gt;本文提出了一个有待考验的多排行榜数据刷新方案，为解决多个排行榜数据不一致的问题。该方案还有一些细节有待考量，欢迎大家有任何想法或有更好的方案邮件我一起讨论。&lt;/p&gt;
 </description>
         <pubDate>Sun, 04 Mar 2018 09:00:42 +0800</pubDate>
-        <link>http://masutangu.com/2018/03/multi-rank-refresh-design/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/03/multi-rank-refresh-design/</guid>
+        <link>http://masutangu.com/2018/03/multi-rank-refresh-design.1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/03/multi-rank-refresh-design.1/</guid>
         
         
         <category>工作</category>
@@ -1770,849 +1948,6 @@ func main() {
         
         
         <category>工作</category>
-        
-      </item>
-    
-      <item>
-        <title>LevelDB 源码阅读（一）</title>
-        <description>&lt;p&gt;这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。&lt;/p&gt;
-
-&lt;h1&gt;模块&lt;/h1&gt;
-
-&lt;h3&gt;Log 文件&lt;/h3&gt;
-
-&lt;p&gt;客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。&lt;/p&gt;
-
-&lt;h3&gt;Memtable 和 Immutable Memtable&lt;/h3&gt;
-
-&lt;p&gt;内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memtable 处理客户端请求。原来的 Memtable 转成 Immutable Memtable，等待归并到 SST 文件中。&lt;/p&gt;
-
-&lt;h3&gt;SST 文件&lt;/h3&gt;
-
-&lt;p&gt;落地到磁盘的存储文件。SST 分为不同的 level，具体参考&lt;a href=&quot;https://github.com/google/leveldb/blob/master/doc/impl.md&quot;&gt;文档&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h3&gt;Manifest 文件&lt;/h3&gt;
-
-&lt;p&gt;Manifest 记录不同 level 的 SST 文件，包括每个 SST 文件的 key range、大小等 metadata。&lt;/p&gt;
-
-&lt;h3&gt;Current 文件&lt;/h3&gt;
-
-&lt;p&gt;Current 记录了最新的 Manifest 文件。&lt;/p&gt;
-
-&lt;h1&gt;类成员变量&lt;/h1&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;class DBImpl : public DB {
-  private:
-    TableCache* table_cache_;
-    MemTable* mem_;
-    MemTable* imm_;
-    WritableFile* logfile_;
-    log::Writer* log_;
-    std::deque&amp;lt;Writer*&amp;gt; writers_;
-    VersionSet* versions_;
-
-    // Set of table files to protect from deletion because they are
-    // part of ongoing compactions.
-    std::set&amp;lt;uint64_t&amp;gt; pending_outputs_;
-};
-
-class MemTable {
-  private:
-    typedef SkipList&amp;lt;const char*, KeyComparator&amp;gt; Table;
-    Arena arena_;  // 内存池
-    Table table_;  // 跳表
-};
-
-struct FileMetaData {
-  int refs;
-  int allowed_seek;   // seeks allowed until compaction
-  uint64_t number;    // ?? 
-  uint64_t file_size;
-  InternalKey smallest;
-  InternalKey largest;
-};
-
-class VersionEdit {
-  private:
-    typedef std::set&amp;lt; std::pair&amp;lt;int, uint64_t&amp;gt; &amp;gt; DeletedFileSet;
-
-    std::vector&amp;lt; std::pair&amp;lt;int, InternalKey&amp;gt; &amp;gt; compact_pointers_;
-    DeletedFileSet deleted_files_;
-    std::vector&amp;lt; std::pair&amp;lt;int, FileMetaData&amp;gt; &amp;gt; new_files_;
-};
-
-class Version {
-  public:
-    Status Get(const ReadOptions&amp;amp;, const LookupKey&amp;amp; key, std::string* val, 
-               GetStats* stats);
-  private:
-    VersionSet* vset_;
-    Version* next_;
-    Version* prev_;
-
-    // list of files per level
-    std::vector&amp;lt;FileMetaData*&amp;gt; files_[config::kNumLevels];
-};
-
-class TableCache {
-  public:
-    Status Get(const ReadOptions&amp;amp; options, uint64_t file_number, 
-               uint64_t file_size, const Slice&amp;amp; k, void *arg, 
-               void (*handle_result)(void*, const Slice&amp;amp;, const Slice&amp;amp;));
-
-  private:
-    Cache* cache_;
-};
-
-class VersionSet {
-  private:
-    TableCache* const table_cache_;
-    WritableFile* descriptor_file_;
-    log::Writer* descriptor_log_;
-    Version dummy_versions_;  // Head of circurlar doubly-linked list of versions  
-    Version* current_;        // == dummy_versions_.prev_
-};
-
-class WriteBatch {
-  public:
-    class Handler {
-    public:
-        virtual ~Handler();
-        virtual void Put(const Slice&amp;amp; key, const Slice&amp;amp; value) = 0;
-        virtual void Delete(const Slice&amp;amp; key) = 0;
-    };
-  private:
-    friend class WriteBatchInternal;
-    std::string req_;
-}
-
-struct DBImpl::Writer {
-  Status status;
-  WriteBatch* batch;
-  bool sync;
-  bool done;
-  port::CondVar cv;
-
-  expplicit Writer(port::Mutex* mu) : cv(mu) { }
-};
-
-class Compaction {
-  private:
-    Version* input_version_;
-    VersionEdit edit_;
-
-    // Each compaction reads inputs from &amp;quot;level_&amp;quot; and &amp;quot;level_+1&amp;quot;
-    std::vector&amp;lt;FileMetaData*&amp;gt; inputs_[2];      // The two sets of inputs
-
-    // State used to check for number of of overlapping grandparent files
-    // (parent == level_ + 1, grandparent == level_ + 2)
-    std::vector&amp;lt;FileMetaData*&amp;gt; grandparents_;
-    size_t grandparent_index_;  // Index in grandparent_starts_
-    bool seen_key_;             // Some output key has been seen
-    int64_t overlapped_bytes_;  // Bytes of overlap between current output
-                                // and grandparent files
-
-    // level_ptrs_ holds indices into input_version_-&amp;gt;levels_: our state
-    // is that we are positioned at one of the file ranges for each
-    // higher level than the ones involved in this compaction (i.e. for
-    // all L &amp;gt;= level_ + 2).
-    size_t level_ptrs_[config::kNumLevels];
-};
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h1&gt;主要操作&lt;/h1&gt;
-
-&lt;h3&gt;读操作&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::Get(const ReadOptions&amp;amp; options,
-                   const Slice&amp;amp; key,
-                   std::string* value) {
-
-  MutexLock l(&amp;amp;mutex_);
-  MemTable* mem = mem_;
-  MemTable* imm = imm_;
-  Version* current = versions_-&amp;gt;current();
-
-  bool have_stat_update = false;
-  Version::GetStats stats;
-
-  // Unlock while reading from files and memtables
-  {
-    mutex_.Unlock();
-    // First look in the memtable, then in the immutable memtable (if any).
-    LookupKey lkey(key, snapshot);
-    if (mem-&amp;gt;Get(lkey, value, &amp;amp;s)) {  // 1）先在 MemTable 中查找
-      // Done
-    } else if (imm != NULL &amp;amp;&amp;amp; imm-&amp;gt;Get(lkey, value, &amp;amp;s)) {  // 2）再在 Imutable MemTable 中查找
-      // Done
-    } else {
-      s = current-&amp;gt;Get(options, lkey, value, &amp;amp;stats);  // 3) 最后在当前 Version 中查找
-      have_stat_update = true;
-    }
-    mutex_.Lock();
-  }
-
-  // UpdateStats 减去 allowed_seeks，如果小于等于 0，则设置 file_to_compact_，准备 compaction
-  if (have_stat_update &amp;amp;&amp;amp; current-&amp;gt;UpdateStats(stats)) {
-    MaybeScheduleCompaction();
-  }
-
-  return s;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// Version 类的 Get 方法
-Status Version::Get(const ReadOptions&amp;amp; options,
-                    const LookupKey&amp;amp; k,
-                    std::string* value,
-                    GetStats* stats) {
-  Slice ikey = k.internal_key();
-  Slice user_key = k.user_key();
-  const Comparator* ucmp = vset_-&amp;gt;icmp_.user_comparator();
-  Status s;
-
-  stats-&amp;gt;seek_file = NULL;
-  stats-&amp;gt;seek_file_level = -1;
-  FileMetaData* last_file_read = NULL;
-  int last_file_read_level = -1;
-
-  // We can search level-by-level since entries never hop across
-  // levels.  Therefore we are guaranteed that if we find data
-  // in an smaller level, later levels are irrelevant.
-  std::vector&amp;lt;FileMetaData*&amp;gt; tmp;
-  FileMetaData* tmp2;
-  for (int level = 0; level &amp;lt; config::kNumLevels; level++) {
-    size_t num_files = files_[level].size();
-    if (num_files == 0) continue;
-
-    // 这里省略一大段代码 files 指向候选文件列表，num_files 为列表的长度。具体实现看源码
-
-    for (uint32_t i = 0; i &amp;lt; num_files; ++i) {
-      if (last_file_read != NULL &amp;amp;&amp;amp; stats-&amp;gt;seek_file == NULL) {
-        // We have had more than one seek for this read.  Charge the 1st file.
-        // last_file_read 保存的其实就是第一个查找未命中的文件，函数返回后会调用 UpdateStats 来减去 allowed_seeks
-        stats-&amp;gt;seek_file = last_file_read;
-        stats-&amp;gt;seek_file_level = last_file_read_level;
-      }
-
-      FileMetaData* f = files[i];
-      last_file_read = f;
-      last_file_read_level = level;
-
-      Saver saver;
-      saver.state = kNotFound;
-      saver.ucmp = ucmp;
-      saver.user_key = user_key;
-      saver.value = value;
-      // 从 TableCache 中读取文件内容
-      s = vset_-&amp;gt;table_cache_-&amp;gt;Get(options, f-&amp;gt;number, f-&amp;gt;file_size,
-                                   ikey, &amp;amp;saver, SaveValue);
-      if (!s.ok()) {
-        return s;
-      }
-      switch (saver.state) {
-        case kNotFound:
-          break;      // Keep searching in other files
-        case kFound:
-          return s;
-        case kDeleted:
-          s = Status::NotFound(Slice());  // Use empty error message for speed
-          return s;
-        case kCorrupt:
-          s = Status::Corruption(&amp;quot;corrupted key for &amp;quot;, user_key);
-          return s;
-      }
-    }
-  }
-
-  return Status::NotFound(Slice());  // Use an empty error message for speed
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status TableCache::Get(const ReadOptions&amp;amp; options, uint64_t file_number, 
-                      uint64_t file_size, const Slice&amp;amp; k, void *arg,
-                      void (*saver)(void* const Slice&amp;amp;, const Slice&amp;amp;)) {
-  Cache::Handle* handle = NULL;
-  Status s = FindTable(file_number, file_size, &amp;amp;handle);
-  if (s.ok()) {
-    Table* t = reinterpret_cast&amp;lt;TableAndFile*&amp;gt;(cache_-&amp;gt;Value(handle))-&amp;gt;table;
-    s = t-&amp;gt;InternalGet(options, k, arg, saver);
-    cache_-&amp;gt;Release(handle);
-  }
-  return s;                        
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;查找顺序如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/leveldb/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h3&gt;写操作&lt;/h3&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DB::Put(const WriteOptions&amp;amp; opt, const Slice&amp;amp; key, const Slice&amp;amp; value) {
-  WriteBatch batch;
-  batch.Put(key, value);
-  return Write(opt, &amp;amp;batch);
-}
-
-Status DBImpl::Write(const WriteOptions&amp;amp; options, WriteBatch* my_batch) {
-  Writer w(&amp;amp;mutex_);
-  w.batch = my_batch;
-  w.sync = options.sync;
-  w.done = false;
-
-  MutexLock l(&amp;amp;mutex_);
-  writers_.push_back(&amp;amp;w);
-  // 生产者消费者模型
-  while (!w.done &amp;amp;&amp;amp; &amp;amp;w != writers_.front()) {
-    w.cv.Wait();
-  }
-  // 写操作有可能被合并处理，因此有可能取到的时候写入已经完成。完成的话直接返回
-  if (w.done) {
-    return w.status;
-  }
-
-  // May temporarily unlock and wait.
-  // MakeRoomForWrite 判断是非需要归并 memtable
-  Status status = MakeRoomForWrite(my_batch == NULL);
-  uint64_t last_sequence = versions_-&amp;gt;LastSequence();
-  Writer* last_writer = &amp;amp;w;
-  if (status.ok() &amp;amp;&amp;amp; my_batch != NULL) {  // NULL batch is for compactions
-    WriteBatch* updates = BuildBatchGroup(&amp;amp;last_writer); // 合并写操作
-    WriteBatchInternal::SetSequence(updates, last_sequence + 1);
-    last_sequence += WriteBatchInternal::Count(updates);
-
-    // Add to log and apply to memtable.  We can release the lock
-    // during this phase since &amp;amp;w is currently responsible for logging
-    // and protects against concurrent loggers and concurrent writes
-    // into mem_.
-    {
-      mutex_.Unlock();
-      status = log_-&amp;gt;AddRecord(WriteBatchInternal::Contents(updates));
-      bool sync_error = false;
-      if (status.ok() &amp;amp;&amp;amp; options.sync) {
-        status = logfile_-&amp;gt;Sync();
-        if (!status.ok()) {
-          sync_error = true;
-        }
-      }
-      if (status.ok()) {
-        status = WriteBatchInternal::InsertInto(updates, mem_);
-      }
-      mutex_.Lock();
-      if (sync_error) {
-        // The state of the log file is indeterminate: the log record we
-        // just added may or may not show up when the DB is re-opened.
-        // So we force the DB into a mode where all future writes fail.
-        RecordBackgroundError(status);
-      }
-    }
-    if (updates == tmp_batch_) tmp_batch_-&amp;gt;Clear();
-
-    versions_-&amp;gt;SetLastSequence(last_sequence);
-  }
-
-  while (true) {
-    Writer* ready = writers_.front();
-    writers_.pop_front();
-    if (ready != &amp;amp;w) {
-      ready-&amp;gt;status = status;
-      ready-&amp;gt;done = true;
-      ready-&amp;gt;cv.Signal();
-    }
-    if (ready == last_writer) break;
-  }
-
-  // Notify new head of write queue
-  if (!writers_.empty()) {
-    writers_.front()-&amp;gt;cv.Signal();
-  }
-
-  return status;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// REQUIRES: Writer list must be non-empty
-// REQUIRES: First writer must have a non-NULL batch
-// 尝试合并写操作
-WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
-  assert(!writers_.empty());
-  Writer* first = writers_.front();
-  WriteBatch* result = first-&amp;gt;batch;
-  assert(result != NULL);
-
-  size_t size = WriteBatchInternal::ByteSize(first-&amp;gt;batch);
-
-  // Allow the group to grow up to a maximum size, but if the
-  // original write is small, limit the growth so we do not slow
-  // down the small write too much.
-  size_t max_size = 1 &amp;lt;&amp;lt; 20;
-  if (size &amp;lt;= (128&amp;lt;&amp;lt;10)) {
-    max_size = size + (128&amp;lt;&amp;lt;10);
-  }
-
-  *last_writer = first;
-  std::deque&amp;lt;Writer*&amp;gt;::iterator iter = writers_.begin();
-  ++iter;  // Advance past &amp;quot;first&amp;quot;
-  for (; iter != writers_.end(); ++iter) {
-    Writer* w = *iter;
-    if (w-&amp;gt;sync &amp;amp;&amp;amp; !first-&amp;gt;sync) {
-      // Do not include a sync write into a batch handled by a non-sync write.
-      break;
-    }
-
-    if (w-&amp;gt;batch != NULL) {
-      size += WriteBatchInternal::ByteSize(w-&amp;gt;batch);
-      if (size &amp;gt; max_size) {
-        // Do not make batch too big
-        break;
-      }
-
-      // Append to *result
-      // 把合并的写请求保存在成员变量 tmp_batch_ 中，避免和调用者的写请求混淆在一起
-      if (result == first-&amp;gt;batch) {
-        // Switch to temporary batch instead of disturbing caller&amp;#39;s batch
-        result = tmp_batch_;
-        assert(WriteBatchInternal::Count(result) == 0);
-        WriteBatchInternal::Append(result, first-&amp;gt;batch);
-      }
-      WriteBatchInternal::Append(result, w-&amp;gt;batch);
-    }
-    *last_writer = w;
-  }
-  return result;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status WriteBatchInternal::InsertInto(const WriteBatch* b,
-                                      MemTable* memtable) {
-  MemTableInserter inserter;
-  inserter.sequence_ = WriteBatchInternal::Sequence(b);
-  inserter.mem_ = memtable;
-  return b-&amp;gt;Iterate(&amp;amp;inserter);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status WriteBatch::Iterate(Handler* handler) const {
-  Slice input(rep_);
-  if (input.size() &amp;lt; kHeader) {
-    return Status::Corruption(&amp;quot;malformed WriteBatch (too small)&amp;quot;);
-  }
-
-  input.remove_prefix(kHeader);
-  Slice key, value;
-  int found = 0;
-  while (!input.empty()) {
-    found++;
-    char tag = input[0];
-    input.remove_prefix(1);
-    switch (tag) {
-      case kTypeValue:
-        if (GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;key) &amp;amp;&amp;amp;
-            GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;value)) {
-          handler-&amp;gt;Put(key, value);
-        } else {
-          return Status::Corruption(&amp;quot;bad WriteBatch Put&amp;quot;);
-        }
-        break;
-      case kTypeDeletion:
-        if (GetLengthPrefixedSlice(&amp;amp;input, &amp;amp;key)) {
-          handler-&amp;gt;Delete(key);
-        } else {
-          return Status::Corruption(&amp;quot;bad WriteBatch Delete&amp;quot;);
-        }
-        break;
-      default:
-        return Status::Corruption(&amp;quot;unknown WriteBatch tag&amp;quot;);
-    }
-  }
-  if (found != WriteBatchInternal::Count(this)) {
-    return Status::Corruption(&amp;quot;WriteBatch has wrong count&amp;quot;);
-  } else {
-    return Status::OK();
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3&gt;Compaction&lt;/h3&gt;
-
-&lt;p&gt;Compaction 触发时机：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Immutable MemTable 不为空&lt;/li&gt;
-&lt;li&gt;指定了 Manual Compaction&lt;/li&gt;
-&lt;li&gt;VersionSet NeedsCompaction 返回 True
-
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;compaction_score_&lt;/code&gt; 大于 1&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;file_to_compact_&lt;/code&gt; 不为空&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void DBImpl::MaybeScheduleCompaction() {
-  mutex_.AssertHeld();
-  if (bg_compaction_scheduled_) {
-    // Already scheduled
-  } else if (shutting_down_.Acquire_Load()) {
-    // DB is being deleted; no more background compactions
-  } else if (!bg_error_.ok()) {
-    // Already got an error; no more changes
-  } else if (imm_ == NULL &amp;amp;&amp;amp;
-             manual_compaction_ == NULL &amp;amp;&amp;amp;
-             !versions_-&amp;gt;NeedsCompaction()) {
-    // No work to be done
-  } else {
-    bg_compaction_scheduled_ = true;
-    env_-&amp;gt;Schedule(&amp;amp;DBImpl::BGWork, this);
-  }
-}
-
-bool VersionSet::NeedsCompaction() const {
-  Version* v = current_;
-  return (v-&amp;gt;compaction_score_ &amp;gt;= 1) || (v-&amp;gt;file_to_compact_ != NULL);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;compaction_score_ 的计算如下：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void VersionSet::Finalize(Version* v) {
-  // Precomputed best level for next compaction
-  int best_level = -1;
-  double best_score = -1;
-
-  for (int level = 0; level &amp;lt; config::kNumLevels-1; level++) {
-    double score;
-    if (level == 0) {
-      // We treat level-0 specially by bounding the number of files
-      // instead of number of bytes for two reasons:
-      //
-      // (1) With larger write-buffer sizes, it is nice not to do too
-      // many level-0 compactions.
-      //
-      // (2) The files in level-0 are merged on every read and
-      // therefore we wish to avoid too many files when the individual
-      // file size is small (perhaps because of a small write-buffer
-      // setting, or very high compression ratios, or lots of
-      // overwrites/deletions).
-      score = v-&amp;gt;files_[level].size() /
-          static_cast&amp;lt;double&amp;gt;(config::kL0_CompactionTrigger);
-    } else {
-      // Compute the ratio of current size to size limit.
-      const uint64_t level_bytes = TotalFileSize(v-&amp;gt;files_[level]);
-      score = static_cast&amp;lt;double&amp;gt;(level_bytes) / MaxBytesForLevel(level);
-    }
-
-    if (score &amp;gt; best_score) {
-      best_level = level;
-      best_score = score;
-    }
-  }
-
-  v-&amp;gt;compaction_level_ = best_level;
-  v-&amp;gt;compaction_score_ = best_score;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;file_to_compact_ 则是由 allowed_seeks 来控制。从下面代码的注释可知 25 次 seek 的开销和一次 compaction 的开销差不多。allowed_seeks 可以理解为文件剩余查找次数，每次查找失败allowed_seeks 就会减 1。当 allowed_seeks 小于等于 0，意味着应该启动 compaction 来减少查找未命中带来的 seek 的开销了：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;bool Version::UpdateStats(const GetStats&amp;amp; stats) {
-  FileMetaData* f = stats.seek_file;
-  if (f != NULL) {
-    f-&amp;gt;allowed_seeks--;
-    if (f-&amp;gt;allowed_seeks &amp;lt;= 0 &amp;amp;&amp;amp; file_to_compact_ == NULL) {
-      file_to_compact_ = f;
-      file_to_compact_level_ = stats.seek_file_level;
-      return true;
-    }
-  }
-  return false;
-}
-
-// Apply all of the edits in *edit to the current state.
-void Builder::Apply(VersionEdit* edit) {
-  // Update compaction pointers
-  for (size_t i = 0; i &amp;lt; edit-&amp;gt;compact_pointers_.size(); i++) {
-    const int level = edit-&amp;gt;compact_pointers_[i].first;
-    vset_-&amp;gt;compact_pointer_[level] =
-        edit-&amp;gt;compact_pointers_[i].second.Encode().ToString();
-  }
-
-  // Delete files
-  const VersionEdit::DeletedFileSet&amp;amp; del = edit-&amp;gt;deleted_files_;
-  for (VersionEdit::DeletedFileSet::const_iterator iter = del.begin();
-        iter != del.end();
-        ++iter) {
-    const int level = iter-&amp;gt;first;
-    const uint64_t number = iter-&amp;gt;second;
-    levels_[level].deleted_files.insert(number);
-  }
-
-  // Add new files
-  for (size_t i = 0; i &amp;lt; edit-&amp;gt;new_files_.size(); i++) {
-    const int level = edit-&amp;gt;new_files_[i].first;
-    FileMetaData* f = new FileMetaData(edit-&amp;gt;new_files_[i].second);
-    f-&amp;gt;refs = 1;
-
-    // We arrange to automatically compact this file after
-    // a certain number of seeks.  Let&amp;#39;s assume:
-    //   (1) One seek costs 10ms
-    //   (2) Writing or reading 1MB costs 10ms (100MB/s)
-    //   (3) A compaction of 1MB does 25MB of IO:
-    //         1MB read from this level
-    //         10-12MB read from next level (boundaries may be misaligned)
-    //         10-12MB written to next level
-    // This implies that 25 seeks cost the same as the compaction
-    // of 1MB of data.  I.e., one seek costs approximately the
-    // same as the compaction of 40KB of data.  We are a little
-    // conservative and allow approximately one seek for every 16KB
-    // of data before triggering a compaction.
-    f-&amp;gt;allowed_seeks = (f-&amp;gt;file_size / 16384);
-    if (f-&amp;gt;allowed_seeks &amp;lt; 100) f-&amp;gt;allowed_seeks = 100;
-
-    levels_[level].deleted_files.erase(f-&amp;gt;number);
-    levels_[level].added_files-&amp;gt;insert(f);
-  }
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;看看 Compaction 做了哪些工作：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;void DBImpl::BackgroundCompaction() {
-  mutex_.AssertHeld();
-
-  if (imm_ != NULL) {
-    CompactMemTable();
-    return;
-  }
-  // 这里去掉了 manual compaction 的代码 不关心
-  Compaction* c = versions_-&amp;gt;PickCompaction();
-
-  Status status;
-  if (c == NULL) {
-    // Nothing to do
-  } else if (c-&amp;gt;IsTrivialMove()) {
-    // Move file to next level
-    // IsTrivialMove 返回 True 则直接将文件移入 level + 1 层即可
-    assert(c-&amp;gt;num_input_files(0) == 1);
-    FileMetaData* f = c-&amp;gt;input(0, 0);
-    c-&amp;gt;edit()-&amp;gt;DeleteFile(c-&amp;gt;level(), f-&amp;gt;number);
-    c-&amp;gt;edit()-&amp;gt;AddFile(c-&amp;gt;level() + 1, f-&amp;gt;number, f-&amp;gt;file_size,
-                       f-&amp;gt;smallest, f-&amp;gt;largest);
-    status = versions_-&amp;gt;LogAndApply(c-&amp;gt;edit(), &amp;amp;mutex_);
-    if (!status.ok()) {
-      RecordBackgroundError(status);
-    }
-  } else {
-    CompactionState* compact = new CompactionState(c);
-    status = DoCompactionWork(compact);
-    if (!status.ok()) {
-      RecordBackgroundError(status);
-    }
-    CleanupCompaction(compact);
-    c-&amp;gt;ReleaseInputs();
-    DeleteObsoleteFiles();
-  }
-  delete c;
-
-  if (status.ok()) {
-    // Done
-  } else if (shutting_down_.Acquire_Load()) {
-    // Ignore compaction errors found during shutting down
-  } else {
-    Log(options_.info_log,
-        &amp;quot;Compaction error: %s&amp;quot;, status.ToString().c_str());
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Compaction* VersionSet::PickCompaction() {
-  Compaction* c;
-  int level;
-
-  // We prefer compactions triggered by too much data in a level over
-  // the compactions triggered by seeks.
-  // 判断是 size_compaction 还是 seek_compaction
-  const bool size_compaction = (current_-&amp;gt;compaction_score_ &amp;gt;= 1);
-  const bool seek_compaction = (current_-&amp;gt;file_to_compact_ != NULL);
-  if (size_compaction) {
-    level = current_-&amp;gt;compaction_level_;
-    assert(level &amp;gt;= 0);
-    assert(level+1 &amp;lt; config::kNumLevels);
-    c = new Compaction(level);
-
-    // Pick the first file that comes after compact_pointer_[level]
-    // compact_pointer_[level] 记录上次 compact 时最大的 key
-    for (size_t i = 0; i &amp;lt; current_-&amp;gt;files_[level].size(); i++) {
-      FileMetaData* f = current_-&amp;gt;files_[level][i];
-      if (compact_pointer_[level].empty() ||
-          icmp_.Compare(f-&amp;gt;largest.Encode(), compact_pointer_[level]) &amp;gt; 0) {
-        c-&amp;gt;inputs_[0].push_back(f);
-        break;
-      }
-    }
-    if (c-&amp;gt;inputs_[0].empty()) {
-      // Wrap-around to the beginning of the key space
-      c-&amp;gt;inputs_[0].push_back(current_-&amp;gt;files_[level][0]);
-    }
-  } else if (seek_compaction) {
-    level = current_-&amp;gt;file_to_compact_level_;
-    c = new Compaction(level);
-    c-&amp;gt;inputs_[0].push_back(current_-&amp;gt;file_to_compact_);
-  } else {
-    return NULL;
-  }
-
-  c-&amp;gt;input_version_ = current_;
-  c-&amp;gt;input_version_-&amp;gt;Ref();
-
-  // Files in level 0 may overlap each other, so pick up all overlapping ones
-  if (level == 0) {
-    InternalKey smallest, largest;
-    GetRange(c-&amp;gt;inputs_[0], &amp;amp;smallest, &amp;amp;largest);
-    // Note that the next call will discard the file we placed in
-    // c-&amp;gt;inputs_[0] earlier and replace it with an overlapping set
-    // which will include the picked file.
-    current_-&amp;gt;GetOverlappingInputs(0, &amp;amp;smallest, &amp;amp;largest, &amp;amp;c-&amp;gt;inputs_[0]);
-    assert(!c-&amp;gt;inputs_[0].empty());
-  }
-
-  // 填充 level + 1 的文件，更新 compact_pointer_ 
-  SetupOtherInputs(c);
-
-  return c;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;IsTrivialMove 判断能否直接将文件移入 level + 1 层：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;bool Compaction::IsTrivialMove() const {
-  // Avoid a move if there is lots of overlapping grandparent data.
-  // Otherwise, the move could create a parent file that will require
-  // a very expensive merge later on.
-  return (num_input_files(0) == 1 &amp;amp;&amp;amp;
-          num_input_files(1) == 0 &amp;amp;&amp;amp;
-          TotalFileSize(grandparents_) &amp;lt;= kMaxGrandParentOverlapBytes);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;具体的合并操作在 DoCompactionWork 方法：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::DoCompactionWork(CompactionState* compact) {
-  if (snapshots_.empty()) {
-    compact-&amp;gt;smallest_snapshot = versions_-&amp;gt;LastSequence();
-  } else {
-    compact-&amp;gt;smallest_snapshot = snapshots_.oldest()-&amp;gt;number_;
-  }
-
-  // Release mutex while we&amp;#39;re actually doing the compaction work
-  mutex_.Unlock();
-
-  Iterator* input = versions_-&amp;gt;MakeInputIterator(compact-&amp;gt;compaction);
-  input-&amp;gt;SeekToFirst();
-  Status status;
-  ParsedInternalKey ikey;
-  std::string current_user_key;
-  bool has_current_user_key = false;
-  SequenceNumber last_sequence_for_key = kMaxSequenceNumber;
-  for (; input-&amp;gt;Valid() &amp;amp;&amp;amp; !shutting_down_.Acquire_Load(); ) {
-    // Prioritize immutable compaction work
-    if (has_imm_.NoBarrier_Load() != NULL) {
-      mutex_.Lock();
-      if (imm_ != NULL) {
-        CompactMemTable();  // 总是优先处理 CompactMemTable 避免阻塞 MemTable 的写入
-        bg_cv_.SignalAll();  // Wakeup MakeRoomForWrite() if necessary
-      }
-      mutex_.Unlock();
-    }
-
-    Slice key = input-&amp;gt;key();
-    if (compact-&amp;gt;compaction-&amp;gt;ShouldStopBefore(key) &amp;amp;&amp;amp;
-        compact-&amp;gt;builder != NULL) {
-      status = FinishCompactionOutputFile(compact, input);
-      if (!status.ok()) {
-        break;
-      }
-    }
-
-    // Handle key/value, add to state, etc.
-    bool drop = false;
-    if (!ParseInternalKey(key, &amp;amp;ikey)) {
-      // Do not hide error keys
-      current_user_key.clear();
-      has_current_user_key = false;
-      last_sequence_for_key = kMaxSequenceNumber;
-    } else {
-      if (!has_current_user_key ||
-          user_comparator()-&amp;gt;Compare(ikey.user_key,
-                                     Slice(current_user_key)) != 0) {
-        // First occurrence of this user key
-        current_user_key.assign(ikey.user_key.data(), ikey.user_key.size());
-        has_current_user_key = true;
-        last_sequence_for_key = kMaxSequenceNumber;
-      }
-
-      if (last_sequence_for_key &amp;lt;= compact-&amp;gt;smallest_snapshot) {
-        // Hidden by an newer entry for same user key
-        drop = true;    // (A)
-      } else if (ikey.type == kTypeDeletion &amp;amp;&amp;amp;
-                 ikey.sequence &amp;lt;= compact-&amp;gt;smallest_snapshot &amp;amp;&amp;amp;
-                 compact-&amp;gt;compaction-&amp;gt;IsBaseLevelForKey(ikey.user_key)) {
-        // For this user key:
-        // (1) there is no data in higher levels
-        // (2) data in lower levels will have larger sequence numbers
-        // (3) data in layers that are being compacted here and have
-        //     smaller sequence numbers will be dropped in the next
-        //     few iterations of this loop (by rule (A) above).
-        // Therefore this deletion marker is obsolete and can be dropped.
-        // 如果高层还有记录，则 kTypeDeletion 标记不能丢掉。
-        // smallest_snapshot 主要是为了快照功能服务
-        // 但 ikey.sequence &amp;lt;= compact-&amp;gt;smallest_snapshot 这个判断没看懂
-        drop = true;
-      }
-
-      last_sequence_for_key = ikey.sequence;
-    }
-
-    if (!drop) {
-      // Open output file if necessary
-      if (compact-&amp;gt;builder == NULL) {
-        status = OpenCompactionOutputFile(compact);
-        if (!status.ok()) {
-          break;
-        }
-      }
-      if (compact-&amp;gt;builder-&amp;gt;NumEntries() == 0) {
-        compact-&amp;gt;current_output()-&amp;gt;smallest.DecodeFrom(key);
-      }
-      compact-&amp;gt;current_output()-&amp;gt;largest.DecodeFrom(key);
-      compact-&amp;gt;builder-&amp;gt;Add(key, input-&amp;gt;value());
-
-      // Close output file if it is big enough
-      if (compact-&amp;gt;builder-&amp;gt;FileSize() &amp;gt;=
-          compact-&amp;gt;compaction-&amp;gt;MaxOutputFileSize()) {
-        status = FinishCompactionOutputFile(compact, input);  // 输出新的 SST 文件
-        if (!status.ok()) {
-          break;
-        }
-      }
-    }
-
-    input-&amp;gt;Next();
-  }
-
-  // 中间省略一坨代码
-
-  mutex_.Lock();
-  stats_[compact-&amp;gt;compaction-&amp;gt;level() + 1].Add(stats);
-
-  if (status.ok()) {
-    status = InstallCompactionResults(compact);
-  }
-
-  return status;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;最后调用 InstallCompactionResults，记录版本变化：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;Status DBImpl::InstallCompactionResults(CompactionState* compact) {
-  mutex_.AssertHeld();
-  Log(options_.info_log,  &amp;quot;Compacted %d@%d + %d@%d files =&amp;gt; %lld bytes&amp;quot;,
-      compact-&amp;gt;compaction-&amp;gt;num_input_files(0),
-      compact-&amp;gt;compaction-&amp;gt;level(),
-      compact-&amp;gt;compaction-&amp;gt;num_input_files(1),
-      compact-&amp;gt;compaction-&amp;gt;level() + 1,
-      static_cast&amp;lt;long long&amp;gt;(compact-&amp;gt;total_bytes));
-
-  // Add compaction outputs
-  compact-&amp;gt;compaction-&amp;gt;AddInputDeletions(compact-&amp;gt;compaction-&amp;gt;edit());
-  const int level = compact-&amp;gt;compaction-&amp;gt;level();
-  for (size_t i = 0; i &amp;lt; compact-&amp;gt;outputs.size(); i++) {
-    const CompactionState::Output&amp;amp; out = compact-&amp;gt;outputs[i];
-    compact-&amp;gt;compaction-&amp;gt;edit()-&amp;gt;AddFile(
-        level + 1,
-        out.number, out.file_size, out.smallest, out.largest);
-  }
-  return versions_-&amp;gt;LogAndApply(compact-&amp;gt;compaction-&amp;gt;edit(), &amp;amp;mutex_);
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Fri, 23 Jun 2017 15:53:23 +0800</pubDate>
-        <link>http://masutangu.com/2017/06/leveldb_1/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/06/leveldb_1/</guid>
-        
-        
-        <category>源码阅读</category>
         
       </item>
     

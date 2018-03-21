@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://masutangu.com/2018/03/multi-rank-refresh-design/">
+  <link rel="canonical" href="http://masutangu.com/2018/03/multi-rank-refresh-design.1/">
   <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -237,6 +237,8 @@ message GetPlayerInfoRes {
 
 <p><img src="/assets/images/multi-rank-refresh-design/illustration-5.png" width="800"/></p>
 
+<p>每次客户端请求，rank svr 都需要到 data svr 查询玩家信息。可以在 rank svr 上缓存玩家的信息，到 data svr 查询时如果玩家数据无变化，则返回特定错误码，rank svr 继续使用本地的玩家信息缓存。</p>
+
 <h2>三. 总结</h2>
 
 <p>本文提出了一个有待考验的多排行榜数据刷新方案，为解决多个排行榜数据不一致的问题。该方案还有一些细节有待考量，欢迎大家有任何想法或有更好的方案邮件我一起讨论。</p>
@@ -245,6 +247,14 @@ message GetPlayerInfoRes {
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="link to The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
+       <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-03-16 09:00:42 +0800" class="post-list__meta--date date">2018-03-16</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
+   </div>
    
    
    
@@ -264,8 +274,8 @@ message GetPlayerInfoRes {
     <script>
     
     var disqus_config = function () {
-        this.page.url = "http://masutangu.com/2018/03/multi-rank-refresh-design/";
-        this.page.identifier = "/2018/03/multi-rank-refresh-design/";
+        this.page.url = "http://masutangu.com/2018/03/multi-rank-refresh-design.1/";
+        this.page.identifier = "/2018/03/multi-rank-refresh-design.1/";
     };
 
     var disqus_shortname = 'masutangu';

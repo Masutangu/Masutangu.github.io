@@ -129,6 +129,8 @@ message RankReq {
 
 <img src="/assets/images/multi-rank-refresh-design/illustration-5.png" width="800"/>
 
+每次客户端请求，rank svr 都需要到 data svr 查询玩家信息。可以在 rank svr 上缓存玩家的信息，到 data svr 查询时如果玩家数据无变化，则返回特定错误码，rank svr 继续使用本地的玩家信息缓存。
+
 ## 三. 总结
 
 本文提出了一个有待考验的多排行榜数据刷新方案，为解决多个排行榜数据不一致的问题。该方案还有一些细节有待考量，欢迎大家有任何想法或有更好的方案邮件我一起讨论。
