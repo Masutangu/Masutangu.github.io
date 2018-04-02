@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Programming Language 课程笔记</title>
+  <meta name="description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Programming Language 课程笔记">
+  <meta name="twitter:description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Programming Language 课程笔记">
+  <meta property="og:description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/04/programing-language-b/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-04-02 19:10:35 +0800" itemprop="datePublished" class="post-meta__date date">2018-04-02</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+    </div>
+    <h1 class="post-title">Programming Language 课程笔记</h1>
+  </header>
+
+  <section class="post">
+    <p>本文是学习<a href="https://www.coursera.org/learn/programming-languages-part-b/home/info">Coursera Programming Language</a>课程的学习笔记，文章内容及代码均取自课程材料。</p>
+
+<h1>Interpreter or Compiler</h1>
+
+<p>实现编程语言的 workflow 如下图：</p>
+
+<p><img src="/assets/images/programming-language-b/illustration-1.png" width="800"/></p>
+
+<p>Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compile 来运行程序并输出结果。</p>
+
+<p>在实现编程语言 B 通常有下面两种办法：</p>
+
+<ul>
+<li>使用另一种编程语言 A 来实现 interpreter（命名为 evaluator 或 executor 更恰当），输入 B 语言写的代码，输出结果</li>
+<li>使用另一种编程语言 A 实现 compiler（命名为 translator 更恰当），将 B 翻译成第三种编程语言 C</li>
+</ul>
+
+<h1>Skipping Parsing</h1>
+
+<p>如果基于编程语言 A 来实现编程语言 B，就可以跳过 parsing 阶段：<strong>Have B programmers write ASTs directly in PL A</strong></p>
+
+<h1>ML from a Racket perspective</h1>
+
+<p>ML is like a well-defined subset of Racket</p>
+
+<h1>Racket from an ML Perspective</h1>
+
+<p>One way to describe Racket is that <strong>it has “one big datatype”</strong>：all values have this type.</p>
+
+<p>我的理解由于 Racket 是 dynamic typing，所以 ML 程序员看来 Racket 只有一个类型（这样 static type check 都能成功）</p>
+
+<ul>
+<li><p>Constructors are applied implicitly (<strong>values are tagged</strong>)</p>
+
+<p>42 is really like Int 42</p></li>
+<li><p>Primitives implicitly check tags and extract data, raising errors for wrong constructors</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">fun car v = case v of Pair(a,b) =&gt; a | _ =&gt; raise …
+
+fun pair? v = case v of Pair _ =&gt; true | _ =&gt; false
+</code></pre></figure></li>
+</ul>
+
+<h1>Weak Typing</h1>
+
+<p>There exist programs that, by definition, must pass static checking but then when run can &quot;set the computer on fire&quot;?</p>
+
+<ul>
+<li>Ease of language implementation: Checks left to the programmer</li>
+<li>Performance: Dynamic checks take time</li>
+<li>Lower level: Compiler does not insert information like array sizes, so it cannot do the checks</li>
+</ul>
+
+<p>Racket is not weakly typed</p>
+
+<ul>
+<li>It just checks most things dynamically*</li>
+<li>Dynamic checking is the definition – if the implementation can analyze the code to ensure some checks are not needed, then it can optimize them away</li>
+</ul>
+
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="link to The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
+       <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-03-21 20:36:16 +0800" class="post-list__meta--date date">2018-03-21</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2018/04/programing-language-b/";
+        this.page.identifier = "/2018/04/programing-language-b/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

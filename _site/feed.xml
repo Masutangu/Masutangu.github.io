@@ -5,9 +5,79 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 21 Mar 2018 20:35:11 +0800</pubDate>
-    <lastBuildDate>Wed, 21 Mar 2018 20:35:11 +0800</lastBuildDate>
+    <pubDate>Mon, 02 Apr 2018 23:32:34 +0800</pubDate>
+    <lastBuildDate>Mon, 02 Apr 2018 23:32:34 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Programming Language 课程笔记</title>
+        <description>&lt;p&gt;本文是学习&lt;a href=&quot;https://www.coursera.org/learn/programming-languages-part-b/home/info&quot;&gt;Coursera Programming Language&lt;/a&gt;课程的学习笔记，文章内容及代码均取自课程材料。&lt;/p&gt;
+
+&lt;h1&gt;Interpreter or Compiler&lt;/h1&gt;
+
+&lt;p&gt;实现编程语言的 workflow 如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/programming-language-b/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compile 来运行程序并输出结果。&lt;/p&gt;
+
+&lt;p&gt;在实现编程语言 B 通常有下面两种办法：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;使用另一种编程语言 A 来实现 interpreter（命名为 evaluator 或 executor 更恰当），输入 B 语言写的代码，输出结果&lt;/li&gt;
+&lt;li&gt;使用另一种编程语言 A 实现 compiler（命名为 translator 更恰当），将 B 翻译成第三种编程语言 C&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;Skipping Parsing&lt;/h1&gt;
+
+&lt;p&gt;如果基于编程语言 A 来实现编程语言 B，就可以跳过 parsing 阶段：&lt;strong&gt;Have B programmers write ASTs directly in PL A&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1&gt;ML from a Racket perspective&lt;/h1&gt;
+
+&lt;p&gt;ML is like a well-defined subset of Racket&lt;/p&gt;
+
+&lt;h1&gt;Racket from an ML Perspective&lt;/h1&gt;
+
+&lt;p&gt;One way to describe Racket is that &lt;strong&gt;it has “one big datatype”&lt;/strong&gt;：all values have this type.&lt;/p&gt;
+
+&lt;p&gt;我的理解由于 Racket 是 dynamic typing，所以 ML 程序员看来 Racket 只有一个类型（这样 static type check 都能成功）&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Constructors are applied implicitly (&lt;strong&gt;values are tagged&lt;/strong&gt;)&lt;/p&gt;
+
+&lt;p&gt;42 is really like Int 42&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Primitives implicitly check tags and extract data, raising errors for wrong constructors&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;fun car v = case v of Pair(a,b) =&amp;gt; a | _ =&amp;gt; raise …
+
+fun pair? v = case v of Pair _ =&amp;gt; true | _ =&amp;gt; false
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;Weak Typing&lt;/h1&gt;
+
+&lt;p&gt;There exist programs that, by definition, must pass static checking but then when run can &amp;quot;set the computer on fire&amp;quot;?&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Ease of language implementation: Checks left to the programmer&lt;/li&gt;
+&lt;li&gt;Performance: Dynamic checks take time&lt;/li&gt;
+&lt;li&gt;Lower level: Compiler does not insert information like array sizes, so it cannot do the checks&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Racket is not weakly typed&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;It just checks most things dynamically*&lt;/li&gt;
+&lt;li&gt;Dynamic checking is the definition – if the implementation can analyze the code to ensure some checks are not needed, then it can optimize them away&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 02 Apr 2018 19:10:35 +0800</pubDate>
+        <link>http://masutangu.com/2018/04/programing-language-b/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/04/programing-language-b/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>The Part-Time Parliament 论文笔记</title>
@@ -162,7 +232,7 @@
 
 &lt;p&gt;Paxos 议会需要通过一系列法令而不仅仅单一一个法令。法令提议给总统，由总统赋予 ballot number 并尝试通过它。协议对每个法令使用不同实例的 Complete Synod Protocol，但这系列实例只需要一位总统来负责，并且神会协议的前两步只需要执行一次。&lt;/p&gt;
 
-&lt;p&gt;在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息（这条消息包含所有待表决的实例的信息），议员回复一条 LastVote 消息，LastVote 包含待表决的实例的信息。&lt;/p&gt;
+&lt;p&gt;在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息，议员回复一条 LastVote 消息，规则和单一法令的协议相同，只是把所有待表决的实例信息包含在一条 LastVote 信息里。&lt;/p&gt;
 
 &lt;p&gt;当总统收到 majority 的回复后，就为每个待表决的实例执行 Complete Synod Protocol 的第三步。&lt;/p&gt;
 
@@ -176,7 +246,7 @@
 
 &lt;p&gt;&lt;strong&gt;在总统提议任何法令之前，必须先向 majority 学习他们已经投过票的法令。&lt;/strong&gt;任何一个已经通过的法令一定被至少一个多数集合中的议员投过票。这样就保证了总统在提议新法令前律簿上不会有空缺。&lt;/p&gt;
 </description>
-        <pubDate>Fri, 16 Mar 2018 09:00:42 +0800</pubDate>
+        <pubDate>Wed, 21 Mar 2018 20:36:16 +0800</pubDate>
         <link>http://masutangu.com/2018/03/the-part-time-parliament-note/</link>
         <guid isPermaLink="true">http://masutangu.com/2018/03/the-part-time-parliament-note/</guid>
         
@@ -299,8 +369,8 @@ message GetPlayerInfoRes {
 &lt;p&gt;本文提出了一个有待考验的多排行榜数据刷新方案，为解决多个排行榜数据不一致的问题。该方案还有一些细节有待考量，欢迎大家有任何想法或有更好的方案邮件我一起讨论。&lt;/p&gt;
 </description>
         <pubDate>Sun, 04 Mar 2018 09:00:42 +0800</pubDate>
-        <link>http://masutangu.com/2018/03/multi-rank-refresh-design.1/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/03/multi-rank-refresh-design.1/</guid>
+        <link>http://masutangu.com/2018/03/multi-rank-refresh-design/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/03/multi-rank-refresh-design/</guid>
         
         
         <category>工作</category>
@@ -633,6 +703,450 @@ int countNs(list_t * xs, intptr_t n) {
         
         
         <category>工作</category>
+        
+      </item>
+    
+      <item>
+        <title>MIT 6.824 学习笔记（五）</title>
+        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
+
+&lt;h1&gt;FaRM Note&lt;/h1&gt;
+
+&lt;p&gt;FaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  &lt;/p&gt;
+
+&lt;p&gt;Just write to RAM of f+1 machines, to tolerate f failures? Might be enough if failures were always independent, but power failure is not independent -- may strike 100% of machines!&lt;/p&gt;
+
+&lt;p&gt;So batteries in every rack, can run machines for a few minutes: &lt;strong&gt;&amp;quot;non-volatile RAM&amp;quot;&lt;/strong&gt;. What if crash prevents s/w from writing SSD, e.g bug in FaRM or kernel, or cpu/memory/hardware error. FaRM copes with single-machine crashes by copying data from RAM of machines&amp;#39; replicas to other machines to ensure always f+1 copies. Crashes (other than power failure) must be independent!&lt;/p&gt;
+
+&lt;p&gt;why is the network often a performance bottleneck?&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    the usual setup:
+    app                       app
+    ---                       ---
+    socket buffers            buffers
+    TCP                       TCP
+    NIC driver                driver
+    NIC  -------------------- NIC
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;lots of expensive CPU operations:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;system calls&lt;/li&gt;
+&lt;li&gt;copy messages&lt;/li&gt;
+&lt;li&gt;interrupts&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;and all twice if RPC! It&amp;#39;s hard to build RPC than can deliver more than a few 100,000 / second wire b/w (e.g. 10 gigabits/second) is rarely the limit for short RPC. These per-packet CPU costs are the limiting factor for small messages.&lt;/p&gt;
+
+&lt;p&gt;Two classes of concurrency control for transactions:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;pessimistic:
+wait for lock on first use of object; hold until commit/abort, called two-phase locking. Conflicts cause delays&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;optimistic:
+access object without locking; commit &amp;quot;validates&amp;quot; to see if OK. &lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Valid: do the writes&lt;/li&gt;
+&lt;li&gt;Invalid: abort
+called &lt;strong&gt;Optimistic Concurrency Control (OCC)&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;FaRM uses OCC. The reason: OCC lets FaRM read using one-sided RDMA reads, server storing the object does not need to set a lock, due to OCC.&lt;/p&gt;
+
+&lt;p&gt;FaRM transaction API (simplified):&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;  txCreate()
+  o = txRead(oid)  -- RDMA
+  o.f += 1
+  txWrite(oid, o)  -- purely local
+  ok = txCommit()  -- Figure 4
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;What&amp;#39;s in an oid: &lt;region #, address&gt;. &lt;code&gt;region #&lt;/code&gt; indexes a mapping to [ primary, backup1, ... ]. Target NIC can use address directly to read or write RAM so target CPU doesn&amp;#39;t have to be involved.&lt;/p&gt;
+
+&lt;p&gt;Server memory layout: regions, each an array of objects
+Object layout: header with version # and lock&lt;/p&gt;
+
+&lt;p&gt;Every region replicated on one primary, f backups -- f+1 replicas. Only the primary serves reads; all f+1 see commits+writes replication yields availability if &amp;lt;= f failures, i.e. available as long as one replica stays alive; better than Raft!&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;txRead
+one-sided RDMA to fetch object direct from primary&amp;#39;s memory -- fast!
+also fetches object&amp;#39;s version number, to detect concurrent writes&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;txWrite
+must be preceded by txRead
+just writes local copy; no communication&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;transaction execution / commit protocol without failure -- Figure 4&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;LOCK (first message in commit protocol)&lt;/p&gt;
+
+&lt;p&gt;TC sends to primary of each written object
+TC uses RDMA to append to its log at each primary
+LOCK record contains oid, version # xaction read, new value
+primary s/w polls log, sees LOCK, validates, sends &amp;quot;yes&amp;quot; or &amp;quot;no&amp;quot; reply message
+note LOCK is both logged in primary&amp;#39;s NVRAM &lt;em&gt;and&lt;/em&gt; an RPC exchange&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;what does primary CPU do on receipt of LOCK?&lt;/p&gt;
+
+&lt;p&gt;(for each object)
+if object locked, or version != what xaction read, reply &amp;quot;no&amp;quot;
+otherwise set the lock flag and return &amp;quot;yes&amp;quot;
+note: does &lt;em&gt;not&lt;/em&gt; block if object is already locked&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;TC waits for all LOCK reply messages&lt;/p&gt;
+
+&lt;p&gt;if any &amp;quot;no&amp;quot;, abort
+send ABORT to primaries so they can release locks
+returns &amp;quot;no&amp;quot; from txCommit()&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;TC sends COMMIT-PRIMARY to primary of each written object&lt;/p&gt;
+
+&lt;p&gt;uses RDMA to append to primary&amp;#39;s log
+TC only waits for hardware ack -- does not wait for primary to process log entry
+TC returns &amp;quot;yes&amp;quot; from txCommit()&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;what does primary do when it processes the COMMIT-PRIMARY in its log?&lt;/p&gt;
+
+&lt;p&gt;copy new value over object&amp;#39;s memory
+increment object&amp;#39;s version #
+clear object&amp;#39;s lock flag&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1&gt;Paxos Made Simple&lt;/h1&gt;
+
+&lt;h2&gt;The Consensus Algorithm&lt;/h2&gt;
+
+&lt;p&gt;Assume a collection of processes that can propose values. &lt;/p&gt;
+
+&lt;p&gt;The safety
+requirements for consensus are:
+• Only a value that has been proposed may be chosen,
+• Only a single value is chosen, and
+• A process never learns that a value has been chosen unless it actually has been&lt;/p&gt;
+
+&lt;p&gt;We let the three roles in the consensus algorithm be performed by three classes of agents: proposers, acceptors, and learners.&lt;/p&gt;
+
+&lt;p&gt;A proposer sends a proposed value to a
+set of acceptors. An acceptor may accept the proposed value. The value is
+chosen when a large enough set of acceptors have accepted it. Because any two majorities
+have at least one acceptor in common, this works if an acceptor can accept
+at most one value. &lt;/p&gt;
+
+&lt;p&gt;In the absence of failure or message loss, we want a value to be chosen
+even if only one value is proposed by a single proposer. This suggests the
+requirement:
+P1. An acceptor must accept the first proposal that it receives.&lt;/p&gt;
+
+&lt;p&gt;P1 and the requirement that a value is chosen only when it is accepted
+by a majority of acceptors imply that an acceptor must be allowed to accept
+more than one proposal. We keep track of the different proposals that an
+acceptor may accept by assigning a (natural) number to each proposal, so a
+proposal consists of a proposal number and a value. To prevent confusion,
+we require that different proposals have different numbers.  A
+value is chosen when a single proposal with that value has been accepted by
+a majority of the acceptors. In that case, we say that the proposal (as well
+as its value) has been chosen.&lt;/p&gt;
+
+&lt;p&gt;We can allow multiple proposals to be chosen, but we must guarantee
+that all chosen proposals have the same value. By induction on the proposal
+number, it suffices to guarantee:
+P2. If a proposal with value v is chosen, then every higher-numbered proposal
+that is chosen has value v.&lt;/p&gt;
+
+&lt;p&gt;To be chosen, a proposal must be accepted by at least one acceptor. So,
+we can satisfy P2 by satisfying:
+P2a
+. If a proposal with value v is chosen, then every higher-numbered proposal
+accepted by any acceptor has value v.&lt;/p&gt;
+
+&lt;p&gt;Because communication
+is asynchronous, a proposal could be chosen with some particular
+acceptor c never having received any proposal. Suppose a new proposer
+“wakes up” and issues a higher-numbered proposal with a different value.
+P1 requires c to accept this proposal, violating P2a
+. Maintaining both P1
+and P2a
+requires strengthening P2a
+to:
+P2b
+. If a proposal with value v is chosen, then every higher-numbered proposal
+issued by any proposer has value v.&lt;/p&gt;
+
+&lt;p&gt;Since any set S consisting of a majority of acceptors contains at least one
+member of C , we can conclude that a proposal numbered n has value v by
+ensuring that the following invariant is maintained:
+P2c
+. For any v and n, if a proposal with value v and number n is issued,
+then there is a set S consisting of a majority of acceptors such that
+either (a) no acceptor in S has accepted any proposal numbered less
+than n, or (b) v is the value of the highest-numbered proposal among
+all proposals numbered less than n accepted by the acceptors in S.&lt;/p&gt;
+
+&lt;p&gt;We can therefore satisfy P2b by maintaining the invariance of P2c
+.&lt;/p&gt;
+
+&lt;p&gt;To maintain the invariance of P2c
+, a proposer that wants to issue a proposal
+numbered n must learn the highest-numbered proposal with number
+less than n, if any, that has been or will be accepted by each acceptor in
+some majority of acceptors.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;A proposer chooses a new proposal number n and sends a request to
+each member of some set of acceptors, asking it to respond with:
+(a) A promise never again to accept a proposal numbered less than
+n, and
+(b) The proposal with the highest number less than n that it has
+accepted, if any.
+I will call such a request a prepare request with number n.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;If the proposer receives the requested responses from a majority of
+the acceptors, then it can issue a proposal with number n and value
+v, where v is the value of the highest-numbered proposal among the
+responses, or is any value selected by the proposer if the responders
+reported no proposals.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;A proposer issues a proposal by sending, to some set of acceptors, a request
+that the proposal be accepted. (This need not be the same set of acceptors
+that responded to the initial requests.) Let’s call this an accept request&lt;/p&gt;
+
+&lt;p&gt;P1a
+. An acceptor can accept a proposal numbered n iff it has not responded
+to a prepare request having a number greater than n.&lt;/p&gt;
+
+&lt;p&gt;The final
+algorithm is obtained by making one small optimization.
+Suppose an acceptor receives a prepare request numbered n, but it has
+already responded to a prepare request numbered greater than n, thereby
+promising not to accept any new proposal numbered n. There is then no
+reason for the acceptor to respond to the new prepare request, since it will
+not accept the proposal numbered n that the proposer wants to issue. We also have it ignore
+a prepare request for a proposal it has already accepted.&lt;/p&gt;
+
+&lt;p&gt;Phase 1. (a) A proposer selects a proposal number n and sends a prepare
+request with number n to a majority of acceptors.
+(b) If an acceptor receives a prepare request with number n greater
+than that of any prepare request to which it has already responded,
+then it responds to the request with a promise not to accept any more
+proposals numbered less than n and with the highest-numbered proposal
+(if any) that it has accepted.&lt;/p&gt;
+
+&lt;p&gt;Phase 2. (a) If the proposer receives a response to its prepare requests
+(numbered n) from a majority of acceptors, then it sends an accept
+request to each of those acceptors for a proposal numbered n with a
+value v, where v is the value of the highest-numbered proposal among
+the responses, or is any value if the responses reported no proposals.
+(b) If an acceptor receives an accept request for a proposal numbered
+n, it accepts the proposal unless it has already responded to a prepare
+request having a number greater than n.&lt;/p&gt;
+
+&lt;p&gt;It’s easy to construct a scenario in which two proposers each keep issuing
+a sequence of proposals with increasing numbers, none of which are ever
+chosen. Proposer p completes phase 1 for a proposal number n1. Another
+proposer q then completes phase 1 for a proposal number n2 &amp;gt; n1. Proposer
+p’s phase 2 accept requests for a proposal numbered n1 are ignored because
+the acceptors have all promised not to accept any new proposal numbered
+less than n2.&lt;/p&gt;
+
+&lt;p&gt;To guarantee progress, a distinguished proposer must be selected as the
+only one to try issuing proposals.&lt;/p&gt;
+
+&lt;p&gt;The Paxos algorithm [5] assumes a network of processes. In its consensus
+algorithm, each process plays the role of proposer, acceptor, and learner.
+The algorithm chooses a leader, which plays the roles of the distinguished proposer and the distinguished learner. &lt;/p&gt;
+
+&lt;p&gt;All that remains is to describe the mechanism for guaranteeing that no
+two proposals are ever issued with the same number. Different proposers
+choose their numbers from disjoint sets of numbers, so two different proposers
+never issue a proposal with the same number. Each proposer remembers
+(in stable storage) the highest-numbered proposal it has tried to issue,
+and begins phase 1 with a higher proposal number than any it has already
+used.&lt;/p&gt;
+
+&lt;h1&gt;MDCC: Multi-Data Center Consistency&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;MDCC (Multi-Data Center Consistency) is an
+optimistic commit protocol for geo-replicated transactions,
+that does not require a master or static partitioning, and is
+strongly consistent at a cost similar to eventually consistent
+protocols. &lt;/p&gt;
+
+&lt;p&gt;Replication across geographically diverse data centers
+(called geo-replication) is qualitatively different from replication
+within a cluster, data center or region, because interdata
+center network delays are in the hundreds of milliseconds
+and vary significantly. These delays are close enough
+to the limit on total latency that users will tolerate, so it becomes
+crucial to reduce the number of message round-trips taken between data centers, and desirable to avoid waiting
+for the slowest data center to respond.&lt;/p&gt;
+
+&lt;p&gt;The traditional mechanism for transactions that are
+distributed across databases is two-phase commit (2PC), but
+this has serious drawbacks in a geo-replicated system. 2PC
+depends on a reliable coordinator to determine the outcome
+of a transaction, so it will block for the duration of a coordinator
+failure, and (even worse) the blocked transaction will
+be holding locks that prevent other transactions from making
+progress until the recovery is completed.&lt;/p&gt;
+
+&lt;p&gt;MDCC requires only a single wide-area message
+round-trip to commit a transaction in the common case, and
+is “master-bypassing”, meaning it can read or update from
+any node in any data center. &lt;/p&gt;
+
+&lt;p&gt;MDCC is the first protocol to use Generalized Paxos [15] as a commit protocol on a per record basis, combining it with techniques from
+the database community (escrow transactions [19] and demarcation
+[3]). The key idea is to achieve single round-trip
+commits by 1) executing parallel Generalized Paxos on each
+record, 2) ensuring every prepare has been received by a
+fast quorum of replicas, 3) disallowing aborts for successfully
+prepared records, and 4) piggybacking notification of
+commit state on subsequent transactions.&lt;/p&gt;
+
+&lt;h2&gt;Architecture Overview&lt;/h2&gt;
+
+&lt;p&gt;MDCC uses a library-centric approach similar to the architectures
+of DBS3 [5], Megastore [2] or Spanner &lt;a href=&quot;as%0Ashown%20in%20Figure%201&quot;&gt;8&lt;/a&gt;. This architecture separates the stateful
+component of a database system as a distributed record manager.
+All higher-level functionality (such as query processing
+and transaction management) is provided through a stateless
+DB library, which can be deployed at the application server.&lt;/p&gt;
+
+&lt;p&gt;As a result, the only stateful component of the architecture,
+the storage node, is significantly simplified and scalable
+through standard techniques such as range partitioning,
+whereas all higher layers of the database can be replicated
+freely with the application tier because they are stateless.&lt;/p&gt;
+
+&lt;p&gt;MDCC places storage nodes in geographically distributed
+data centers, with every node being responsible for one or more horizontal partitions. we assume
+for the remainder of the paper that every data center
+contains a full replica of the data, and the data within a single
+data center is partitioned across machines.&lt;/p&gt;
+
+&lt;p&gt;The DB library provides a programming model for transactions
+and is mainly responsible for coordinating the replication
+and consistency of the data using MDCC’s commit
+protocol. The DB library also acts as a transaction manager
+and is responsible to determine the outcome of a transaction.&lt;/p&gt;
+
+&lt;p&gt;In contrast to many other systems, MDCC supports an individual
+master per record, which can either be storage nodes
+or app-server and is responsible to coordinate the updates
+to a record.&lt;/p&gt;
+
+&lt;h2&gt;The MDCC Protocol&lt;/h2&gt;
+
+&lt;h3&gt;Classic Paxos&lt;/h3&gt;
+
+&lt;p&gt;Paxos distinguishes between clients, proposers, acceptors
+and learners. These can be directly mapped to our scenario,
+where clients are app-servers, proposers are masters, acceptors
+are storage nodes and all nodes are learners.&lt;/p&gt;
+
+&lt;p&gt;The basic idea in Classic Paxos [14], as applied for replicating
+a transaction’s updates to data, is as follows: Every
+record has a master responsible for coordinating updates to
+the record. At the end of a transaction, the app-server sends
+the update requests to the masters of each the record. The master informs all
+storage nodes responsible for the record that it is the master
+for the next update. It is possible that multiple masters exist
+for a record, but to make progress, eventually only one
+master is allowed. The master processes the client request
+by attempting to convince the storage nodes to agree on it.
+A storage node accepts an update if and only if it comes
+from the most recent master the node knows of, and it has
+not already accepted a more recent update for the record.&lt;/p&gt;
+
+&lt;p&gt;the Classic Paxos algorithm operates in
+two phases. Phase 1 tries to establish the mastership for
+an update for a specific record r. A master P, selects a
+proposal number m, also referred to as a ballot number or
+round, higher than any known proposal number and sends
+a Phase1a request with m to at least a majority of storage
+nodes responsible for r. The proposal numbers must be unique for each master because they are used to determine
+the latest request. If a storage node receives a Phase1a request
+greater than any proposal number it has already responded
+to, it responds with a Phase1b message containing
+m, the highest-numbered update (if any) including its proposal
+number n, and promises not to accept any future requests
+less than or equal to m. If P receives responses containing
+its proposal number m from a majority QC of storage
+nodes, it has been chosen as a master. Now, only P will be
+able to commit a value for proposal number m.&lt;/p&gt;
+
+&lt;p&gt;Phase 2 tries to write a value. P sends an accept request
+Phase2a to all the storage nodes of Phase 1 with the ballot
+number m and value v. v is either the update of the highestnumbered
+proposal among the Phase1b responses, or the
+requested update from the client if no Phase1b responses
+contained a value.&lt;/p&gt;
+
+&lt;h3&gt;Transaction Support&lt;/h3&gt;
+
+&lt;p&gt;We guarantee this consistency level by using a Paxos instance
+per record to accept an option to execute the update,
+instead of writing the value directly. After the app-server
+learns the options for all the records in a transaction, it commits
+the transaction and asynchronously notifies the storage
+nodes to execute the options. If an option is not yet executed,
+it is called an outstanding option.&lt;/p&gt;
+
+&lt;p&gt;Updates to records create new versions, and are represented
+in the form vread → vwrite, where vread is the
+version of the record read by the transaction and vwrite is
+the new version of the record. This allows MDCC to detect
+write-write conflicts by comparing the current version of a
+record with vread. If they are not equal, the record was modified
+between the read and write and a write-write conflict
+was encountered.&lt;/p&gt;
+
+&lt;p&gt;The app-server coordinates the transaction by trying to
+get the options accepted for all updates. It proposes the options
+to the Paxos instances running for each record, with the
+participants being the replicas of the record. Every storage
+node responds to the app-server with an accept or reject of
+the option, depending on if vread is valid. Hence, the storage nodes make an
+active decision to accept or reject the option. This is fundamentally
+different than existing uses of Paxos , which require to send a fixed value (e.g., the “final” accept or commit
+decision) and only decide based on the ballot number if the
+value should be accepted. The reason why this change does
+not violate the Paxos assumptions is that we defined at the
+end of Section 3.1.1 that a new record version can only be
+chosen if the previous version was successfully determined.
+Thus, all storage nodes will always make the same abort or
+commit decision.&lt;/p&gt;
+
+&lt;p&gt;Just as in 2PC, the app-server commits a transaction when
+it learns all options as accepted, and aborts a transaction
+when it learns any option as rejected. The app-server learns
+an option if and only if a majority of storage nodes agrees
+on the option. &lt;/p&gt;
+
+&lt;p&gt;In contrast to 2PC we made another important
+change: MDCC does not allow clients or app-servers
+to abort a transaction once it has been proposed. Decisions
+are determined and stored by the distributed storage nodes
+with MDCC, instead of being decided by a single coordinator
+with 2PC. This ensures that the commit status of a
+transaction depends only on the status of the learned options
+and hence is always deterministic even with failures.&lt;/p&gt;
+
+&lt;p&gt;If the app-server determines that the transaction is aborted
+or committed, it informs involved storage nodes through a
+Learned message about the decision. The storage nodes in
+turn execute the option (make visible) or mark it as rejected.&lt;/p&gt;
+
+&lt;p&gt;We apply a simple
+pessimistic strategy to avoid deadlocks. The core idea is to
+relax the requirement that we can only learn a new version if
+the previous instance is committed.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 11 Jan 2018 22:14:04 +0800</pubDate>
+        <link>http://masutangu.com/2018/01/mit-6824-note-5/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/01/mit-6824-note-5/</guid>
+        
+        
+        <category>读书笔记</category>
         
       </item>
     
@@ -1372,582 +1886,6 @@ And makes leader-&amp;gt;follower RPC pipelining harder&lt;/p&gt;&lt;/li&gt;
         
         
         <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>MIT 6.824 学习笔记（一）</title>
-        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
-
-&lt;h1&gt;Introduction&lt;/h1&gt;
-
-&lt;p&gt;本课程涵盖以下主题：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;RPC、线程、并发控制&lt;/li&gt;
-&lt;li&gt;性能 &lt;/li&gt;
-&lt;li&gt;容灾：&lt;strong&gt;Availability&lt;/strong&gt;, &lt;strong&gt;Durability&lt;/strong&gt;. replicated servers 是不错的选择。&lt;/li&gt;
-&lt;li&gt;一致性：replica如何保持一致？ &lt;strong&gt;Consistency&lt;/strong&gt; 和 &lt;strong&gt;Performance&lt;/strong&gt; 不可兼得&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;MapReduce&lt;/h1&gt;
-
-&lt;p&gt;Map funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapReduce 库将相同 intermediate key 的 intermediate values 打包起来传给 Reduce function。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-1/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Reduce function 接收 intermediate key 和与其关联的一系列 intermediate values。Reduce function 将这些 intermediate values 合并成更小的 values set。The intermediate values are supplied to the user’s reduce function via an iterator。&lt;/p&gt;
-
-&lt;p&gt;Map Reduce function 的输入输出参数通常如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;map (k1,v1) → list(k2,v2)&lt;/li&gt;
-&lt;li&gt;reduce (k2,list(v2)) → list(v2)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;容错：worker 挂掉，重跑任务。master挂掉？直接暂停，由用户决定是否重跑。&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;MR re-runs just the failed Map()s and Reduce()s. MR requires them to be pure functions:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;they don&amp;#39;t keep state across calls,&lt;/li&gt;
-&lt;li&gt;they don&amp;#39;t read or write files other than expected MR inputs/outputs,&lt;/li&gt;
-&lt;li&gt;there&amp;#39;s no hidden communication among tasks.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;So re-execution yields the same output.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;重跑如何保持一致：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Rely on atomic commits of map and reduce task outputs 细节？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;不确定性？&lt;/p&gt;
-
-&lt;p&gt;实现一个精简map reduce&lt;/p&gt;
-
-&lt;h1&gt;RPC&lt;/h1&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Better RPC behavior: &amp;quot;at most once&amp;quot;&lt;/p&gt;
-
-&lt;p&gt;idea: server RPC code detects duplicate requests, returns previous reply instead of re-running handler&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;strong&gt;如何检测重复的请求？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Client 在每个请求都带上唯一的 Request ID，重试时使用相同的 Request ID：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;server:
-    if seen[xid]:
-      r = old[xid]
-    else
-      r = handler()
-      old[xid] = r
-      seen[xid] = true
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;strong&gt;Request ID 如何保证唯一？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;请求 id 包含客户端 ip，以区分不同客户端&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Server 端何时可以删掉保存的请求 id？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;unique client IDs, per-client RPC sequence numbers, client includes &amp;quot;seen all replies &amp;lt;= X&amp;quot; with every RPC, much like TCP sequence #s and acks （客户端带上 ack_req_id，服务端可以把 &amp;lt;= ack_req_id 的请求 id 都删掉）&lt;/li&gt;
-&lt;li&gt;only allow client one outstanding RPC at a time arrival of seq + 1 allows server to discard all &amp;lt;= seq&lt;/li&gt;
-&lt;li&gt;client agrees to keep retrying for &amp;lt; 5 minutes, server discards after 5+ minutes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Server 应该把 Dupliate Request 信息写入磁盘，也应该同步到 replica。万一 server crash 或者重启，才不会丢失。&lt;/p&gt;
-
-&lt;h1&gt;GFS&lt;/h1&gt;
-
-&lt;p&gt;GFS 重新审视了传统文件系统的设计，并总结了以下几点：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;组件挂掉是常态事件，因此文件系统必须集成监控、错误侦测、容灾以及自动恢复的机制&lt;/li&gt;
-&lt;li&gt;几 GB 的大文件很普遍。&lt;/li&gt;
-&lt;li&gt;随机写的场景非常少。一旦写入完成，文件通常只会被顺序读取&lt;/li&gt;
-&lt;li&gt;co-designing the applications and the file system API benefits the overall system by increasing our flexibility（不理解，是说简化 API 的设计么？）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;GFS 集群由单一 master 和多个 chunkserver 构成，可同时被多个 client 访问。文件被划为固定大小的 chunks。每个 chunk 在创建时由 master 分配一个不可修改且全局唯一的 chunk handle 标记。chunkservers 以 linux 文件形式保存 chunks，读写 chunks 时client 指定 chunk handle 和 byte range。每个 chunk 被复制多份以实现 reliability。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-1/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Master 维护整个文件系统的 metadata，包括命名空间，访问控制，文件到 chunks 的映射和 chunks 所在的位置。Master 还管理系统范围内的活动，例如 chunk 租用管理， orphaned chunk 的回收，以及 chunks 在 chunkservers 之间的迁移。Master 使用心跳信息周期地和每个 chunkserver 通讯，发送指令并收集 chunkserver 的状态信息。&lt;/p&gt;
-
-&lt;p&gt;Client 和 master 的通信只涉及元数据，所有的数据操作都直接和 chunkservers 通信。&lt;/p&gt;
-
-&lt;p&gt;Master 主要保存下面三种元数据：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;文件和 chunk 的命名空间&lt;/li&gt;
-&lt;li&gt;文件到 chunk 的映射关系&lt;/li&gt;
-&lt;li&gt;chunk 复本的位置&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;前两种通过 logging mutations 持久化。chunk 复本的位置则是启动时 master 向每个 chunkserver 询问的。&lt;/p&gt;
-
-&lt;p&gt;容灾：通过 &lt;strong&gt;snapshot&lt;/strong&gt; 和 &lt;strong&gt;logging mutations&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;一致性：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;A file region is &lt;strong&gt;consistent&lt;/strong&gt; if all clients will always see the same data, regardless of which replicas they read from. &lt;/li&gt;
-&lt;li&gt;A region is &lt;strong&gt;defined&lt;/strong&gt; after a file data mutation if it is consistent and clients will see what the mutation writes in
-its entirety.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;GFS 通过以下措施确保被修改的文件 region 是已定义的，并且包含最后一次修改操作写入的数据：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;chunk 的所有副本的修改操作顺序保持一致&lt;/li&gt;
-&lt;li&gt;使用 chunk 的版本号来检测副本是否有效&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;为了应对记录追加的 at-least-once 特性，readers 可以使用下面的方法来处理 padding 和重复的 record。Writers （应用层 writer）在每条写入的记录中都包含了额外的信息例如 Checksum，用来验证它的有效性。Reader 使用 Checksum 识别和丢弃额外的 padding 和记录片段。应用程序还可以用记录的唯一标识符来过滤重复 record。 &lt;/p&gt;
-
-&lt;p&gt;GFS 使用租约（lease）来保证多个副本间变更顺序的一致性。Master 节点给其中一个 replica 分配 chunk 租约，该 replica 变成 primary。Mutations 的顺序由 primary 决定。&lt;/p&gt;
-
-&lt;p&gt;Master 维护了每个 chunk 的版本号，用以分辨出过时的 replicas。 每次 master 下发新的 lease 都会提升 chunk 的版本号。当 chunkserver 上报自身 chunk 集合和相关的版本号时，master 就可以检测出失效的 replica。 &lt;/p&gt;
-
-&lt;h1&gt;Fault-Tolerant Virtual Machines&lt;/h1&gt;
-
-&lt;p&gt;实现容错系统最常见的一种方法是主备方法，备机必须与主机保持接近一致。实现主备一致的一个普遍的做法是将主机状态的变化都同步给备机，包括 CPU、内存、I/O，但这种方式需要大量的带宽。另一种方式是将服务器建模成 deterministic state machine，如果输入相同，那最终的状态也会相同。通过同步输入序列的方式，对带宽的要求远低于同步状态的方式。&lt;/p&gt;
-
-&lt;p&gt;Primary VM 的输入将通过 logging channel 同步给 backup VM。backup 的输出会被 hypervisor 丢弃，只有 primary VM 的输出会返回给客户端。&lt;/p&gt;
-
-&lt;p&gt;Log all hardware events into a log: clock interrupts, network interrupts, i/o interrupts, etc.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;For non-deterministic instructions, record additional info&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;e.g., log the value of the time stamp register&lt;/p&gt;
-
-&lt;p&gt;on replay: return the value from the log instead of the actual register&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Replay: delivery inputs in the same order at the same instructions&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;if during recording delivered clock interrupt at nth instruction executed
-during replay also delivers the clock interrupt at the nth instruction&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Output Requirement&lt;/strong&gt;: if the backup VM ever takes over after a failure of the primary, the backup VM will continu executing in a way that is entirely consistent with all outputs that the primary VM has sent to the external world.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;要满足 Output Requirement，所有的输出都必须延迟直到 backup VM 收到和该输出相关联的信息以便其可以回放。确保 Output Requirement 的一个简单的做法是给每个 output 操作创建一个特殊的log entry，当 backup VM 接收并 ack 该 log entry 时 primary VM 才会输出结果。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-1/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;FT 使用 UDP 发送心跳包来检测 server 是否存活。另外 FT 还会通过监控从 primary 发往 backup 的流量的方式来检测。&lt;/p&gt;
-
-&lt;p&gt;为了避免 split-brain 的问题，在切换主的时候，需要在 shared storage 上执行原子的 test-and-set 操作，执行成功的才能升为 primary。&lt;/p&gt;
-</description>
-        <pubDate>Sun, 05 Nov 2017 15:40:29 +0800</pubDate>
-        <link>http://masutangu.com/2017/11/mit-6824-note-1/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/11/mit-6824-note-1/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>游戏开发之状态机</title>
-        <description>&lt;p&gt;这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。&lt;/p&gt;
-
-&lt;h1&gt;前言&lt;/h1&gt;
-
-&lt;p&gt;用状态机来实现业务模型，有以下几点好处：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试&lt;/li&gt;
-&lt;li&gt;代码阅读起来更加友好，方便其他读者理解整个业务逻辑&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;状态机可以划分为下面三个模块：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;状态集&lt;/strong&gt;：总共包括哪些状态&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;事件（条件）&lt;/strong&gt;：事件会触发状态机的状态发生变化&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;动作&lt;/strong&gt;：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;实现&lt;/h1&gt;
-
-&lt;h2&gt;一个简单的状态机的实现&lt;/h2&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 1. simple state machine
-// 事件 interface
-type Event interface {
-  EventId() int64
-}
-
-type State int
-
-// 事件处理函数 返回触发事件后的下一个状态 
-type Handler func(prevState State, event Event) State
-
-type StateMachine struct {
-  currState    State
-  handlers map[int64]Handler
-}
-
-// 添加事件处理方法 
-func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-  s.handlers[eventId] = handler
-}
-
-// 事件处理
-func (s *StateMachine) Call(event Event)  {
-  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)
-  if handler, ok := s.handlers[event.EventId()]; ok {
-    s.currState = handler(s.currState, event)  // 调用对应的 handler 更新状态机的状态
-  }
-  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState)
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;Handler&lt;/code&gt; 为事件处理函数，输入参数为当前状态和事件，返回处理后的新状态。状态机根据事件找到对应的&lt;code&gt;Handler&lt;/code&gt;，&lt;code&gt;Handler&lt;/code&gt; 根据当前状态和触发的事件，返回下一个新状态，由状态机更新。&lt;/p&gt;
-
-&lt;p&gt;下面看看一个开关的例子，初始状态为关，按下按钮状态由关变为开，再次按下由开变为关。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 1. simple state machine
-const (
-  EVENT_PRESS = iota
-)
-
-var (
-  Off = State(0)  // 定义关闭状态
-  On  = State(1)  // 定义开启状态 
-)
-
-// 定义 press 事件
-type PressEvent struct {
-}
-
-func (event *PressEvent) EventId() int64 {
-  return EVENT_PRESS
-}
-
-// 定义事件 Handler
-func PressButton(prevState State, event Event) State {
-  if prevState == Off {
-    return On
-  } else {
-    return Off
-  }
-}
-
-func main() {
-  stateMachine := StateMachine{
-    currState:    Off,  // 初始状态为关闭
-    handlers: make(map[int64]Handler),
-  }
-
-  stateMachine.AddHandler(EVENT_PRESS, PressButton)
-  stateMachine.Call(&amp;amp;PressEvent{}) // 按下后变成开
-  stateMachine.Call(&amp;amp;PressEvent{}) // 再次按下变为关闭
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;程序输出：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;original state:  0
-new state:  1
-original state:  1
-new state:  0
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这个实现很简单，但不足之处在于状态变迁逻辑都放在&lt;code&gt;Handler&lt;/code&gt;去实现了。对于读代码的人来说，需要读每个Handler的代码，才能整理出整个状态变迁图。&lt;/p&gt;
-
-&lt;h2&gt;一个稍微复杂点的状态机&lt;/h2&gt;
-
-&lt;p&gt;我们希望可以把状态变迁以更直观的方式表现出来，让读者一看就知道状态是如何流转的。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 2. a little more complicate state machine
-
-type Event interface {
-  EventId() int64
-}
-
-type State int
-
-// 事件处理函数 返回 true 表示可以变迁到下一个状态 返回 false 表示维持当前状态
-type Handler func(prevState State, event Event) bool
-
-type StateMachine struct {
-  currState    State
-  handlers map[int64]Handler
-  transitions map[State]map[int64]State
-}
-
-// 添加事件处理方法 
-func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-  s.handlers[eventId] = handler
-}
-
-// 添加状态变迁
-func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
-  if trans, ok := s.transitions[originState]; !ok {
-    s.transitions[originState] = map[int64]State{eventId: destState}
-  } else {
-    trans[eventId] = destState
-  }
-}
-
-// 事件处理
-func (s *StateMachine) Call(event Event) {
-  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
-  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
-    if handler(s.currState, event) { // 如果事件Handler返回true 则执行状态变迁
-      if trans, ok := s.transitions[s.currState]; ok {
-        if newState, ok := trans[event.EventId()]; ok { 
-          s.currState = newState  // 执行状态变迁
-        }
-      }
-    }
-  }
-  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这个状态机用&lt;code&gt;transitions&lt;/code&gt; 结构来记录状态流转的关系。初始化时调用方调用&lt;code&gt;AddTransition&lt;/code&gt;方法来添加状态变迁。请看下面的例子：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 2. a little more complicate state machine
-
-const (
-  EVENT_PRESS = iota
-)
-
-var (
-  Off = State(0)  // 关闭
-  On  = State(1)  // 开启 
-  COUNT = 0
-)
-
-
-type PressEvent struct {
-}
-
-func (event *PressEvent) EventId() int64 {
-  return EVENT_PRESS
-}
-
-// 定义事件 Handler
-func PressButton(prevState State, event Event) bool {
-  COUNT += 1
-  if COUNT % 2 == 0 { // 按两下才切换到新状态
-    return true
-  }
-  return false // 只按一次维持当前状态
-}
-
-func main() {
-  stateMachine := StateMachine{
-    currState:    Off,  // 初始状态为关闭
-    handlers: make(map[int64]Handler),
-    transitions: make(map[State]map[int64]State),
-  }
-
-  stateMachine.AddHandler(EVENT_PRESS, PressButton)
-  stateMachine.AddTransition(Off, EVENT_PRESS, On)
-  stateMachine.AddTransition(On, EVENT_PRESS, Off)
-  stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
-  stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;通过&lt;code&gt;stateMachine.AddTransition(Off, EVENT_PRESS, On)&lt;/code&gt;就可以清晰的知道 Press 事件可能会让状态 Off 切换到 状态 On，尽管 Press 事件发生后还是有可能维持当前状态不变（当 Handler 返回 false 时）。&lt;/p&gt;
-
-&lt;p&gt;程序输出：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;original state:  0
-new state:  0
-original state:  0
-new state:  1
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;更模块化的状态机&lt;/h2&gt;
-
-&lt;p&gt;最后我们来实现一个更模块化的状态机，把事件和条件这两个逻辑彻底分开。当你在事件触发时，还需要做逻辑判断才能确定是否发生状态变迁时，建议将事件处理和条件判断剥离开来。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;// example 3. more modular state machine
-
-type Event interface {
-  EventId() int64
-}
-
-type State int
-
-// 事件处理 Handler
-type Handler interface {
-  Process(prevState State, event Event)  // 只处理事件
-  Check() bool                           // 处理完判断下是否应该做状态切换
-}
-
-type StateMachine struct {
-  currState    State
-  handlers          map[int64]Handler
-  transitions   map[State]map[int64]State
-}
-
-// 添加事件处理方法 
-func (s *StateMachine) AddHandler(eventId int64, handler Handler) {
-  s.handlers[eventId] = handler
-}
-
-// 添加状态变迁
-func (s *StateMachine) AddTransition(originState State, eventId int64, destState State) {
-  if trans, ok := s.transitions[originState]; !ok {
-    s.transitions[originState] = map[int64]State{eventId: destState}
-  } else {
-    trans[eventId] = destState
-  }
-}
-
-// 事件处理
-func (s *StateMachine) Call(event Event) {
-  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
-  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
-    handler.Process(s.currState, event) 
-    if handler.Check() {
-      if trans, ok := s.transitions[s.currState]; ok {
-        if newState, ok := trans[event.EventId()]; ok { 
-          s.currState = newState  // 执行状态变迁
-        }
-      }
-    }
-  }
-  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;定义&lt;code&gt;Handler&lt;/code&gt;结构体，有两个接口：&lt;code&gt;Process&lt;/code&gt;只负责事件引发的逻辑处理， &lt;code&gt;Check&lt;/code&gt;判断逻辑处理后是否应该做状态变迁。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// example 3. more modular state machine
-
-const (
-  EVENT_PRESS = iota
-)
-
-var (
-  Off = State(0)  // 关闭
-  On  = State(1)  // 开启 
-  COUNT = 0
-)
-
-type PressEvent struct {
-}
-
-func (event *PressEvent) EventId() int64 {
-  return EVENT_PRESS
-}
-
-type PressEventHandler struct {}
-
-// Process 只处理事件带来的内部变量的变化
-func (h *PressEventHandler) Process(prevState State, event Event) {
-  COUNT += 1
-}
-
-
-// Check 判断是否应该做状态切换
-func (h *PressEventHandler) Check() bool {
-  if COUNT % 2 == 0 { // 按两下才有作用
-    return true
-  }
-  return false
-}
-
-func main() {
-  stateMachine := StateMachine{
-    currState:    Off,  // 初始状态为关闭
-    handlers: make(map[int64]Handler),
-    transitions: make(map[State]map[int64]State),
-  }
-
-  stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
-  stateMachine.AddTransition(Off, EVENT_PRESS, On)
-  stateMachine.AddTransition(On, EVENT_PRESS, Off)
-  stateMachine.Call(&amp;amp;PressEvent{}) // 按一次状态不变
-  stateMachine.Call(&amp;amp;PressEvent{}) // 按两次变成 off 状态
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;程序输出：
-&lt;code&gt;
-original state:  0
-new state:  0
-original state:  0
-new state:  1
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;h2&gt;一些补充&lt;/h2&gt;
-
-&lt;p&gt;可以把 &lt;code&gt;State&lt;/code&gt; 定义成 interface，提供 &lt;code&gt;Enter&lt;/code&gt; 和 &lt;code&gt;Leave&lt;/code&gt; 接口：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;type State interface {
-  Enter() 
-  Leave()
-}
-
-// 事件处理
-func (s *StateMachine) Call(event Event) {
-  fmt.Println(&amp;quot;original state: &amp;quot;, s.currState)  
-  if handler, ok := s.handlers[event.EventId()]; ok { // 首先找到事件的handler
-    handler.Process(s.currState, event) 
-
-    if handler.Check() {
-      if trans, ok := s.transitions[s.currState]; ok {
-        if newState, ok := trans[event.EventId()]; ok { 
-          s.currState.Leave()     // 离开当前状态 调用 Leave 
-          s.currState = newState  // 执行状态变迁
-          s.currState.Enter()     // 进入新状态 调用 Enter
-        }
-      }
-    } 
-  }
-  fmt.Println(&amp;quot;new state: &amp;quot;, s.currState) 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h2&gt;与 goroutine 的结合&lt;/h2&gt;
-
-&lt;p&gt;涉及到多个 goroutine 时，总会面临数据竞争的问题。通过 channel 来传递事件，由状态机处理，可以让代码变得清晰，避免加锁。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;
-type Room struct {
-  eventCh chan Event // 通过channel 传递事件给状态机
-  st *StateMachine
-}
-
-func (room *Room) Process() {
-  for e := range room.eventCh {
-    room.st.Call(e)
-  }
-}
-
-func (room *Room) DispatchEvent(event Event) {
-  room.eventCh &amp;lt;- event
-}
-
-func main() {
-  stateMachine := StateMachine{
-    currState:    Off,  // 初始状态为关闭
-    handlers: make(map[int64]Handler),
-    transitions: make(map[State]map[int64]State),
-  }
-
-  stateMachine.AddHandler(EVENT_PRESS, &amp;amp;PressEventHandler{})
-  stateMachine.AddTransition(Off, EVENT_PRESS, On)
-  stateMachine.AddTransition(On, EVENT_PRESS, Off)
-
-  room := Room{st: &amp;amp;stateMachine, eventCh: make(chan Event)}
-
-  go room.DispatchEvent(&amp;amp;PressEvent{})
-  go room.DispatchEvent(&amp;amp;PressEvent{})
-  go room.DispatchEvent(&amp;amp;PressEvent{})
-
-  room.Process()  // just sample code
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;即使是多个 goroutine 并发抛出事件，状态机只从&lt;code&gt;eventCh&lt;/code&gt;中串行的取出事件并处理，处理过程中不需要对数据加锁。 &lt;/p&gt;
-</description>
-        <pubDate>Wed, 01 Nov 2017 08:33:41 +0800</pubDate>
-        <link>http://masutangu.com/2017/11/state-machine/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/11/state-machine/</guid>
-        
-        
-        <category>工作</category>
         
       </item>
     

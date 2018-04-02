@@ -137,7 +137,7 @@ Basic protocol 是 preliminary protocol 的约束版本，preliminary protocol �
 ## The Protocol
 Paxos 议会需要通过一系列法令而不仅仅单一一个法令。法令提议给总统，由总统赋予 ballot number 并尝试通过它。协议对每个法令使用不同实例的 Complete Synod Protocol，但这系列实例只需要一位总统来负责，并且神会协议的前两步只需要执行一次。
 
-在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息（这条消息包含所有待表决的实例的信息），议员回复一条 LastVote 消息，LastVote 包含待表决的实例的信息。
+在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息，议员回复一条 LastVote 消息，规则和单一法令的协议相同，只是把所有待表决的实例信息包含在一条 LastVote 信息里。
 
 当总统收到 majority 的回复后，就为每个待表决的实例执行 Complete Synod Protocol 的第三步。
 

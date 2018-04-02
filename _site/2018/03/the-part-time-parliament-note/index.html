@@ -126,7 +126,7 @@
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="2018-03-16 09:00:42 +0800" itemprop="datePublished" class="post-meta__date date">2018-03-16</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
+      <time datetime="2018-03-21 20:36:16 +0800" itemprop="datePublished" class="post-meta__date date">2018-03-21</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
     </div>
     <h1 class="post-title">The Part-Time Parliament 论文笔记</h1>
   </header>
@@ -283,7 +283,7 @@
 
 <p>Paxos 议会需要通过一系列法令而不仅仅单一一个法令。法令提议给总统，由总统赋予 ballot number 并尝试通过它。协议对每个法令使用不同实例的 Complete Synod Protocol，但这系列实例只需要一位总统来负责，并且神会协议的前两步只需要执行一次。</p>
 
-<p>在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息（这条消息包含所有待表决的实例的信息），议员回复一条 LastVote 消息，LastVote 包含待表决的实例的信息。</p>
+<p>在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息，议员回复一条 LastVote 消息，规则和单一法令的协议相同，只是把所有待表决的实例信息包含在一条 LastVote 信息里。</p>
 
 <p>当总统收到 majority 的回复后，就为每个待表决的实例执行 Complete Synod Protocol 的第三步。</p>
 
@@ -303,13 +303,21 @@
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/04/programing-language-b/" title="link to Programming Language 课程笔记">Programming Language 课程笔记</a></h2>
+       <p class="excerpt">本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。Interpreter or Compiler实现编程语言的 workflow 如下图：Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compi...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-04-02 19:10:35 +0800" class="post-list__meta--date date">2018-04-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/04/programing-language-b/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">
        <span class="read-more-item-dim">更早的文章</span>
-       <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design.1/" title="link to 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
+       <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="link to 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
        <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
-       <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design.1/>继续阅读</a></div>
+       <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
    </div>
    
 </section>

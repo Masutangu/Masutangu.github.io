@@ -128,16 +128,23 @@
   <ol class="post-list">
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="访问 The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
-      <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-03-16 09:00:42 +0800" class="post-list__meta--date date">2018-03-16</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
+      <h2 class="post-list__post-title post-title"><a href="/2018/04/programing-language-b/" title="访问 Programming Language 课程笔记">Programming Language 课程笔记</a></h2>
+      <p class="excerpt">本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。Interpreter or Compiler实现编程语言的 workflow 如下图：Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compi...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-04-02 19:10:35 +0800" class="post-list__meta--date date">2018-04-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/04/programing-language-b/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
     <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design.1/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
+      <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="访问 The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
+      <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-03-21 20:36:16 +0800" class="post-list__meta--date date">2018-03-21</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
       <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design.1/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
@@ -152,6 +159,13 @@
       <h2 class="post-list__post-title post-title"><a href="/2018/01/game-recover-based-on-replicated-state-machine/" title="访问 基于 Replicated State Machine 实现游戏进程恢复">基于 Replicated State Machine 实现游戏进程恢复</a></h2>
       <p class="excerpt">Introduction游戏服务器实现的业务逻辑普遍比较复杂，且大部分是带有状态的。如果进程重启或意外崩溃，会导致该服务器上的玩家断线，丢失进行中的游戏数据，带来极差的游戏体验。为了避免这种情况出现，一般游戏服务器都会持久化玩家数据以实现进程恢复，当重启或进程意外崩溃时，重新拉起进程后可以恢复到之前的状态。常用的做法是将玩家的状态信息保存在共享内存中，重启时加载共享内存进行恢复。共享内存虽然方便，但会有许多限制。比如 C++ 涉及到多态（虚函数表）、STL容器（heap分配），都不能直接映...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-01-13 11:30:24 +0800" class="post-list__meta--date date">2018-01-13</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/01/game-recover-based-on-replicated-state-machine/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/01/mit-6824-note-5/" title="访问 MIT 6.824 学习笔记（五）">MIT 6.824 学习笔记（五）</a></h2>
+      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。FaRM NoteFaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  Ju...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-01-11 22:14:04 +0800" class="post-list__meta--date date">2018-01-11</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/01/mit-6824-note-5/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
@@ -180,20 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2017/12/mit-6824-note-2/" title="访问 MIT 6.824 学习笔记（二）">MIT 6.824 学习笔记（二）</a></h2>
       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。RaftIntroductionRaft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：Leader 选举、日志复制和安全性，同时通过更强的一致性来减少需要考虑的状态。一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。Raft 和许多一致性算法类似，但他也有自己的新特性：Strong leaderRaft 使用比其他一致性算法更强的 ...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-12-02 15:19:31 +0800" class="post-list__meta--date date">2017-12-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/12/mit-6824-note-2/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/11/mit-6824-note-1/" title="访问 MIT 6.824 学习笔记（一）">MIT 6.824 学习笔记（一）</a></h2>
-      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。Introduction本课程涵盖以下主题：RPC、线程、并发控制性能 容灾：Availability, Durability. replicated servers 是不错的选择。一致性：replica如何保持一致？ Consistency 和 Performance 不可兼得MapReduceMap funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapRedu...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-11-05 15:40:29 +0800" class="post-list__meta--date date">2017-11-05</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/11/mit-6824-note-1/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/11/state-machine/" title="访问 游戏开发之状态机">游戏开发之状态机</a></h2>
-      <p class="excerpt">这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。前言用状态机来实现业务模型，有以下几点好处：不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试代码阅读起来更加友好，方便其他读者理解整个业务逻辑状态机可以划分为下面三个模块：状态集：总共包括哪些状态事件（条件）：事件会触发状态机的状态发生变化动作：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态实现一个简单的状态机的实现// example 1. simp...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-11-01 08:33:41 +0800" class="post-list__meta--date date">2017-11-01</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/11/state-machine/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
