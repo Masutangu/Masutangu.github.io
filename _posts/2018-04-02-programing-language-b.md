@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2018-04-02T19:10:35+08:00
-title: Programming Language 课程笔记
+title: Programming Language Part B 课程笔记
 category: 读书笔记
 ---
 
