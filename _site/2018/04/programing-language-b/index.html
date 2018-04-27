@@ -6,16 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>Programming Language 课程笔记</title>
+  <title>Programming Language Part B 课程笔记</title>
   <meta name="description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Programming Language 课程笔记">
+  <meta name="twitter:title" content="Programming Language Part B 课程笔记">
   <meta name="twitter:description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Programming Language 课程笔记">
+  <meta property="og:title" content="Programming Language Part B 课程笔记">
   <meta property="og:description" content="本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
@@ -128,7 +128,7 @@
     <div class="post-meta">
       <time datetime="2018-04-02 19:10:35 +0800" itemprop="datePublished" class="post-meta__date date">2018-04-02</time> &#8226; <span class="post-meta__tags tags">读书笔记</span>
     </div>
-    <h1 class="post-title">Programming Language 课程笔记</h1>
+    <h1 class="post-title">Programming Language Part B 课程笔记</h1>
   </header>
 
   <section class="post">
@@ -195,6 +195,14 @@ fun pair? v = case v of Pair _ =&gt; true | _ =&gt; false
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/04/learn-libco-2/" title="link to Libco 之 coctx_swap">Libco 之 coctx_swap</a></h2>
+       <p class="excerpt">前言在之前的文章《浅读 Libco》 粗略的介绍了 libco，这篇文章则重点关注协程上下文切换的实现细节（coctx_swap.S）。首先回顾下函数调用的 stack frame layout：调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %rbp，并将 %rbp 设置为当前 %rsp。子函数通过 %rbp + 4 读取参数1，%rbp + 8 读取参数2，依次类推。co_resume在之前的文章提到协程的挂起和恢复通过 ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-04-27 20:57:21 +0800" class="post-list__meta--date date">2018-04-27</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/04/learn-libco-2/>继续阅读</a></div>
+   </div>
    
    
    
