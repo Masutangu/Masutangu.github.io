@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 27 Apr 2018 22:35:14 +0800</pubDate>
-    <lastBuildDate>Fri, 27 Apr 2018 22:35:14 +0800</lastBuildDate>
+    <pubDate>Sat, 28 Apr 2018 15:41:28 +0800</pubDate>
+    <lastBuildDate>Sat, 28 Apr 2018 15:41:28 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -19,7 +19,7 @@
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/learn-libco-2/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
 
-&lt;p&gt;调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %rbp，并将 %rbp 设置为当前 %rsp。子函数通过 %rbp + 4 读取参数1，%rbp + 8 读取参数2，依次类推。&lt;/p&gt;
+&lt;p&gt;调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。&lt;/p&gt;
 
 &lt;h1&gt;co_resume&lt;/h1&gt;
 
@@ -92,15 +92,14 @@ int coctx_make( coctx_t *ctx,coctx_pfn_t pfn,const void *s,const void *s1 )
            |s2    |
            |s1    | 
             ------  &amp;lt;- sp
-           |void* | 
-            ------  &amp;lt;- ctx-&amp;gt;regs[ kESP ] 这里为返回地址预留空间，参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2         
+           |void* | 这个返回地址只是预留空间，不需要填。因为 CoRoutineFunc 函数执行完了表示该协程已经跑完，将其 end 标记位置1（co-&amp;gt;cEnd = 1）并调用 co_yield_env 切出。不需要再回到该协程来所以也不需要记录调用 CoRoutineFunc 后的返回地址了
+            ------  &amp;lt;- ctx-&amp;gt;regs[ kESP ] 这里为返回地址预留空间的目的在于：参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2         
            |      |
      低地址  ------  &amp;lt;- ss_sp
 
+                */
 
-    */
-
-    ctx-&amp;gt;regs[ kEIP ] = (char*)pfn;  // 32位下 regs[ kEIP ] 即 regs[0] 保存 pfn 的地址
+    ctx-&amp;gt;regs[ kEIP ] = (char*)pfn;  // 32位下 regs[ kEIP ] 即 regs[0] 保存 pfn 的地址 也就是 CoRoutineFunc 
     return 0;
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
@@ -208,12 +207,44 @@ popl %esi  // pop from regs[5]
 popl %ebp  // pop from regs[6]
 popl %esp  // pop from regs[7] 此时 esp指向 regs[7] 即返回地址 + 4 的位置
 
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+---------- &amp;lt;- ESP
+| 返回地址 |
+
+*/
+
 // 下面这行有点ticky, esp 此时指向的是返回地址 + 4的位置，所以这里 push %eax，入栈 %eax 中保存的返回地址，esp 刚好也指向存放该返回地址的位置
 pushl %eax
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+| 返回地址 |
+---------- &amp;lt;- ESP
+*/
+
 
 xorl %eax, %eax
 
 ret // ret 指令弹出返回地址，此时 %esp += 4 并跳转到该地址继续执行
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+---------- &amp;lt;- ESP / EBP
+| 返回地址 | 弹出返回地址
+
+在 coctx_make 的情况下，将跳转到 pfn 执行，esp 执行预留的返回地址 void*，此时stack frame layout 和平台函数调用一样，同样通过 %ebp + 4 访问参数1，%ebp + 8 访问参数2
+*/
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;h1&gt;参考文献&lt;/h1&gt;
@@ -933,278 +964,6 @@ int countNs(list_t * xs, intptr_t n) {
       </item>
     
       <item>
-        <title>MIT 6.824 学习笔记（五）</title>
-        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
-
-&lt;h1&gt;FaRM Note&lt;/h1&gt;
-
-&lt;p&gt;FaRM writes go to RAM, not disk -- eliminates a huge bottleneck. Can write RAM in 200 ns, but takes 10 ms to write hard drive, 100 us for SSD, but RAM loses content in power failure! Not persistent by itself.  &lt;/p&gt;
-
-&lt;p&gt;Just write to RAM of f+1 machines, to tolerate f failures? Might be enough if failures were always independent, but power failure is not independent -- may strike 100% of machines!&lt;/p&gt;
-
-&lt;p&gt;So batteries in every rack, can run machines for a few minutes: &lt;strong&gt;&amp;quot;non-volatile RAM&amp;quot;&lt;/strong&gt;. What if crash prevents s/w from writing SSD, e.g bug in FaRM or kernel, or cpu/memory/hardware error. FaRM copes with single-machine crashes by copying data from RAM of machines&amp;#39; replicas to other machines to ensure always f+1 copies. Crashes (other than power failure) must be independent!&lt;/p&gt;
-
-&lt;p&gt;why is the network often a performance bottleneck?&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    the usual setup:
-    app                       app
-    ---                       ---
-    socket buffers            buffers
-    TCP                       TCP
-    NIC driver                driver
-    NIC  -------------------- NIC
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;lots of expensive CPU operations:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;system calls&lt;/li&gt;
-&lt;li&gt;copy messages&lt;/li&gt;
-&lt;li&gt;interrupts&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;and all twice if RPC! It&amp;#39;s hard to build RPC than can deliver more than a few 100,000 / second wire b/w (e.g. 10 gigabits/second) is rarely the limit for short RPC. These per-packet CPU costs are the limiting factor for small messages.&lt;/p&gt;
-
-&lt;p&gt;Two classes of concurrency control for transactions:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;pessimistic:
-wait for lock on first use of object; hold until commit/abort, called two-phase locking. Conflicts cause delays&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;optimistic:
-access object without locking; commit &amp;quot;validates&amp;quot; to see if OK. &lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Valid: do the writes&lt;/li&gt;
-&lt;li&gt;Invalid: abort
-called &lt;strong&gt;Optimistic Concurrency Control (OCC)&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;FaRM uses OCC. The reason: OCC lets FaRM read using one-sided RDMA reads, server storing the object does not need to set a lock, due to OCC.&lt;/p&gt;
-
-&lt;p&gt;FaRM transaction API (simplified):&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;  txCreate()
-  o = txRead(oid)  -- RDMA
-  o.f += 1
-  txWrite(oid, o)  -- purely local
-  ok = txCommit()  -- Figure 4
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;What&amp;#39;s in an oid: &lt;region #, address&gt;. &lt;code&gt;region #&lt;/code&gt; indexes a mapping to [ primary, backup1, ... ]. Target NIC can use address directly to read or write RAM so target CPU doesn&amp;#39;t have to be involved.&lt;/p&gt;
-
-&lt;p&gt;Server memory layout: regions, each an array of objects
-Object layout: header with version # and lock&lt;/p&gt;
-
-&lt;p&gt;Every region replicated on one primary, f backups -- f+1 replicas. Only the primary serves reads; all f+1 see commits+writes replication yields availability if &amp;lt;= f failures, i.e. available as long as one replica stays alive; better than Raft!&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;txRead
-one-sided RDMA to fetch object direct from primary&amp;#39;s memory -- fast!
-also fetches object&amp;#39;s version number, to detect concurrent writes&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;txWrite
-must be preceded by txRead
-just writes local copy; no communication&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;transaction execution / commit protocol without failure -- Figure 4&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;LOCK (first message in commit protocol)&lt;/p&gt;
-
-&lt;p&gt;TC sends to primary of each written object
-TC uses RDMA to append to its log at each primary
-LOCK record contains oid, version # xaction read, new value
-primary s/w polls log, sees LOCK, validates, sends &amp;quot;yes&amp;quot; or &amp;quot;no&amp;quot; reply message
-note LOCK is both logged in primary&amp;#39;s NVRAM &lt;em&gt;and&lt;/em&gt; an RPC exchange&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;what does primary CPU do on receipt of LOCK?&lt;/p&gt;
-
-&lt;p&gt;(for each object)
-if object locked, or version != what xaction read, reply &amp;quot;no&amp;quot;
-otherwise set the lock flag and return &amp;quot;yes&amp;quot;
-note: does &lt;em&gt;not&lt;/em&gt; block if object is already locked&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;TC waits for all LOCK reply messages&lt;/p&gt;
-
-&lt;p&gt;if any &amp;quot;no&amp;quot;, abort
-send ABORT to primaries so they can release locks
-returns &amp;quot;no&amp;quot; from txCommit()&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;TC sends COMMIT-PRIMARY to primary of each written object&lt;/p&gt;
-
-&lt;p&gt;uses RDMA to append to primary&amp;#39;s log
-TC only waits for hardware ack -- does not wait for primary to process log entry
-TC returns &amp;quot;yes&amp;quot; from txCommit()&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;what does primary do when it processes the COMMIT-PRIMARY in its log?&lt;/p&gt;
-
-&lt;p&gt;copy new value over object&amp;#39;s memory
-increment object&amp;#39;s version #
-clear object&amp;#39;s lock flag&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;Paxos Made Simple&lt;/h1&gt;
-
-&lt;h2&gt;The Consensus Algorithm&lt;/h2&gt;
-
-&lt;p&gt;Assume a collection of processes that can propose values. &lt;/p&gt;
-
-&lt;p&gt;The safety
-requirements for consensus are:
-• Only a value that has been proposed may be chosen,
-• Only a single value is chosen, and
-• A process never learns that a value has been chosen unless it actually has been&lt;/p&gt;
-
-&lt;p&gt;We let the three roles in the consensus algorithm be performed by three classes of agents: proposers, acceptors, and learners.&lt;/p&gt;
-
-&lt;p&gt;A proposer sends a proposed value to a
-set of acceptors. An acceptor may accept the proposed value. The value is
-chosen when a large enough set of acceptors have accepted it. Because any two majorities
-have at least one acceptor in common, this works if an acceptor can accept
-at most one value. &lt;/p&gt;
-
-&lt;p&gt;In the absence of failure or message loss, we want a value to be chosen
-even if only one value is proposed by a single proposer. This suggests the
-requirement:
-P1. An acceptor must accept the first proposal that it receives.&lt;/p&gt;
-
-&lt;p&gt;P1 and the requirement that a value is chosen only when it is accepted
-by a majority of acceptors imply that an acceptor must be allowed to accept
-more than one proposal. We keep track of the different proposals that an
-acceptor may accept by assigning a (natural) number to each proposal, so a
-proposal consists of a proposal number and a value. To prevent confusion,
-we require that different proposals have different numbers.  A
-value is chosen when a single proposal with that value has been accepted by
-a majority of the acceptors. In that case, we say that the proposal (as well
-as its value) has been chosen.&lt;/p&gt;
-
-&lt;p&gt;We can allow multiple proposals to be chosen, but we must guarantee
-that all chosen proposals have the same value. By induction on the proposal
-number, it suffices to guarantee:
-P2. If a proposal with value v is chosen, then every higher-numbered proposal
-that is chosen has value v.&lt;/p&gt;
-
-&lt;p&gt;To be chosen, a proposal must be accepted by at least one acceptor. So,
-we can satisfy P2 by satisfying:
-P2a
-. If a proposal with value v is chosen, then every higher-numbered proposal
-accepted by any acceptor has value v.&lt;/p&gt;
-
-&lt;p&gt;Because communication
-is asynchronous, a proposal could be chosen with some particular
-acceptor c never having received any proposal. Suppose a new proposer
-“wakes up” and issues a higher-numbered proposal with a different value.
-P1 requires c to accept this proposal, violating P2a
-. Maintaining both P1
-and P2a
-requires strengthening P2a
-to:
-P2b
-. If a proposal with value v is chosen, then every higher-numbered proposal
-issued by any proposer has value v.&lt;/p&gt;
-
-&lt;p&gt;Since any set S consisting of a majority of acceptors contains at least one
-member of C , we can conclude that a proposal numbered n has value v by
-ensuring that the following invariant is maintained:
-P2c
-. For any v and n, if a proposal with value v and number n is issued,
-then there is a set S consisting of a majority of acceptors such that
-either (a) no acceptor in S has accepted any proposal numbered less
-than n, or (b) v is the value of the highest-numbered proposal among
-all proposals numbered less than n accepted by the acceptors in S.&lt;/p&gt;
-
-&lt;p&gt;We can therefore satisfy P2b by maintaining the invariance of P2c
-.&lt;/p&gt;
-
-&lt;p&gt;To maintain the invariance of P2c
-, a proposer that wants to issue a proposal
-numbered n must learn the highest-numbered proposal with number
-less than n, if any, that has been or will be accepted by each acceptor in
-some majority of acceptors.&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;A proposer chooses a new proposal number n and sends a request to
-each member of some set of acceptors, asking it to respond with:
-(a) A promise never again to accept a proposal numbered less than
-n, and
-(b) The proposal with the highest number less than n that it has
-accepted, if any.
-I will call such a request a prepare request with number n.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;If the proposer receives the requested responses from a majority of
-the acceptors, then it can issue a proposal with number n and value
-v, where v is the value of the highest-numbered proposal among the
-responses, or is any value selected by the proposer if the responders
-reported no proposals.&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;A proposer issues a proposal by sending, to some set of acceptors, a request
-that the proposal be accepted. (This need not be the same set of acceptors
-that responded to the initial requests.) Let’s call this an accept request&lt;/p&gt;
-
-&lt;p&gt;P1a
-. An acceptor can accept a proposal numbered n iff it has not responded
-to a prepare request having a number greater than n.&lt;/p&gt;
-
-&lt;p&gt;The final
-algorithm is obtained by making one small optimization.
-Suppose an acceptor receives a prepare request numbered n, but it has
-already responded to a prepare request numbered greater than n, thereby
-promising not to accept any new proposal numbered n. There is then no
-reason for the acceptor to respond to the new prepare request, since it will
-not accept the proposal numbered n that the proposer wants to issue. We also have it ignore
-a prepare request for a proposal it has already accepted.&lt;/p&gt;
-
-&lt;p&gt;Phase 1. (a) A proposer selects a proposal number n and sends a prepare
-request with number n to a majority of acceptors.
-(b) If an acceptor receives a prepare request with number n greater
-than that of any prepare request to which it has already responded,
-then it responds to the request with a promise not to accept any more
-proposals numbered less than n and with the highest-numbered proposal
-(if any) that it has accepted.&lt;/p&gt;
-
-&lt;p&gt;Phase 2. (a) If the proposer receives a response to its prepare requests
-(numbered n) from a majority of acceptors, then it sends an accept
-request to each of those acceptors for a proposal numbered n with a
-value v, where v is the value of the highest-numbered proposal among
-the responses, or is any value if the responses reported no proposals.
-(b) If an acceptor receives an accept request for a proposal numbered
-n, it accepts the proposal unless it has already responded to a prepare
-request having a number greater than n.&lt;/p&gt;
-
-&lt;p&gt;It’s easy to construct a scenario in which two proposers each keep issuing
-a sequence of proposals with increasing numbers, none of which are ever
-chosen. Proposer p completes phase 1 for a proposal number n1. Another
-proposer q then completes phase 1 for a proposal number n2 &amp;gt; n1. Proposer
-p’s phase 2 accept requests for a proposal numbered n1 are ignored because
-the acceptors have all promised not to accept any new proposal numbered
-less than n2.&lt;/p&gt;
-
-&lt;p&gt;To guarantee progress, a distinguished proposer must be selected as the
-only one to try issuing proposals.&lt;/p&gt;
-
-&lt;p&gt;The Paxos algorithm [5] assumes a network of processes. In its consensus
-algorithm, each process plays the role of proposer, acceptor, and learner.
-The algorithm chooses a leader, which plays the roles of the distinguished proposer and the distinguished learner. &lt;/p&gt;
-
-&lt;p&gt;All that remains is to describe the mechanism for guaranteeing that no
-two proposals are ever issued with the same number. Different proposers
-choose their numbers from disjoint sets of numbers, so two different proposers
-never issue a proposal with the same number. Each proposer remembers
-(in stable storage) the highest-numbered proposal it has tried to issue,
-and begins phase 1 with a higher proposal number than any it has already
-used.&lt;/p&gt;
-
-&lt;h1&gt;Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing&lt;/h1&gt;
-
-&lt;h2&gt;RDD Abstraction&lt;/h2&gt;
-
-&lt;p&gt;Formally, an RDD is a read-only, partitioned collection
-of records. RDDs can only be created through deterministic
-operations on either (1) data in stable storage or (2)
-other RDDs. We call these operations transformations to differentiate them from other operations on RDDs.&lt;/p&gt;
-</description>
-        <pubDate>Thu, 11 Jan 2018 22:14:04 +0800</pubDate>
-        <link>http://masutangu.com/2018/01/mit-6824-note-5/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/01/mit-6824-note-5/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
         <title>MIT 6.824 学习笔记（四）</title>
         <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
 
@@ -1771,6 +1530,172 @@ scalable and efficient distributed failure detectors》&lt;/p&gt;
         <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
         <link>http://masutangu.com/2017/12/mit-6824-note-3/</link>
         <guid isPermaLink="true">http://masutangu.com/2017/12/mit-6824-note-3/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
+    
+      <item>
+        <title>MIT 6.824 学习笔记（二）</title>
+        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
+
+&lt;h1&gt;Raft&lt;/h1&gt;
+
+&lt;h2&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Raft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：&lt;strong&gt;Leader 选举&lt;/strong&gt;、&lt;strong&gt;日志复制&lt;/strong&gt;和&lt;strong&gt;安全性&lt;/strong&gt;，同时&lt;strong&gt;通过更强的一致性来减少需要考虑的状态&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。&lt;/p&gt;
+
+&lt;p&gt;Raft 和许多一致性算法类似，但他也有自己的新特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Strong leader&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用比其他一致性算法更强的 leadership 形式。举例来说，log entries 只能从 leader 发往其他 server。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader election&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用随机 timer 来选举 leader，简洁地解决了冲突的问题。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Membership changes&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用 joint consensus 的方式来处理成员变化的问题。在变迁的过程中，两个不同的配置可以共存，以此来实现在变迁过程中集群仍然能持续运转。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Replicated state machines 通常用 replicated log 实现。一致性算法起的作用是保证多个 replicas 上的 replicated log 一致。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;实际系统中使用的一致性算法通常有下列特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;安全性保证&lt;/strong&gt;（绝对不会返回一个错误的结果）&lt;/p&gt;
+
+&lt;p&gt;在非拜占庭错误情况下，网络延迟、分区、丢包、冗余和乱序等错误都可以保证不返回错误的结果。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;可用性&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;集群中只要大多数的机器可运行并且能够相互通信、和客户端通信，服务就可用。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;不依赖时序来保证一致性&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;通常情况下，小部分 slow servers 不会影响系统整体的性能&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Raft basics&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Raft implements consensus by first electing a distinguished leader, then giving the leader complete responsibility for managing the replicated log. The leader accepts log entries from clients, replicates them on other servers, and tells servers when it is safe to apply log entries to their state machines&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Raft 在任何时候都保证以下的特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Election Safety&lt;/strong&gt;: at most one leader can be elected in a given term.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader Append-Only&lt;/strong&gt;: a leader never overwrites or deletes entries in its log; it only appends new entries. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Log Matching&lt;/strong&gt;: if two logs contain an entry with the same index and term, then the logs are identical in all entries up through the given index. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Leader Completeness&lt;/strong&gt;: if a log entry is committed in a given term, then that entry will be present in the logs of the leaders for all higher-numbered terms. &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;State Machine Safety&lt;/strong&gt;: if a server has applied a log entry at a given index to its state machine, no other server will ever apply a different log entry for the same index.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Raft 中每个 server 在任意时刻都处于 &lt;strong&gt;leader&lt;/strong&gt;、&lt;strong&gt;follower&lt;/strong&gt;、&lt;strong&gt;candidate&lt;/strong&gt; 这三种状态之一。Followers 被动的接收 leader 或 candidate 的请求，leader 处理所有客户端请求，candidate 则起了选举 leader 的角色。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 把时间划分为&lt;strong&gt;任期（Terms）&lt;/strong&gt;，并保证每个任期内只有一个 leader。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Terms act as a logical clock in Raft&lt;/strong&gt;, and they allow servers to detect obsolete information such as stale leaders. &lt;strong&gt;Each server stores a current term number, which increases monotonically over time. Current terms are exchanged whenever servers communicate&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Raft 服务器之间使用 RPC 进行通信，&lt;strong&gt;RequestVote RPC 用于选举，AppendEntries 用于 leader 向 followers 复制日志和心跳。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;Log replication&lt;/h2&gt;
+
+&lt;p&gt;Raft 的日志机制维护下面两个特性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;If two entries in different logs have the same index and term, then they store the same command.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;If two entries in different logs have the same index and term, then the logs are identical in all preceding entries.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Safty&lt;/h2&gt;
+
+&lt;p&gt;在任何 leader-based 的一致性算法中，leader 都必须存储所有已经提交的日志条目。Raft 使用了一种简单的办法，保证之前任期中已经提交的日志都会出现在新的 leader 中，不需要将这些日志传给新的 leader。这意味着&lt;strong&gt;日志的传送是单向的从 leader 发往 followers，并且 leader 从不覆盖本地已经存在的日志。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 在投票过程中只允许&lt;strong&gt;包含全部已提交日志的 server 当选 leader&lt;/strong&gt;。Raft 通过比较日志中最后一条日志条目的索引值和任期来判断哪份日志更新。&lt;strong&gt;任期大的日志更加新，如果任期相同，那么日志索引值更大的新。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Leader 不能断定之前任期里的日志条目被保存到大多数服务器上的时候就一定已经提交了。&lt;/strong&gt;（请看论文的 figure 8）Raft 永远不会通过计算副本数目的方式提交一个之前任期内的日志条目。&lt;strong&gt;只有当前任期里的日志条目是通过计算副本数目的方式被提交。&lt;/strong&gt;一旦当前任期的日志条目以这种方式被提交，那么由于日志匹配特性，之前的日志条目也都会被间接的提交。&lt;/p&gt;
+
+&lt;h2&gt;Timing and availability&lt;/h2&gt;
+
+&lt;p&gt;Raft 要求系统满足以下时间限制：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;broadcastTime ≪ electionTimeout ≪ MTBF
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;BroadcastTime 指的是并行发送 RPCs 给集群中的其他服务器并接收到响应的平均时间。MTBF 是单台服务器两次故障之间的平均时间。&lt;/p&gt;
+
+&lt;p&gt;Raft 的 RPCs 通常耗时在 0.5ms 到 20ms 之间。因此 electionTimeout 最好处于 10ms 到 500ms 之间。&lt;/p&gt;
+
+&lt;h2&gt;Cluster membership changes&lt;/h2&gt;
+
+&lt;p&gt;为了保证配置修改机制的安全，在转换的过程中同一个任期中任何一个时间点都不能出现超过一个 leader。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Raft 使用 two-phase 的方式来保证安全性。集群首先切换到过渡的配置，我们称其为 &lt;strong&gt;joint consensus&lt;/strong&gt;。一旦 joint consensus 被提交，集群再切换到新的配置。&lt;strong&gt;Joint consensus&lt;/strong&gt; 是新老配置的结合：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;日志条目被复制给集群中新、老配置的所有服务器&lt;/li&gt;
+&lt;li&gt;新、旧配置的服务器都可以成为领导人&lt;/li&gt;
+&lt;li&gt;Agreement (for elections and entry commitment) 需要分别在两种配置上获得大多数的支持&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;集群配置以特殊的日志条目保存在 replicated log 中来存储和通信，下图展示了配置转换的过程。一旦一个服务器将新的配置日志条目添加到本地日志中，它就会用这个配置来做决定（服务器总是使用最新的配置，无论该配置是否已经被提交）。这意味着 leader 要使用 C-old,new 的规则来决定日志条目 C-old,new 什么时候需要被提交。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-2/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;一旦 C-old,new 被提交，那么无论是 C-old 还是 C-new 都不能单独做出决定，并且 Leader Completeness 的特性保证了只有拥有 C-old,new 日志条目的服务器才有可能被选举为 leader。这时 leader 创建一条 C-new 配置的日志条目并复制给集群就是安全的了，每个服务器在见到新的配置的时候就会立即生效。当新的配置在 C-new 的规则下被提交，不在新的配置内的服务器就可以关闭了。&lt;/p&gt;
+
+&lt;h2&gt;Client interaction&lt;/h2&gt;
+
+&lt;p&gt;Raft 的目标是要实现 linearizable semantics(each operation appears to execute instantaneously, exactly once, at some point between its invocation and its response) 但 Raft 是可能执行同一条命令多次的。解决方法是&lt;strong&gt;客户端对于每一条指令都赋予一个唯一的序列号，状态机记录每条指令最新的序列号和相应的响应。&lt;/strong&gt;如果接收到一条指令其序列号已经被执行了，那么就立即返回响应，无需重复执行指令。&lt;/p&gt;
+
+&lt;p&gt;只读的操作可以直接处理而不需要写入日志，但可能返回脏数据。Raft 采用额外的机制在不写入日志的情况下保证读操作的正确性：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Leader 必须知道最新的被提交日志。Raft 中通过 leader 在任期开始的时候提交一个空白的日志条目到日志中去来实现。&lt;/li&gt;
+&lt;li&gt;Leader 在处理只读的请求之前需要检查自己是否已经被废黜了。Raft 中通过让 leader 在响应只读请求之前，先和集群中的大多数节点交换一次心跳信息来处理这个问题。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Raft makes a few design choices that sacrifice performance for simplicity:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Raft follower rejects out-of-order AppendEntries RPCs&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Rather than saving for use after hole is filled. Might be important if network re-orders packets a lot
+And makes leader-&amp;gt;follower RPC pipelining harder&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Snapshotting is wasteful for big slowly-changing states&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A slow leader may hurt Raft, e.g. in geo-replication&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Experience suggests these have a big effect on performance:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Disk writes for persistence&lt;/li&gt;
+&lt;li&gt;Message/packet/RPC overhead&lt;/li&gt;
+&lt;li&gt;Need to execute logged commands sequentially&lt;/li&gt;
+&lt;li&gt;Fast path for read-only operations&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Appendix&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://thesecretlivesofdata.com/raft/&quot;&gt;http://thesecretlivesofdata.com/raft/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://thesquareplanet.com/blog/students-guide-to-raft/&quot;&gt;https://thesquareplanet.com/blog/students-guide-to-raft/&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
+        <link>http://masutangu.com/2017/12/mit-6824-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com/2017/12/mit-6824-note-2/</guid>
         
         
         <category>读书笔记</category>

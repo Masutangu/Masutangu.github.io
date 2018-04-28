@@ -13,7 +13,7 @@ category: 源码阅读
 
 <img src="/assets/images/learn-libco-2/illustration-1.png" width="800"/>
 
-调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %rbp，并将 %rbp 设置为当前 %rsp。子函数通过 %rbp + 4 读取参数1，%rbp + 8 读取参数2，依次类推。
+调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。
 
 # co_resume
 
@@ -91,15 +91,14 @@ int coctx_make( coctx_t *ctx,coctx_pfn_t pfn,const void *s,const void *s1 )
            |s2    |
            |s1    | 
             ------  <- sp
-           |void* | 
-            ------  <- ctx->regs[ kESP ] 这里为返回地址预留空间，参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2         
+           |void* | 这个返回地址只是预留空间，不需要填。因为 CoRoutineFunc 函数执行完了表示该协程已经跑完，将其 end 标记位置1（co->cEnd = 1）并调用 co_yield_env 切出。不需要再回到该协程来所以也不需要记录调用 CoRoutineFunc 后的返回地址了
+            ------  <- ctx->regs[ kESP ] 这里为返回地址预留空间的目的在于：参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2         
            |      |
      低地址  ------  <- ss_sp
 
-     
-    */
+                */
     
-	ctx->regs[ kEIP ] = (char*)pfn;  // 32位下 regs[ kEIP ] 即 regs[0] 保存 pfn 的地址
+	ctx->regs[ kEIP ] = (char*)pfn;  // 32位下 regs[ kEIP ] 即 regs[0] 保存 pfn 的地址 也就是 CoRoutineFunc 
 	return 0;
 }
 ```
@@ -212,12 +211,44 @@ popl %esi  // pop from regs[5]
 popl %ebp  // pop from regs[6]
 popl %esp  // pop from regs[7] 此时 esp指向 regs[7] 即返回地址 + 4 的位置
 
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+---------- <- ESP
+| 返回地址 |
+
+*/
+
 // 下面这行有点ticky, esp 此时指向的是返回地址 + 4的位置，所以这里 push %eax，入栈 %eax 中保存的返回地址，esp 刚好也指向存放该返回地址的位置
 pushl %eax
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+| 返回地址 |
+---------- <- ESP
+*/
+
 
 xorl %eax, %eax
 
 ret // ret 指令弹出返回地址，此时 %esp += 4 并跳转到该地址继续执行
+
+/*
+此时的堆栈
+|   s2    |
+|   s1    |
+|  void*  | 
+---------- <- ESP / EBP
+| 返回地址 | 弹出返回地址
+
+在 coctx_make 的情况下，将跳转到 pfn 执行，esp 执行预留的返回地址 void*，此时stack frame layout 和平台函数调用一样，同样通过 %ebp + 4 访问参数1，%ebp + 8 访问参数2
+*/
 
 ```
 
