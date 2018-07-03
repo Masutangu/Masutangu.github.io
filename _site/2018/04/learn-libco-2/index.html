@@ -376,12 +376,20 @@ ret // ret 指令弹出返回地址，此时 %esp += 4 并跳转到该地址继�
 
 <p><a href="https://zhuanlan.zhihu.com/p/27339191">《x86-64 下函数调用及栈帧原理》</a></p>
 
-<p><a href="http://rangechow.com/2016/09/01/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%8E%9F%E7%90%86.html">《函数调用原》</a></p>
+<p><a href="http://rangechow.com/2016/09/01/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%8E%9F%E7%90%86.html">《函数调用原理》</a></p>
 
   </section>
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-1/" title="link to etcd-raft 源码学习笔记（示例篇）">etcd-raft 源码学习笔记（示例篇）</a></h2>
+       <p class="excerpt">本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。从 main 函数开始读起：func main() {    ...    proposeC := make(chan string)    defer close(proposeC)    var kvs *kvstore    getSnapshot := func() ([]...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-03 13:21:23 +0800" class="post-list__meta--date date">2018-07-03</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-1/>继续阅读</a></div>
+   </div>
    
    
    

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>etcd-raft 源码学习笔记（示例篇）</title>
+  <meta name="description" content="本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（示例篇）">
+  <meta name="twitter:description" content="本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（示例篇）">
+  <meta property="og:description" content="本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/07/etcd-raft-note-1/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-07-03 13:21:23 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-03</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">etcd-raft 源码学习笔记（示例篇）</h1>
+  </header>
+
+  <section class="post">
+    <p>本系列文章为 <a href="https://github.com/coreos/etcd/tree/master/raft">etcd-raft</a> 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。</p>
+
+<p>从 main 函数开始读起：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func main() {
+    ...
+    proposeC := make(chan string)
+    defer close(proposeC)
+
+    var kvs *kvstore
+    getSnapshot := func() ([]byte, error) { return kvs.getSnapshot() }
+    commitC, errorC, snapshotterReady := newRaftNode(*id, strings.Split(*cluster, &quot;,&quot;), *join, getSnapshot, proposeC, confChangeC)
+
+    kvs = newKVStore(&lt;-snapshotterReady, proposeC, commitC, errorC)
+    ...
+}
+</code></pre></figure>
+<p><code>getSnapshot</code> 为应用层 kv 提供的 snapshot 方法，在 raft 中调用该方法进行 snapshot。<code>proposeC</code> 是应用层 kv 向 raftNode 发送请求的 channel，<code>commitC</code> 为 raftNode 通知应用层 kv 已经提交的请求的 channel。</p>
+
+<p>先看看 <code>newKVStore</code> 的实现：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func newKVStore(snapshotter *snap.Snapshotter, proposeC chan&lt;- string, commitC &lt;-chan *string, errorC &lt;-chan error) *kvstore {
+    s := &amp;kvstore{proposeC: proposeC, kvStore: make(map[string]string), snapshotter: snapshotter}
+    // replay log into key-value map
+    s.readCommits(commitC, errorC)
+    // read commits from raft into kvStore map until error
+    go s.readCommits(commitC, errorC)
+    return s
+}
+</code></pre></figure>
+<p><code>readCommits</code> 方法从 <code>commitC</code> 中读取已经提交的请求进行处理：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (s *kvstore) readCommits(commitC &lt;-chan *string, errorC &lt;-chan error) {
+    for data := range commitC {
+        var dataKv kv
+        dec := gob.NewDecoder(bytes.NewBufferString(*data))  // decode 
+        s.mu.Lock()
+        s.kvStore[dataKv.Key] = dataKv.Val  // 更新 kv
+        s.mu.Unlock()
+    }
+    if err, ok := &lt;-errorC; ok {
+        log.Fatal(err)
+    }
+}
+</code></pre></figure>
+<p>再看看 <code>newRaftNode</code> ，其会调用 <code>startRaft</code> 启动底层 raft：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (rc *raftNode) startRaft() {
+    oldwal := wal.Exist(rc.waldir)
+    rc.wal = rc.replayWAL()
+
+    rpeers := make([]raft.Peer, len(rc.peers))
+    for i := range rpeers {
+        rpeers[i] = raft.Peer{ID: uint64(i + 1)}
+    }
+    c := &amp;raft.Config{
+        ID:              uint64(rc.id),
+        ElectionTick:    10,
+        HeartbeatTick:   1,
+        Storage:         rc.raftStorage,
+        MaxSizePerMsg:   1024 * 1024,
+        MaxInflightMsgs: 256,
+    }
+
+    if oldwal {
+        rc.node = raft.RestartNode(c)
+    } else {
+        startPeers := rpeers
+        if rc.join {
+            startPeers = nil
+        }
+        rc.node = raft.StartNode(c, startPeers)
+    }
+
+    go rc.serveRaft()  // 监听 http 
+    go rc.serveChannels()  // 监听 proposeC channel，读取应用层请求 进行处理
+}
+</code></pre></figure>
+<p><code>serveChannels</code> 就做了两个事，1. 另起一个 goroutine，接收 proposeC 里发送自应用层的请求，通过 <code>Propose</code> 方法交给底层 raft 处理；2. 调用 <code>Ready</code> 方法，接收发送自 raft 的 ready 对象，调用 <code>publishEntries</code> 将已经提交的 entries 发送到 <code>commitC</code> channel，交由应用层处理，再调用 <code>Advance</code> 方法通知底层 raft 准备好接收下一个 ready 对象了。</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (rc *raftNode) serveChannels() {
+    defer rc.wal.Close()
+
+    ticker := time.NewTicker(100 * time.Millisecond)
+    defer ticker.Stop()
+
+    // send proposals over raft
+    go func() {
+        var confChangeCount uint64 = 0
+
+        for rc.proposeC != nil &amp;&amp; rc.confChangeC != nil {
+            select {
+            case prop, ok := &lt;-rc.proposeC:
+                if !ok {
+                    rc.proposeC = nil
+                } else {
+                    // blocks until accepted by raft state machine
+                    rc.node.Propose(context.TODO(), []byte(prop))  // 调用 Propose 发送给 raft 请求
+                }
+            }
+        }
+        // client closed channel; shutdown raft if not already
+        close(rc.stopc)
+    }()
+
+    // event loop on raft state machine updates
+    for {
+        select {
+        case &lt;-ticker.C:
+            rc.node.Tick()
+
+        // store raft entries to wal, then publish over commit channel
+        case rd := &lt;-rc.node.Ready():  // 应用层调用 Ready() 获取 ready 对象
+            if ok := rc.publishEntries(rc.entriesToApply(rd.CommittedEntries)); !ok {
+                rc.stop()
+                return
+            }
+            rc.node.Advance()  // 应用层调用 Advance() 通知 raft 已经处理完 ready 对象 
+
+        case &lt;-rc.stopc:
+            rc.stop()
+            return
+        }
+    }
+}
+</code></pre></figure>
+<p><code>publishEntries</code> 将 ready 对象里的 <code>CommittedEntries</code> 发送到 <code>commitC</code>，由应用层 kv 处理：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">// publishEntries writes committed log entries to commit channel and returns
+// whether all entries could be published.
+func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
+    for i := range ents {
+        switch ents[i].Type {
+        case raftpb.EntryNormal:
+            if len(ents[i].Data) == 0 {
+                // ignore empty messages
+                break
+            }
+            s := string(ents[i].Data)
+            select {
+            case rc.commitC &lt;- &amp;s:  // 发送到 commitC channel
+            case &lt;-rc.stopc:
+                return false
+            }
+        }
+
+        // after commit, update appliedIndex
+        rc.appliedIndex = ents[i].Index
+
+        // special nil commit to signal replay has finished
+        if ents[i].Index == rc.lastIndex {
+            select {
+            case rc.commitC &lt;- nil:
+            case &lt;-rc.stopc:
+                return false
+            }
+        }
+    }
+    return true
+}
+</code></pre></figure>
+<p>整体架构如下，RaftNode 的角色为应用层和底层 raft 的桥梁：</p>
+
+<p><img src="/assets/images/etcd-raft-node-1/illustration-1.png" width="800"/></p>
+
+<p>可以看出，应用层主要用到 raft.Node 的 <code>Propose</code>、<code>Ready</code>、<code>Advance</code>三个接口：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">// Node represents a node in a raft cluster.
+type Node interface {
+    // Propose proposes that data be appended to the log.
+    Propose(ctx context.Context, data []byte) error
+
+    // Ready returns a channel that returns the current point-in-time state.
+    // Users of the Node must call Advance after retrieving the state returned by Ready.
+    //
+    // NOTE: No committed entries from the next Ready may be applied until all committed entries
+    // and snapshots from the previous one have finished.
+    Ready() &lt;-chan Ready
+
+    // Advance notifies the Node that the application has saved progress up to the last Ready.
+    // It prepares the node to return the next available Ready.
+    //
+    // The application should generally call Advance after it applies the entries in last Ready.
+    //
+    // However, as an optimization, the application may call Advance while it is applying the
+    // commands. For example. when the last Ready contains a snapshot, the application might take
+    // a long time to apply the snapshot data. To continue receiving Ready without blocking raft
+    // progress, it can call Advance before finishing applying the last ready.
+    Advance()
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/04/learn-libco-2/" title="link to Libco 之 coctx_swap">Libco 之 coctx_swap</a></h2>
+       <p class="excerpt">前言在之前的文章《浅读 Libco》 粗略的介绍了 libco，这篇文章则重点关注协程上下文切换的实现细节（coctx_swap.S）。首先回顾下函数调用的 stack frame layout：调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。co_resume在之前的文章提到协程的挂起和恢复通过 ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-04-27 20:57:21 +0800" class="post-list__meta--date date">2018-04-27</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/04/learn-libco-2/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2018/07/etcd-raft-note-1/";
+        this.page.identifier = "/2018/07/etcd-raft-note-1/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

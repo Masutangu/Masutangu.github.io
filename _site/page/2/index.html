@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2017/12/mit-6824-note-2/" title="访问 MIT 6.824 学习笔记（二）">MIT 6.824 学习笔记（二）</a></h2>
+      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。RaftIntroductionRaft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：Leader 选举、日志复制和安全性，同时通过更强的一致性来减少需要考虑的状态。一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。Raft 和许多一致性算法类似，但他也有自己的新特性：Strong leaderRaft 使用比其他一致性算法更强的 ...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2017-12-02 15:19:31 +0800" class="post-list__meta--date date">2017-12-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/12/mit-6824-note-2/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2017/11/mit-6824-note-1/" title="访问 MIT 6.824 学习笔记（一）">MIT 6.824 学习笔记（一）</a></h2>
       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。Introduction本课程涵盖以下主题：RPC、线程、并发控制性能 容灾：Availability, Durability. replicated servers 是不错的选择。一致性：replica如何保持一致？ Consistency 和 Performance 不可兼得MapReduceMap funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapRedu...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-11-05 15:40:29 +0800" class="post-list__meta--date date">2017-11-05</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/11/mit-6824-note-1/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/12/linux-kernel-serial-3/" title="访问 Linux 内核系列－进程调度">Linux 内核系列－进程调度</a></h2>
       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念许多适用于进程调度的处理方法同样适用于线程调度。当内核管理线程的时候，调度经常是按照线程级别的，与线程所属的进程基本没有关联。调度需要考虑 CPU 的利用率，因为进程切换的代价比较高，进程需要从用户态切换到内核态，保存当前状态，包括在进程表中存储寄存器以便之后加载。接着，调度算法选定一个新进程，将新进程的内存映像...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-12-01 16:40:36 +0800" class="post-list__meta--date date">2016-12-01</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/12/linux-kernel-serial-3/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-2/" title="访问 Linux 内核系列－进程通信和同步">Linux 内核系列－进程通信和同步</a></h2>
-      <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念竞争条件多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。忙等待的互斥几种实现互斥的方案：屏蔽中断在单处理器系统中，最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，包括时钟中断。CPU 只有在发生中断的时候才会进行进程切换，这样在中断被屏蔽后 CPU 将不会被切换到其他进程...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-2/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
