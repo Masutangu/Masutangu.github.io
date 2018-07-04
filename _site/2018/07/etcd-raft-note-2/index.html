@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>etcd-raft 源码学习笔记（概览篇）</title>
+  <meta name="description" content="这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（概览篇）">
+  <meta name="twitter:description" content="这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（概览篇）">
+  <meta property="og:description" content="这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/07/etcd-raft-note-2/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-07-03 13:21:23 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-03</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">etcd-raft 源码学习笔记（概览篇）</h1>
+  </header>
+
+  <section class="post">
+    <p>这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">type raft struct {
+    id uint64
+
+    Term uint64
+    Vote uint64
+
+    // the log
+    raftLog *raftLog
+
+    state StateType
+
+    // isLearner is true if the local raft node is a learner.
+    isLearner bool
+
+    votes map[uint64]bool
+
+    msgs []pb.Message
+
+    // the leader id
+    lead uint64
+
+    tick func()
+    step stepFunc
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-go" data-lang="go">type raftLog struct {
+    // storage contains all stable entries since the last snapshot.
+    storage Storage
+
+    // unstable contains all unstable entries and snapshot.
+    // they will be saved into storage.
+    unstable unstable
+
+    // committed is the highest log position that is known to be in
+    // stable storage on a quorum of nodes.
+    committed uint64
+    // applied is the highest log position that the application has
+    // been instructed to apply to its state machine.
+    // Invariant: applied &lt;= committed
+    applied uint64
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-go" data-lang="go">// unstable.entries[i] has raft log position i+unstable.offset.
+// Note that unstable.offset may be less than the highest log
+// position in storage; this means that the next write to storage
+// might need to truncate the log before persisting unstable.entries.
+type unstable struct {
+    // the incoming unstable snapshot, if any.
+    snapshot *pb.Snapshot
+    // all entries that have not yet been written to storage.
+    entries []pb.Entry
+    offset  uint64
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-go" data-lang="go">// node is the canonical implementation of the Node interface
+type node struct {
+    propc      chan msgWithResult
+    recvc      chan pb.Message
+    readyc     chan Ready
+    advancec   chan struct{}
+    tickc      chan struct{}
+    done       chan struct{}
+}
+</code></pre></figure><figure class="highlight"><pre><code class="language-go" data-lang="go">// Ready encapsulates the entries and messages that are ready to read,
+// be saved to stable storage, committed or sent to other peers.
+// All fields in Ready are read-only.
+type Ready struct {
+    // The current volatile state of a Node.
+    // SoftState will be nil if there is no update.
+    // It is not required to consume or store SoftState.
+    *SoftState
+
+    // The current state of a Node to be saved to stable storage BEFORE
+    // Messages are sent.
+    // HardState will be equal to empty state if there is no update.
+    pb.HardState
+
+    // ReadStates can be used for node to serve linearizable read requests locally
+    // when its applied index is greater than the index in ReadState.
+    // Note that the readState will be returned when raft receives msgReadIndex.
+    // The returned is only valid for the request that requested to read.
+    ReadStates []ReadState
+
+    // Entries specifies entries to be saved to stable storage BEFORE
+    // Messages are sent.
+    Entries []pb.Entry
+
+    // Snapshot specifies the snapshot to be saved to stable storage.
+    Snapshot pb.Snapshot
+
+    // CommittedEntries specifies entries to be committed to a
+    // store/state-machine. These have previously been committed to stable
+    // store.
+    CommittedEntries []pb.Entry
+
+    // Messages specifies outbound messages to be sent AFTER Entries are
+    // committed to stable storage.
+    // If it contains a MsgSnap message, the application MUST report back to raft
+    // when the snapshot has been received or has failed by calling ReportSnapshot.
+    Messages []pb.Message
+
+    // MustSync indicates whether the HardState and Entries must be synchronously
+    // written to disk or if an asynchronous write is permissible.
+    MustSync bool
+}
+</code></pre></figure>
+<p>这几个结构体的关系如下图：</p>
+
+<p><img src="/assets/images/etcd-raft-node-2/illustration-1.png" width="800"/></p>
+
+<p>RaftLog 的 <code>Storage</code> 和 RaftNode 的 <code>raftStorage</code> 都是指向同一个 Storage 对象（虚线表示指针）。Storage 在 kvstore 的示例中的实现为 MemoryStorage，可以理解为 WAL 的一个内存缓存。重启时会从 WAL 恢复 MemoryStorage 的数据。整个逻辑由 Node 的 <code>run</code> 方法的 for loop 驱动，从 <code>recvc</code> channel 接收请求，调用 raft 的 <code>Step</code> 函数进行处理。<code>Step</code> 函数会调用 <code>step</code>，<code>step</code> 是函数指针，在节点成为 leader 时将其设置为 <code>stepLeader</code>，节点变成 follower 时设置为 <code>stepFollower</code>。<code>step</code> 处理 append 请求时，会调用 raftLog 的 <code>maybeAppend</code> 方法，最终会把 entries append 到 <code>unstable</code> 中。</p>
+
+<p>在 Node <code>run</code> 方法的 for loop 中，会定期通过 <code>newReady</code> 函数构造 Ready 对象。Ready 包括如下：</p>
+
+<ul>
+<li>HardState 即 raft 节点的 persistent state </li>
+<li>SoftState 即 raft 节点的 volatile state </li>
+<li>CommittedEntries 即已经 commit 的 log entries，需要应用层 apply 到状态机</li>
+<li>Entries 即 unstable 中的 log entries（未落盘的 log entries）</li>
+<li>Snapshot 即需要持久化的 snapshot</li>
+<li>Messages 即 mailbox，所有还未发送的消息</li>
+</ul>
+
+<p>构造好的 <code>Ready</code> 对象发送到 <code>readyc</code> channel，RaftNode 取出后会做如下处理：</p>
+
+<ul>
+<li>持久化 HardState、Entries、Snapshot 到 Storage 和 WAL (<code>raftStorage.ApplySnapshot()</code>、<code>raftStorage.Append()</code> 和 <code>wal.Save(rd.HardState, rd.Entries)</code> 可以看出 memoryStorage 是 wal 的缓存，写 wal 的同时也写 memoryStorage)</li>
+<li>apply CommittedEntries 到状态机</li>
+<li>广播 Messages </li>
+</ul>
+
+<p>处理完后调用 Node.Advance() 通知 Node Ready 对象处理完毕，准备好接收下一个。</p>
+
+<p>最后看看驱动整个逻辑的 <code>run</code> 方法：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (n *node) run(r *raft) {
+    var propc chan msgWithResult
+    var readyc chan Ready
+    var advancec chan struct{}
+    var prevLastUnstablei, prevLastUnstablet uint64
+    var havePrevLastUnstablei bool
+    var prevSnapi uint64
+    var rd Ready
+
+    lead := None
+    prevSoftSt := r.softState()
+    prevHardSt := emptyState
+
+    for {
+        if advancec != nil {
+            readyc = nil
+        } else {
+            // 应用层通知上一个 ready 对象已经处理完毕了 此时 advancec 为 nil 
+            rd = newReady(r, prevSoftSt, prevHardSt)
+            if rd.containsUpdates() { // 有更新才把 readyc 设为 非空
+                readyc = n.readyc
+            } else {
+                readyc = nil
+            }
+        }
+
+        select {
+        case m := &lt;-n.recvc:
+            // filter out response message from unknown From.
+            if pr := r.getProgress(m.From); pr != nil || !IsResponseMsg(m.Type) {
+                r.Step(m)
+            }
+        case &lt;-n.tickc:
+            r.tick()
+        case readyc &lt;- rd:
+            if rd.SoftState != nil {
+                prevSoftSt = rd.SoftState
+            }
+            if len(rd.Entries) &gt; 0 {
+                prevLastUnstablei = rd.Entries[len(rd.Entries)-1].Index
+                prevLastUnstablet = rd.Entries[len(rd.Entries)-1].Term
+                havePrevLastUnstablei = true
+            }
+            if !IsEmptyHardState(rd.HardState) {
+                prevHardSt = rd.HardState
+            }
+            if !IsEmptySnap(rd.Snapshot) {
+                prevSnapi = rd.Snapshot.Metadata.Index
+            }
+
+            r.msgs = nil
+            r.readStates = nil
+            advancec = n.advancec
+        case &lt;-advancec:
+            if prevHardSt.Commit != 0 {
+                r.raftLog.appliedTo(prevHardSt.Commit)
+            }
+            // 应用层处理完了 表示 unstable 的东西不需要了 该清理就清理
+            if havePrevLastUnstablei {
+                r.raftLog.stableTo(prevLastUnstablei, prevLastUnstablet)
+                havePrevLastUnstablei = false
+            }
+            r.raftLog.stableSnapTo(prevSnapi)
+            advancec = nil
+        }
+    }
+}
+</code></pre></figure>
+<p>还有构造 Ready 对象的 <code>newReady</code> 函数：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {
+    rd := Ready{
+        Entries:          r.raftLog.unstableEntries(),
+        CommittedEntries: r.raftLog.nextEnts(),
+        Messages:         r.msgs,
+    }
+    if softSt := r.softState(); !softSt.equal(prevSoftSt) {
+        rd.SoftState = softSt
+    }
+    if hardSt := r.hardState(); !isHardStateEqual(hardSt, prevHardSt) {
+        rd.HardState = hardSt
+    }
+    if r.raftLog.unstable.snapshot != nil {
+        rd.Snapshot = *r.raftLog.unstable.snapshot
+    }
+    if len(r.readStates) != 0 {
+        rd.ReadStates = r.readStates
+    }
+    rd.MustSync = MustSync(rd.HardState, prevHardSt, len(rd.Entries))
+    return rd
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-1/" title="link to etcd-raft 源码学习笔记（示例篇）">etcd-raft 源码学习笔记（示例篇）</a></h2>
+       <p class="excerpt">本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。从 main 函数开始读起：func main() {    ...    proposeC := make(chan string)    defer close(proposeC)    var kvs *kvstore    getSnapshot := func() ([]...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-03 13:21:23 +0800" class="post-list__meta--date date">2018-07-03</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-1/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2018/07/etcd-raft-note-2/";
+        this.page.identifier = "/2018/07/etcd-raft-note-2/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

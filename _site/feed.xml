@@ -5,9 +5,243 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 03 Jul 2018 13:22:14 +0800</pubDate>
-    <lastBuildDate>Tue, 03 Jul 2018 13:22:14 +0800</lastBuildDate>
+    <pubDate>Wed, 04 Jul 2018 13:30:43 +0800</pubDate>
+    <lastBuildDate>Wed, 04 Jul 2018 13:30:43 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>etcd-raft 源码学习笔记（概览篇）</title>
+        <description>&lt;p&gt;这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;type raft struct {
+    id uint64
+
+    Term uint64
+    Vote uint64
+
+    // the log
+    raftLog *raftLog
+
+    state StateType
+
+    // isLearner is true if the local raft node is a learner.
+    isLearner bool
+
+    votes map[uint64]bool
+
+    msgs []pb.Message
+
+    // the leader id
+    lead uint64
+
+    tick func()
+    step stepFunc
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;type raftLog struct {
+    // storage contains all stable entries since the last snapshot.
+    storage Storage
+
+    // unstable contains all unstable entries and snapshot.
+    // they will be saved into storage.
+    unstable unstable
+
+    // committed is the highest log position that is known to be in
+    // stable storage on a quorum of nodes.
+    committed uint64
+    // applied is the highest log position that the application has
+    // been instructed to apply to its state machine.
+    // Invariant: applied &amp;lt;= committed
+    applied uint64
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// unstable.entries[i] has raft log position i+unstable.offset.
+// Note that unstable.offset may be less than the highest log
+// position in storage; this means that the next write to storage
+// might need to truncate the log before persisting unstable.entries.
+type unstable struct {
+    // the incoming unstable snapshot, if any.
+    snapshot *pb.Snapshot
+    // all entries that have not yet been written to storage.
+    entries []pb.Entry
+    offset  uint64
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// node is the canonical implementation of the Node interface
+type node struct {
+    propc      chan msgWithResult
+    recvc      chan pb.Message
+    readyc     chan Ready
+    advancec   chan struct{}
+    tickc      chan struct{}
+    done       chan struct{}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// Ready encapsulates the entries and messages that are ready to read,
+// be saved to stable storage, committed or sent to other peers.
+// All fields in Ready are read-only.
+type Ready struct {
+    // The current volatile state of a Node.
+    // SoftState will be nil if there is no update.
+    // It is not required to consume or store SoftState.
+    *SoftState
+
+    // The current state of a Node to be saved to stable storage BEFORE
+    // Messages are sent.
+    // HardState will be equal to empty state if there is no update.
+    pb.HardState
+
+    // ReadStates can be used for node to serve linearizable read requests locally
+    // when its applied index is greater than the index in ReadState.
+    // Note that the readState will be returned when raft receives msgReadIndex.
+    // The returned is only valid for the request that requested to read.
+    ReadStates []ReadState
+
+    // Entries specifies entries to be saved to stable storage BEFORE
+    // Messages are sent.
+    Entries []pb.Entry
+
+    // Snapshot specifies the snapshot to be saved to stable storage.
+    Snapshot pb.Snapshot
+
+    // CommittedEntries specifies entries to be committed to a
+    // store/state-machine. These have previously been committed to stable
+    // store.
+    CommittedEntries []pb.Entry
+
+    // Messages specifies outbound messages to be sent AFTER Entries are
+    // committed to stable storage.
+    // If it contains a MsgSnap message, the application MUST report back to raft
+    // when the snapshot has been received or has failed by calling ReportSnapshot.
+    Messages []pb.Message
+
+    // MustSync indicates whether the HardState and Entries must be synchronously
+    // written to disk or if an asynchronous write is permissible.
+    MustSync bool
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;这几个结构体的关系如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/etcd-raft-node-2/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;RaftLog 的 &lt;code&gt;Storage&lt;/code&gt; 和 RaftNode 的 &lt;code&gt;raftStorage&lt;/code&gt; 都是指向同一个 Storage 对象（虚线表示指针）。Storage 在 kvstore 的示例中的实现为 MemoryStorage，可以理解为 WAL 的一个内存缓存。重启时会从 WAL 恢复 MemoryStorage 的数据。整个逻辑由 Node 的 &lt;code&gt;run&lt;/code&gt; 方法的 for loop 驱动，从 &lt;code&gt;recvc&lt;/code&gt; channel 接收请求，调用 raft 的 &lt;code&gt;Step&lt;/code&gt; 函数进行处理。&lt;code&gt;Step&lt;/code&gt; 函数会调用 &lt;code&gt;step&lt;/code&gt;，&lt;code&gt;step&lt;/code&gt; 是函数指针，在节点成为 leader 时将其设置为 &lt;code&gt;stepLeader&lt;/code&gt;，节点变成 follower 时设置为 &lt;code&gt;stepFollower&lt;/code&gt;。&lt;code&gt;step&lt;/code&gt; 处理 append 请求时，会调用 raftLog 的 &lt;code&gt;maybeAppend&lt;/code&gt; 方法，最终会把 entries append 到 &lt;code&gt;unstable&lt;/code&gt; 中。&lt;/p&gt;
+
+&lt;p&gt;在 Node &lt;code&gt;run&lt;/code&gt; 方法的 for loop 中，会定期通过 &lt;code&gt;newReady&lt;/code&gt; 函数构造 Ready 对象。Ready 包括如下：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;HardState 即 raft 节点的 persistent state &lt;/li&gt;
+&lt;li&gt;SoftState 即 raft 节点的 volatile state &lt;/li&gt;
+&lt;li&gt;CommittedEntries 即已经 commit 的 log entries，需要应用层 apply 到状态机&lt;/li&gt;
+&lt;li&gt;Entries 即 unstable 中的 log entries（未落盘的 log entries）&lt;/li&gt;
+&lt;li&gt;Snapshot 即需要持久化的 snapshot&lt;/li&gt;
+&lt;li&gt;Messages 即 mailbox，所有还未发送的消息&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;构造好的 &lt;code&gt;Ready&lt;/code&gt; 对象发送到 &lt;code&gt;readyc&lt;/code&gt; channel，RaftNode 取出后会做如下处理：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;持久化 HardState、Entries、Snapshot 到 Storage 和 WAL (&lt;code&gt;raftStorage.ApplySnapshot()&lt;/code&gt;、&lt;code&gt;raftStorage.Append()&lt;/code&gt; 和 &lt;code&gt;wal.Save(rd.HardState, rd.Entries)&lt;/code&gt; 可以看出 memoryStorage 是 wal 的缓存，写 wal 的同时也写 memoryStorage)&lt;/li&gt;
+&lt;li&gt;apply CommittedEntries 到状态机&lt;/li&gt;
+&lt;li&gt;广播 Messages &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;处理完后调用 Node.Advance() 通知 Node Ready 对象处理完毕，准备好接收下一个。&lt;/p&gt;
+
+&lt;p&gt;最后看看驱动整个逻辑的 &lt;code&gt;run&lt;/code&gt; 方法：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (n *node) run(r *raft) {
+    var propc chan msgWithResult
+    var readyc chan Ready
+    var advancec chan struct{}
+    var prevLastUnstablei, prevLastUnstablet uint64
+    var havePrevLastUnstablei bool
+    var prevSnapi uint64
+    var rd Ready
+
+    lead := None
+    prevSoftSt := r.softState()
+    prevHardSt := emptyState
+
+    for {
+        if advancec != nil {
+            readyc = nil
+        } else {
+            // 应用层通知上一个 ready 对象已经处理完毕了 此时 advancec 为 nil 
+            rd = newReady(r, prevSoftSt, prevHardSt)
+            if rd.containsUpdates() { // 有更新才把 readyc 设为 非空
+                readyc = n.readyc
+            } else {
+                readyc = nil
+            }
+        }
+
+        select {
+        case m := &amp;lt;-n.recvc:
+            // filter out response message from unknown From.
+            if pr := r.getProgress(m.From); pr != nil || !IsResponseMsg(m.Type) {
+                r.Step(m)
+            }
+        case &amp;lt;-n.tickc:
+            r.tick()
+        case readyc &amp;lt;- rd:
+            if rd.SoftState != nil {
+                prevSoftSt = rd.SoftState
+            }
+            if len(rd.Entries) &amp;gt; 0 {
+                prevLastUnstablei = rd.Entries[len(rd.Entries)-1].Index
+                prevLastUnstablet = rd.Entries[len(rd.Entries)-1].Term
+                havePrevLastUnstablei = true
+            }
+            if !IsEmptyHardState(rd.HardState) {
+                prevHardSt = rd.HardState
+            }
+            if !IsEmptySnap(rd.Snapshot) {
+                prevSnapi = rd.Snapshot.Metadata.Index
+            }
+
+            r.msgs = nil
+            r.readStates = nil
+            advancec = n.advancec
+        case &amp;lt;-advancec:
+            if prevHardSt.Commit != 0 {
+                r.raftLog.appliedTo(prevHardSt.Commit)
+            }
+            // 应用层处理完了 表示 unstable 的东西不需要了 该清理就清理
+            if havePrevLastUnstablei {
+                r.raftLog.stableTo(prevLastUnstablei, prevLastUnstablet)
+                havePrevLastUnstablei = false
+            }
+            r.raftLog.stableSnapTo(prevSnapi)
+            advancec = nil
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;还有构造 Ready 对象的 &lt;code&gt;newReady&lt;/code&gt; 函数：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {
+    rd := Ready{
+        Entries:          r.raftLog.unstableEntries(),
+        CommittedEntries: r.raftLog.nextEnts(),
+        Messages:         r.msgs,
+    }
+    if softSt := r.softState(); !softSt.equal(prevSoftSt) {
+        rd.SoftState = softSt
+    }
+    if hardSt := r.hardState(); !isHardStateEqual(hardSt, prevHardSt) {
+        rd.HardState = hardSt
+    }
+    if r.raftLog.unstable.snapshot != nil {
+        rd.Snapshot = *r.raftLog.unstable.snapshot
+    }
+    if len(r.readStates) != 0 {
+        rd.ReadStates = r.readStates
+    }
+    rd.MustSync = MustSync(rd.HardState, prevHardSt, len(rd.Entries))
+    return rd
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
+        <pubDate>Tue, 03 Jul 2018 13:21:23 +0800</pubDate>
+        <link>http://masutangu.com/2018/07/etcd-raft-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-2/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
     
       <item>
         <title>etcd-raft 源码学习笔记（示例篇）</title>
@@ -1513,221 +1747,6 @@ T2:
         
         
         <category>随笔</category>
-        
-      </item>
-    
-      <item>
-        <title>MIT 6.824 学习笔记（三）</title>
-        <description>&lt;p&gt;本系列文章是对 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 课程的学习笔记。&lt;/p&gt;
-
-&lt;h1&gt;Spinnaker&lt;/h1&gt;
-
-&lt;h2&gt;Introduction&lt;/h2&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Spinnaker is an experimental datastore that is designed to run on a large cluster of commodity servers in a single datacenter. This paper describes Spinnaker’s Paxos-based replication protocol. The use of Paxos ensures that a data partition in Spinnaker will be available for reads and writes as long a majority of its replicas are alive.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;实现持续可用性的一个解决方案是&lt;strong&gt;主从复制&lt;/strong&gt;，但主从复制存在以下缺陷：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-1.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;在上图的例子中，主从节点都从 LSN=10 开始（a），之后 slave 节点挂了（b），master 节点继续接收写请求，一直到 LSN=20。之后 master 节点也挂了（c），之后 slave 节点恢复（d），然而，在此时 slave 节点不能接收任何读写请求因为它缺失了 LSN=11 到LSN＝20 之间的记录。如果要避免这种情况，只有在任意节点挂掉的时候，都阻塞写请求。但这样就降低了整个系统的 availability。&lt;/p&gt;
-
-&lt;p&gt;分布式系统中，&lt;strong&gt;一致性模型描述了如何使不同的 relicas 保持同步&lt;/strong&gt;。&lt;strong&gt;强一致性&lt;/strong&gt;保证了所有的 replicas 都是一致的，但要实现强一致性需要牺牲 availability 或网络分区容忍性。CAP 理论提出 &lt;strong&gt;Consistency&lt;/strong&gt;、&lt;strong&gt;Availability&lt;/strong&gt; 和 &lt;strong&gt;Partition tolerance&lt;/strong&gt; 三者最多只能同时满足两项。&lt;/p&gt;
-
-&lt;p&gt;比如 Dynamo 这样的系统，使用&lt;strong&gt;最终一致性&lt;/strong&gt;模型来提供高可用性和分区容忍性。Dynamo 是一个 AP 系统，牺牲了 Consistency。&lt;/p&gt;
-
-&lt;p&gt;Spinnaker 使用基于 Paxos 的协议来实现日志提交和故障恢复。Paxos 确保了系统在大多数节点存活的情况下可以运作。Spinnaker 是一个 CA 系统，用于单一的 datacenter，并使用另外的 replication strategy 来保证跨 datacenter 的容错性。 &lt;/p&gt;
-
-&lt;h2&gt;Related work&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;Two-phase commit (2PC)&lt;/strong&gt; 是保持 replicas 一致的一种方式。但 2PC 更偏向于将每个 participant 当作一个独立的资源管理者，而不仅仅是 replica。使用 2PC 来实现 replication 有些 overkill，并且还有不少缺陷。首先单一节点失败会导致系统 abort。其次每个 transaction 都发起 2PC 会导致极差的性能。每次 2PC 都需要两次磁盘强制写和传输两条信息的时延。最后，2PC 在 coordinator 挂掉时无法运作。&lt;/p&gt;
-
-&lt;p&gt;Amazon 的 Dynamo 通过&lt;strong&gt;分布式时钟&lt;/strong&gt;来解决最终一致性的问题。&lt;/p&gt;
-
-&lt;p&gt;Google 的 Bigtable 提供了强一致性，和 spinnaker 不同的是，Bigtable 依赖 GFS 来存储数据和日志，还有实现 replication。这样每个 transaction 的 workload 就加重了（需要和 gfs 的 master 交互）。&lt;/p&gt;
-
-&lt;h2&gt;Architecture&lt;/h2&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Like Bigtable and PNUTS, Spinnaker distributes the rows of a table across its cluster using range partitioning. Each node is assigned a base key range, which is replicated on the next N − 1 nodes (N = 3 by default).&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-2.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Each group of nodes involved in replicating a key range is denoted as a &lt;strong&gt;cohort&lt;/strong&gt;. Note that cohorts overlap.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;每个日志由一个 LSN 唯一的标记。Commit queue 是在内存的数据结构，用于存放 pending writes。写操作只有在接收到大多数 cohort 的 ack 之后才能提交。在此之前都存放在 commit queue 中。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-3.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;已经提交的写操作存于 memtable 中，并被定期刷到被称为 SSTable 的 immutable disk structure。SSTable 会被定期合并以提升读性能并删除不需要的数据。&lt;/p&gt;
-
-&lt;h2&gt;The replication protocol&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-4.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;提交一个写操作需要三次日志强制写和四条信息交互，不过大多数操作都是重叠的（可以并行）。&lt;/p&gt;
-
-&lt;h2&gt;Recovery&lt;/h2&gt;
-
-&lt;p&gt;Follower 的恢复需要两个阶段：&lt;strong&gt;local recovery&lt;/strong&gt; 和 &lt;strong&gt;catch up&lt;/strong&gt;。定义 f.cmt 表示 follower 的最后一个提交日志的 LSN，f.lst 表示 follower 的最后一个日志的 LSN。Local recovery 阶段，follower 从最近一次 checkpoint 开始重新执行日志直到 f.cmt，之后进入 catch up 阶段。Catch up 阶段，follower 通知 leader 自己的 f.cmt，leader 回复 f.cmt 之后所有的 commit writes。Leader 将会阻塞所有新的写请求直到 follower 已经跟上。&lt;/p&gt;
-
-&lt;p&gt;当 leader 挂掉，新的 leader 将被选举，并且会确保新的 leader 会包含所有已提交的写操作。在老的 leader 挂掉时，有可能其提交的写操作在某些 followers 还处于 pending 的状态。新 leader 将使用下图的算法，继续提交所有 unresolved 写操作。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-5.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h2&gt;Leader election&lt;/h2&gt;
-
-&lt;p&gt;选举算法如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-6.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h1&gt;Dynamo&lt;/h1&gt;
-
-&lt;h2&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;一个系统的&lt;strong&gt;可靠性&lt;/strong&gt;和&lt;strong&gt;可扩展性&lt;/strong&gt;取决于如何管理应用状态。Amazon 采用一种高度去中心化，松耦合，由数百个服务组成的面向服务架构。在这种环境中尤其需要一个高可用的存储技术。&lt;/p&gt;
-
-&lt;p&gt;Dynamo 被设计用于管理服务状态，要求具备非常高的可靠性，而且需要严格控制&lt;strong&gt;可用性、一致性、成本效益和性能&lt;/strong&gt;的之间的权衡。&lt;/p&gt;
-
-&lt;p&gt;Amazon 服务平台中许多服务只需要主键访问数据存储。通常关系数据库模式会导致效率低下，且可扩展性和可用性也有限。Dynamo 提供了一个简单且唯一的主键接口，以满足这些应用的要求。&lt;/p&gt;
-
-&lt;p&gt;Dynamo 综合一些著名的技术来实现可伸缩性和可用性：使用&lt;strong&gt;一致性哈希&lt;/strong&gt;划分和复制数据，一致性由&lt;strong&gt;对象版本&lt;/strong&gt;来实现。更新时副本之间的一致性是由&lt;strong&gt;类似仲裁（quorum-like）&lt;/strong&gt;的技术和&lt;strong&gt;去中心化的副本同步协议&lt;/strong&gt;来保证。Dynamo 采用了&lt;strong&gt;基于 gossip&lt;/strong&gt; 的分布式故障检测和 membership protocol。&lt;/p&gt;
-
-&lt;h2&gt;System Assumptions and Requirements&lt;/h2&gt;
-
-&lt;p&gt;Dynamo 的目标应用程序是通过较弱的一致性（ACID中的“C”）来达到高可用性。Dynamo 不提供任何数据隔离（ACID中的“I”）保证，只允许单一主键更新。&lt;/p&gt;
-
-&lt;h2&gt;Design Considerations&lt;/h2&gt;
-
-&lt;p&gt;对于容易出现服务器和网络故障的系统，可使用&lt;strong&gt;乐观复制&lt;/strong&gt;来提高系统的可用性，数据变化允许在后台发送到副本，同时容忍网络断开。这种做法带来的挑战是如何检测和协调由此引发的冲突。协调的过程引入了两个问题：&lt;strong&gt;何时协调&lt;/strong&gt;以及&lt;strong&gt;谁负责协调&lt;/strong&gt;。Dynamo 被设计成&lt;strong&gt;最终一致性（eventually consistent）&lt;/strong&gt;的数据存储，所有的更新操作最终会分发到所有副本。&lt;/p&gt;
-
-&lt;p&gt;一个重要的设计考虑的因素是何时去协调更新操作冲突，例如是在读还是写过程中协调冲突。许多传统 data store 在写的过程中协调冲突，从而保持读的复杂度相对简单。另一方面，&lt;strong&gt;Dynamo 的目标是“永远可写”&lt;/strong&gt;。对于 Amazon 许多服务来讲，拒绝客户的更新操作可能导致糟糕的客户体验。这迫使我们&lt;strong&gt;将协调冲突的复杂性推给“读”&lt;/strong&gt;，以确保“写”永远不会拒绝。&lt;/p&gt;
-
-&lt;p&gt;其他重要的设计原则：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;增量的可扩展性（Incremental scalability）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Dynamo 需要能够水平扩展一台存储主机，而对系统操作者和系统本身的影响很小。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;对称性（Symmetry）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;每个 Dynamo 节点应该有一样的责任，不应该存在有区别或具备特殊的角色或额外的责任的节点。根据我们的经验，对称性(symmetry)简化了系统的配置和维护。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;去中心化（Decentralization）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;是对对称性的延伸，设计应采用有利于去中心化而不是集中控制的技术。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;异质性（Heterogeneity）&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;系统必须能够利用其运行所在的基础设施的异质性。例如，负载的分配必须与各个独立的服务器的能力成比例。这样就可以一次只增加一个高处理能力的节点，而无需一次升级所有的主机。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;Partitioning Algorithm&lt;/h2&gt;
-
-&lt;p&gt;Dynamo 的关键设计要求之一是&lt;strong&gt;增量可扩展性&lt;/strong&gt;，这需要一个机制来将数据动态划分到系统中的节点上。Dynamo 的分区方案依赖于一致哈希。&lt;strong&gt;一致性哈希的主要优点是节点的新增或减少只影响其最直接的邻居&lt;/strong&gt;，而对其他节点没影响。&lt;/p&gt;
-
-&lt;p&gt;基本的一致性哈希算法存在一些不足：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;环上​​的节点随机分配位置导致数据和负载的不均匀分布&lt;/li&gt;
-&lt;li&gt;基本算法无法满足节点性能的&lt;strong&gt;异质性（Heterogeneity）&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;为了解决这些问题，&lt;strong&gt;Dynamo 引入虚拟节点&lt;/strong&gt;：每个节点被分配到环上多点，而不是只映射到环上的一个单点。系统中每个节点对多个虚拟节点负责。&lt;/p&gt;
-
-&lt;p&gt;使用虚拟节点具有以下优点：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;如果一个节点不可用，这个节点的负载将均匀地分散给其余的可用节点&lt;/li&gt;
-&lt;li&gt;当一个节点再次可用，或者是新添加到系统中，the newly available node accepts a roughly equivalent amount of load from each of the other available nodes. &lt;/li&gt;
-&lt;li&gt;一个节点负责的虚拟节点数目由其处理能力来决定（heterogeneity）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;Replication&lt;/h2&gt;
-
-&lt;p&gt;每个键 K 被分配到一个协调器节点。协调器节点负责其管辖范围内的数据的复制。除了在本地存储每个 key 外，协调器节点也将 key 复制到环上顺时针方向的 N-1 后继节点。系统中每个节点负责环上的从其自己到第 N 个前继节点间的区域。&lt;/p&gt;
-
-&lt;p&gt;负责存储一个特定的键的节点列表被称为&lt;strong&gt;首选列表&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;h2&gt;Data Versioning&lt;/h2&gt;
-
-&lt;p&gt;Dynamo 提供最终一致性，允许更新操作异步地传播到所有副本。put 调用可能在更新操作被所有的副本执行之前就返回给调用者，这会导致在随后的 get 操作可能会返回一个不是最新的对象。&lt;/p&gt;
-
-&lt;p&gt;Dynamo 将每次数据修改的结果当作一个全新且不可修改的数据版本。它允许同一时间存在多个版本的对象。大多数情况，新版本包括了老的版本，系统自己可以决定权威版本（语法协调 syntactic reconciliation）。然而，在出现失败且伴随并发更新操作的时候，可能导致对象的版本冲突。在这种情况下，系统无法协调，需要由客户端必须执行协调，将多个分支演化后的数据折叠成一个合并的版本（语义协调 semantic reconciliation）。&lt;/p&gt;
-
-&lt;p&gt;Dynamo 使用&lt;strong&gt;矢量时钟&lt;/strong&gt;来捕捉同一对象不同版本的因果关系。矢量时钟实际上是一系列（节点，计数器）对。一个矢量时钟和每个对象的每个版本相关联。通过审查向量时钟，可以判断一个对象的两个版本是平行或因果顺序。&lt;strong&gt;如果第一个时钟对象上的计数器小于或等于第二个时钟对象上的所有节点，那么第一个是第二个的祖先&lt;/strong&gt;，可以被忽略。否则这两个变化是冲突的，需要协调。&lt;/p&gt;
-
-&lt;p&gt;在 Dynamo 中，当客户端更新一个对象时必须指定它正要更新哪个版本，这通过从早期的读操作中获得的上下文对象来指定。它包含了向量时钟信息。当处理一个读请求，如果 Dynamo 访问到多个不能语法协调的分支，它将返回处于分支叶子的所有对象。&lt;/p&gt;
-
-&lt;h2&gt;Execution of get () and put () operations&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;处理读或写操作的节点被称为协调员。&lt;/strong&gt;通常，这是首选列表中前 N 个节点中的第一个。如果请求是通过 load balancer 收到，访问 key 的请求可能被路由到环上任一节点。在这种情况下，如果该节点不是请求的 key 的首选列表中前 N 个节点之一，该节点将请求转发到首选列表前 N 个中的第一个节点。&lt;/p&gt;
-
-&lt;p&gt;为了保持副本的一致性，Dynamo 使用的一致性协议类似于仲裁（Quorum NRW 模型）。该协议有两个关键配置值：R 和 W。R is the minimum number of nodes that must participate in a successful read operation. W is the minimum number of nodes that must participate in a successful write operation. N 则是数据的副本数量。设定 R 和 W，使得 R + W &amp;gt; N，即&lt;strong&gt;读操作副本加上写操作副本必须大于数据的副本量&lt;/strong&gt;。在此模型中，一个 get 或者 put 操作延时是由最慢的 R 或 W 副本决定的。因此 R 和 W 通常配置为小于 Ｎ，以减小时延。&lt;/p&gt;
-
-&lt;p&gt;当收到对 key 的 put 请求时，协调员为新版本生成向量时钟并写入本地，然后将新版本（带上向量时钟）发送给首选列表中的前 Ｎ 个可达节点。如果至少 Ｗ-1 个节点返回了响应，那么这个写操作被认为是成功的。&lt;/p&gt;
-
-&lt;p&gt;同样，对于 get 请求，协调员从首选列表中前 Ｎ 个可达节点处请求该 key 所有版本的数据，然后等待 Ｒ 个响应，然后返回结果给客户端。如果协调员收到多个版本的数据，它返回所有它认为没有因果关系的版本。&lt;/p&gt;
-
-&lt;h2&gt;Handling Failures: Hinted Handoff&lt;/h2&gt;
-
-&lt;p&gt;Dynamo 如果使用传统的仲裁方式，在服务器故障和网络分裂的情况下将不可用。因此 Dynamo 使用了&lt;strong&gt;“马虎仲裁”&lt;/strong&gt;机制，所有的读，写操作是由首选列表上的前 N 个健康的节点执行的，它们可能不总是在散列环上遇到的那前 N 个节点。&lt;/p&gt;
-
-&lt;p&gt;举个例子，如果写操作过程中节点 A 暂时挂掉或不可达，本来发往 A 的副本现在被发送到节点 D。发送到 D 的副本将在其原数据中表明 A 节点才是该副本的预期接收者。接收到的暗示副本将被保存在单独的本地存储中定期扫描。在检测到了 A 已经复苏，D 会尝试发送副本到 A。一旦传送成功，D 可将数据从本地存储中删除，不会降低系统中的副本总数。&lt;/p&gt;
-
-&lt;p&gt;数据中心有可能因为断电、冷却装置故障、网络故障或自然灾害发生故障。Dynamo 将每个对象跨多个数据中心地进行复制。从本质上讲，每个个 key 的首选列表的分布在多个数据中心。这些数据中心通过高速网络连接。这种&lt;strong&gt;跨多个数据中心的复制方案&lt;/strong&gt;使我们能够处理整个数据中心故障。&lt;/p&gt;
-
-&lt;h2&gt;Handling permanent failures: Replica synchronization&lt;/h2&gt;
-
-&lt;p&gt;Dynamo 实现了&lt;strong&gt;反熵（anti-entropy 或副本同步）协议&lt;/strong&gt;来保持副本同步。&lt;/p&gt;
-
-&lt;p&gt;为了更快地检测副本之间的不一致性并减少传输的数据量，&lt;strong&gt;Dynamo 使用 MerkleTree&lt;/strong&gt;。MerkleTree 是一个哈希树，其叶子是各个 key 的哈希值，父节点为其各自孩子节点的哈希。MerkleTree 的主要优点是树的每个分支可以独立地检查。另外，MerkleTree 有助于减少为检查副本间不一致而传输的数据的大小。如果两树的根哈希值相等，那么树的叶节点值也相等，该节点不需要同步。&lt;/p&gt;
-
-&lt;h2&gt;Membership and Failure Detection&lt;/h2&gt;
-
-&lt;p&gt;去中心化的故障检测协议使用一个简单的 Gossip 式的协议，使系统中的每个节点可以了解其他节点加入或离开。详细可以参考论文《On
-scalable and efficient distributed failure detectors》&lt;/p&gt;
-
-&lt;h2&gt;Ensuring Uniform Load distribution&lt;/h2&gt;
-
-&lt;p&gt;随着时间和负载分布的影响，Dynamo 的划分方案也逐渐演化：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/mit-6824-note-3/illustration-7.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;策略 1：每个节点随机分配 T 个 token ，且基于 token 值进行分割&lt;/p&gt;
-
-&lt;p&gt;使用这一策略会出现以下问题。首先，当新的节点加入系统时，它需要从其他节点上“窃取”其负责的 key ranges。然而，这些需要移交key ranges 给新节点的节点必须扫描他们的本地持久化存储。第二，当一个节点加入/离开系统，许多节点的 key range 发生变化，MertkleTree 需要重新计算，在生产系统上，这不是一个简单的操作。最后，由于 key range 的随机性，没有简单的办法为整个 key space 做快照，这使得归档过程变得复杂。在这个方案中，归档整个 key space 需要分别检索每个节点的 key，这是非常低效的。&lt;/p&gt;
-
-&lt;p&gt;这个策略的根本问题是，&lt;strong&gt;数据划分&lt;/strong&gt;和&lt;strong&gt;数据安置&lt;/strong&gt;交织在一起。 &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;策略 2：每个节点随机分配 T 个 token，每个分区同等大小&lt;/p&gt;
-
-&lt;p&gt;在此策略中，哈希空间被划分为 Q 个同样大小的分区/范围，每个节点随机分配 T 个 token。通常设置 Q 使得 Q &amp;gt;&amp;gt; N 且 Q &amp;gt;&amp;gt; S * T，其中 S 为系统的节点个数。在这一策略中，token 只是用来构造映射函数，该函数将哈希空间的值映射到一个有序列的节点列表，而不决定分区。A partition is placed on the first N unique nodes that are encountered while walking the consistent hashing ring clockwise from the end of the partition. &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;策略 3：每个节点分配 Q/S 个 token，每个分区同等大小&lt;/p&gt;
-
-&lt;p&gt;Each node is assigned Q/S tokens where S is the number of nodes in the system. When a node leaves the system, its tokens are randomly distributed to the remaining nodes such that these properties are preserved. Similarly, when a node joins the system it &amp;quot;steals&amp;quot; tokens from nodes in the system in a way that preserves these properties. &lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;相对于策略 1，策略 3 达到更好的效率，每个节点需要维持的信息的大小降低了三个数量级。虽然存储不是一个主要问题，但节点间周期地gossip 成员信息，因此尽可能简化信息。除此之外，策略 3 更易于部署，理由如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;更快的 bootstrapping/recovery&lt;/p&gt;
-
-&lt;p&gt;由于分区范围是固定的，它们可以保存在单独的文件，这意味着转移分区仅需要简单地转移文件。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;易于归档&lt;/p&gt;
-
-&lt;p&gt;对数据集定期归档是 Amazon 存储服务的强制性要求。策略 3 归档整个数据集很简单，因为分区的文件可以被分别归档。相反，策略1 中 token 是随机选取的，归档存储的数据需要分别检索各个节点的 key，这通常是低效和缓慢的。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-        <pubDate>Sat, 02 Dec 2017 15:19:31 +0800</pubDate>
-        <link>http://masutangu.com/2017/12/mit-6824-note-3/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/12/mit-6824-note-3/</guid>
-        
-        
-        <category>读书笔记</category>
         
       </item>
     
