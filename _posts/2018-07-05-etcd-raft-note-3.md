@@ -182,7 +182,7 @@ func stepLeader(r *raft, m pb.Message) error {
 		// This would allow multiple reads to piggyback on the same message.
 		switch r.readOnly.option {
 		case ReadOnlySafe:
-			r.readOnly.addRequest(r.raftLog.committed, m)  // 把 readIndexReq 保存起来
+			r.readOnly.addRequest(r.raftLog.committed, m)  // r.raftLog.committed 为 当前 commit index
 			r.bcastHeartbeatWithCtx(m.Entries[0].Data)  // 广播心跳包
 		}
 		return nil
@@ -193,7 +193,26 @@ func stepLeader(r *raft, m pb.Message) error {
 	
 ```
 
-收到 readIndexReq 后，首先调用 ```r.readOnly.addRequest``` 保存下来，然后调用 ```bcastHeartbeatWithCtx``` 广播心跳包， ctx 即唯一标识 readIndexReq 的 reqId。再看看 ```stepLeader``` 如何处理心跳回包：
+收到 readIndexReq 后，首先调用 ```r.readOnly.addRequest``` 保存下，然后调用 ```bcastHeartbeatWithCtx``` 广播心跳包， ctx 即唯一标识 readIndexReq 的 reqId。
+
+来看看 raft 是如何管理 readIndexReq 的：
+
+```go
+// addRequest adds a read only reuqest into readonly struct.
+// `index` is the commit index of the raft state machine when it received
+// the read only request.
+// `m` is the original read only request message from the local or remote node.
+func (ro *readOnly) addRequest(index uint64, m pb.Message) {
+	ctx := string(m.Entries[0].Data)  // ctx 即 reqId
+	if _, ok := ro.pendingReadIndex[ctx]; ok {
+		return
+	}
+	ro.pendingReadIndex[ctx] = &readIndexStatus{index: index, req: m, acks: make(map[uint64]struct{})}  // acks 用于记录哪些 peer 已经 ack 确认。之后用于统计是否大于 quonum
+	ro.readIndexQueue = append(ro.readIndexQueue, ctx)  // append 进 readIndexQueue
+}
+```
+
+再看看 ```stepLeader``` 如何处理心跳回包：
 
 ```go
 func stepLeader(r *raft, m pb.Message) error {
@@ -228,7 +247,66 @@ func stepLeader(r *raft, m pb.Message) error {
 }
 ```
 
-调用 ```r.readOnly.recvAck```，根据 readIndeReq 的 reqId 统计收到心跳回包的数量，如果超过 quonum 表示该节点依然是 leader，此时从 ```r.readOnly.advance``` 拿到保存的 readIndexReq，append 到 ```r.readStates``` 中。之后调用 ```newReady``` 会把 ```r.readStates``` 返回给应用层，应用层取出 readIndexReq 中的 commit index，等到其被 apply 到状态机就可以允许读操作了。
+调用 ```r.readOnly.recvAck```，根据 readIndeReq 的 reqId 统计收到心跳回包的数量：
+
+```go
+// recvAck notifies the readonly struct that the raft state machine received
+// an acknowledgment of the heartbeat that attached with the read only request
+// context.
+func (ro *readOnly) recvAck(m pb.Message) int {
+	rs, ok := ro.pendingReadIndex[string(m.Context)]
+	if !ok {
+		return 0
+	}
+
+	rs.acks[m.From] = struct{}{}  // 记录下收到 m.From 这个节点的 ack
+	// add one to include an ack from local node
+	return len(rs.acks) + 1
+}
+```
+
+如果超过 quonum 表示该节点依然是 leader，此时从 ```r.readOnly.advance``` 拿到保存的 readIndexReq，append 到 ```r.readStates``` 中：
+
+```go
+// advance advances the read only request queue kept by the readonly struct.
+// It dequeues the requests until it finds the read only request that has
+// the same context as the given `m`.
+func (ro *readOnly) advance(m pb.Message) []*readIndexStatus {
+	var (
+		i     int
+		found bool
+	)
+
+	ctx := string(m.Context)
+	rss := []*readIndexStatus{}
+
+	for _, okctx := range ro.readIndexQueue {
+		i++
+		rs, ok := ro.pendingReadIndex[okctx]
+		if !ok {
+			panic("cannot find corresponding read state from pending map")
+		}
+		rss = append(rss, rs)
+		if okctx == ctx {
+			// 取出 reqId 相同的 ReadState 和其前面的所有 ReadState 
+			found = true
+			break
+		}
+	}
+
+	if found {
+		ro.readIndexQueue = ro.readIndexQueue[i:]
+		for _, rs := range rss {
+			delete(ro.pendingReadIndex, string(rs.req.Entries[0].Data))
+		}
+		return rss
+	}
+
+	return nil
+}
+```
+
+之后调用 ```newReady``` 会把 ```r.readStates``` 返回给应用层，应用层取出 readIndexReq 中的 commit index，等到其被 apply 到状态机就可以允许读操作了。
 
 ```go
 func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {

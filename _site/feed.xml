@@ -5,8 +5,8 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 05 Jul 2018 13:46:43 +0800</pubDate>
-    <lastBuildDate>Thu, 05 Jul 2018 13:46:43 +0800</lastBuildDate>
+    <pubDate>Thu, 05 Jul 2018 21:16:57 +0800</pubDate>
+    <lastBuildDate>Thu, 05 Jul 2018 21:16:57 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
@@ -176,7 +176,7 @@ func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
         // This would allow multiple reads to piggyback on the same message.
         switch r.readOnly.option {
         case ReadOnlySafe:
-            r.readOnly.addRequest(r.raftLog.committed, m)  // 把 readIndexReq 保存起来
+            r.readOnly.addRequest(r.raftLog.committed, m)  // r.raftLog.committed 为 当前 commit index
             r.bcastHeartbeatWithCtx(m.Entries[0].Data)  // 广播心跳包
         }
         return nil
@@ -186,7 +186,23 @@ func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
 
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;收到 readIndexReq 后，首先调用 &lt;code&gt;r.readOnly.addRequest&lt;/code&gt; 保存下来，然后调用 &lt;code&gt;bcastHeartbeatWithCtx&lt;/code&gt; 广播心跳包， ctx 即唯一标识 readIndexReq 的 reqId。再看看 &lt;code&gt;stepLeader&lt;/code&gt; 如何处理心跳回包：&lt;/p&gt;
+&lt;p&gt;收到 readIndexReq 后，首先调用 &lt;code&gt;r.readOnly.addRequest&lt;/code&gt; 保存下，然后调用 &lt;code&gt;bcastHeartbeatWithCtx&lt;/code&gt; 广播心跳包， ctx 即唯一标识 readIndexReq 的 reqId。&lt;/p&gt;
+
+&lt;p&gt;来看看 raft 是如何管理 readIndexReq 的：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// addRequest adds a read only reuqest into readonly struct.
+// `index` is the commit index of the raft state machine when it received
+// the read only request.
+// `m` is the original read only request message from the local or remote node.
+func (ro *readOnly) addRequest(index uint64, m pb.Message) {
+    ctx := string(m.Entries[0].Data)  // ctx 即 reqId
+    if _, ok := ro.pendingReadIndex[ctx]; ok {
+        return
+    }
+    ro.pendingReadIndex[ctx] = &amp;amp;readIndexStatus{index: index, req: m, acks: make(map[uint64]struct{})}  // acks 用于记录哪些 peer 已经 ack 确认。之后用于统计是否大于 quonum
+    ro.readIndexQueue = append(ro.readIndexQueue, ctx)  // append 进 readIndexQueue
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;再看看 &lt;code&gt;stepLeader&lt;/code&gt; 如何处理心跳回包：&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func stepLeader(r *raft, m pb.Message) error {
     // These message types do not require any progress for m.From.
     switch m.Type {
@@ -218,7 +234,60 @@ func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
     return nil
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;调用 &lt;code&gt;r.readOnly.recvAck&lt;/code&gt;，根据 readIndeReq 的 reqId 统计收到心跳回包的数量，如果超过 quonum 表示该节点依然是 leader，此时从 &lt;code&gt;r.readOnly.advance&lt;/code&gt; 拿到保存的 readIndexReq，append 到 &lt;code&gt;r.readStates&lt;/code&gt; 中。之后调用 &lt;code&gt;newReady&lt;/code&gt; 会把 &lt;code&gt;r.readStates&lt;/code&gt; 返回给应用层，应用层取出 readIndexReq 中的 commit index，等到其被 apply 到状态机就可以允许读操作了。&lt;/p&gt;
+&lt;p&gt;调用 &lt;code&gt;r.readOnly.recvAck&lt;/code&gt;，根据 readIndeReq 的 reqId 统计收到心跳回包的数量：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// recvAck notifies the readonly struct that the raft state machine received
+// an acknowledgment of the heartbeat that attached with the read only request
+// context.
+func (ro *readOnly) recvAck(m pb.Message) int {
+    rs, ok := ro.pendingReadIndex[string(m.Context)]
+    if !ok {
+        return 0
+    }
+
+    rs.acks[m.From] = struct{}{}  // 记录下收到 m.From 这个节点的 ack
+    // add one to include an ack from local node
+    return len(rs.acks) + 1
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;如果超过 quonum 表示该节点依然是 leader，此时从 &lt;code&gt;r.readOnly.advance&lt;/code&gt; 拿到保存的 readIndexReq，append 到 &lt;code&gt;r.readStates&lt;/code&gt; 中：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// advance advances the read only request queue kept by the readonly struct.
+// It dequeues the requests until it finds the read only request that has
+// the same context as the given `m`.
+func (ro *readOnly) advance(m pb.Message) []*readIndexStatus {
+    var (
+        i     int
+        found bool
+    )
+
+    ctx := string(m.Context)
+    rss := []*readIndexStatus{}
+
+    for _, okctx := range ro.readIndexQueue {
+        i++
+        rs, ok := ro.pendingReadIndex[okctx]
+        if !ok {
+            panic(&amp;quot;cannot find corresponding read state from pending map&amp;quot;)
+        }
+        rss = append(rss, rs)
+        if okctx == ctx {
+            // 取出 reqId 相同的 ReadState 和其前面的所有 ReadState 
+            found = true
+            break
+        }
+    }
+
+    if found {
+        ro.readIndexQueue = ro.readIndexQueue[i:]
+        for _, rs := range rss {
+            delete(ro.pendingReadIndex, string(rs.req.Entries[0].Data))
+        }
+        return rss
+    }
+
+    return nil
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;之后调用 &lt;code&gt;newReady&lt;/code&gt; 会把 &lt;code&gt;r.readStates&lt;/code&gt; 返回给应用层，应用层取出 readIndexReq 中的 commit index，等到其被 apply 到状态机就可以允许读操作了。&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {
     rd := Ready{
         Entries:          r.raftLog.unstableEntries(),
@@ -234,7 +303,7 @@ func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
     return rd
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Thu, 05 Jul 2018 00:00:00 +0800</pubDate>
+        <pubDate>Thu, 05 Jul 2018 13:46:43 +0800</pubDate>
         <link>http://masutangu.com/2018/07/etcd-raft-note-3/</link>
         <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-3/</guid>
         
