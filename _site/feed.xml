@@ -5,9 +5,243 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 04 Jul 2018 13:30:43 +0800</pubDate>
-    <lastBuildDate>Wed, 04 Jul 2018 13:30:43 +0800</lastBuildDate>
+    <pubDate>Thu, 05 Jul 2018 13:46:43 +0800</pubDate>
+    <lastBuildDate>Thu, 05 Jul 2018 13:46:43 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>etcd-raft 源码学习笔记（Linearizable Read 篇）</title>
+        <description>&lt;p&gt;这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 &lt;a href=&quot;https://aphyr.com/posts/313-strong-consistency-models&quot;&gt;《Strong consistency models》&lt;/a&gt;）。&lt;/p&gt;
+
+&lt;p&gt;raft 论文第 8 节阐述了思路：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Read-only operations can be handled without writing anything into the log. However, with no additional measures, this would run the risk of returning stale data, since the leader responding to the request might have been superseded by a newer leader of which it is unaware. Linearizable reads must not return stale data, and Raft needs two extra precautions to guarantee this without using the log. First, a leader must have the latest information on which entries are committed. The Leader Completeness Property guarantees that a leader has all committed entries, but at the start of its term, it may not know which those are. To find out, it needs to commit an entry from its term. Raft handles this by having each leader commit a blank no-op entry into the log at the start of its term. Second, a leader must check whether it has been deposed before processing a read-only request (its information may be stale if a more recent leader has been elected). Raft handles this by having the leader exchange heartbeat messages with a majority of the cluster before responding to read-only requests.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在收到读请求时，leader 节点保存下当前的 commit index，并往 peers 发送心跳。如果确定该节点依然是 leader，则只需要等到该 commit index 的 log entry 被 apply 到状态机时就可以返回客户端结果。&lt;/p&gt;
+
+&lt;p&gt;我们先通过位于 etcd/etcdserver 目录下的样例来看看应用层是如何使用 ReadIndex 来保证 linearizable read 的：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// v3_server.go
+
+type RaftKV interface {
+    Range(ctx context.Context, r *pb.RangeRequest) (*pb.RangeResponse, error)
+    Put(ctx context.Context, r *pb.PutRequest) (*pb.PutResponse, error)
+    DeleteRange(ctx context.Context, r *pb.DeleteRangeRequest) (*pb.DeleteRangeResponse, error)
+    Txn(ctx context.Context, r *pb.TxnRequest) (*pb.TxnResponse, error)
+    Compact(ctx context.Context, r *pb.CompactionRequest) (*pb.CompactionResponse, error)
+}
+
+func (s *EtcdServer) Range(ctx context.Context, r *pb.RangeRequest) (*pb.RangeResponse, error) {
+    var resp *pb.RangeResponse
+    var err error
+
+    if !r.Serializable {
+        err = s.linearizableReadNotify(ctx)  // 等待 linearizableReadNotify 返回 才能继续往下走
+        if err != nil {
+            return nil, err
+        }
+    }
+    // 读取数据逻辑 省略..
+    ...
+    return resp, err
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;在读请求 &lt;code&gt;Range&lt;/code&gt; 执行前，调用了 &lt;code&gt;linearizableReadNotify&lt;/code&gt;：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (s *EtcdServer) linearizableReadNotify(ctx context.Context) error {
+    s.readMu.RLock()
+    nc := s.readNotifier
+    s.readMu.RUnlock()
+
+    // signal linearizable loop for current notify if it hasn&amp;#39;t been already
+    select {
+    case s.readwaitc &amp;lt;- struct{}{}:
+    default:
+    }
+
+    // wait for read state notification
+    select {
+    case &amp;lt;-nc.c:
+        return nc.err
+    case &amp;lt;-ctx.Done():
+        return ctx.Err()
+    case &amp;lt;-s.done:
+        return ErrStopped
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;linearizableReadNotify&lt;/code&gt; 往 &lt;code&gt;readwaitc&lt;/code&gt; 发送个空的结构体，并且等待 &lt;code&gt;nc.c&lt;/code&gt; 的返回。&lt;code&gt;readwaitc&lt;/code&gt; 是在另外的 goroutine &lt;code&gt;linearizableReadLoop&lt;/code&gt; 里监听的：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;
+func (s *EtcdServer) linearizableReadLoop() {
+    var rs raft.ReadState
+
+    for {
+        ctx := make([]byte, 8)
+        binary.BigEndian.PutUint64(ctx, s.reqIDGen.Next())  // ctx 即请求唯一标识 reqId
+
+        select {
+        case &amp;lt;-s.readwaitc:  // 监听 readwaitc
+        case &amp;lt;-s.stopping:
+            return
+        }
+
+        nextnr := newNotifier()
+        nr := s.readNotifier
+        s.readNotifier = nextnr
+
+        s.r.ReadIndex(cctx, ctx)  // 调用 ReadIndex 接口，往 recvc channel 发送 type 为 pb.MsgReadIndex 的请求
+
+        var (
+            timeout bool
+            done    bool
+        )
+        for !timeout &amp;amp;&amp;amp; !done {
+            select {
+            case rs = &amp;lt;-s.r.readStateC:  // 收到 ready 对象时，会往 readStateC channel 传回来 readState，见 etcd/etcdserver/raft.go 文件的 func (r *raftNode) start(rh *raftReadyHandler)
+                done = bytes.Equal(rs.RequestCtx, ctx)  // 比较下 reqId 是否一致
+            case &amp;lt;-time.After(s.Cfg.ReqTimeout()):
+                nr.notify(ErrTimeout)
+                timeout = true
+            case &amp;lt;-s.stopping:
+                return
+            }
+        }
+        if !done {
+            continue
+        }
+
+        // 等待 readState 里的 index，也就是收到 pb.MsgReadIndex 请求时，leader 节点当前的 commit index 被 apply 到状态机时，此时调用 nr.notify(nil) 通知应用层可以读取状态机里的数据了，确保读到的不是 stale 数据
+        if ai := s.getAppliedIndex(); ai &amp;lt; rs.Index {
+            select {
+            case &amp;lt;-s.applyWait.Wait(rs.Index):
+            case &amp;lt;-s.stopping:
+                return
+            }
+        }
+        // unblock all l-reads requested at indices before rs.Index
+        nr.notify(nil)
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;在 &lt;code&gt;linearizableReadLoop&lt;/code&gt; 调用 &lt;code&gt;nr.notify&lt;/code&gt; 后，&lt;code&gt;linearizableReadNotify&lt;/code&gt; 从 select 阻塞中返回，此时就可以继续走 &lt;code&gt;Range&lt;/code&gt; 的逻辑，读取数据，返回给客户端。&lt;/p&gt;
+
+&lt;p&gt;从上面的例子，我们了解了应用层如何使用 Node 的 &lt;code&gt;ReadIndex&lt;/code&gt; 接口来实现 linearizable read。下面我们来介绍 &lt;code&gt;ReadIndex&lt;/code&gt; 这个新接口：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// Node represents a node in a raft cluster.
+type Node interface {
+    // Propose proposes that data be appended to the log.
+    Propose(ctx context.Context, data []byte) error
+
+    // Ready returns a channel that returns the current point-in-time state.
+    // Users of the Node must call Advance after retrieving the state returned by Ready.
+    //
+    // NOTE: No committed entries from the next Ready may be applied until all committed entries
+    // and snapshots from the previous one have finished.
+    Ready() &amp;lt;-chan Ready
+
+    // Advance notifies the Node that the application has saved progress up to the last Ready.
+    // It prepares the node to return the next available Ready.
+    //
+    // The application should generally call Advance after it applies the entries in last Ready.
+    //
+    // However, as an optimization, the application may call Advance while it is applying the
+    // commands. For example. when the last Ready contains a snapshot, the application might take
+    // a long time to apply the snapshot data. To continue receiving Ready without blocking raft
+    // progress, it can call Advance before finishing applying the last ready.
+    Advance()
+
+    // ReadIndex request a read state. The read state will be set in the ready.
+    // Read state has a read index. Once the application advances further than the read
+    // index, any linearizable read requests issued before the read request can be
+    // processed safely. The read state will have the same rctx attached.
+    ReadIndex(ctx context.Context, rctx []byte) error
+}
+
+func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
+    return n.step(ctx, pb.Message{Type: pb.MsgReadIndex, Entries: []pb.Entry})
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;上篇文章 &lt;a href=&quot;http://masutangu.com/2018/07/etcd-raft-note-2/&quot;&gt;《etcd-raft 源码学习笔记（概览篇）》&lt;/a&gt; 提到当节点为 leader 时，&lt;code&gt;step&lt;/code&gt; 被设置为 &lt;code&gt;stepLeader&lt;/code&gt; 。我们来看看 &lt;code&gt;stepLeader&lt;/code&gt; 是如何处理 type 为 pb.MsgReadIndex 的 readIndexReq 的：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func stepLeader(r *raft, m pb.Message) error {
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+    case pb.MsgReadIndex:
+        // raft 5.4 safty 检查
+        if r.raftLog.zeroTermOnErrCompacted(r.raftLog.term(r.raftLog.committed)) != r.Term {
+            // Reject read only request when this leader has not committed any log entry at its term.
+            return nil
+        }
+
+        // thinking: use an interally defined context instead of the user given context.
+        // We can express this in terms of the term and index instead of a user-supplied value.
+        // This would allow multiple reads to piggyback on the same message.
+        switch r.readOnly.option {
+        case ReadOnlySafe:
+            r.readOnly.addRequest(r.raftLog.committed, m)  // 把 readIndexReq 保存起来
+            r.bcastHeartbeatWithCtx(m.Entries[0].Data)  // 广播心跳包
+        }
+        return nil
+    }
+    return nil
+}
+
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;收到 readIndexReq 后，首先调用 &lt;code&gt;r.readOnly.addRequest&lt;/code&gt; 保存下来，然后调用 &lt;code&gt;bcastHeartbeatWithCtx&lt;/code&gt; 广播心跳包， ctx 即唯一标识 readIndexReq 的 reqId。再看看 &lt;code&gt;stepLeader&lt;/code&gt; 如何处理心跳回包：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func stepLeader(r *raft, m pb.Message) error {
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+    case pb.MsgHeartbeatResp:
+        pr.RecentActive = true
+        pr.resume()
+
+        if r.readOnly.option != ReadOnlySafe || len(m.Context) == 0 {
+            return nil
+        }
+
+        ackCount := r.readOnly.recvAck(m)
+        if ackCount &amp;lt; r.quorum() {  // 判断是否收到 quorum 的心跳回包
+            return nil
+        }
+
+        // 收到 quorum 的心跳回包了，把 readIndexReq 依次 append r.readStates 中，返回 ready 对象时会包含 r.readStates
+        rss := r.readOnly.advance(m)
+        for _, rs := range rss {
+            req := rs.req
+            if req.From == None || req.From == r.id { // from local member
+                r.readStates = append(r.readStates, ReadState{Index: rs.index, RequestCtx: req.Entries[0].Data})
+            } else {
+                r.send(pb.Message{To: req.From, Type: pb.MsgReadIndexResp, Index: rs.index, Entries: req.Entries})
+            }
+        }
+    return nil
+    }
+    return nil
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;调用 &lt;code&gt;r.readOnly.recvAck&lt;/code&gt;，根据 readIndeReq 的 reqId 统计收到心跳回包的数量，如果超过 quonum 表示该节点依然是 leader，此时从 &lt;code&gt;r.readOnly.advance&lt;/code&gt; 拿到保存的 readIndexReq，append 到 &lt;code&gt;r.readStates&lt;/code&gt; 中。之后调用 &lt;code&gt;newReady&lt;/code&gt; 会把 &lt;code&gt;r.readStates&lt;/code&gt; 返回给应用层，应用层取出 readIndexReq 中的 commit index，等到其被 apply 到状态机就可以允许读操作了。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {
+    rd := Ready{
+        Entries:          r.raftLog.unstableEntries(),
+        CommittedEntries: r.raftLog.nextEnts(),
+        Messages:         r.msgs,
+    }
+    ...
+
+    if len(r.readStates) != 0 {
+        rd.ReadStates = r.readStates  // 附上 r.readStates
+    }
+    ...
+    return rd
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
+        <pubDate>Thu, 05 Jul 2018 00:00:00 +0800</pubDate>
+        <link>http://masutangu.com/2018/07/etcd-raft-note-3/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-3/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
     
       <item>
         <title>etcd-raft 源码学习笔记（概览篇）</title>
@@ -234,7 +468,7 @@ type Ready struct {
     return rd
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Tue, 03 Jul 2018 13:21:23 +0800</pubDate>
+        <pubDate>Wed, 04 Jul 2018 13:33:35 +0800</pubDate>
         <link>http://masutangu.com/2018/07/etcd-raft-note-2/</link>
         <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-2/</guid>
         
@@ -1708,45 +1942,6 @@ T2:
         
         
         <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>再见，2017</title>
-        <description>&lt;p&gt;回看起去年的总结 &lt;a href=&quot;http://masutangu.com/2016/12/review/&quot;&gt;我的2016&lt;/a&gt;，心里挺有感慨的。17 年是出现转机的一年，在这最后一天，按照惯例，整理下这一年的历程和想法。&lt;/p&gt;
-
-&lt;h1&gt;关于自己&lt;/h1&gt;
-
-&lt;p&gt;在去年的时候，我总觉得自己在工作上挺失意的，各种原因下达不到自己的期望。还好，今年在工作方面对自己还算满意。&lt;strong&gt;最大的进步是对工作的心态上，不再有一些困惑和纠结。&lt;/strong&gt;工作上努力去争取有挑战的需求，空闲的时候则抽更多的时间在个人学习上，维持好工作和自学的平衡。我挺喜欢这样的节奏，忙的时候全心全意把工作做好，不忙的时候就把更多的时间投入到自己感兴趣的领域。&lt;/p&gt;
-
-&lt;p&gt;在经历 16 年那段纠结的时间，如今自己努力一点点扭转，我也更加相信，&lt;strong&gt;在任何时候都要把主动权握在自己手里&lt;/strong&gt;。不管自己处在一个什么样的环境，对你是有利或者是不利的、有没有机遇、公不公平，&lt;strong&gt;把自己能控制的做好，在任何时候都会有选择权&lt;/strong&gt;。但另一方面，环境也是至关重要的一个因素，是金子总会发光，我觉得是悖论。或者说，&lt;strong&gt;是金子的话，应该主动寻找能让自己发光的机会&lt;/strong&gt;，而不是呆在沙堆中，等着别人来发掘你，该争取的东西就一定要去争取。&lt;/p&gt;
-
-&lt;p&gt;个人学习上，下半年的主要精力都放在分布式系统上，跟着 &lt;a href=&quot;https://pdos.csail.mit.edu/6.824/schedule.html&quot;&gt;MIT 6.824&lt;/a&gt; 的课程，读论文，做实验，记&lt;a href=&quot;http://masutangu.com/2017/11/mit-6824-note-1/&quot;&gt;笔记&lt;/a&gt;。这个课程受益匪浅，有些思路我也能顺利运用到工作上，这样的感觉挺不错的。&lt;/p&gt;
-
-&lt;h1&gt;关于团队&lt;/h1&gt;
-
-&lt;p&gt;平时喜欢篮球，也经常关注 NBA。在我看来，团队氛围和文化及其重要。勇士、马刺的成功，和他们的球队文化、管理层的理念是分不开的。&lt;strong&gt;球队的凝聚力、球员之间的化学反应，是无法体现在冷冰冰的数据上的。&lt;/strong&gt;读到这篇文章&lt;a href=&quot;https://zhuanlan.zhihu.com/p/31997176&quot;&gt;《你可能见证了勇士队的成功，却很少了解他们背后的球队文化》&lt;/a&gt;的时候，我内心有点被触动：&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;即便克拉克离开了勇士队，勇士的主场球馆内依然挂着他身穿勇士球衣的照片，而克拉克自己也表示，虽然自己不在勇士，但是还是会和这些球员保持紧密的关系。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;一支球队中，有不同的角色：全明星、先发、替补、饮水机管理员。但相信我，&lt;strong&gt;无论你在球队中扮演什么样的角色，每个人都希望自己是球队的一部分，是比赛的一部分，每个人都希望球队的胜利，也有自己贡献的那部分因素。&lt;/strong&gt;在这一年，我参与了项目组新项目的研发，大家一起对需求、讨论方案、前后台定协议、联调、改bug，没有什么撕逼、甩锅，我感觉到自己在团队中的角色，我知道自己能做些什么，这些都让我更加有动力去扮演好团队中的一份子。&lt;/p&gt;
-
-&lt;h1&gt;一些不足&lt;/h1&gt;
-
-&lt;p&gt;一直以来，我都比较难以保持稳定的状态。有时状态好的时候，就一头扎进去。前阵子有一段时间，每天都 6 点就自然醒，那段时间就天天很早到公司，吃完早餐后开始读论文，就这样每天都抽更多的时间去学习。但持续了大概一个月之后就累垮了，低迷了一两周。而且状态低迷的时候，自己也经常会焦虑，导致有些恶性循环。新的一年，希望自己能维持稳定些的状态，对自己也更有耐心些。&lt;strong&gt;细水长流&lt;/strong&gt;，做长远打算。&lt;/p&gt;
-
-&lt;h1&gt;新年展望&lt;/h1&gt;
-
-&lt;p&gt;新的一年，希望自己能在&lt;strong&gt;工作上能有更大的突破&lt;/strong&gt;，个人学习上继续按自己规划的路线走，&lt;strong&gt;扩展更多领域的知识，提升自己的核心竞争力&lt;/strong&gt;。还是相信那句话：&lt;strong&gt;Pursue excellence, and success will follow！&lt;/strong&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sun, 31 Dec 2017 16:28:17 +0800</pubDate>
-        <link>http://masutangu.com/2017/12/2017-review/</link>
-        <guid isPermaLink="true">http://masutangu.com/2017/12/2017-review/</guid>
-        
-        
-        <category>随笔</category>
         
       </item>
     
