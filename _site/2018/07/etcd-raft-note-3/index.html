@@ -6,16 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>etcd-raft 源码学习笔记（Linearizable Read 篇）</title>
+  <title>etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）</title>
   <meta name="description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Linearizable Read 篇）">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）">
   <meta name="twitter:description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="etcd-raft 源码学习笔记（Linearizable Read 篇）">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）">
   <meta property="og:description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
@@ -128,7 +128,7 @@
     <div class="post-meta">
       <time datetime="2018-07-05 13:46:43 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-05</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
     </div>
-    <h1 class="post-title">etcd-raft 源码学习笔记（Linearizable Read 篇）</h1>
+    <h1 class="post-title">etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）</h1>
   </header>
 
   <section class="post">
@@ -428,6 +428,14 @@ func (ro *readOnly) advance(m pb.Message) []*readIndexStatus {
 </article>
 
 <section class="read-more">
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-4/" title="link to etcd-raft 源码学习笔记（Linearizable Read 之 Lease）">etcd-raft 源码学习笔记（Linearizable Read 之 Lease）</a></h2>
+       <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。除了基于 ReadIndex 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：Alternatively, the leader could rely on the heartbeat mechanism to pro...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-06 08:46:43 +0800" class="post-list__meta--date date">2018-07-06</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-4/>继续阅读</a></div>
+   </div>
    
    
    

@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2018-07-05T13:46:43+08:00
-title: etcd-raft 源码学习笔记（Linearizable Read 篇）
+title: etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）
 category: 源码阅读
 ---
 

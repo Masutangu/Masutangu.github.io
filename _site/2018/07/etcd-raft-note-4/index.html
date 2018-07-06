@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>etcd-raft 源码学习笔记（Linearizable Read 之 Lease）</title>
+  <meta name="description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Lease）">
+  <meta name="twitter:description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Lease）">
+  <meta property="og:description" content="这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/07/etcd-raft-note-4/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-07-06 08:46:43 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-06</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">etcd-raft 源码学习笔记（Linearizable Read 之 Lease）</h1>
+  </header>
+
+  <section class="post">
+    <p>这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 <a href="https://aphyr.com/posts/313-strong-consistency-models">《Strong consistency models》</a>）。</p>
+
+<p>除了基于 <a href="http://masutangu.com/2018/07/etcd-raft-note-3/">ReadIndex</a> 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：</p>
+
+<blockquote>
+<p>Alternatively, the leader could rely on the heartbeat mechanism to provide a form of lease, but this would rely on timing for safety (it
+assumes bounded clock skew).</p>
+</blockquote>
+
+<p>raft 中，follower 至少会在 election timeout 之后才重新进行选举。leader 定期发送 heartbeat，在收到 quonum 节点的回包后的 election timeout 这段时间间隔内，不会有新一轮的选举（因为各个机器的 cpu 时钟有误差，所以这个方案有风险）。</p>
+
+<p>lease 模式对应用层提供的接口还是 <code>ReadIndex</code>，应用层处理的方式也和基于 ReadIndex 模式相同。只是 raft 内部逻辑不同。</p>
+
+<p>如果指定了 leaseBase 的模式，那要求 <code>CheckQuorum</code> 为 true，<code>validate</code> 方法做了这个检查：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (c *Config) validate() error {
+    ...
+    if c.ReadOnlyOption == ReadOnlyLeaseBased &amp;&amp; !c.CheckQuorum {
+        return errors.New(&quot;CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased&quot;)
+    }
+
+    return nil
+}
+</code></pre></figure>
+<p>指定了 <code>checkQuorum</code> 为 true 之后，每次 tick 都会看是否应该检查 Quorum（间隔 electionTimeout），通过发送 pb.MsgCheckQuorum 类型的请求：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">// tickHeartbeat is run by leaders to send a MsgBeat after r.heartbeatTimeout.
+func (r *raft) tickHeartbeat() {
+    r.heartbeatElapsed++
+    r.electionElapsed++
+
+    if r.electionElapsed &gt;= r.electionTimeout {  // 每隔 electionTimeout 检查一次
+        r.electionElapsed = 0
+        if r.checkQuorum {
+            r.Step(pb.Message{From: r.id, Type: pb.MsgCheckQuorum})  // 检查 Quorum
+        }
+        // If current leader cannot transfer leadership in electionTimeout, it becomes leader again.
+        if r.state == StateLeader &amp;&amp; r.leadTransferee != None {
+            r.abortLeaderTransfer()
+        }
+    }
+
+    if r.state != StateLeader {
+        return
+    }
+
+    if r.heartbeatElapsed &gt;= r.heartbeatTimeout {
+        r.heartbeatElapsed = 0
+        r.Step(pb.Message{From: r.id, Type: pb.MsgBeat})
+    }
+}
+</code></pre></figure>
+<p><code>stepLeader</code> 收到 pb.MsgCheckQuorum 后调用 <code>checkQuorumActive</code> 进行检查，如果返回 false，此时把节点变更为 follower：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepLeader(r *raft, m pb.Message) error {
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+    case pb.MsgCheckQuorum:
+        if !r.checkQuorumActive() {  
+            r.becomeFollower(r.Term, None)  // checkQuorumActive 失败，变成 follower
+        }
+        return nil
+    }
+    return nil
+}
+</code></pre></figure>
+<p><code>checkQuorumActive</code> 即统计 active 的 peers 数量是否超过 quonum：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">// checkQuorumActive also resets all RecentActive to false.
+func (r *raft) checkQuorumActive() bool {
+    var act int
+
+    r.forEachProgress(func(id uint64, pr *Progress) {
+        if id == r.id { // self is always active
+            act++
+            return
+        }
+
+        if pr.RecentActive &amp;&amp; !pr.IsLearner {
+            act++
+        }
+
+        pr.RecentActive = false
+    })
+
+    return act &gt;= r.quorum()
+}
+</code></pre></figure>
+<p><code>RecentActive</code> 是 leader 收到 peers 的心跳回包或者 appendEntriesReq 的回包时设置的：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepLeader(r *raft, m pb.Message) error {
+    // All other message types require a progress for m.From (pr).
+    pr := r.getProgress(m.From)
+
+    switch m.Type {
+    case pb.MsgAppResp:
+        pr.RecentActive = true
+        ...
+    case pb.MsgHeartbeatResp:
+        pr.RecentActive = true
+        ...
+    }
+}
+</code></pre></figure>
+<p>文章开头提到， leaseBase 模式下 etcd-raft 对应用层暴露的也是 <code>ReadIndex</code> 接口。在收到 pb.MsgReadIndex 类型的请求时，由于 CheckQuonum 保证了我们 leader 有效，就可以直接 append 到 r.readStates 中。</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepLeader(r *raft, m pb.Message) error {
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+    case pb.MsgReadIndex:
+        // 5.4 safety
+        if r.raftLog.zeroTermOnErrCompacted(r.raftLog.term(r.raftLog.committed)) != r.Term {
+            // Reject read only request when this leader has not committed any log entry at its term.
+            return nil
+        }
+
+        // thinking: use an interally defined context instead of the user given context.
+        // We can express this in terms of the term and index instead of a user-supplied value.
+        // This would allow multiple reads to piggyback on the same message.
+        switch r.readOnly.option {
+        case ReadOnlyLeaseBased: // leaseBase 模式
+            ri := r.raftLog.committed
+            if m.From == None || m.From == r.id { // from local member
+                r.readStates = append(r.readStates, ReadState{Index: r.raftLog.committed, RequestCtx: m.Entries[0].Data})
+            } else {
+                r.send(pb.Message{To: m.From, Type: pb.MsgReadIndexResp, Index: ri, Entries: m.Entries})
+            }
+        }
+
+        return nil
+    }
+    return nil
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-3/" title="link to etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）">etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）</a></h2>
+       <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。raft 论文第 8 节阐述了思路：Read-only operations can be handled without writing anything into the log. However, with no additional measures, ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-05 13:46:43 +0800" class="post-list__meta--date date">2018-07-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-3/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://masutangu.com/2018/07/etcd-raft-note-4/";
+        this.page.identifier = "/2018/07/etcd-raft-note-4/";
+    };
+
+    var disqus_shortname = 'masutangu';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

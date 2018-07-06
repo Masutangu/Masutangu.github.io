@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2016/12/linux-kernel-serial-5/" title="访问 Linux 内核系列－文件系统和 IO">Linux 内核系列－文件系统和 IO</a></h2>
+      <p class="excerpt">本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念如果能把文件看成是一种地址空间，那么就离理解文件不远了。（文件类似虚拟地址空间，相应的磁盘地址对应内存物理地址，通过 inode 来管理映射关系，类似页表的作用）。文件系统的实现文件系统存放在磁盘上。多数磁盘划分为一个或多个区，每个分区有一个独立的文件系统。磁盘的 0 号扇区称为主引导记录（MBR），用来引导计算机。在 MBR 结尾是分区...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2016-12-16 21:37:16 +0800" class="post-list__meta--date date">2016-12-16</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/12/linux-kernel-serial-5/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/12/linux-kernel-serial-4/" title="访问 Linux 内核系列－内存管理">Linux 内核系列－内存管理</a></h2>
       <p class="excerpt">本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念操作系统存储管理方案的演进：无存储抽象早期计算机并没有存储抽象，程序直接访问物理内存地址。使用这种模型，想要同时运行多个程序非常困难。存储抽象：地址空间地址空间的概念要保证多个应用程序同时处于内存并且互不影响，则需要解决两个问题：保护和重定位。内存块加上保护键并通过装载时重定位程序虽然可以做到，但是是个缓慢和复杂的解决方案。一个更好的方法...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-12-11 10:21:16 +0800" class="post-list__meta--date date">2016-12-11</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/12/linux-kernel-serial-4/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/07/conclusion-of-two-years/" title="访问 工作两年记">工作两年记</a></h2>
       <p class="excerpt">转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一些简单的成果。之后又熟悉了 Django，了解 MVC。之后再尝试空闲时间读一些库的源码，并最终自己用 ...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-07-13 21:24:34 +0800" class="post-list__meta--date date">2016-07-13</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2016/07/conclusion-of-two-years/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/07/elric-documentation/" title="访问 Elric 使用手册">Elric 使用手册</a></h2>
-      <p class="excerpt">这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 Elric，包括其API，架构，周边能力以及实现细节。读者可以先阅读之前的这篇文章《Python实现的分布式任务调度系统》来了解Elric的起源和早期设计的思想。一. 简介Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker 架构，Worker 向 Master 提交任务和执行 Master 下发的任务。支持多种任务类型：即时任务，周期任务，crontab 任务和定时任务。其实现参考了 Ap...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-07-07 15:02:11 +0800" class="post-list__meta--date date">2016-07-07</time> &#8226; <span class="post-list__meta--tags tags">个人项目</span><a class="btn-border-small" href=/2016/07/elric-documentation/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
