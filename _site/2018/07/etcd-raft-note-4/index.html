@@ -266,6 +266,14 @@ func (r *raft) checkQuorumActive() bool {
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-5/" title="link to etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</a></h2>
+       <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。应用层调用 TransferLeadership 方法，发送一个 type 为 pb.MsgTransferLeader 的请求给 raft 处理。func (n *node) TransferLeadership(ctx context.Context, lead, transferee uint64) {    select {    // manua...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-06 22:56:37 +0800" class="post-list__meta--date date">2018-07-06</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-5/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">
@@ -278,26 +286,6 @@ func (r *raft) checkQuorumActive() bool {
 </section>
 
 <section class="post-comments">
-  
-    <div id="disqus_thread"></div>
-    <script>
-    
-    var disqus_config = function () {
-        this.page.url = "http://masutangu.com/2018/07/etcd-raft-note-4/";
-        this.page.identifier = "/2018/07/etcd-raft-note-4/";
-    };
-
-    var disqus_shortname = 'masutangu';
-    
-    (function() { // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-            (d.head || d.body).appendChild(s);
-        })();
-    </script>
-    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
-    
   
   
   

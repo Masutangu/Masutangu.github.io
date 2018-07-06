@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</title>
+  <meta name="description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
+  <meta name="author" content="Wei Wang">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">
+  <meta name="twitter:description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">
+  <meta property="og:description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
+  
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link href="/assets/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://masutangu.com/2018/07/etcd-raft-note-5/">
+  <link rel="alternate" type="application/rss+xml" title="Masutangu" href="http://masutangu.com/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+  
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="fa fa-list btn-mobile-menu__icon"></i>
+        <i class="fa fa-angle-up btn-mobile-close__icon hidden"></i>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/assets/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        <a href="/#blog" title="前往 Masutangu 的主页" class="blog-button"><img src="/assets/images/avatar.jpg" width="80" alt="Masutangu logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Masutangu" class="blog-button">Masutangu</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">长风破浪会有时 直挂云帆济沧海</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">也許我這一生　始終在追逐那顆九號球</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="Visit blog" class="blog-button">博客</a></li>
+                
+                  <li class="navigation__item"><a href="http://500px.me/community/user-details/5cc3fb7c1480fb4fc2140a09627457614" target="_blank" title="Life">生活</a></li>
+                
+                  <li class="navigation__item"><a href="https://about.me/masutangu" target="_blank" title="About me">关于</a></li>
+                
+              </ul>
+            </nav>
+          </div>
+          
+          <div><nav class="cover-navigation navigation--social">
+  <ul class="navigation">
+
+  
+
+  
+  <!-- Github -->
+  <li class="navigation__item">
+    <a href="https://github.com/masutangu" title="@masutangu 的 Github" target="_blank">
+      <i class='social fa fa-github'></i>
+      <span class="label">Github</span>
+    </a>
+  </li>
+  
+  
+  
+
+  
+
+  <!-- RSS -->
+  <li class="navigation__item">
+    <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+      <i class='social fa fa-rss'></i>
+      <span class="label">RSS</span>
+    </a>
+  </li>
+
+  
+  <!-- Email -->
+  <li class="navigation__item">
+    <a href="mailto:masutangu.cs@gmail.com" title="Contact me">
+      <i class='social fa fa-envelope'></i>
+      <span class="label">Email</span>
+    </a>
+  </li>
+  
+
+  </ul>
+</nav>
+</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-blue"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <div class="post-meta">
+      <time datetime="2018-07-06 22:56:37 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-06</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
+    </div>
+    <h1 class="post-title">etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</h1>
+  </header>
+
+  <section class="post">
+    <p>这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。</p>
+
+<p>应用层调用 <code>TransferLeadership</code> 方法，发送一个 type 为 pb.MsgTransferLeader 的请求给 raft 处理。</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (n *node) TransferLeadership(ctx context.Context, lead, transferee uint64) {
+    select {
+    // manually set &#39;from&#39; and &#39;to&#39;, so that leader can voluntarily transfers its leadership
+    case n.recvc &lt;- pb.Message{Type: pb.MsgTransferLeader, From: transferee, To: lead}:
+    case &lt;-n.done:
+    case &lt;-ctx.Done():
+    }
+}
+</code></pre></figure>
+<p><code>stepLeader</code> 收到 pb.MsgTransferLeader 后，检查下是否有正在进行的 leader transfer，并检查 tranferee 的 log 是否是最新的，如果是，调用 <code>sendTimeoutNow</code>，如果不是最新日志，则发送 appendEntriesReq，收到 MsgAppResp 后，如果条件符合，再调用 <code>sendTimeoutNow</code>：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepLeader(r *raft, m pb.Message) error {
+    // All other message types require a progress for m.From (pr).
+    pr := r.getProgress(m.From)
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+        case pb.MsgTransferLeader:
+        leadTransferee := m.From
+        lastLeadTransferee := r.leadTransferee
+        if lastLeadTransferee != None {
+            if lastLeadTransferee == leadTransferee {
+                return nil
+            }
+            // 取消之前的
+            r.abortLeaderTransfer()
+        }
+        if leadTransferee == r.id {
+            // leadTransferee 已经是 leader 了
+            return nil
+        }
+        // Transfer leadership should be finished in one electionTimeout, so reset r.electionElapsed.
+        r.electionElapsed = 0
+        r.leadTransferee = leadTransferee
+        // 如果 leadTransferee 的 log 已经是最新的了 则马上调用 sendTimeoutNow，开始 transfer
+        if pr.Match == r.raftLog.lastIndex() {
+            r.sendTimeoutNow(leadTransferee)
+        } else {
+            // 否则先往 leadTransferee append 日志
+            r.sendAppend(leadTransferee)
+        }
+
+        ...
+        // 收到 append 回包后，检查是不是有 in progress 的 leader transfer，并且 log 也是最新了的话，则调用 sendTimeoutNow
+        case pb.MsgAppResp:
+        pr.RecentActive = true
+
+        ...
+        // Transfer leadership is in progress.
+        if m.From == r.leadTransferee &amp;&amp; pr.Match == r.raftLog.lastIndex() {
+            r.sendTimeoutNow(m.From)
+        }
+        ...
+    }
+    return nil
+}
+</code></pre></figure>
+<p>Leader transfer 过程中不处理 pb.MsgProp 类型的请求：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepLeader(r *raft, m pb.Message) error {
+    // These message types do not require any progress for m.From.
+    switch m.Type {
+    case pb.MsgProp:
+        ...
+        if r.leadTransferee != None {
+            // 正在 leader tranfer，不处理 Propose 请求
+            return ErrProposalDropped
+        }
+    }
+    return nil
+}
+</code></pre></figure>
+<p><code>sendTimeoutNow</code> 发送 pb.MsgTimeoutNow 的请求，看看 follower 如何处理：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func stepFollower(r *raft, m pb.Message) error {
+    switch m.Type {
+        case pb.MsgTimeoutNow:
+        if r.promotable() {
+            // Leadership transfers never use pre-vote even if r.preVote is true; we
+            // know we are not recovering from a partition so there is no need for the
+            // extra round trip.
+            r.campaign(campaignTransfer)
+        }
+    }
+    return nil
+}
+</code></pre></figure>
+<p><code>campain</code> 会发送 voteMsg 给 peers 进行选举：</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">
+func (r *raft) campaign(t CampaignType) {
+    var term uint64
+    var voteMsg pb.MessageType
+    if t == campaignPreElection {
+        r.becomePreCandidate()
+        voteMsg = pb.MsgPreVote
+        // PreVote RPCs are sent for the next term before we&#39;ve incremented r.Term.
+        term = r.Term + 1
+    } else {
+        r.becomeCandidate()  // 变成 Candidate term + 1，此时该节点 term 最大，所以该节点将成为新的 leader
+        voteMsg = pb.MsgVote
+        term = r.Term
+    }
+    if r.quorum() == r.poll(r.id, voteRespMsgType(voteMsg), true) {
+        // We won the election after voting for ourselves (which must mean that
+        // this is a single-node cluster). Advance to the next state.
+        if t == campaignPreElection {
+            r.campaign(campaignElection)
+        } else {
+            r.becomeLeader()
+        }
+        return
+    }
+
+    // 发送 voteMsg
+    for id := range r.prs {
+        if id == r.id {
+            continue
+        }
+        var ctx []byte
+        if t == campaignTransfer {
+            ctx = []byte(t)
+        }
+        r.send(pb.Message{Term: term, To: id, Type: voteMsg, Index: r.raftLog.lastIndex(), LogTerm: r.raftLog.lastTerm(), Context: ctx})
+    }
+}
+</code></pre></figure>
+<p>当前 leader 变成 follower 之后，会调用 <code>reset</code>，<code>reset</code> 将调用 <code>abortLeaderTransfer</code> 把 <code>r.leadTransferee</code> 设置为 None，leader transfer 完成。</p>
+<figure class="highlight"><pre><code class="language-go" data-lang="go">func (r *raft) reset(term uint64) {
+    if r.Term != term {
+        r.Term = term
+        r.Vote = None
+    }
+    r.lead = None
+
+    r.electionElapsed = 0
+    r.heartbeatElapsed = 0
+    r.resetRandomizedElectionTimeout()
+    r.abortLeaderTransfer()
+    ...
+}
+</code></pre></figure>
+  </section>
+</article>
+
+<section class="read-more">
+   
+   
+   
+   
+   <div class="read-more-item">
+       <span class="read-more-item-dim">更早的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-4/" title="link to etcd-raft 源码学习笔记（Linearizable Read 之 Lease）">etcd-raft 源码学习笔记（Linearizable Read 之 Lease）</a></h2>
+       <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。除了基于 ReadIndex 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：Alternatively, the leader could rely on the heartbeat mechanism to pro...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-06 08:46:43 +0800" class="post-list__meta--date date">2018-07-06</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-4/>继续阅读</a></div>
+   </div>
+   
+</section>
+
+<section class="post-comments">
+  
+  
+  
+  
+</section>
+
+
+            <section class="footer">
+    <footer>
+    	<span class="footer__copyright">本站点采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享 署名-非商业性使用-相同方式共享 4.0 国际 许可协议</a></span>
+        <span class="footer__copyright">本站由 <a href="http://masutangu.com/">@masutangu</a> 创建，采用 <a href="https://github.com/onevcat/vno-jekyll">Vno - Jekyll</a> 作为主题，您可以在 GitHub 找到<a href="https://github.com/Masutangu/Masutangu.github.io">本站源码</a> - &copy; 2018</span>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-77236140-1', 'masutangu.com');
+    ga('send', 'pageview');
+</script>
+
+
+    
+  </body>
+
+</html>

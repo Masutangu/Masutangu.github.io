@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-5/" title="访问 etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</a></h2>
+      <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。应用层调用 TransferLeadership 方法，发送一个 type 为 pb.MsgTransferLeader 的请求给 raft 处理。func (n *node) TransferLeadership(ctx context.Context, lead, transferee uint64) {    select {    // manua...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-07-06 22:56:37 +0800" class="post-list__meta--date date">2018-07-06</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-5/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-4/" title="访问 etcd-raft 源码学习笔记（Linearizable Read 之 Lease）">etcd-raft 源码学习笔记（Linearizable Read 之 Lease）</a></h2>
       <p class="excerpt">这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 《Strong consistency models》）。除了基于 ReadIndex 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：Alternatively, the leader could rely on the heartbeat mechanism to pro...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-06 08:46:43 +0800" class="post-list__meta--date date">2018-07-06</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-4/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2018/03/programing-language/" title="访问 Programming Language 课程笔记">Programming Language 课程笔记</a></h2>
       <p class="excerpt">本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。一. 声明式编程和命令式编程声明式编程（Declarative Programming）Building the structure and elements of computer programs, that expresses the logic of a computation without describing its control flow.命令式编程（Impe...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-03-02 19:45:24 +0800" class="post-list__meta--date date">2018-03-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/programing-language/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/01/game-recover-based-on-replicated-state-machine/" title="访问 基于 Replicated State Machine 实现游戏进程恢复">基于 Replicated State Machine 实现游戏进程恢复</a></h2>
-      <p class="excerpt">Introduction游戏服务器实现的业务逻辑普遍比较复杂，且大部分是带有状态的。如果进程重启或意外崩溃，会导致该服务器上的玩家断线，丢失进行中的游戏数据，带来极差的游戏体验。为了避免这种情况出现，一般游戏服务器都会持久化玩家数据以实现进程恢复，当重启或进程意外崩溃时，重新拉起进程后可以恢复到之前的状态。常用的做法是将玩家的状态信息保存在共享内存中，重启时加载共享内存进行恢复。共享内存虽然方便，但会有许多限制。比如 C++ 涉及到多态（虚函数表）、STL容器（heap分配），都不能直接映...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-01-13 11:30:24 +0800" class="post-list__meta--date date">2018-01-13</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/01/game-recover-based-on-replicated-state-machine/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
