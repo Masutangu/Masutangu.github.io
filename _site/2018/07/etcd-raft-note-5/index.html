@@ -6,16 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</title>
+  <title>etcd-raft 源码学习笔记（Leader Transfer）</title>
   <meta name="description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
   <meta name="author" content="Wei Wang">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">
+  <meta name="twitter:title" content="etcd-raft 源码学习笔记（Leader Transfer）">
   <meta name="twitter:description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）">
+  <meta property="og:title" content="etcd-raft 源码学习笔记（Leader Transfer）">
   <meta property="og:description" content="这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。">
   
   <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
@@ -128,7 +128,7 @@
     <div class="post-meta">
       <time datetime="2018-07-06 22:56:37 +0800" itemprop="datePublished" class="post-meta__date date">2018-07-06</time> &#8226; <span class="post-meta__tags tags">源码阅读</span>
     </div>
-    <h1 class="post-title">etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</h1>
+    <h1 class="post-title">etcd-raft 源码学习笔记（Leader Transfer）</h1>
   </header>
 
   <section class="post">

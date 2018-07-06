@@ -5,12 +5,12 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 06 Jul 2018 22:56:38 +0800</pubDate>
-    <lastBuildDate>Fri, 06 Jul 2018 22:56:38 +0800</lastBuildDate>
+    <pubDate>Fri, 06 Jul 2018 23:05:45 +0800</pubDate>
+    <lastBuildDate>Fri, 06 Jul 2018 23:05:45 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
     
       <item>
-        <title>etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）</title>
+        <title>etcd-raft 源码学习笔记（Leader Transfer）</title>
         <description>&lt;p&gt;这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。&lt;/p&gt;
 
 &lt;p&gt;应用层调用 &lt;code&gt;TransferLeadership&lt;/code&gt; 方法，发送一个 type 为 pb.MsgTransferLeader 的请求给 raft 处理。&lt;/p&gt;

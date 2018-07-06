@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2018-07-06T22:56:37+08:00
-title: etcd-raft 源码学习笔记（Linearizable Read 之 Leader Transfer）
+title: etcd-raft 源码学习笔记（Leader Transfer）
 category: 源码阅读
 ---
 
