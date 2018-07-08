@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2015/10/elric-change-log-1/" title="访问 Elric Change Log I">Elric Change Log I</a></h2>
+      <p class="excerpt">自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。接口简化之前的worker在往某个queue提交任务之前，需要调用add_queue()方法来先在master创建一个queue。同时worker也需要注册自己监听哪些queue，这里worker和master就有两个queue的交互，一条queue用于提交任务，一条queue用于拉取任务来执行。但对于Elric的使用者，并不需要关心这些细节，因此我把add_queu...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2015-10-27 16:07:58 +0800" class="post-list__meta--date date">2015-10-27</time> &#8226; <span class="post-list__meta--tags tags">优化&重构</span><a class="btn-border-small" href=/2015/10/elric-change-log-1/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2015/08/talk-about-golang/" title="访问 谈谈我对 Golang 的理解">谈谈我对 Golang 的理解</a></h2>
       <p class="excerpt">谈谈我对Golang的理解 一直想了解下go这门新的语言。前段时间看了Google IO上Rob Pike对Go语言的介绍，又过了下A Tour of Go。然后趁热打铁花了两天时间写了个比较有趣的脚本管理器Scripter。当然对Go语言的语法规范和代码组织还不了解，所以这代码写的有些凌乱。回到主题，从开始看Google IO，到用Go写完了Scripter，加起来花了差不多五天。不是我天赋过人，而是Go的语法实在是太简洁了。简单来说，Go是一门写起来像动态语言，有着动态语言开发效率的静...&hellip;</p>
       <div class="post-list__meta"><time datetime="2015-08-02 16:07:58 +0800" class="post-list__meta--date date">2015-08-02</time> &#8226; <span class="post-list__meta--tags tags">编程语言</span><a class="btn-border-small" href=/2015/08/talk-about-golang/>继续阅读</a></div>

@@ -278,6 +278,14 @@ func (r *raft) campaign(t CampaignType) {
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-6/" title="link to etcd-raft 源码学习笔记（PreVote）">etcd-raft 源码学习笔记（PreVote）</a></h2>
+       <p class="excerpt">这篇文章介绍 etcd-raft 的 PreVote 机制，避免由于网络分区导致 candidate 的 term 不断增大。Election timeout 之后，发送 type 为 pb.MsgHup 的请求，进入选举阶段：// tickElection is run by followers and candidates after r.electionTimeout.func (r *raft) tickElection() {    r.electionElapsed++    ...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-08 10:19:08 +0800" class="post-list__meta--date date">2018-07-08</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-6/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">

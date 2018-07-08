@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2017/02/linux-performance-monitor/" title="访问 Linux 性能监控">Linux 性能监控</a></h2>
+      <p class="excerpt">本文是对 《Linux 性能监测》 系列文章的读书笔记，并在此基础上丰富。CPU 相关vmstat$ vmstat 1procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu----- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st 0  0 164412 143200  35916 2...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2017-02-05 22:57:39 +0800" class="post-list__meta--date date">2017-02-05</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/02/linux-performance-monitor/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2016/12/review/" title="访问 我的 2016">我的 2016</a></h2>
       <p class="excerpt">时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。回顾过去在这整整一年中，我所思考的和困扰的，可以由三个词来概括：成绩、成长和价值。工作已经两年半，对自己目前取得的成绩，对自己技术成长的预期，对自己为团队创造的价值，实话实说，都不满意。从今年年初开始，我就有点焦虑，觉得自己没有太多的成长，一直在原地踏步，已经没有刚入职时那种回顾过去会觉得自己突飞猛进的感觉（工作后做的每个比较大的需求，我都会整理保存下来 ppt，回看时就会清楚...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-12-28 22:19:43 +0800" class="post-list__meta--date date">2016-12-28</time> &#8226; <span class="post-list__meta--tags tags">随笔</span><a class="btn-border-small" href=/2016/12/review/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/09/talk-about-protobuf/" title="访问 Protobuf 编码原理">Protobuf 编码原理</a></h2>
       <p class="excerpt">最近项目组有在用 protobuf，于是抽空读了些 protobuf 的相关资料。本文总结 protobuf 的编码原理，重点在于其如何实现版本兼容。文中样例及说明都参考了 protobuf 的官方文档。编码方法的介绍要了解 protobuf 的编码方式，首先介绍下 Varint 和 ZigZag 这两种编码。VarintVarint 编码的优势在于值越小的数字，占用的字节更少。一般 int32 的数字都需要占用 4 个字节。使用 Varint 进行编码则有可能缩减到 1 个字节。反过来，...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-09-03 00:44:24 +0800" class="post-list__meta--date date">2016-09-03</time> &#8226; <span class="post-list__meta--tags tags">协议设计</span><a class="btn-border-small" href=/2016/09/talk-about-protobuf/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/08/simple-async-framework/" title="访问 简单异步应用框架的实现">简单异步应用框架的实现</a></h2>
-      <p class="excerpt">两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。异步框架设计思想服务器模型先来看看传统的服务器模型，如下图：一般来说，服务器端可以分为三层：接入层，逻辑层，数据层。接入层负责客户端的接入，逻辑层则实现业务逻辑，数据层就是数据...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-08-30 08:14:24 +0800" class="post-list__meta--date date">2016-08-30</time> &#8226; <span class="post-list__meta--tags tags">个人项目</span><a class="btn-border-small" href=/2016/08/simple-async-framework/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
