@@ -299,6 +299,14 @@ func stepCandidate(r *raft, m pb.Message) error {
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/raft-rust/" title="link to raft-rust 初体验">raft-rust 初体验</a></h2>
+       <p class="excerpt">之前分析了使用 golang 实现的 etcd-raft，这几天再读了下 rust 实现的 raft-rs，简单说下对比。rust 版应该是基于 golang 版来实现的，所有的类、方法基本上是一致的。从样例看起，let (sender, receiver) = mpsc::channel(); 创建了 channel 用于线程之间数据传递（类似 golang 的 channel）。调用 send_propose 创建一个线程，通过 sender 发送 propose 请求。main 主线...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-09 21:59:16 +0800" class="post-list__meta--date date">2018-07-09</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/raft-rust/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">

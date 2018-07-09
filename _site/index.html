@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/07/raft-rust/" title="访问 raft-rust 初体验">raft-rust 初体验</a></h2>
+      <p class="excerpt">之前分析了使用 golang 实现的 etcd-raft，这几天再读了下 rust 实现的 raft-rs，简单说下对比。rust 版应该是基于 golang 版来实现的，所有的类、方法基本上是一致的。从样例看起，let (sender, receiver) = mpsc::channel(); 创建了 channel 用于线程之间数据传递（类似 golang 的 channel）。调用 send_propose 创建一个线程，通过 sender 发送 propose 请求。main 主线...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-07-09 21:59:16 +0800" class="post-list__meta--date date">2018-07-09</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/raft-rust/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-6/" title="访问 etcd-raft 源码学习笔记（PreVote）">etcd-raft 源码学习笔记（PreVote）</a></h2>
       <p class="excerpt">这篇文章介绍 etcd-raft 的 PreVote 机制，避免由于网络分区导致 candidate 的 term 不断增大。Election timeout 之后，发送 type 为 pb.MsgHup 的请求，进入选举阶段：// tickElection is run by followers and candidates after r.electionTimeout.func (r *raft) tickElection() {    r.electionElapsed++    ...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-08 10:19:08 +0800" class="post-list__meta--date date">2018-07-08</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-6/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2018/03/the-part-time-parliament-note/" title="访问 The Part-Time Parliament 论文笔记">The Part-Time Parliament 论文笔记</a></h2>
       <p class="excerpt">背景Paxos 岛兼职议会类似容错式分布式系统面对的问题：议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。The Single-Decree Synod单一法令的神会协议的演化如下：首先由几个能保证一致性和允许进展性的约束推导出初级协议（preliminary protocol)preliminary protocol的约束版本得到基本协议（basic protocol），其满足一致性但不保证进展性进一步约束basic...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-03-21 20:36:16 +0800" class="post-list__meta--date date">2018-03-21</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/the-part-time-parliament-note/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
-      <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

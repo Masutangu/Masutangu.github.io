@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/03/multi-rank-refresh-design/" title="访问 多排行榜数据刷新方案">多排行榜数据刷新方案</a></h2>
+      <p class="excerpt">一. 背景最近工作遇到一个棘手的问题：多个不同的排行榜的玩家信息如何保持一致。简单描述下场景，以小游戏跳一跳为例子，一开始游戏只有一个好友排行榜，好友排行榜以玩家的最高分数进行排序，这样好处理，搭一个关系链svr，该 svr 上缓存玩家好友的信息（避免每次去 DB 查询），并使用玩家信息中的最高分数进行排序。客户端请求时下方相应的排名和玩家信息，包括最高分数信息（客户端需要展示）即可。但如果我们要新增一个全国排行榜，全国排行榜以玩家的最高步数＋耗时进行排行。这时需要搭一个全国排行榜svr，...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-03-04 09:00:42 +0800" class="post-list__meta--date date">2018-03-04</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2018/03/multi-rank-refresh-design/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/03/programing-language/" title="访问 Programming Language 课程笔记">Programming Language 课程笔记</a></h2>
       <p class="excerpt">本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。一. 声明式编程和命令式编程声明式编程（Declarative Programming）Building the structure and elements of computer programs, that expresses the logic of a computation without describing its control flow.命令式编程（Impe...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-03-02 19:45:24 +0800" class="post-list__meta--date date">2018-03-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/03/programing-language/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2017/06/leveldb_1/" title="访问 LevelDB 源码阅读（一）">LevelDB 源码阅读（一）</a></h2>
       <p class="excerpt">这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。模块Log 文件客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。Memtable 和 Immutable Memtable内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memta...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-06-23 15:53:23 +0800" class="post-list__meta--date date">2017-06-23</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2017/06/leveldb_1/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/02/linker-loader-library-note/" title="访问 链接和装载">链接和装载</a></h2>
-      <p class="excerpt">本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。概论从源文件到可执行文件，可以分解为四个过程：预处理，编译，汇编，链接。预处理主要完成以下工作：展开所有宏定义，删除 #define处理所有条件预编译指令处理 #include 预编译指令。将被包含的文件插入到该预编译指令的位置删除所有注释添加行号和文件名标识，以便编译时编辑器产生调试用的行号信息以及编译产生错误或警告时的行号信息保留所有 #pragma 编译器指令编译的过程即把预处理完的文件进行一系列的词法分析、语法分析、语...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-02-25 10:55:19 +0800" class="post-list__meta--date date">2017-02-25</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/02/linker-loader-library-note/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
