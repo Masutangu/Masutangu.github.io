@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2018-07-26T18:57:23+08:00
-title: Design Data Intensive Application 读书笔记（一）
+title: Designing Data-Intensive Applications 读书笔记（一）
 category: 源码阅读
 ---
 
