@@ -5,9 +5,391 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 09 Jul 2018 21:59:21 +0800</pubDate>
-    <lastBuildDate>Mon, 09 Jul 2018 21:59:21 +0800</lastBuildDate>
+    <pubDate>Thu, 26 Jul 2018 18:58:19 +0800</pubDate>
+    <lastBuildDate>Thu, 26 Jul 2018 18:58:19 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Design Data Intensive Application 读书笔记（一）</title>
+        <description>&lt;h1&gt;Chapter 1. Reliable, Scalable, and Maintainable Applications&lt;/h1&gt;
+
+&lt;h2&gt;Thinking About Data Systems&lt;/h2&gt;
+
+&lt;p&gt;Increasingly many applications now have such demanding or wide-ranging requirements that a single tool can no longer meet all of its data processing and storage needs. Instead, &lt;strong&gt;the work is broken down into tasks that can be performed efficiently on a single tool, and those different tools are stitched together using application code.（在应用层代码整合多种不同的工具来实现需求）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/data-intensive-note/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;In this book, we focus on three concerns that are important in most software systems:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Reliability&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The system should continue to work correctly (performing the correct function at the desired level of performance) even in the face of adversity (hardware or software faults, and even human error)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Scalability&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;As the system grows (in data volume, traffic volume, or complexity), there should be reasonable ways of dealing with that growth&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Maintainability&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Over time, many different people will work on the system (engineering and operations, both maintaining current behavior and adapting the system to new use cases), and they should all be able to work on it productively.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Reliability&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Continuing to work correctly, even when things go wrong.&lt;/strong&gt; A fault is not the same as a failure. A fault is usually defined as one component of the system deviating from its spec, whereas a failure is when the system as a whole stops providing the required service to the user. &lt;strong&gt;It is impossible to reduce the probability of a fault to zero; therefore it is usually best to design fault-tolerance mechanisms that prevent faults from causing failures.（实现 fault－tolerance 以避免 faults 引发 failures）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;Scalability&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Scalability is the term we use to describe a system’s ability to cope with increased load.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;Describing Load&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Load can be described with a few numbers which we call load parameters.&lt;/strong&gt; The best choice of parameters depends on the architecture of your system: it may be requests per second to a web server, the ratio of reads to writes in a database, the number of simultaneously active users in a chat room, the hit rate on a cache, or something else.&lt;/p&gt;
+
+&lt;h3&gt;Approaches for Coping with Load&lt;/h3&gt;
+
+&lt;p&gt;People often talk of a dichotomy between &lt;strong&gt;scaling up (vertical scaling, moving to a more powerful machine)&lt;/strong&gt; and &lt;strong&gt;scaling out (horizontal scaling, distributing the load across multiple smaller machines)&lt;/strong&gt;. Distributing load across multiple machines is also known as a &lt;strong&gt;shared-nothing architecture&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;An architecture that scales well for a particular application is built around &lt;strong&gt;assumptions of which operations will be common and which will be rare—the load parameters（扩展性良好的系统是基于 load parameter 来构建的）&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Maintainability&lt;/h2&gt;
+
+&lt;h3&gt;Operability: Making Life Easy for Operations&lt;/h3&gt;
+
+&lt;p&gt;Make it easy for operations teams to keep the system running smoothly.&lt;/p&gt;
+
+&lt;h3&gt;Simplicity:Managing Complexity&lt;/h3&gt;
+
+&lt;p&gt;Make it easy for new engineers to understand the system, by removing as much complexity as possible from the system. (Note this is not the same as simplicity of the user interface.) &lt;strong&gt;One of the best tools we have for removing accidental complexity is abstraction.&lt;/strong&gt; A good abstraction can hide a great deal of implementation detail behind a clean, simple-to-understand façade. &lt;strong&gt;SQL is an abstraction that hides complex on-disk and in-memory data structures.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;Evolvability: Making Change Easy&lt;/h3&gt;
+
+&lt;p&gt;Make it easy for engineers to make changes to the system in the future, adapting it for unanticipated use cases as requirements change. Also known as extensibility, modifiability, or plasticity.&lt;/p&gt;
+
+&lt;h1&gt;Chapter 2. Data Models and Query Languages&lt;/h1&gt;
+
+&lt;p&gt;Data models are perhaps the most important part of developing software, because they have such a profound effect: not only on how the software is written, &lt;strong&gt;but also on how we think about the problem that we are solving&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Most applications are built by layering one data model on top of another. For each layer, &lt;strong&gt;the key question is: how is it represented in terms of the next-lower layer?&lt;/strong&gt; In a complex application there may be more intermediary levels, such as APIs built upon APIs, but the basic idea is still the same: &lt;strong&gt;each layer hides the complexity of the layers below it by providing a clean data model&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Relational Model Versus Document Model&lt;/h2&gt;
+
+&lt;p&gt;The best-known data model today is probably that of SQL, data is organized into relations (called tables in SQL), where each relation is an unordered collection of tuples (rows in SQL).&lt;/p&gt;
+
+&lt;h3&gt;The Birth of NoSQL&lt;/h3&gt;
+
+&lt;p&gt;There are several driving forces behind the adoption of NoSQL databases, including:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;A need for greater scalability than relational databases can easily achieve, including very large datasets or very high write throughput&lt;/li&gt;
+&lt;li&gt;A widespread preference for free and open source software over commercial database products&lt;/li&gt;
+&lt;li&gt;Specialized query operations that are not well supported by the relational model&lt;/li&gt;
+&lt;li&gt;Frustration with the restrictiveness of relational schemas, and a desire for a more dynamic and expressive data model&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Relational Versus Document Databases Today&lt;/h3&gt;
+
+&lt;p&gt;The main arguments in favor of the document data model are &lt;strong&gt;schema flexibility, better performance due to locality, and that for some applications it is closer to the data structures used by the application&lt;/strong&gt;.（&lt;em&gt;不需要和关系型数据库一样使用 ORM 做转换：If data is stored in relational tables, an awkward translation layer is required between the objects in the application code and the database model of tables, rows, and columns. The disconnect between the models is sometimes called an&lt;/em&gt; &lt;strong&gt;impedance mismatch&lt;/strong&gt;）The relational model counters by providing better support for &lt;strong&gt;joins, and many-to-one and many-to-many relationships&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Which data model leads to simpler application code?&lt;/h4&gt;
+
+&lt;p&gt;If the data in your application has a document-like structure, then it’s probably a good idea to use a document model. &lt;strong&gt;However, if your application does use many-to-many relationships, the document model becomes less appealing. It’s possible to reduce the need for joins by denormalizing, but then the application code needs to do additional work to keep the denormalized data consistent.&lt;/strong&gt; Joins can be emulated in application code by making multiple requests to the database, but that also moves complexity into the application and is usually slower than a join performed by specialized code inside the database. &lt;strong&gt;In such cases, using a document model can lead to significantly more complex application
+code and worse performance.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4&gt;Schema flexibility in the document model&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;Document databases are sometimes called schemaless, there is an implicit schema, but it is not enforced by the database.&lt;/strong&gt; A more accurate term is &lt;strong&gt;schema-on-read&lt;/strong&gt; (the structure of the data is implicit, and only interpreted when the data is read), in contrast with &lt;strong&gt;schema-on-write&lt;/strong&gt; (the traditional approach of relational databases, where the schema is explicit and the database ensures all written data conforms to it).&lt;/p&gt;
+
+&lt;h4&gt;Data locality for queries&lt;/h4&gt;
+
+&lt;p&gt;A document is usually stored as a single continuous string, encoded as JSON, XML, or a binary variant thereof. If your application often needs to access the entire document, there is a performance advantage to this &lt;strong&gt;storage locality&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;The locality advantage only applies if you need large parts of the document at the same time. On updates to a document, the entire document usually needs to be rewritten—only modifications that don’t change the encoded size of a document can easily be performed in place. For these reasons, it is generally recommended that you keep documents fairly small and &lt;strong&gt;avoid writes that increase the size of a document&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Query Languages for Data&lt;/h2&gt;
+
+&lt;p&gt;When the relational model was introduced, it included a new way of querying data: &lt;strong&gt;SQL is a declarative query language, whereas IMS and CODASYL queried the database using imperative code&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In a declarative query language, like SQL or relational algebra, you just specify the pattern of the data you want, but not how to achieve that goal.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Declarative languages often lend themselves to parallel execution. Imperative code is very hard to parallelize across multiple cores and multiple machines&lt;/strong&gt;, because it specifies instructions that must be performed in a particular order.&lt;/p&gt;
+
+&lt;h2&gt;Graph-Like Data Models&lt;/h2&gt;
+
+&lt;p&gt;The relational model can handle simple cases of many-to-many relationships, but as the connections within your data become more complex, it becomes more natural to start modeling your data as a graph.&lt;/p&gt;
+
+&lt;h3&gt;Property Graphs&lt;/h3&gt;
+
+&lt;p&gt;In the property graph model, each vertex consists of:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;A unique identifier&lt;/li&gt;
+&lt;li&gt;A set of outgoing edges&lt;/li&gt;
+&lt;li&gt;A set of incoming edges&lt;/li&gt;
+&lt;li&gt;A collection of properties (key-value pairs)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Each edge consists of:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;A unique identifier&lt;/li&gt;
+&lt;li&gt;The vertex at which the edge starts (the tail vertex)&lt;/li&gt;
+&lt;li&gt;The vertex at which the edge ends (the head vertex)&lt;/li&gt;
+&lt;li&gt;A label to describe the kind of relationship between the two vertices&lt;/li&gt;
+&lt;li&gt;A collection of properties (key-value pairs)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Graphs are good for evolvability: as you add features to your application, a graph can easily be extended to accommodate changes in your application’s data structures.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1&gt;Chapter 3. Storage and Retrieval&lt;/h1&gt;
+
+&lt;p&gt;We will examine two families of storage engines: &lt;strong&gt;log-structured storage engines, and page-oriented storage engines such as B-trees&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Data Structures That Power Your Database&lt;/h2&gt;
+
+&lt;p&gt;In order to efficiently find the value for a particular key in the database, we need a different data structure: an index. &lt;/p&gt;
+
+&lt;h3&gt;Hash Indexes&lt;/h3&gt;
+
+&lt;p&gt;Let’s say our data storage consists only of appending to a file. Then the simplest possible indexing strategy is this: &lt;strong&gt;keep an in-memory hash map where every key is mapped to a byte offset in the data file&lt;/strong&gt;—the location at which the value can be found. This is essentially what Bitcask (the default storage engine in Riak) does&lt;/p&gt;
+
+&lt;p&gt;A storage engine like Bitcask is well suited to situations where the value for each key is updated frequently. For example, the key might be the URL of a cat video, and the value might be the number of times it has been played. &lt;strong&gt;In this kind of workload, there are a lot of writes, but there are not too many distinct keys—you have a large number of writes per key, but it’s feasible to keep all keys in memory.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;How do we avoid eventually running out of disk space? &lt;strong&gt;A good solution is to break the log into segments of a certain size by closing a segment file when it reaches a certain size, and making subsequent writes to a new segment file.&lt;/strong&gt; We can then perform compaction on these segments. &lt;strong&gt;Compaction means throwing away duplicate keys in the log, and keeping only the most recent update for each key.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Each segment now has its own in-memory hash table, mapping keys to file offsets.&lt;/strong&gt; In order to find the value for a key, we first check the most recent segment’s hash map; if the key is not present we check the second-most-recent segment, and so on.&lt;/p&gt;
+
+&lt;p&gt;An append-only design turns out to be good for several reasons:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Appending and segment merging are sequential write operations, which are generally much faster than random writes, especially on magnetic spinning-disk hard drives.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Concurrency and crash recovery are much simpler if segment files are append-only or immutable.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Merging old segments avoids the problem of data files getting fragmented over time.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;However, the hash table index also has limitations:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;The hash table must fit in memory, so if you have a very large number of keys, you’re out of luck.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Range queries are not efficient. &lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;SSTables and LSM-Trees&lt;/h3&gt;
+
+&lt;p&gt;Now we can make a simple change to the format of our segment files: we require that the sequence of key-value pairs is sorted by key. &lt;/p&gt;
+
+&lt;p&gt;We call this format &lt;strong&gt;Sorted String Table, or SSTable&lt;/strong&gt; for short. We also require that each key only appears once within each merged segment file (the compaction process already ensures that). SSTables have several big advantages over log segments with hash indexes:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Merging segments is simple and efficient&lt;/strong&gt;, even if the files are bigger than the available memory. The approach is like the one used in the mergesort algorithm.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;In order to find a particular key in the file, you no longer need to keep an index of all the keys in memory. You still need an in-memory index to tell you the offsets for some of the keys, but &lt;strong&gt;it can be sparse&lt;/strong&gt;: one key for every few kilobytes of segment file is sufficient, because a few kilobytes can be scanned very quickly.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/data-intensive-note/illustration-2.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Since read requests need to scan over several key-value pairs in the requested range anyway, &lt;strong&gt;it is possible to group those records into a block and compress it before writing it to disk&lt;/strong&gt;. Each entry of the sparse in-memory index then points at the start of a compressed block. Besides saving disk space, compression also reduces the I/O bandwidth use.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;Constructing and maintaining SSTables&lt;/h4&gt;
+
+&lt;p&gt;How do you get your data to be sorted by key in the first place? We can now make our storage engine work as follows:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;When a write comes in, add it to an in-memory balanced tree data structure.&lt;/li&gt;
+&lt;li&gt;When the memtable gets bigger than some threshold—typically a few megabytes—write it out to disk as an SSTable file.&lt;/li&gt;
+&lt;li&gt;In order to serve a read request, first try to find the key in the memtable, then in the most recent on-disk segment, then in the next-older segment, etc.&lt;/li&gt;
+&lt;li&gt;From time to time, run a merging and compaction process in the background to combine segment files and to discard overwritten or deleted values.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;It only suffers from one problem: if the database crashes, the most recent writes (which are in the memtable but not yet written out to disk) are lost. In order to avoid that problem, we can &lt;strong&gt;keep a separate log on disk to which every write is immediately appended&lt;/strong&gt;, just like in the previous section. That log is not in sorted order, but that doesn’t matter, because &lt;strong&gt;its only purpose is to restore the memtable after a crash&lt;/strong&gt;. &lt;/p&gt;
+
+&lt;h4&gt;Performance optimizations&lt;/h4&gt;
+
+&lt;p&gt;The LSM-tree algorithm can be slow when looking up keys that do not exist in the database: you have to check the memtable, then the segments all the way back to the oldest before you can be sure that the key does not exist. &lt;strong&gt;In order to optimize this kind of access, storage engines often use additional Bloom filters.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;There are also different strategies to determine the order and timing of how SSTables are compacted and merged. The most common options are &lt;strong&gt;size-tiered and leveled compaction&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h3&gt;B-Trees&lt;/h3&gt;
+
+&lt;p&gt;The most widely used indexing structure is quite different: the B-tree.&lt;/p&gt;
+
+&lt;p&gt;Like SSTables, B-trees keep key-value pairs sorted by key, which allows efficient key- value lookups and range queries. &lt;/p&gt;
+
+&lt;p&gt;The log-structured indexes we saw earlier break the database down into variable-size segments, typically several megabytes or more in size, and always write a segment sequentially. &lt;strong&gt;By contrast, B-trees break the database down into fixed-size blocks or pages&lt;/strong&gt;, traditionally 4 KB in size (sometimes bigger), and &lt;strong&gt;read or write one page at a time&lt;/strong&gt;. &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Each page can be identified using an address or location&lt;/strong&gt;, which allows one page to refer to another—similar to a pointer, but on disk instead of in memory.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/data-intensive-note/illustration-3.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;One page is designated as the root of the B-tree; whenever you want to look up a key in the index, you start here. The page contains several keys and references to child pages. Each child is responsible for a continuous range of keys, and &lt;strong&gt;the keys between the references indicate where the boundaries between those ranges lie&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;The number of references to child pages in one page of the B-tree is called the &lt;strong&gt;branching factor&lt;/strong&gt;. If you want to add a new key, you need to find the page whose range encompasses the new key and add it to that page. If there isn’t enough free space in the page to accommodate the new key, it is split into two half-full pages, and the parent page is updated to account for the new subdivision of key ranges.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/data-intensive-note/illustration-4.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;This algorithm ensures that the tree remains balanced: a B-tree with n keys always has a depth of O(log n). Most databases can fit into a B-tree that is three or four levels deep, so you don’t need to follow many page references to find the page you are look‐ ing for. (A four-level tree of 4 KB pages with a branching factor of 500 can store up to 256 TB.)&lt;/p&gt;
+
+&lt;h4&gt;Making B-trees reliable&lt;/h4&gt;
+
+&lt;p&gt;If you split a page because an insertion caused it to be overfull, you need to write the two pages that were split, and also overwrite their parent page to update the references to the two child pages. &lt;strong&gt;This is a dangerous operation, because if the database crashes after only some of the pages have been written, you end up with a corrupted index.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In order to make the database resilient to crashes, &lt;strong&gt;it is common for B-tree implementations to include an additional data structure on disk: a write-ahead log (WAL, also known as a redo log)&lt;/strong&gt;.  This is an append-only file to which every B-tree modification must be written before it can be applied to the pages of the tree itself. When the database comes back up after a crash, this log is used to restore the B-tree back to a consistent state.&lt;/p&gt;
+
+&lt;p&gt;An additional complication of updating pages in place is that careful concurrency control is required if multiple threads are going to access the B-tree at the same time. &lt;strong&gt;This is typically done by protecting the tree’s data structures with latches (lightweight locks).&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4&gt;B-tree optimizations&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Instead of overwriting pages and maintaining a WAL for crash recovery, some databases (like LMDB) use a copy-on-write scheme. A modified page is written to a different location, and a new version of the parent pages in the tree is created, pointing at the new location.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;We can save space in pages by not storing the entire key, but abbreviating it. Especially in pages on the interior of the tree, keys only need to provide enough information to act as boundaries between key ranges. Packing more keys into a page allows the tree to have a higher branching factor, and thus fewer levels.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Additional pointers have been added to the tree. For example, each leaf page may have references to its sibling pages to the left and right, which allows scanning keys in order without jumping back to parent pages.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Comparing B-Trees and LSM-Trees&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;As a rule of thumb, LSM-trees are typically faster for writes, whereas B-trees are thought to be faster for reads.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4&gt;Advantages of LSM-trees&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;A B-tree index must write every piece of data at least twice: once to the write-ahead log, and once to the tree page itself (and perhaps again as pages are split).&lt;/strong&gt; There is also overhead from having to write an entire page at a time, even if only a few bytes in that page changed.&lt;/p&gt;
+
+&lt;p&gt;Log-structured indexes also rewrite data multiple times due to repeated compaction and merging of SSTables. &lt;/p&gt;
+
+&lt;p&gt;In write-heavy applications, the performance bottleneck might be the rate at which the database can write to disk.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Moreover, LSM-trees are typically able to sustain higher write throughput than B-trees, partly because they sometimes have lower write amplification, and partly because they sequentially write compact SSTable files rather than having to overwrite several pages in the tree.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Since LSM-trees are not page-oriented and periodically rewrite SSTables to remove fragmentation, they have lower storage overheads, especially when using leveled compaction.&lt;/p&gt;
+
+&lt;h4&gt;Downsides of LSM-trees&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;A downside of log-structured storage is that the compaction process can sometimes interfere with the performance of ongoing reads and writes.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;An advantage of B-trees is that each key exists in exactly one place in the index&lt;/strong&gt;, whereas a log-structured storage engine may have multiple copies of the same key in different segments. This aspect makes B-trees attractive in databases that want to offer strong transactional semantics: &lt;strong&gt;in many relational databases, transaction isolation is implemented using locks on ranges of keys, and in a B-tree index, those locks can be directly attached to the tree.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;Other Indexing Structures&lt;/h3&gt;
+
+&lt;p&gt;A secondary index can easily be constructed from a key-value index. The main difference is that keys are not unique. This can be solved in two ways: &lt;strong&gt;either by making each value in the index a list of matching row identifiers (like a postings list in a full-text index) or by making each key unique by appending a row identifier to it.&lt;/strong&gt; &lt;/p&gt;
+
+&lt;h4&gt;Storing values within the index&lt;/h4&gt;
+
+&lt;p&gt;The key in an index is the thing that queries search for, but the value can be one of two things: it could be the actual row (document, vertex) in question, or it could be a reference to the row stored elsewhere. In the latter case, the place where rows are stored is known as a &lt;strong&gt;heap file&lt;/strong&gt;. &lt;strong&gt;The heap file approach is common because it avoids duplicating data when multiple secondary indexes are present: each index just references a location in the heap file, and the actual data is kept in one place.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In some situations, the extra hop from the index to the heap file is too much of a performance penalty for reads, so it can be desirable to store the indexed row directly within an index. This is known as a &lt;strong&gt;clustered index&lt;/strong&gt;. For example, in MySQL’s InnoDB storage engine, the primary key of a table is always a clustered index, and secondary indexes refer to the primary key (rather than a heap file location)（每一 个 Secondary Index 包含主健，再根据主键索引找到相应的数据）&lt;/p&gt;
+
+&lt;h4&gt;Multi-column indexes&lt;/h4&gt;
+
+&lt;p&gt;The most common type of multi-column index is called a &lt;strong&gt;concatenated index&lt;/strong&gt;, which simply combines several fields into one key by appending one column to another(the index definition specifies in which order the fields are concatenated).&lt;/p&gt;
+
+&lt;p&gt;Multi-dimensional indexes are a more general way of querying several columns at once, which is particularly important for geospatial data. One option is to translate a two-dimensional location into a single number using a space-filling curve, and then to use a regular B-tree index. &lt;strong&gt;More commonly, specialized spatial indexes such as R-trees are used.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4&gt;Full-text search and fuzzy indexes&lt;/h4&gt;
+
+&lt;p&gt;To cope with typos in documents or queries, Lucene is able to search text for words within a certain edit distance.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Lucene uses a SSTable-like structure for its term dictionary.&lt;/strong&gt; This structure requires a small in- memory index that tells queries at which offset in the sorted file they need to look for a key. In LevelDB, this in-memory index is a sparse collection of some of the keys, but &lt;strong&gt;in Lucene, the in-memory index is a finite state automaton over the characters in the keys, similar to a trie&lt;/strong&gt;. This automaton can be transformed into a Levenshtein automaton, which supports efficient search for words within a given edit distance.&lt;/p&gt;
+
+&lt;h4&gt;Keeping everything in memory&lt;/h4&gt;
+
+&lt;p&gt;Counterintuitively, the performance advantage of in-memory databases is not due to the fact that they don’t need to read from disk. Rather, &lt;strong&gt;they can be faster because they can avoid the overheads of encoding in-memory data structures in a form that can be written to disk.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;Transaction Processing or Analytics?&lt;/h2&gt;
+
+&lt;h3&gt;Data Warehousing&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;A data warehouse is a separate database that analysts can query to their hearts’ content, without affecting OLTP operations.&lt;/strong&gt; The data warehouse contains a read-only copy of the data in all the various OLTP systems in the company. Data is extracted from OLTP databases (using either a periodic data dump or a continuous stream of updates), transformed into an analysis-friendly schema, cleaned up, and then loaded into the data warehouse. This process of getting data into the warehouse is known as Extract–Transform–Load (ETL).&lt;/p&gt;
+
+&lt;p&gt;A big advantage of using a separate data warehouse, rather than querying OLTP systems directly for analytics, is that the data warehouse can be optimized for analytic access patterns. It turns out that the indexing algorithms discussed in the first half of this chapter work well for OLTP, but are not very good at answering analytic queries.&lt;/p&gt;
+
+&lt;h4&gt;The divergence between OLTP databases and data warehouses&lt;/h4&gt;
+
+&lt;p&gt;The data model of a data warehouse is most commonly relational, because SQL is generally a good fit for analytic queries. &lt;/p&gt;
+
+&lt;h3&gt;Stars and Snowflakes: Schemas for Analytics&lt;/h3&gt;
+
+&lt;p&gt;A wide range of different data models are used in the realm of transaction processing, depending on the needs of the application. On the other hand, &lt;strong&gt;in analytics, there is much less diversity of data models. Many data warehouses are used in a fairly formulaic style, known as a star schema&lt;/strong&gt; (also known as dimensional modeling).&lt;/p&gt;
+
+&lt;h2&gt;Column-Oriented Storage&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;In most OLTP databases, storage is laid out in a row-oriented fashion&lt;/strong&gt;: all the values from one row of a table are stored next to each other. Document databases are similar: an entire document is typically stored as one contiguous sequence of bytes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The idea behind column-oriented storage is simple: don’t store all the values from one row together, but store all the values from each column together instead.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/data-intensive-note/illustration-5.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;h3&gt;Column Compression&lt;/h3&gt;
+
+&lt;p&gt;Depending on the data in the column, different compression techniques can be used. One technique that is particularly effective in data warehouses is bitmap encoding.&lt;/p&gt;
+
+&lt;h3&gt;Sort Order in Column Storage&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Another advantage of sorted order is that it can help with compression of columns.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3&gt;Writing to Column-Oriented Storage&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Column-oriented storage, compression, and sorting all help to make those read queries faster.&lt;/strong&gt; However, they have the downside of making writes more difficult.&lt;/p&gt;
+
+&lt;p&gt;An update-in-place approach, like B-trees use, is not possible with compressed columns. If you wanted to insert a row in the middle of a sorted table, you would most likely have to rewrite all the column files.&lt;/p&gt;
+
+&lt;p&gt;Fortunately, we have already seen a good solution earlier in this chapter: LSM-trees. All writes first go to an in-memory store, where they are added to a sorted structure and prepared for writing to disk. It doesn’t matter whether the in-memory store is row-oriented or column-oriented. When enough writes have accumulated, they are merged with the column files on disk and written to new files in bulk. &lt;/p&gt;
+
+&lt;h2&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;On a high level, we saw that storage engines fall into two broad categories: those optimized for transaction processing (OLTP), and those optimized for analytics (OLAP). There are big differences between the access patterns in those use cases:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;OLTP systems are typically user-facing, which means that they may see a huge volume of requests. &lt;strong&gt;Disk seek time is often the bottleneck here.&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Data warehouses and similar analytic systems are less well known, because they are primarily used by business analysts, not by end users. &lt;strong&gt;Disk bandwidth (not seek time) is often the bottleneck here&lt;/strong&gt;, and column-oriented storage is an increasingly popular solution for this kind of workload.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;On the OLTP side, we saw storage engines from two main schools of thought:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;The log-structured school, which only permits appending to files and deleting obsolete files, but never updates a file that has been written. Bitcask, SSTables, LSM-trees, LevelDB, Cassandra, HBase, Lucene, and others belong to this group.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;The update-in-place school, which treats the disk as a set of fixed-size pages that can be overwritten. B-trees are the biggest example of this philosophy, being used in all major relational databases and also many nonrelational ones.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Analytic workloads are so different from OLTP: when your queries require sequentially scanning across a large number of rows, indexes are much less relevant. Instead it becomes important to encode data very compactly, to minimize the amount of data that the query needs to read from disk.&lt;/strong&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 26 Jul 2018 18:57:23 +0800</pubDate>
+        <link>http://masutangu.com/2018/07/data-intensive-note-1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/07/data-intensive-note-1/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
+    
+      <item>
+        <title>TiKV 源码阅读（未完成）</title>
+        <description>&lt;p&gt;TiKV 使用 RocksDB 做持久化存储引擎。将 key 分 range，每一段称为 Region。Region 分散在多台机器上以实现存储的水平扩展。每个 Region 会存放多个副本在不同机器上，使用 raft 算法管理：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/tikv-note-1/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;PD 负责整个 TiKV 集群的调度。&lt;/p&gt;
+
+&lt;p&gt;TiKV 使用 version 的方式进行多版本控制（MVCC）：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;Key1-Version3 -&amp;gt; Value
+Key1-Version2 -&amp;gt; Value
+Key1-Version1 -&amp;gt; Value
+...
+Key2-Version2 -&amp;gt; Value
+Key2-Version1 -&amp;gt; Value
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;TiKV 事务使用 &lt;a href=&quot;https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/36726.pdf&quot;&gt;Percolator&lt;/a&gt; 模型。采用乐观锁，事务提交才进行冲突检测。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/24564094&quot;&gt;https://zhuanlan.zhihu.com/p/24564094&lt;/a&gt;
+&lt;a href=&quot;https://pingcap.com/blog-cn/tidb-internal-1/&quot;&gt;https://pingcap.com/blog-cn/tidb-internal-1/&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Mon, 09 Jul 2018 21:59:16 +0800</pubDate>
+        <link>http://masutangu.com/2018/07/tikv-note-1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/07/tikv-note-1/</guid>
+        
+        
+        <category>源码阅读</category>
+        
+      </item>
     
       <item>
         <title>raft-rust 初体验</title>
@@ -1562,252 +1944,6 @@ ret // ret 指令弹出返回地址，此时 %esp += 4 并跳转到该地址继�
         
         
         <category>源码阅读</category>
-        
-      </item>
-    
-      <item>
-        <title>Programming Language Part B 课程笔记</title>
-        <description>&lt;p&gt;本文是学习&lt;a href=&quot;https://www.coursera.org/learn/programming-languages-part-b/home/info&quot;&gt;Coursera Programming Language&lt;/a&gt;课程的学习笔记，文章内容及代码均取自课程材料。&lt;/p&gt;
-
-&lt;h1&gt;Interpreter or Compiler&lt;/h1&gt;
-
-&lt;p&gt;实现编程语言的 workflow 如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/programming-language-b/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compile 来运行程序并输出结果。&lt;/p&gt;
-
-&lt;p&gt;在实现编程语言 B 通常有下面两种办法：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;使用另一种编程语言 A 来实现 interpreter（命名为 evaluator 或 executor 更恰当），输入 B 语言写的代码，输出结果&lt;/li&gt;
-&lt;li&gt;使用另一种编程语言 A 实现 compiler（命名为 translator 更恰当），将 B 翻译成第三种编程语言 C&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;Skipping Parsing&lt;/h1&gt;
-
-&lt;p&gt;如果基于编程语言 A 来实现编程语言 B，就可以跳过 parsing 阶段：&lt;strong&gt;Have B programmers write ASTs directly in PL A&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h1&gt;ML from a Racket perspective&lt;/h1&gt;
-
-&lt;p&gt;ML is like a well-defined subset of Racket&lt;/p&gt;
-
-&lt;h1&gt;Racket from an ML Perspective&lt;/h1&gt;
-
-&lt;p&gt;One way to describe Racket is that &lt;strong&gt;it has “one big datatype”&lt;/strong&gt;：all values have this type.&lt;/p&gt;
-
-&lt;p&gt;我的理解由于 Racket 是 dynamic typing，所以 ML 程序员看来 Racket 只有一个类型（这样 static type check 都能成功）&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Constructors are applied implicitly (&lt;strong&gt;values are tagged&lt;/strong&gt;)&lt;/p&gt;
-
-&lt;p&gt;42 is really like Int 42&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Primitives implicitly check tags and extract data, raising errors for wrong constructors&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;fun car v = case v of Pair(a,b) =&amp;gt; a | _ =&amp;gt; raise …
-
-fun pair? v = case v of Pair _ =&amp;gt; true | _ =&amp;gt; false
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1&gt;Weak Typing&lt;/h1&gt;
-
-&lt;p&gt;There exist programs that, by definition, must pass static checking but then when run can &amp;quot;set the computer on fire&amp;quot;?&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Ease of language implementation: Checks left to the programmer&lt;/li&gt;
-&lt;li&gt;Performance: Dynamic checks take time&lt;/li&gt;
-&lt;li&gt;Lower level: Compiler does not insert information like array sizes, so it cannot do the checks&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Racket is not weakly typed&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;It just checks most things dynamically*&lt;/li&gt;
-&lt;li&gt;Dynamic checking is the definition – if the implementation can analyze the code to ensure some checks are not needed, then it can optimize them away&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-        <pubDate>Mon, 02 Apr 2018 19:10:35 +0800</pubDate>
-        <link>http://masutangu.com/2018/04/programing-language-b/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/04/programing-language-b/</guid>
-        
-        
-        <category>读书笔记</category>
-        
-      </item>
-    
-      <item>
-        <title>The Part-Time Parliament 论文笔记</title>
-        <description>&lt;h1&gt;背景&lt;/h1&gt;
-
-&lt;p&gt;Paxos 岛兼职议会类似容错式分布式系统面对的问题：&lt;strong&gt;议员对应分布式系统中的进程，议员缺席对应进程挂掉。Paxos 设计的议会协议在议员经常缺席的情况下可以保证法令的一致性。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h1&gt;The Single-Decree Synod&lt;/h1&gt;
-
-&lt;p&gt;单一法令的神会协议的演化如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;首先由几个&lt;strong&gt;能保证一致性和允许进展性的约束&lt;/strong&gt;推导出&lt;strong&gt;初级协议（preliminary protocol)&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;preliminary protocol&lt;/strong&gt;的约束版本得到&lt;strong&gt;基本协议（basic protocol）&lt;/strong&gt;，其满足一致性但不保证进展性&lt;/li&gt;
-&lt;li&gt;进一步约束&lt;strong&gt;basic protocol&lt;/strong&gt;得到完整的神会协议，既满足一致性又保证进展性&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;接下来四小节先讲解保证一致性的约束，再依次得出 preliminary protocol、basic protocol 和完整的神会协议。&lt;/p&gt;
-
-&lt;h2&gt;一致性的约束条件&lt;/h2&gt;
-
-&lt;p&gt;神会法令通过多轮带编号的&lt;strong&gt;表决（ballot）&lt;/strong&gt;选出。每一轮 ballot 是对单一法令的投票。每轮 ballot 牧师只能选择投票（表示赞成）或不投票（表示不赞成）。每轮 ballot 都关联一个&lt;strong&gt;法定人数集（quorum）&lt;/strong&gt;的牧师集合。只有当 quorum 中的每一位牧师都投票，这轮 ballot 才算成功。一轮 ballot B 包括以下四个元素：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;B(dec): 被投票的法令&lt;/li&gt;
-&lt;li&gt;B(qrm): 该轮 ballot 的 quorum&lt;/li&gt;
-&lt;li&gt;B(vot): 投票的牧师集合&lt;/li&gt;
-&lt;li&gt;B(bal): ballot 的编号&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;当且仅当 B(qrm) ⊆ B(vot) 时，这轮 ballot 才算成功。&lt;strong&gt;B(bal) 值的大小和进行 ballot 的顺序无关，B(bal) 比较大的 ballot 有可能在 B(bal) 比较小的 ballot 之前发生。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Paxos 数学家在由多轮 ballot 组成的集合 𝜷 上定义了三个约束条件，如果集合中的 ballot 都满足这些条件，则可以保证一致性会：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;B1(𝜷): 𝜷 中的每一轮 ballot 都拥有唯一的编号&lt;/li&gt;
-&lt;li&gt;B2(𝜷): 𝜷 中任意两轮 ballot 的 quorum 至少有一个公共成员&lt;/li&gt;
-&lt;li&gt;B3(𝜷): 𝜷 中任意一轮 ballot B，如果 B(qrm) 中任何一个牧师在 𝜷 中更早的 ballot 中投过票，则 B(dec) 与所有更早的 ballots 中最后那轮 ballot 的法令相同&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;下图是对 B3(𝜷) 的图解。五轮 ballot 组成集合 𝜷，A、B、Γ、∆ 和 E 表示五位牧师，方框圈起的表示投票的牧师。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/the-part-time-parliament-note/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;编号 2 是最早的一轮 ballot，因此显而易见三个条件都满足（没有比他更早的 ballot了）&lt;/li&gt;
-&lt;li&gt;编号 5 的 ballot，四位 quorum 都没有在更早的 ballot 中投过票，因此三个条件也满足&lt;/li&gt;
-&lt;li&gt;编号 14 的 ballot 中，∆ 是 quorum 中唯一一位在更早的 ballot 中投过票的，因此这一轮的法令必须和编号为 2 的 ballot 一致，都为 𝜶&lt;/li&gt;
-&lt;li&gt;编号 27 是一轮成功的 ballot，A、Γ 和 ∆ 为该轮的 quorum 成员。Γ 在编号 5 的 ballot 中投过票，∆ 在编号为 2 的 ballot 中投过票，根据 B3(𝜷)，这一轮的法令必须和编号 5 的法令一致（编号 5 比编号 2 更新）&lt;/li&gt;
-&lt;li&gt;编号 29 的 quorum 成员为 B、Γ 和 ∆。B 在编号 14 的 ballot 投过票，Γ 在编号 5 和 27 的 ballots 都投过票，∆ 在编号为 2 和 27 的ballots 也投过票，这些 ballots 中最新的编号为 27，因此这轮 ballot 的法令必须和编号 27 的法令一致&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;下面给出 B1(𝜷) B2(𝜷) B3(𝜷) 的数学定义：&lt;/p&gt;
-
-&lt;p&gt;符号 v 表示一次投票，其中 v(pst) 表示投票的牧师，v(bal) 表示投票的编号，v(dec) 表示投票的法令。集合 Votes(𝜷) 表示满足以下条件的投票 v 的集合：v(pst) ∈ B(vot)，v(bal) = B(bal)，v(dec) = B(dec)，B ∈ 𝜷。定义 p 为牧师，b 为 ballot 编号，则 MaxVote(b, p, 𝜷) 表示集合 &lt;strong&gt;{ v ∈ Votes(B): (v(pst) = p) ∧ (v(bal) &amp;lt; b) } ∪ { null(p) }&lt;/strong&gt; 中 ballot 最大的投票。&lt;em&gt;注：null(p) 表示 null 投票，即 v(bal) 为-∞, v(dec) 为 BLANK 且 v(pst) = p&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;对任意非空的牧师集合 Q，MaxVote(b, Q, 𝜷) 定义为 Q 中的所有牧师 p 的 MaxVote(b, p, 𝜷) 的最大值。&lt;em&gt;注：翻译得不太妥当，原文：For any nonempty set Q of priests, MaxVote(b, Q, B) was defined to equal the maximum of all votes MaxVote(b, p, B) with p in Q.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;B1(𝜷) B2(𝜷) B3(𝜷) 的数学定义如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;B1(𝜷) ≜ ∀B, B&amp;#39; ∈ 𝜷 : (B ≠ B&amp;#39;) ⇒ (B(bal) ≠ B&amp;#39;(bal))&lt;/li&gt;
-&lt;li&gt;B2(𝜷) ≜ ∀B, B&amp;#39; ∈ 𝜷 : B(qrm) ∩ B&amp;#39;(qrm) ≠ ∅&lt;/li&gt;
-&lt;li&gt;B3(𝜷) ≜ ∀B ∈ 𝜷 : (MaxVote(B(bal) , B(qrm), 𝜷)bal ≠ −∞) ⇒ (B(dec) = MaxVote(B(bal) , B(qrm) , 𝜷)dec)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;引理：如果满足 B1(𝜷) B2(𝜷) B3(𝜷)，则 ((B(qrm) ⊆ B(vot)) ∧ (B&amp;#39;(bal) &amp;gt; B(bal))) ⇒ (B(dec) = B&amp;#39;(dec))&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;引理证明如下：&lt;/p&gt;
-
-&lt;p&gt;对 𝜷 中任意 ballot B，定义 Ψ(B, 𝜷) 表示 𝜷 中所有编号大于 B(bal) 且法令不等于 B(dec) 的 ballot 的集合：&lt;strong&gt;Ψ(B, 𝜷) ≜ {B&amp;#39; ∈ 𝜷 : (B&amp;#39;(bal) &amp;gt; B(bal) ∧ (B&amp;#39;(dec) ≠ B(dec))}&lt;/strong&gt;。如果证明 B(qrm) ⊆ B(vot) 则 Ψ(B, 𝜷) 为空，引理即成立。下面是反证法，假设存在 B 满足 B(qrm) ⊆ B(vot) 且 Ψ(B, 𝜷) 不为空，下面推导得出矛盾的结论：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;选择 C ∈ Ψ(B, B) 满足 C(bal) = min{ B&amp;#39;(bal) : B&amp;#39; ∈ Ψ(B, 𝜷)}&lt;/li&gt;
-&lt;li&gt;C(bal) &amp;gt; B(bal)：由 1 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
-&lt;li&gt;B(vot) ∩ C(qrm) ≠ ∅：由 B2(𝜷) 和 B(qrm) ⊆ B(vot) 得出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal ≥ B(bal)：由 2、3 和 MaxVote 的定义得出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷) ∈ Votes(B)：由 4 知道 MaxVote(C(bal), C(qrm) , 𝜷) 不是 null 投票&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)dec = C(dec)：由 5 和 B3(𝜷) 得出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)dec ≠ B(dec)：由 6、1 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal &amp;gt; B(bal)：由 4 7 和 B1(𝜷) 的出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷) ∈ Votes(Ψ(B, 𝜷))：由 7 8 和 Ψ(B, 𝜷) 的定义得出&lt;/li&gt;
-&lt;li&gt;MaxVote(C(bal), C(qrm), 𝜷)bal &amp;lt; C(bal)：由 MaxVote(C(bal), C(qrm), 𝜷) 的定义得出&lt;/li&gt;
-&lt;li&gt;由 9 10 1 得出矛盾，因为 1 中定义了 C(bal) 是 Ψ(B, 𝜷) 中编号最小的，由 9 知道 MaxVote(C(bal), C(qrm), 𝜷) 属于 Votes(Ψ(B, 𝜷))，那么 MaxVote(C(bal), C(qrm), 𝜷) 必须大于等于 C(bal)，这与 10 得到的 MaxVote(C(bal), C(qrm), 𝜷)bal &amp;lt; C(bal) 矛盾&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;由引理得出，如果满足 B1(𝜷) B2(𝜷) B3(𝜷)，则任意两轮成功的 ballots 都是相同的法令，数学表示：&lt;strong&gt;((B(qrm) ⊆ B(vot)) ∧ (B&amp;#39;(qrm) ⊆ B&amp;#39;(vot))) ⇒ (B&amp;#39;dec = Bdec)&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h2&gt;The Preliminary Protocol&lt;/h2&gt;
-
-&lt;p&gt;为了遵守 B3(𝜷)，牧师在发起表决前需要先确定 MaxVote(b, Q, 𝜷)dec，因此需要确定 Q 中的每一个 p 的 MaxVote(b, q, 𝜷)dec。Preliminary protocol 的前两步如下：&lt;/p&gt;
-
-&lt;p&gt;(1) 牧师 p 选择新的 ballot number b，发送一条 NextBallot(b) 消息给某些牧师&lt;/p&gt;
-
-&lt;p&gt;(2) 牧师 q 收到 NextBallot(b) 消息后，发送 LastVote(b, v) 消息给 p，v 为 MaxVote(b, q, 𝜷)&lt;/p&gt;
-
-&lt;p&gt;发送完 LastVote(b, v)，&lt;strong&gt;q 承诺不再给编号在 [v(bal), b] 区间的表决投票。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;注：这个承诺是为了解决乱序的问题， ballot 编号大的投票发生在编号小的之前时，如下图，B 和 C 投票的法令出现了不一致［参考自&lt;a href=&quot;https://zhuanlan.zhihu.com/p/21438357&quot;&gt;Paxos理论介绍(1): 朴素Paxos算法理论推导与证明&lt;/a&gt;］：&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/the-part-time-parliament-note/illustration-2.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;接下来两个步骤是：&lt;/p&gt;
-
-&lt;p&gt;(3) 在收到 majority 的 LastVote(b, v) 之后，p 发起一轮编号为 b，quorum 为 Q 且法令为 d（d 需要满足B3(𝜷)）的表决，给 Q 中每一个牧师发送 BeginBallot(b, d) 消息&lt;/p&gt;
-
-&lt;p&gt;(4) 在收到 BeginBallot(b, d) 消息后，q 决定是否投票，如果可以投票（不违背上面的承诺），则发送 Voted(b, q) 消息给 p&lt;/p&gt;
-
-&lt;p&gt;步骤 3 将表决 B 加入到集合 𝜷 中，其中 B(bal) = b，B(qrm) = Q，B(vot) = ∅。步骤 4 中，如果牧师 q 投票了，则将 q 加入 B(vot) 中。&lt;/p&gt;
-
-&lt;p&gt;协议的剩余步骤如下：&lt;/p&gt;
-
-&lt;p&gt;(5) 如果 p 收到了 Q 中每一个 q 的 Voted(b, q) 消息，那么 p 在律簿上记录下法令 d，并且发送 Success(d) 给每一个牧师&lt;/p&gt;
-
-&lt;p&gt;(6) 牧师 q 收到 Success(d) 消息后，将法令 d 记录在自己的律簿上&lt;/p&gt;
-
-&lt;h2&gt;The Basic Protocol&lt;/h2&gt;
-
-&lt;p&gt;在 preliminary protocol 中，每一个牧师都必须记录 &lt;strong&gt;(i) 他发起的每一个ballot number (ii) 他投过的每一次票 (iii) 他发送过的每一个 LastVote 消息&lt;/strong&gt;。要记录这么多信息是非常困难的，因此 Paxos 人对 preliminary protocol 做了进一步约束，得到更实用的 basic protocol，每个牧师只需要在律簿上记录下面三个信息：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;lastTried[p]&lt;/strong&gt;：p 发起的最后一个表决的编号&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;prevVote[p]&lt;/strong&gt;：p 投过的所有表决中编号最大的那次投票&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;nextBal[p]&lt;/strong&gt;：p 发过的所有 LastVote(b, v) 消息中 b 的最大值&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Preliminary protocol 允许牧师并行管理任意数量的表决，basic protocol 中牧师在一个时间内只管理一个表决，编号为 lastTried[p]，忽略和之前发起的表决相关的消息。Basic protocol 中对 LastVote 做了更强的承诺：&lt;strong&gt;不再对编号小于 b 的表决进行投票。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Basic protocol 步骤如下：&lt;/p&gt;
-
-&lt;p&gt;(1) 牧师 p 选择新的 ballot number b，必须大于 lastTried[p]，并更新 lastTried[p] 置为 b，然后发送 NextBallot(b) 消息给某些牧师&lt;/p&gt;
-
-&lt;p&gt;(2) 牧师 q 收到 NextBallot(b) 消息，如果 b 大于 nextBal(q)，则更新 nextBal(q) 置为 b 并发送 LastVote(b, v) 消息给 p，v 即 prevVote[q]。如果 b 小于等于 nextBal(q) 则忽略该 NextBallot 消息。&lt;/p&gt;
-
-&lt;p&gt;(3) 在收到 majority 的 LastVote(b, v) 消息后，如果 b 等于 lastTried[p]，则 p 发起一轮新的表决，指定编号为 b，quorum 为 Q，法令为 d，d 需要满足 B3(𝜷)。p 发送 BeginBallot(b, d) 消息给 Q 中所有牧师。&lt;/p&gt;
-
-&lt;p&gt;(4) 在收到 BeginBallot(b, d) 消息后，如果 b 等于 nextBal[q]，牧师 q 投票，并将 prevVote[q] 设置为本次投票，然后发送 Voted(b, q) 消息给 p。如果 b 不等于 nextBal[q]，则忽略该 BeginBallot 消息&lt;/p&gt;
-
-&lt;p&gt;(5) 如果 p 收到 Q 中所有牧师的 Voted(b, q) 消息，并且 b 等于 lastTried[p]，他在律簿上记录下法令 d，并发送 Success(d) 消息给所有的牧师。&lt;/p&gt;
-
-&lt;p&gt;(6) 在收到 Success(d) 消息后，牧师在律簿上记录下法令 d&lt;/p&gt;
-
-&lt;p&gt;Basic protocol 是 preliminary protocol 的约束版本，preliminary protocol 满足一致性的条件，那么 basic protocol 也一定满足。不过和 preliminary protocol 一样，basic protocol 也没要求必须执行某个操作，因此同样没有解决进展性的问题。&lt;/p&gt;
-
-&lt;h2&gt;The Complete Synod Protocol&lt;/h2&gt;
-
-&lt;p&gt;为了保证进展性，&lt;strong&gt;关键在于决定牧师什么时候应该发起表决&lt;/strong&gt;。永远不发起表决和太频繁的发起表决都会影响进展性。完整的神会协议在 basic protocol 的基础上新增一个流程来选择唯一的牧师--总统，来发起表决。这部分细节参照论文的 2.4 节。&lt;/p&gt;
-
-&lt;h1&gt;The Multi-Decree Parliament&lt;/h1&gt;
-
-&lt;h2&gt;The Protocol&lt;/h2&gt;
-
-&lt;p&gt;Paxos 议会需要通过一系列法令而不仅仅单一一个法令。法令提议给总统，由总统赋予 ballot number 并尝试通过它。协议对每个法令使用不同实例的 Complete Synod Protocol，但这系列实例只需要一位总统来负责，并且神会协议的前两步只需要执行一次。&lt;/p&gt;
-
-&lt;p&gt;在神会协议中，总统在第三步之前不会选择法令和 quorum，因此总统可以为所有实例发送一条 NextBallot(b) 消息，议员回复一条 LastVote 消息，规则和单一法令的协议相同，只是把所有待表决的实例信息包含在一条 LastVote 信息里。&lt;/p&gt;
-
-&lt;p&gt;当总统收到 majority 的回复后，就为每个待表决的实例执行 Complete Synod Protocol 的第三步。&lt;/p&gt;
-
-&lt;p&gt;因此 Paxon 的议会协议如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;已经知道结果的表决不再需要再走一遍 Complete Synod Protocol 的流程，因此当新选举的总统 p 在律簿上已经记录有编号小于等于 n 的法令，那他将发送 NextBallot(b, n) 代替之前的 NextBallot(b) 消息。议员收到 NextBallot 消息后，将他律簿上所有编号大于 n 的法令返回给 p，并且告诉 p 他缺失的编号小于等于 n 的法令。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2&gt;Properties of the Protocol&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;在总统提议任何法令之前，必须先向 majority 学习他们已经投过票的法令。&lt;/strong&gt;任何一个已经通过的法令一定被至少一个多数集合中的议员投过票。这样就保证了总统在提议新法令前律簿上不会有空缺。&lt;/p&gt;
-</description>
-        <pubDate>Wed, 21 Mar 2018 20:36:16 +0800</pubDate>
-        <link>http://masutangu.com/2018/03/the-part-time-parliament-note/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/03/the-part-time-parliament-note/</guid>
-        
-        
-        <category>读书笔记</category>
         
       </item>
     

@@ -128,6 +128,20 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2017/11/state-machine/" title="访问 游戏开发之状态机">游戏开发之状态机</a></h2>
+      <p class="excerpt">这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。前言用状态机来实现业务模型，有以下几点好处：不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试代码阅读起来更加友好，方便其他读者理解整个业务逻辑状态机可以划分为下面三个模块：状态集：总共包括哪些状态事件（条件）：事件会触发状态机的状态发生变化动作：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态实现一个简单的状态机的实现// example 1. simp...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2017-11-01 08:33:41 +0800" class="post-list__meta--date date">2017-11-01</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/11/state-machine/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
+      <h2 class="post-list__post-title post-title"><a href="/2017/06/leveldb_1/" title="访问 LevelDB 源码阅读（一）">LevelDB 源码阅读（一）</a></h2>
+      <p class="excerpt">这篇文章主要记录 LevelDB 的重要模块、类以及方法。把读写操作和 Compaction 操作的代码串了一遍，并添加了小部分注释。模块Log 文件客户端的写请求会先 append 到 Log 文件，成功后再写入到 Memtable。如果宕机可以通过 Log 文件来恢复 Memtable。Memtable 和 Immutable Memtable内存数据结构，基于跳表。客户端的读写请求都会由 Memtable 处理。 当 Memtable 占用的内存达到一定阈值，重新生成新的 Memta...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2017-06-23 15:53:23 +0800" class="post-list__meta--date date">2017-06-23</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2017/06/leveldb_1/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2017/02/linker-loader-library-note/" title="访问 链接和装载">链接和装载</a></h2>
       <p class="excerpt">本文是读《程序员的自我修养: 链接、装载与库》所整理的读书笔记。概论从源文件到可执行文件，可以分解为四个过程：预处理，编译，汇编，链接。预处理主要完成以下工作：展开所有宏定义，删除 #define处理所有条件预编译指令处理 #include 预编译指令。将被包含的文件插入到该预编译指令的位置删除所有注释添加行号和文件名标识，以便编译时编辑器产生调试用的行号信息以及编译产生错误或警告时的行号信息保留所有 #pragma 编译器指令编译的过程即把预处理完的文件进行一系列的词法分析、语法分析、语...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-02-25 10:55:19 +0800" class="post-list__meta--date date">2017-02-25</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/02/linker-loader-library-note/>继续阅读</a></div>
@@ -180,20 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-1/" title="访问 Linux 内核系列－进程">Linux 内核系列－进程</a></h2>
       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念进程即处于运行中的程序，除了程序的代码外，还包括打开的文件、挂起的信号、进程状态、内存地址空间以及用以存储全局变量的数据段等。执行线程，简称线程，是在进程中活动的对象。每个线程都拥有独立的程序计数器、进程栈和一组进程寄存器。内核的调度对象是线程，而不是进程。在现代操作系统中，进程提供两种虚拟机制：虚拟处理器和虚拟...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-1/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/10/libuv-source-code/" title="访问 Libuv 源码阅读">Libuv 源码阅读</a></h2>
-      <p class="excerpt">花了几天时间读了下 libuv 的源码，整理成这篇文章。第一节是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。第二节解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。概念handles 和 requestslibuv 提供了两个抽象：handles 和 requests。handles 是 long－lived 的，会在其 active 的时候做特定的操作。requests 则为 short-lived 操作，request 可以独自执行或被...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-10-13 15:56:27 +0800" class="post-list__meta--date date">2016-10-13</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/libuv-source-code/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/10/learn-libco/" title="访问 浅读 Libco">浅读 Libco</a></h2>
-      <p class="excerpt">今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。协程的原理协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存器和栈）。当需要挂起当前协程时，将当前的上下文保存到该协程的 context_buff，并把当前上下文重置为新...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-10-05 15:59:32 +0800" class="post-list__meta--date date">2016-10-05</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2016/10/learn-libco/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

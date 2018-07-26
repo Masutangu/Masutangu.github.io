@@ -232,6 +232,14 @@ fn main() {
 <section class="read-more">
    
    
+   <div class="read-more-item">
+       <span class="read-more-item-dim">最近的文章</span>
+       <h2 class="post-list__post-title post-title"><a href="/2018/07/tikv-note-1/" title="link to TiKV 源码阅读（未完成）">TiKV 源码阅读（未完成）</a></h2>
+       <p class="excerpt">TiKV 使用 RocksDB 做持久化存储引擎。将 key 分 range，每一段称为 Region。Region 分散在多台机器上以实现存储的水平扩展。每个 Region 会存放多个副本在不同机器上，使用 raft 算法管理：PD 负责整个 TiKV 集群的调度。TiKV 使用 version 的方式进行多版本控制（MVCC）：Key1-Version3 -&gt; ValueKey1-Version2 -&gt; ValueKey1-Version1 -&gt; Value...Ke...&hellip;</p>
+       <div class="post-list__meta"><time datetime="2018-07-09 21:59:16 +0800" class="post-list__meta--date date">2018-07-09</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/tikv-note-1/>继续阅读</a></div>
+   </div>
+   
+   
    
    
    <div class="read-more-item">
