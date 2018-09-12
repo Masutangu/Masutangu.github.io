@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/04/learn-libco-2/" title="访问 Libco 之 coctx_swap">Libco 之 coctx_swap</a></h2>
+      <p class="excerpt">前言在之前的文章《浅读 Libco》 粗略的介绍了 libco，这篇文章则重点关注协程上下文切换的实现细节（coctx_swap.S）。首先回顾下函数调用的 stack frame layout：调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。co_resume在之前的文章提到协程的挂起和恢复通过 ...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-04-27 20:57:21 +0800" class="post-list__meta--date date">2018-04-27</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/04/learn-libco-2/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/04/programing-language-b/" title="访问 Programming Language Part B 课程笔记">Programming Language Part B 课程笔记</a></h2>
       <p class="excerpt">本文是学习Coursera Programming Language课程的学习笔记，文章内容及代码均取自课程材料。Interpreter or Compiler实现编程语言的 workflow 如下图：Parser 读取程序文本，检查 syntax，如果语法正确则输出 AST（abstract syntax tree）。如果该编程语言有 type checker，则将 AST 丢给 type checker 检查，通过 type check 后，就由 interpreter 或 compi...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-04-02 19:10:35 +0800" class="post-list__meta--date date">2018-04-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/04/programing-language-b/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2017/12/mit-6824-note-2/" title="访问 MIT 6.824 学习笔记（二）">MIT 6.824 学习笔记（二）</a></h2>
       <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。RaftIntroductionRaft 是用于管理复制日志的一致性算法。为了方便理解，Raft 将一致性算法分解为几个关键模块：Leader 选举、日志复制和安全性，同时通过更强的一致性来减少需要考虑的状态。一致性算法允许一组机器像一个整体一样工作，即使其中一些机器挂掉。一致性算法在构建大规模可信赖系统中扮演重要的角色。Raft 和许多一致性算法类似，但他也有自己的新特性：Strong leaderRaft 使用比其他一致性算法更强的 ...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-12-02 15:19:31 +0800" class="post-list__meta--date date">2017-12-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/12/mit-6824-note-2/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/11/mit-6824-note-1/" title="访问 MIT 6.824 学习笔记（一）">MIT 6.824 学习笔记（一）</a></h2>
-      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。Introduction本课程涵盖以下主题：RPC、线程、并发控制性能 容灾：Availability, Durability. replicated servers 是不错的选择。一致性：replica如何保持一致？ Consistency 和 Performance 不可兼得MapReduceMap funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapRedu...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-11-05 15:40:29 +0800" class="post-list__meta--date date">2017-11-05</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/11/mit-6824-note-1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

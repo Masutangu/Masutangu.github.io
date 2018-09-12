@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/09/data-intensive-note-2/" title="访问 Designing Data-Intensive Applications 读书笔记（二）">Designing Data-Intensive Applications 读书笔记（二）</a></h2>
+      <p class="excerpt">Chapter 4. Encoding and EvolutionWhen a data format or schema changes, a corresponding change to application code often needs to happen. However, in a large application, code changes often cannot happen instantaneously:With server-side application...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-09-12 22:03:19 +0800" class="post-list__meta--date date">2018-09-12</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/09/data-intensive-note-2/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/07/data-intensive-note-1/" title="访问 Designing Data-Intensive Applications 读书笔记（一）">Designing Data-Intensive Applications 读书笔记（一）</a></h2>
       <p class="excerpt">Chapter 1. Reliable, Scalable, and Maintainable ApplicationsThinking About Data SystemsIncreasingly many applications now have such demanding or wide-ranging requirements that a single tool can no longer meet all of its data processing and storage...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-26 18:57:23 +0800" class="post-list__meta--date date">2018-07-26</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/data-intensive-note-1/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-1/" title="访问 etcd-raft 源码学习笔记（示例篇）">etcd-raft 源码学习笔记（示例篇）</a></h2>
       <p class="excerpt">本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。从 main 函数开始读起：func main() {    ...    proposeC := make(chan string)    defer close(proposeC)    var kvs *kvstore    getSnapshot := func() ([]...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-03 13:21:23 +0800" class="post-list__meta--date date">2018-07-03</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-1/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/04/learn-libco-2/" title="访问 Libco 之 coctx_swap">Libco 之 coctx_swap</a></h2>
-      <p class="excerpt">前言在之前的文章《浅读 Libco》 粗略的介绍了 libco，这篇文章则重点关注协程上下文切换的实现细节（coctx_swap.S）。首先回顾下函数调用的 stack frame layout：调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。co_resume在之前的文章提到协程的挂起和恢复通过 ...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-04-27 20:57:21 +0800" class="post-list__meta--date date">2018-04-27</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/04/learn-libco-2/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2017/11/mit-6824-note-1/" title="访问 MIT 6.824 学习笔记（一）">MIT 6.824 学习笔记（一）</a></h2>
+      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。Introduction本课程涵盖以下主题：RPC、线程、并发控制性能 容灾：Availability, Durability. replicated servers 是不错的选择。一致性：replica如何保持一致？ Consistency 和 Performance 不可兼得MapReduceMap funciton 接收 input pair 处理生成一系列的 intermediate key/value pairs。MapRedu...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2017-11-05 15:40:29 +0800" class="post-list__meta--date date">2017-11-05</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/11/mit-6824-note-1/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2017/11/state-machine/" title="访问 游戏开发之状态机">游戏开发之状态机</a></h2>
       <p class="excerpt">这阵子工作的内容有用到状态机，感觉挺有意思。正好好久没写博客了，今天也来写一篇总结下。前言用状态机来实现业务模型，有以下几点好处：不需要写一大坨 if-else 或 switch case。代码逻辑结构清晰，也更便于调试代码阅读起来更加友好，方便其他读者理解整个业务逻辑状态机可以划分为下面三个模块：状态集：总共包括哪些状态事件（条件）：事件会触发状态机的状态发生变化动作：事件发生后执行的动作，可以变迁到新状态，也可以维持当前状态实现一个简单的状态机的实现// example 1. simp...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-11-01 08:33:41 +0800" class="post-list__meta--date date">2017-11-01</time> &#8226; <span class="post-list__meta--tags tags">工作</span><a class="btn-border-small" href=/2017/11/state-machine/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-2/" title="访问 Linux 内核系列－进程通信和同步">Linux 内核系列－进程通信和同步</a></h2>
       <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念竞争条件多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。忙等待的互斥几种实现互斥的方案：屏蔽中断在单处理器系统中，最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，包括时钟中断。CPU 只有在发生中断的时候才会进行进程切换，这样在中断被屏蔽后 CPU 将不会被切换到其他进程...&hellip;</p>
       <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-2/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2016/11/linux-kernel-serial-1/" title="访问 Linux 内核系列－进程">Linux 内核系列－进程</a></h2>
-      <p class="excerpt">本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。概念进程即处于运行中的程序，除了程序的代码外，还包括打开的文件、挂起的信号、进程状态、内存地址空间以及用以存储全局变量的数据段等。执行线程，简称线程，是在进程中活动的对象。每个线程都拥有独立的程序计数器、进程栈和一组进程寄存器。内核的调度对象是线程，而不是进程。在现代操作系统中，进程提供两种虚拟机制：虚拟处理器和虚拟...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2016-11-27 13:49:16 +0800" class="post-list__meta--date date">2016-11-27</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2016/11/linux-kernel-serial-1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
