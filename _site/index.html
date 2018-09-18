@@ -128,16 +128,23 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/09/coredump-note-1/" title="访问 Core dump 原理探究学习笔记（一）">Core dump 原理探究学习笔记（一）</a></h2>
+      <p class="excerpt">本系列文章是读《coredump问题原理探究》的读书笔记。函数调用帧先看一个例子// test.cppint func(int c, char* s, int off) {  int a = 0x12345678;  int *p = &amp;a;  int res = c + *(s + off);  return *p + res;}int main() {  int b = 0x87654321;  return b + func(0x100, &quot;hello&quot;,...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-09-18 22:47:56 +0800" class="post-list__meta--date date">2018-09-18</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/09/coredump-note-1/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/09/data-intensive-note-2/" title="访问 Designing Data-Intensive Applications 读书笔记（二）">Designing Data-Intensive Applications 读书笔记（二）</a></h2>
       <p class="excerpt">Chapter 4. Encoding and EvolutionWhen a data format or schema changes, a corresponding change to application code often needs to happen. However, in a large application, code changes often cannot happen instantaneously:With server-side application...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-09-12 22:03:19 +0800" class="post-list__meta--date date">2018-09-12</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/09/data-intensive-note-2/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2018-09-12 22:03:19 +0800" class="post-list__meta--date date">2018-09-12</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/09/data-intensive-note-2/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
     <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/07/data-intensive-note-1/" title="访问 Designing Data-Intensive Applications 读书笔记（一）">Designing Data-Intensive Applications 读书笔记（一）</a></h2>
       <p class="excerpt">Chapter 1. Reliable, Scalable, and Maintainable ApplicationsThinking About Data SystemsIncreasingly many applications now have such demanding or wide-ranging requirements that a single tool can no longer meet all of its data processing and storage...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-07-26 18:57:23 +0800" class="post-list__meta--date date">2018-07-26</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/data-intensive-note-1/>继续阅读</a></div>
+      <div class="post-list__meta"><time datetime="2018-07-26 18:57:23 +0800" class="post-list__meta--date date">2018-07-26</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2018/07/data-intensive-note-1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-2/" title="访问 etcd-raft 源码学习笔记（概览篇）">etcd-raft 源码学习笔记（概览篇）</a></h2>
       <p class="excerpt">这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：type raft struct {    id uint64    Term uint64    Vote uint64    // the log    raftLog *raftLog    state StateType    // isLearner is true if the local raft node is a lear...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-04 13:33:35 +0800" class="post-list__meta--date date">2018-07-04</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-2/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-1/" title="访问 etcd-raft 源码学习笔记（示例篇）">etcd-raft 源码学习笔记（示例篇）</a></h2>
-      <p class="excerpt">本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。从 main 函数开始读起：func main() {    ...    proposeC := make(chan string)    defer close(proposeC)    var kvs *kvstore    getSnapshot := func() ([]...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2018-07-03 13:21:23 +0800" class="post-list__meta--date date">2018-07-03</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-1/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

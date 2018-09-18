@@ -5,9 +5,290 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 12 Sep 2018 22:03:35 +0800</pubDate>
-    <lastBuildDate>Wed, 12 Sep 2018 22:03:35 +0800</lastBuildDate>
+    <pubDate>Tue, 18 Sep 2018 22:49:23 +0800</pubDate>
+    <lastBuildDate>Tue, 18 Sep 2018 22:49:23 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Core dump 原理探究学习笔记（一）</title>
+        <description>&lt;p&gt;本系列文章是读&lt;a href=&quot;https://blog.csdn.net/xuzhina/article/category/1322964&quot;&gt;《coredump问题原理探究》&lt;/a&gt;的读书笔记。&lt;/p&gt;
+
+&lt;h2&gt;函数调用帧&lt;/h2&gt;
+
+&lt;p&gt;先看一个例子&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// test.cpp
+
+int func(int c, char* s, int off) {
+  int a = 0x12345678;
+  int *p = &amp;amp;a;
+  int res = c + *(s + off);
+  return *p + res;
+}
+
+int main() {
+  int b = 0x87654321;
+  return b + func(0x100, &amp;quot;hello&amp;quot;, 3);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;g++ -o test test.cpp&lt;/code&gt; 编译后，gdb test 看下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) disassemble func
+Dump of assembler code for function _Z4funciPci:
+  0x00000000004005b0 &amp;lt;+0&amp;gt;: push %rbp
+  0x00000000004005b1 &amp;lt;+1&amp;gt;: mov %rsp,%rbp
+  0x00000000004005b4 &amp;lt;+4&amp;gt;: mov %edi,-0x14(%rbp)
+  0x00000000004005b7 &amp;lt;+7&amp;gt;: mov %rsi,-0x20(%rbp)
+  0x00000000004005bb &amp;lt;+11&amp;gt;: mov %edx,-0x18(%rbp)
+  0x00000000004005be &amp;lt;+14&amp;gt;: movl $0x12345678,-0x10(%rbp)
+  0x00000000004005c5 &amp;lt;+21&amp;gt;: lea -0x10(%rbp),%rax
+  0x00000000004005c9 &amp;lt;+25&amp;gt;: mov %rax,-0x8(%rbp)
+  0x00000000004005cd &amp;lt;+29&amp;gt;: mov -0x18(%rbp),%eax
+  0x00000000004005d0 &amp;lt;+32&amp;gt;: movslq %eax,%rdx
+  0x00000000004005d3 &amp;lt;+35&amp;gt;: mov -0x20(%rbp),%rax
+  0x00000000004005d7 &amp;lt;+39&amp;gt;: add %rdx,%rax
+  0x00000000004005da &amp;lt;+42&amp;gt;: movzbl (%rax),%eax
+  0x00000000004005dd &amp;lt;+45&amp;gt;: movsbl %al,%edx
+  0x00000000004005e0 &amp;lt;+48&amp;gt;: mov -0x14(%rbp),%eax
+  0x00000000004005e3 &amp;lt;+51&amp;gt;: add %edx,%eax
+  0x00000000004005e5 &amp;lt;+53&amp;gt;: mov %eax,-0xc(%rbp)
+  0x00000000004005e8 &amp;lt;+56&amp;gt;: mov -0x8(%rbp),%rax
+  0x00000000004005ec &amp;lt;+60&amp;gt;: mov (%rax),%edx
+  0x00000000004005ee &amp;lt;+62&amp;gt;: mov -0xc(%rbp),%eax
+  0x00000000004005f1 &amp;lt;+65&amp;gt;: add %edx,%eax
+  0x00000000004005f3 &amp;lt;+67&amp;gt;: pop %rbp
+  0x00000000004005f4 &amp;lt;+68&amp;gt;: retq
+End of assembler dump.
+(gdb) disassemble main
+Dump of assembler code for function main:
+  0x00000000004005f5 &amp;lt;+0&amp;gt;: push %rbp
+  0x00000000004005f6 &amp;lt;+1&amp;gt;: mov %rsp,%rbp
+  0x00000000004005f9 &amp;lt;+4&amp;gt;: sub $0x10,%rsp
+  0x00000000004005fd &amp;lt;+8&amp;gt;: movl $0x87654321,-0x4(%rbp)
+  0x0000000000400604 &amp;lt;+15&amp;gt;: mov $0x3,%edx
+  0x0000000000400609 &amp;lt;+20&amp;gt;: mov $0x4006b0,%esi
+  0x000000000040060e &amp;lt;+25&amp;gt;: mov $0x100,%edi
+  0x0000000000400613 &amp;lt;+30&amp;gt;: callq 0x4005b0 &amp;lt;_Z4funciPci&amp;gt;
+  0x0000000000400618 &amp;lt;+35&amp;gt;: mov -0x4(%rbp),%edx
+  0x000000000040061b &amp;lt;+38&amp;gt;: add %edx,%eax
+  0x000000000040061d &amp;lt;+40&amp;gt;: leaveq
+  0x000000000040061e &amp;lt;+41&amp;gt;: retq
+End of assembler dump.
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看到，每个函数调用的开始和结束都有如下指令：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;push %rbp     // 入栈 rbp 保存下旧的 rbp，此时 rsp -= 8 (64 位下)
+mov %rsp,%rbp // 设置 rbp = rsp
+...
+pop %rbp      // 调用结束 出栈恢复 rbp，此时 rsp += 8 (64 位下)
+retq          // 把 rbp 指向地址下一个单元的内容放到 rip，此时 rsp += 8 (64 位下)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;打个断点验证下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) tbreak *0x0000000000400613
+Temporary breakpoint 1 at 0x400613
+(gdb) r
+Starting program: test3
+Temporary breakpoint 1, 0x0000000000400613 in main ()
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-157.tl2.2.x86_64 libgcc-4.8.5-4.el7.x86_64 libstdc++-4.8.5-4.el7.x86_64
+(gdb) i r rsp rbp
+rsp 0x7fffffffe460 0x7fffffffe460
+rbp 0x7fffffffe470 0x7fffffffe470
+(gdb) x /4x $rsp
+0x7fffffffe460: 0xffffe550 0x00007fff 0x00000000 0x87654321
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;si 跟进去，发现 rsp 比之前小了 8 字节（从 &lt;strong&gt;0x7fffffffe460&lt;/strong&gt; 变成了 &lt;strong&gt;0x7fffffffe458&lt;/strong&gt;）。这是因为调用 call 指令会把返回地址（也就是 &lt;code&gt;callq 0x4005b0 &amp;lt;_Z4funciPci&amp;gt;&lt;/code&gt; 的下一条指令 &lt;code&gt;mov -0x4(%rbp),%edx&lt;/code&gt; 的地址）入栈。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) si
+0x00000000004005b0 in func(int, char*, int) ()
+(gdb) i r rsp rbp
+rsp 0x7fffffffe458 0x7fffffffe458
+rbp 0x7fffffffe470 0x7fffffffe470
+(gdb) x /4x $rsp
+0x7fffffffe458: 0x00400618 0x00000000 0xffffe550 0x00007fff
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;继续执行 &lt;code&gt;push %rbp&lt;/code&gt; 之后：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) ni
+0x00000000004005b1 in func(int, char*, int) ()
+(gdb) i r rsp rbp
+rsp 0x7fffffffe450 0x7fffffffe450
+rbp 0x7fffffffe470 0x7fffffffe470
+(gdb) x /4x $rsp
+0x7fffffffe450: 0xffffe470 0x00007fff 0x00400618 0x00000000
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看出 &lt;code&gt;push %rbp&lt;/code&gt; 之后 rsp 指向的地址存放了 rbp 的值：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x7fffffffe450: 0xffffe470 0x00007fff
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;继续执行 &lt;code&gt;mov %rsp,%rbp&lt;/code&gt;，此时 rsp 和 rbp 的值一致。rbp 指向上个函数帧的 rbp（本样例为 &lt;code&gt;0xffffe470&lt;/code&gt;），rbp 的下个单元指向返回地址（本样例为 &lt;code&gt;0x00400618&lt;/code&gt;） ，info symbol 该返回地址可以打印出函数名称（本样例为 &lt;code&gt;main + 35 in section .text of test3&lt;/code&gt;）。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) ni
+0x00000000004005b4 in func(int, char*, int) ()
+(gdb) i r rsp rbp
+rsp 0x7fffffffe450 0x7fffffffe450
+rbp 0x7fffffffe450 0x7fffffffe450
+(gdb) x /4x $rbp
+0x7fffffffe450: 0xffffe470 0x00007fff 0x00400618 0x00000000
+(gdb) info symbol 0x00400618
+main + 35 in section .text of test3
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看出函数调用时帧布局:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/coredump-note-1/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;结论：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;rbp 地址大于等于 rsp&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;rbp 下一个单元的内容存放返回地址，info symbol 会显示出函数名称&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;rbp 所指向的单元是上一帧的 rbp，亦遵守上述两个规则&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;栈溢出调试&lt;/h2&gt;
+
+&lt;p&gt;构造一个栈溢出的例子：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;// test2.cpp 
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+
+int overflow(int level, char* str) {
+  char buff[16];
+  strcpy(buff, str);
+  printf(&amp;quot;buffer:%s&amp;quot;, buff);
+  return ++level;
+}
+
+int wrapper1(int level, char* str) {
+  return overflow( ++level, str );
+}
+
+int wrapper2(int level, char* str) {
+  return wrapper1(++level, str);
+}
+
+int wrapper3(int level, char* str) {
+  return wrapper2(++level, str);
+}
+
+int main(int argc, char* argv[]) {
+  if ( argc &amp;lt; 2 ) {
+    return -1;
+  }
+  return wrapper3(0, argv[1]);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;执行 &lt;code&gt;./test2 WeAreHumanBeingsNothingCanNotStopUsWe&lt;/code&gt; core 掉。gdb coredump 文件：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) bt
+#0 0x0000000000400680 in overflow(int, char*) ()
+#1 0x6f7453746f4e6e61 in ?? ()
+#2 0x0000006557735570 in ?? ()
+#3 0x00000003e167f5b6 in ?? ()
+#4 0x00007ffeccfd8200 in ?? ()
+#5 0x00000000004006cb in wrapper2(int, char*) ()
+Cannot access memory at address 0x43676e6968746f56
+(gdb) i r rsp rbp
+rsp 0x7ffeccfd81c8 0x7ffeccfd81c8
+rbp 0x43676e6968746f4e 0x43676e6968746f4e
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;查看 rsp rbp 发现 rbp 小于 rsp，根据上节的总结，我们知道 rbp 的值是非法的。&lt;/p&gt;
+
+&lt;p&gt;查看下 rsp 的内容，尝试找到正确的 rbp：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /32x $rsp
+0x7ffeccfd81c8: 0x6f4e6e61 0x6f745374 0x57735570 0x00000065
+0x7ffeccfd81d8: 0xe167f5b6 0x00000003 0xccfd8200 0x00007ffe
+0x7ffeccfd81e8: 0x004006cb 0x00000000 0xccfd979d 0x00007ffe
+0x7ffeccfd81f8: 0xe0a97890 0x00000002 0xccfd8220 0x00007ffe
+0x7ffeccfd8208: 0x004006f1 0x00000000 0xccfd979d 0x00007ffe
+0x7ffeccfd8218: 0x00000000 0x00000001 0xccfd8240 0x00007ffe
+0x7ffeccfd8228: 0x00400727 0x00000000 0xccfd8328 0x00007ffe
+0x7ffeccfd8238: 0x00000000 0x00000002 0x00000000 0x00000000
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;0x7ffeccfd8200, 0x00007ffeccfd979d, 0x00007ffeccfd8220, 0x00007ffeccfd8240, 0x00007ffeccfd8328 都大于 0x7ffeccfd81c8，info symbol 这三个地址的下个单元地址看看能否正常显示函数：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) info symbol 0x004006cb
+wrapper2(int, char*) + 36 in section .text of test
+(gdb) info symbol 0xe0a97890
+No symbol matches 0xe0a97890.
+(gdb) info symbol 0x004006f1
+wrapper3(int, char*) + 36 in section .text of test
+(gdb) info symbol 0x00400727
+main + 52 in section .text of test
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看到 0x7ffeccfd8200, 0x00007ffeccfd8220, 0x00007ffeccfd8240 都可以正常显示下个单元的地址，结论 1 和 2都满足，接下来看看第 3 个结论是否也满足：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /2x 0x7ffeccfd8200
+0x7ffeccfd8200: 0xccfd8220 0x00007ffe
+(gdb) x /2x 0x00007ffeccfd8220
+0x7ffeccfd8220: 0xccfd8240 0x00007ffe
+(gdb) x /2x 0x00007ffeccfd8240
+0x7ffeccfd8240: 0x00000000 0x00000000
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;0x7ffeccfd8200 刚好指向 0x00007ffeccfd8220，0x00007ffeccfd8220 也刚好指向 0x00007ffeccfd8240。所以这三个都是合法的 rbp。这样我们已经恢复了真实的调用栈：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;wrapper2(int, char*) + 36 in section .text of test
+wrapper3(int, char*) + 36 in section .text of test
+main + 52 in section .text of test
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;看看 wrapper2 的汇编：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) disassemble wrapper2
+Dump of assembler code for function _Z8wrapper2iPc:
+0x00000000004006a7 &amp;lt;+0&amp;gt;: push %rbp
+0x00000000004006a8 &amp;lt;+1&amp;gt;: mov %rsp,%rbp
+0x00000000004006ab &amp;lt;+4&amp;gt;: sub $0x10,%rsp
+0x00000000004006af &amp;lt;+8&amp;gt;: mov %edi,-0x4(%rbp)
+0x00000000004006b2 &amp;lt;+11&amp;gt;: mov %rsi,-0x10(%rbp)
+0x00000000004006b6 &amp;lt;+15&amp;gt;: addl $0x1,-0x4(%rbp)
+0x00000000004006ba &amp;lt;+19&amp;gt;: mov -0x10(%rbp),%rdx
+0x00000000004006be &amp;lt;+23&amp;gt;: mov -0x4(%rbp),%eax
+0x00000000004006c1 &amp;lt;+26&amp;gt;: mov %rdx,%rsi
+0x00000000004006c4 &amp;lt;+29&amp;gt;: mov %eax,%edi
+0x00000000004006c6 &amp;lt;+31&amp;gt;: callq 0x400681 &amp;lt;_Z8wrapper1iPc&amp;gt;
+0x00000000004006cb &amp;lt;+36&amp;gt;: leaveq
+0x00000000004006cc &amp;lt;+37&amp;gt;: retq
+End of assembler dump.
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看到这里返回地址为 &lt;code&gt;0x00000000004006cb &amp;lt;+36&amp;gt;: leaveq&lt;/code&gt;。
+从前面&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x7ffeccfd81e8: 0x004006cb 0x00000000 0xccfd979d 0x00007ffe
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;看到栈地址 0x7ffeccfd81e8 保存 wrapper1 的返回地址为 0x004006cb ，和 wrapper2 的汇编相符
+，故继续看看 &lt;code&gt;callq 0x400681 &amp;lt;_Z8wrapper1iPc&amp;gt;&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;shell c++filt 查看下函数的原型：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) shell c++filt _Z8wrapper1iPc
+wrapper1(int, char*)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;看下 wrapper1 的汇编：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) disassemble wrapper1
+Dump of assembler code for function _Z8wrapper1iPc:
+0x0000000000400681 &amp;lt;+0&amp;gt;: push %rbp
+0x0000000000400682 &amp;lt;+1&amp;gt;: mov %rsp,%rbp
+0x0000000000400685 &amp;lt;+4&amp;gt;: sub $0x10,%rsp
+0x0000000000400689 &amp;lt;+8&amp;gt;: mov %edi,-0x4(%rbp)
+0x000000000040068c &amp;lt;+11&amp;gt;: mov %rsi,-0x10(%rbp)
+0x0000000000400690 &amp;lt;+15&amp;gt;: addl $0x1,-0x4(%rbp)
+0x0000000000400694 &amp;lt;+19&amp;gt;: mov -0x10(%rbp),%rdx
+0x0000000000400698 &amp;lt;+23&amp;gt;: mov -0x4(%rbp),%eax
+0x000000000040069b &amp;lt;+26&amp;gt;: mov %rdx,%rsi
+0x000000000040069e &amp;lt;+29&amp;gt;: mov %eax,%edi
+0x00000000004006a0 &amp;lt;+31&amp;gt;: callq 0x400640 &amp;lt;_Z8overflowiPc&amp;gt;
+0x00000000004006a5 &amp;lt;+36&amp;gt;: leaveq
+0x00000000004006a6 &amp;lt;+37&amp;gt;: retq
+End of assembler dump.
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;callq 0x400640 &amp;lt;_Z8overflowiPc&amp;gt;&lt;/code&gt; 之前都是 rbp rsp 操作，推测出执行 &lt;code&gt;callq 0x400640 &amp;lt;_Z8overflowiPc&amp;gt;&lt;/code&gt; 时引起的栈溢出。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /16x $rsp
+0x7ffeccfd81c8: 0x6f4e6e61 0x6f745374 0x57735570 0x00000065
+0x7ffeccfd81d8: 0xe167f5b6 0x00000003 0xccfd8200 0x00007ffe
+0x7ffeccfd81e8: 0x004006cb 0x00000000 0xccfd979d 0x00007ffe
+0x7ffeccfd81f8: 0xe0a97890 0x00000002 0xccfd8220 0x00007ffe
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;0x7ffeccfd81c8 的内容本应该是 &lt;code&gt;0x004006a5 0x00000000&lt;/code&gt; （指向返回地址 &lt;code&gt;x00000000004006a5 &amp;lt;+36&amp;gt;: leaveq&lt;/code&gt;），但由于栈溢出被覆盖了。因此猜测是 _Z8overflowiPc 函数引起的。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;注：为什么是 0x7ffeccfd81c8？前面知道 0x7ffeccfd81e8 保存调用 wrapper1 的返回地址。由上图可以看出，调用 wrapper1 时， 减去 8 个字节的 &lt;code&gt;push %rbp&lt;/code&gt;，减去 16 字节的局部变量（&lt;code&gt;sub $0x10,%rsp&lt;/code&gt;），再减去 8 个字节的 &lt;code&gt;callq 0x400640 &amp;lt;_Z8overflowiPc&amp;gt;&lt;/code&gt;，即 0x7ffeccfd81e8 - 32 = 0x7ffeccfd81c8f 保存调用 _Z8overflowiPc 的返回地址0x00000000004006a5&lt;/em&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) shell c++filt _Z8overflowiPc
+overflow(int, char*)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;因此定位到 &lt;code&gt;overflow&lt;/code&gt; 函数代码中用到 &lt;code&gt;strcpy&lt;/code&gt; 导致溢出。&lt;/p&gt;
+</description>
+        <pubDate>Tue, 18 Sep 2018 22:47:56 +0800</pubDate>
+        <link>http://masutangu.com/2018/09/coredump-note-1/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/09/coredump-note-1/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>Designing Data-Intensive Applications 读书笔记（二）</title>
@@ -489,7 +770,7 @@ replication with transactions on the leader.&lt;/p&gt;
         <guid isPermaLink="true">http://masutangu.com/2018/09/data-intensive-note-2/</guid>
         
         
-        <category>源码阅读</category>
+        <category>读书笔记</category>
         
       </item>
     
@@ -840,7 +1121,7 @@ code and worse performance.&lt;/strong&gt;&lt;/p&gt;
         <guid isPermaLink="true">http://masutangu.com/2018/07/data-intensive-note-1/</guid>
         
         
-        <category>源码阅读</category>
+        <category>读书笔记</category>
         
       </item>
     
@@ -1973,201 +2254,6 @@ type Ready struct {
         <pubDate>Wed, 04 Jul 2018 13:33:35 +0800</pubDate>
         <link>http://masutangu.com/2018/07/etcd-raft-note-2/</link>
         <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-2/</guid>
-        
-        
-        <category>源码阅读</category>
-        
-      </item>
-    
-      <item>
-        <title>etcd-raft 源码学习笔记（示例篇）</title>
-        <description>&lt;p&gt;本系列文章为 &lt;a href=&quot;https://github.com/coreos/etcd/tree/master/raft&quot;&gt;etcd-raft&lt;/a&gt; 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。&lt;/p&gt;
-
-&lt;p&gt;从 main 函数开始读起：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func main() {
-    ...
-    proposeC := make(chan string)
-    defer close(proposeC)
-
-    var kvs *kvstore
-    getSnapshot := func() ([]byte, error) { return kvs.getSnapshot() }
-    commitC, errorC, snapshotterReady := newRaftNode(*id, strings.Split(*cluster, &amp;quot;,&amp;quot;), *join, getSnapshot, proposeC, confChangeC)
-
-    kvs = newKVStore(&amp;lt;-snapshotterReady, proposeC, commitC, errorC)
-    ...
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;getSnapshot&lt;/code&gt; 为应用层 kv 提供的 snapshot 方法，在 raft 中调用该方法进行 snapshot。&lt;code&gt;proposeC&lt;/code&gt; 是应用层 kv 向 raftNode 发送请求的 channel，&lt;code&gt;commitC&lt;/code&gt; 为 raftNode 通知应用层 kv 已经提交的请求的 channel。&lt;/p&gt;
-
-&lt;p&gt;先看看 &lt;code&gt;newKVStore&lt;/code&gt; 的实现：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func newKVStore(snapshotter *snap.Snapshotter, proposeC chan&amp;lt;- string, commitC &amp;lt;-chan *string, errorC &amp;lt;-chan error) *kvstore {
-    s := &amp;amp;kvstore{proposeC: proposeC, kvStore: make(map[string]string), snapshotter: snapshotter}
-    // replay log into key-value map
-    s.readCommits(commitC, errorC)
-    // read commits from raft into kvStore map until error
-    go s.readCommits(commitC, errorC)
-    return s
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;readCommits&lt;/code&gt; 方法从 &lt;code&gt;commitC&lt;/code&gt; 中读取已经提交的请求进行处理：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (s *kvstore) readCommits(commitC &amp;lt;-chan *string, errorC &amp;lt;-chan error) {
-    for data := range commitC {
-        var dataKv kv
-        dec := gob.NewDecoder(bytes.NewBufferString(*data))  // decode 
-        s.mu.Lock()
-        s.kvStore[dataKv.Key] = dataKv.Val  // 更新 kv
-        s.mu.Unlock()
-    }
-    if err, ok := &amp;lt;-errorC; ok {
-        log.Fatal(err)
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;再看看 &lt;code&gt;newRaftNode&lt;/code&gt; ，其会调用 &lt;code&gt;startRaft&lt;/code&gt; 启动底层 raft：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (rc *raftNode) startRaft() {
-    oldwal := wal.Exist(rc.waldir)
-    rc.wal = rc.replayWAL()
-
-    rpeers := make([]raft.Peer, len(rc.peers))
-    for i := range rpeers {
-        rpeers[i] = raft.Peer{ID: uint64(i + 1)}
-    }
-    c := &amp;amp;raft.Config{
-        ID:              uint64(rc.id),
-        ElectionTick:    10,
-        HeartbeatTick:   1,
-        Storage:         rc.raftStorage,
-        MaxSizePerMsg:   1024 * 1024,
-        MaxInflightMsgs: 256,
-    }
-
-    if oldwal {
-        rc.node = raft.RestartNode(c)
-    } else {
-        startPeers := rpeers
-        if rc.join {
-            startPeers = nil
-        }
-        rc.node = raft.StartNode(c, startPeers)
-    }
-
-    go rc.serveRaft()  // 监听 http 
-    go rc.serveChannels()  // 监听 proposeC channel，读取应用层请求 进行处理
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;serveChannels&lt;/code&gt; 就做了两个事，1. 另起一个 goroutine，接收 proposeC 里发送自应用层的请求，通过 &lt;code&gt;Propose&lt;/code&gt; 方法交给底层 raft 处理；2. 调用 &lt;code&gt;Ready&lt;/code&gt; 方法，接收发送自 raft 的 ready 对象，调用 &lt;code&gt;publishEntries&lt;/code&gt; 将已经提交的 entries 发送到 &lt;code&gt;commitC&lt;/code&gt; channel，交由应用层处理，再调用 &lt;code&gt;Advance&lt;/code&gt; 方法通知底层 raft 准备好接收下一个 ready 对象了。&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (rc *raftNode) serveChannels() {
-    defer rc.wal.Close()
-
-    ticker := time.NewTicker(100 * time.Millisecond)
-    defer ticker.Stop()
-
-    // send proposals over raft
-    go func() {
-        var confChangeCount uint64 = 0
-
-        for rc.proposeC != nil &amp;amp;&amp;amp; rc.confChangeC != nil {
-            select {
-            case prop, ok := &amp;lt;-rc.proposeC:
-                if !ok {
-                    rc.proposeC = nil
-                } else {
-                    // blocks until accepted by raft state machine
-                    rc.node.Propose(context.TODO(), []byte(prop))  // 调用 Propose 发送给 raft 请求
-                }
-            }
-        }
-        // client closed channel; shutdown raft if not already
-        close(rc.stopc)
-    }()
-
-    // event loop on raft state machine updates
-    for {
-        select {
-        case &amp;lt;-ticker.C:
-            rc.node.Tick()
-
-        // store raft entries to wal, then publish over commit channel
-        case rd := &amp;lt;-rc.node.Ready():  // 应用层调用 Ready() 获取 ready 对象
-            if ok := rc.publishEntries(rc.entriesToApply(rd.CommittedEntries)); !ok {
-                rc.stop()
-                return
-            }
-            rc.node.Advance()  // 应用层调用 Advance() 通知 raft 已经处理完 ready 对象 
-
-        case &amp;lt;-rc.stopc:
-            rc.stop()
-            return
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;publishEntries&lt;/code&gt; 将 ready 对象里的 &lt;code&gt;CommittedEntries&lt;/code&gt; 发送到 &lt;code&gt;commitC&lt;/code&gt;，由应用层 kv 处理：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// publishEntries writes committed log entries to commit channel and returns
-// whether all entries could be published.
-func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
-    for i := range ents {
-        switch ents[i].Type {
-        case raftpb.EntryNormal:
-            if len(ents[i].Data) == 0 {
-                // ignore empty messages
-                break
-            }
-            s := string(ents[i].Data)
-            select {
-            case rc.commitC &amp;lt;- &amp;amp;s:  // 发送到 commitC channel
-            case &amp;lt;-rc.stopc:
-                return false
-            }
-        }
-
-        // after commit, update appliedIndex
-        rc.appliedIndex = ents[i].Index
-
-        // special nil commit to signal replay has finished
-        if ents[i].Index == rc.lastIndex {
-            select {
-            case rc.commitC &amp;lt;- nil:
-            case &amp;lt;-rc.stopc:
-                return false
-            }
-        }
-    }
-    return true
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;整体架构如下，RaftNode 的角色为应用层和底层 raft 的桥梁：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/etcd-raft-node-1/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;可以看出，应用层主要用到 raft.Node 的 &lt;code&gt;Propose&lt;/code&gt;、&lt;code&gt;Ready&lt;/code&gt;、&lt;code&gt;Advance&lt;/code&gt;三个接口：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// Node represents a node in a raft cluster.
-type Node interface {
-    // Propose proposes that data be appended to the log.
-    Propose(ctx context.Context, data []byte) error
-
-    // Ready returns a channel that returns the current point-in-time state.
-    // Users of the Node must call Advance after retrieving the state returned by Ready.
-    //
-    // NOTE: No committed entries from the next Ready may be applied until all committed entries
-    // and snapshots from the previous one have finished.
-    Ready() &amp;lt;-chan Ready
-
-    // Advance notifies the Node that the application has saved progress up to the last Ready.
-    // It prepares the node to return the next available Ready.
-    //
-    // The application should generally call Advance after it applies the entries in last Ready.
-    //
-    // However, as an optimization, the application may call Advance while it is applying the
-    // commands. For example. when the last Ready contains a snapshot, the application might take
-    // a long time to apply the snapshot data. To continue receiving Ready without blocking raft
-    // progress, it can call Advance before finishing applying the last ready.
-    Advance()
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Tue, 03 Jul 2018 13:21:23 +0800</pubDate>
-        <link>http://masutangu.com/2018/07/etcd-raft-note-1/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-1/</guid>
         
         
         <category>源码阅读</category>
