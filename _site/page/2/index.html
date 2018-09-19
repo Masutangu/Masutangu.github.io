@@ -128,6 +128,13 @@
   <ol class="post-list">
     
     <li>
+      <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-2/" title="访问 etcd-raft 源码学习笔记（概览篇）">etcd-raft 源码学习笔记（概览篇）</a></h2>
+      <p class="excerpt">这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：type raft struct {    id uint64    Term uint64    Vote uint64    // the log    raftLog *raftLog    state StateType    // isLearner is true if the local raft node is a lear...&hellip;</p>
+      <div class="post-list__meta"><time datetime="2018-07-04 13:33:35 +0800" class="post-list__meta--date date">2018-07-04</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-2/>继续阅读</a></div>
+      <hr class="post-list__divider" />
+    </li>
+    
+    <li>
       <h2 class="post-list__post-title post-title"><a href="/2018/07/etcd-raft-note-1/" title="访问 etcd-raft 源码学习笔记（示例篇）">etcd-raft 源码学习笔记（示例篇）</a></h2>
       <p class="excerpt">本系列文章为 etcd-raft 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。从 main 函数开始读起：func main() {    ...    proposeC := make(chan string)    defer close(proposeC)    var kvs *kvstore    getSnapshot := func() ([]...&hellip;</p>
       <div class="post-list__meta"><time datetime="2018-07-03 13:21:23 +0800" class="post-list__meta--date date">2018-07-03</time> &#8226; <span class="post-list__meta--tags tags">源码阅读</span><a class="btn-border-small" href=/2018/07/etcd-raft-note-1/>继续阅读</a></div>
@@ -187,13 +194,6 @@
       <h2 class="post-list__post-title post-title"><a href="/2017/12/2017-review/" title="访问 再见，2017">再见，2017</a></h2>
       <p class="excerpt">回看起去年的总结 我的2016，心里挺有感慨的。17 年是出现转机的一年，在这最后一天，按照惯例，整理下这一年的历程和想法。关于自己在去年的时候，我总觉得自己在工作上挺失意的，各种原因下达不到自己的期望。还好，今年在工作方面对自己还算满意。最大的进步是对工作的心态上，不再有一些困惑和纠结。工作上努力去争取有挑战的需求，空闲的时候则抽更多的时间在个人学习上，维持好工作和自学的平衡。我挺喜欢这样的节奏，忙的时候全心全意把工作做好，不忙的时候就把更多的时间投入到自己感兴趣的领域。在经历 16 年...&hellip;</p>
       <div class="post-list__meta"><time datetime="2017-12-31 16:28:17 +0800" class="post-list__meta--date date">2017-12-31</time> &#8226; <span class="post-list__meta--tags tags">随笔</span><a class="btn-border-small" href=/2017/12/2017-review/>继续阅读</a></div>
-      <hr class="post-list__divider" />
-    </li>
-    
-    <li>
-      <h2 class="post-list__post-title post-title"><a href="/2017/12/mit-6824-note-3/" title="访问 MIT 6.824 学习笔记（三）">MIT 6.824 学习笔记（三）</a></h2>
-      <p class="excerpt">本系列文章是对 MIT 6.824 课程的学习笔记。SpinnakerIntroductionSpinnaker is an experimental datastore that is designed to run on a large cluster of commodity servers in a single datacenter. This paper describes Spinnaker’s Paxos-based replication protocol. The us...&hellip;</p>
-      <div class="post-list__meta"><time datetime="2017-12-02 15:19:31 +0800" class="post-list__meta--date date">2017-12-02</time> &#8226; <span class="post-list__meta--tags tags">读书笔记</span><a class="btn-border-small" href=/2017/12/mit-6824-note-3/>继续阅读</a></div>
       <hr class="post-list__divider" />
     </li>
     

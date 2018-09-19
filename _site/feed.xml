@@ -5,9 +5,299 @@
     <description>也許我這一生　始終在追逐那顆九號球</description>
     <link>http://masutangu.com/</link>
     <atom:link href="http://masutangu.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 18 Sep 2018 22:58:40 +0800</pubDate>
-    <lastBuildDate>Tue, 18 Sep 2018 22:58:40 +0800</lastBuildDate>
+    <pubDate>Wed, 19 Sep 2018 21:25:42 +0800</pubDate>
+    <lastBuildDate>Wed, 19 Sep 2018 21:25:42 +0800</lastBuildDate>
     <generator>Jekyll v3.1.1</generator>
+    
+      <item>
+        <title>Core dump 原理探究学习笔记（二）</title>
+        <description>&lt;p&gt;本系列文章是读&lt;a href=&quot;https://blog.csdn.net/xuzhina/article/category/1322964&quot;&gt;《coredump问题原理探究》&lt;/a&gt;的读书笔记。&lt;/p&gt;
+
+&lt;h2&gt;函数逆向&lt;/h2&gt;
+
+&lt;p&gt;这是将要逆向的样例源码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+int main(int argc, char* argv[]) {
+  for (int i = 0; i &amp;lt; argc; i++) {
+    int len = strlen(argv[i]);
+    switch (len) {
+    case 0:
+      printf(&amp;quot;%c\n&amp;quot;, argv[i][0]);
+      break;
+    case 1:
+      printf(&amp;quot;%s\n&amp;quot;, argv[i+1]);
+      break;
+    case 2:
+      printf(&amp;quot;%d\n&amp;quot;, i);
+      break;
+    default:
+      printf(&amp;quot;%s\n&amp;quot;, i);
+      break;
+    }
+  }  
+  return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;./test helloworld&lt;/code&gt; 运行程序 core 掉。&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) bt
+#0  0x00007f1128e62694 in vfprintf () from /lib64/libc.so.6
+#1  0x00007f1128e6b879 in printf () from /lib64/libc.so.6
+#2  0x000000000040074d in main ()
+(gdb) disassemble main
+Dump of assembler code for function main:
+   0x0000000000400680 &amp;lt;+0&amp;gt;:     push   %rbp
+   0x0000000000400681 &amp;lt;+1&amp;gt;:     mov    %rsp,%rbp
+   0x0000000000400684 &amp;lt;+4&amp;gt;:     sub    $0x20,%rsp
+   0x0000000000400688 &amp;lt;+8&amp;gt;:     mov    %edi,-0x14(%rbp)
+   0x000000000040068b &amp;lt;+11&amp;gt;:    mov    %rsi,-0x20(%rbp)
+   0x000000000040068f &amp;lt;+15&amp;gt;:    movl   $0x0,-0x4(%rbp)
+   0x0000000000400696 &amp;lt;+22&amp;gt;:    jmpq   0x400752 &amp;lt;main+210&amp;gt;
+   0x000000000040069b &amp;lt;+27&amp;gt;:    mov    -0x4(%rbp),%eax
+   0x000000000040069e &amp;lt;+30&amp;gt;:    cltq   
+   0x00000000004006a0 &amp;lt;+32&amp;gt;:    lea    0x0(,%rax,8),%rdx
+   0x00000000004006a8 &amp;lt;+40&amp;gt;:    mov    -0x20(%rbp),%rax
+   0x00000000004006ac &amp;lt;+44&amp;gt;:    add    %rdx,%rax
+   0x00000000004006af &amp;lt;+47&amp;gt;:    mov    (%rax),%rax
+   0x00000000004006b2 &amp;lt;+50&amp;gt;:    mov    %rax,%rdi
+   0x00000000004006b5 &amp;lt;+53&amp;gt;:    callq  0x400580 &amp;lt;strlen@plt&amp;gt;
+   0x00000000004006ba &amp;lt;+58&amp;gt;:    mov    %eax,-0x8(%rbp)
+   0x00000000004006bd &amp;lt;+61&amp;gt;:    mov    -0x8(%rbp),%eax
+   0x00000000004006c0 &amp;lt;+64&amp;gt;:    cmp    $0x1,%eax
+   0x00000000004006c3 &amp;lt;+67&amp;gt;:    je     0x4006fe &amp;lt;main+126&amp;gt;
+   0x00000000004006c5 &amp;lt;+69&amp;gt;:    cmp    $0x2,%eax
+   0x00000000004006c8 &amp;lt;+72&amp;gt;:    je     0x400723 &amp;lt;main+163&amp;gt;
+   0x00000000004006ca &amp;lt;+74&amp;gt;:    test   %eax,%eax
+   0x00000000004006cc &amp;lt;+76&amp;gt;:    jne    0x400739 &amp;lt;main+185&amp;gt;
+   0x00000000004006ce &amp;lt;+78&amp;gt;:    mov    -0x4(%rbp),%eax
+   0x00000000004006d1 &amp;lt;+81&amp;gt;:    cltq   
+   0x00000000004006d3 &amp;lt;+83&amp;gt;:    lea    0x0(,%rax,8),%rdx
+   0x00000000004006db &amp;lt;+91&amp;gt;:    mov    -0x20(%rbp),%rax
+   0x00000000004006df &amp;lt;+95&amp;gt;:    add    %rdx,%rax
+   0x00000000004006e2 &amp;lt;+98&amp;gt;:    mov    (%rax),%rax
+   0x00000000004006e5 &amp;lt;+101&amp;gt;:   movzbl (%rax),%eax
+   0x00000000004006e8 &amp;lt;+104&amp;gt;:   movsbl %al,%eax
+   0x00000000004006eb &amp;lt;+107&amp;gt;:   mov    %eax,%esi
+   0x00000000004006ed &amp;lt;+109&amp;gt;:   mov    $0x400800,%edi
+   0x00000000004006f2 &amp;lt;+114&amp;gt;:   mov    $0x0,%eax
+   0x00000000004006f7 &amp;lt;+119&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+   0x00000000004006fc &amp;lt;+124&amp;gt;:   jmp    0x40074e &amp;lt;main+206&amp;gt;
+   0x00000000004006fe &amp;lt;+126&amp;gt;:   mov    -0x4(%rbp),%eax
+   0x0000000000400701 &amp;lt;+129&amp;gt;:   cltq   
+   0x0000000000400703 &amp;lt;+131&amp;gt;:   add    $0x1,%rax
+   0x0000000000400707 &amp;lt;+135&amp;gt;:   lea    0x0(,%rax,8),%rdx
+   0x000000000040070f &amp;lt;+143&amp;gt;:   mov    -0x20(%rbp),%rax
+   0x0000000000400713 &amp;lt;+147&amp;gt;:   add    %rdx,%rax
+   0x0000000000400716 &amp;lt;+150&amp;gt;:   mov    (%rax),%rax
+   0x0000000000400719 &amp;lt;+153&amp;gt;:   mov    %rax,%rdi
+   0x000000000040071c &amp;lt;+156&amp;gt;:   callq  0x400560 &amp;lt;puts@plt&amp;gt;
+   0x0000000000400721 &amp;lt;+161&amp;gt;:   jmp    0x40074e &amp;lt;main+206&amp;gt;
+   0x0000000000400723 &amp;lt;+163&amp;gt;:   mov    -0x4(%rbp),%eax
+   0x0000000000400726 &amp;lt;+166&amp;gt;:   mov    %eax,%esi
+   0x0000000000400728 &amp;lt;+168&amp;gt;:   mov    $0x400804,%edi
+   0x000000000040072d &amp;lt;+173&amp;gt;:   mov    $0x0,%eax
+   0x0000000000400732 &amp;lt;+178&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+   0x0000000000400737 &amp;lt;+183&amp;gt;:   jmp    0x40074e &amp;lt;main+206&amp;gt;
+   0x0000000000400739 &amp;lt;+185&amp;gt;:   mov    -0x4(%rbp),%eax
+   0x000000000040073c &amp;lt;+188&amp;gt;:   mov    %eax,%esi
+   0x000000000040073e &amp;lt;+190&amp;gt;:   mov    $0x400808,%edi
+   0x0000000000400743 &amp;lt;+195&amp;gt;:   mov    $0x0,%eax
+   0x0000000000400748 &amp;lt;+200&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+   0x000000000040074d &amp;lt;+205&amp;gt;:   nop
+   0x000000000040074e &amp;lt;+206&amp;gt;:   addl   $0x1,-0x4(%rbp)
+   0x0000000000400752 &amp;lt;+210&amp;gt;:   mov    -0x4(%rbp),%eax
+   0x0000000000400755 &amp;lt;+213&amp;gt;:   cmp    -0x14(%rbp),%eax
+   0x0000000000400758 &amp;lt;+216&amp;gt;:   jl     0x40069b &amp;lt;main+27&amp;gt;
+   0x000000000040075e &amp;lt;+222&amp;gt;:   mov    $0x0,%eax
+   0x0000000000400763 &amp;lt;+227&amp;gt;:   leaveq 
+   0x0000000000400764 &amp;lt;+228&amp;gt;:   retq   
+End of assembler dump.
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;由 
+&lt;code&gt;0x0000000000400758 &amp;lt;+216&amp;gt;:   jl     0x40069b &amp;lt;main+27&amp;gt;&lt;/code&gt;
+推断出 &amp;lt;main+27&amp;gt; 到 &amp;lt;main+216&amp;gt; 构成一个循环。&lt;/p&gt;
+
+&lt;p&gt;看看循环前的判断语句：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x000000000040074e &amp;lt;+206&amp;gt;:   addl   $0x1,-0x4(%rbp)
+0x0000000000400752 &amp;lt;+210&amp;gt;:   mov    -0x4(%rbp),%eax
+0x0000000000400755 &amp;lt;+213&amp;gt;:   cmp    -0x14(%rbp),%eax
+0x0000000000400758 &amp;lt;+216&amp;gt;:   jl     0x40069b &amp;lt;main+27&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;从main 开头的汇编可以看出，edi 寄存器保存了 argc, rsi 寄存器保存了 argv：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x0000000000400688 &amp;lt;+8&amp;gt;:     mov    %edi,-0x14(%rbp)
+0x000000000040068b &amp;lt;+11&amp;gt;:    mov    %rsi,-0x20(%rbp)
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;因此循环的判断语句是对比 0x4(%rbp) 这个变量和 argc，命名这个变量为 cnt。上面判断的语句语义为：执行 cnt++，如果 cnt 小于 argc 则跳转到 &amp;lt;main+27&amp;gt;。&lt;/p&gt;
+
+&lt;p&gt;由：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x000000000040068f &amp;lt;+15&amp;gt;:    movl   $0x0,-0x4(%rbp)
+0x0000000000400696 &amp;lt;+22&amp;gt;:    jmpq   0x400752 &amp;lt;main+210&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;可以看出，程序初始时 cnt 被赋值为 0，然后跳转到循环开始处 &amp;lt;main+210&amp;gt; 与 argc 比较。&lt;/p&gt;
+
+&lt;p&gt;由：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x000000000040075e &amp;lt;+222&amp;gt;:   mov    $0x0,%eax
+0x0000000000400763 &amp;lt;+227&amp;gt;:   leaveq 
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;知道 main 函数始终返回 0（eax 寄存器保存函数返回值）。&lt;/p&gt;
+
+&lt;p&gt;因此目前我们推算出的源码架构为：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;int main(int argc, char* argv[]) {
+  int cnt = 0;
+  for (; cnt &amp;lt; args; cnt++) {
+      &amp;lt;main+32&amp;gt; - &amp;lt;main+206&amp;gt;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;继续看看 &amp;lt;main+32&amp;gt; 到 &amp;lt;main+206&amp;gt; 的汇编。重点关注跳转指令：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x00000000004006b5 &amp;lt;+53&amp;gt;:    callq  0x400580 &amp;lt;strlen@plt&amp;gt;
+0x00000000004006ba &amp;lt;+58&amp;gt;:    mov    %eax,-0x8(%rbp)
+0x00000000004006bd &amp;lt;+61&amp;gt;:    mov    -0x8(%rbp),%eax
+0x00000000004006c0 &amp;lt;+64&amp;gt;:    cmp    $0x1,%eax
+0x00000000004006c3 &amp;lt;+67&amp;gt;:    je     0x4006fe &amp;lt;main+126&amp;gt;
+0x00000000004006c5 &amp;lt;+69&amp;gt;:    cmp    $0x2,%eax
+0x00000000004006c8 &amp;lt;+72&amp;gt;:    je     0x400723 &amp;lt;main+163&amp;gt;
+0x00000000004006ca &amp;lt;+74&amp;gt;:    test   %eax,%eax
+0x00000000004006cc &amp;lt;+76&amp;gt;:    jne    0x400739 &amp;lt;main+185&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;上面的代码根据 eax 寄存器的值来跳转对应的代码，而 eax 保存的是调用 strlen 函数的返回值。看看 strlen 的入参：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x000000000040069b &amp;lt;+27&amp;gt;:    mov    -0x4(%rbp),%eax
+0x000000000040069e &amp;lt;+30&amp;gt;:    cltq   
+0x00000000004006a0 &amp;lt;+32&amp;gt;:    lea    0x0(,%rax,8),%rdx
+0x00000000004006a8 &amp;lt;+40&amp;gt;:    mov    -0x20(%rbp),%rax
+0x00000000004006ac &amp;lt;+44&amp;gt;:    add    %rdx,%rax
+0x00000000004006af &amp;lt;+47&amp;gt;:    mov    (%rax),%rax
+0x00000000004006b2 &amp;lt;+50&amp;gt;:    mov    %rax,%rdi
+0x00000000004006b5 &amp;lt;+53&amp;gt;:    callq  0x400580 &amp;lt;strlen@plt&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;由上面知道 -0x4(%rbp) 是变量 cnt，-0x20(%rbp) 保存 rsi 的值也就是 argv，这段汇编表示取 argv[cnt] 的值，并存入寄存器 rdi 当作 strlen 函数的参数。&lt;/p&gt;
+
+&lt;p&gt;此时推算出的 main 函数如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;int main(int argc, char* argv[]) {
+  int cnt = 0;
+  for (; cnt &amp;lt; args; cnt++) {
+      int i = strlen(argv[cnt]);
+      switch (i) {
+      case 1:
+        &amp;lt;main+126&amp;gt; - &amp;lt;main+156&amp;gt;
+        break;
+      case 2:
+        &amp;lt;main+163&amp;gt; - &amp;lt;main+178&amp;gt;
+        break;
+      case 0:
+        &amp;lt;main+78&amp;gt; - &amp;lt;main+119&amp;gt;
+        break;
+      default:
+        &amp;lt;main+185&amp;gt; - &amp;lt;main+205&amp;gt;
+      }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;依次查看每个 case 的汇编。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;case 1：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x00000000004006fe &amp;lt;+126&amp;gt;:   mov    -0x4(%rbp),%eax
+0x0000000000400701 &amp;lt;+129&amp;gt;:   cltq   
+0x0000000000400703 &amp;lt;+131&amp;gt;:   add    $0x1,%rax
+0x0000000000400707 &amp;lt;+135&amp;gt;:   lea    0x0(,%rax,8),%rdx
+0x000000000040070f &amp;lt;+143&amp;gt;:   mov    -0x20(%rbp),%rax
+0x0000000000400713 &amp;lt;+147&amp;gt;:   add    %rdx,%rax
+0x0000000000400716 &amp;lt;+150&amp;gt;:   mov    (%rax),%rax
+0x0000000000400719 &amp;lt;+153&amp;gt;:   mov    %rax,%rdi
+0x000000000040071c &amp;lt;+156&amp;gt;:   callq  0x400560 &amp;lt;puts@plt&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;取 argv[cnt + 1] 的值入栈，调用 puts@plt。即：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;puts(argv[cnt + 1]);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;case 2：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x0000000000400723 &amp;lt;+163&amp;gt;:   mov    -0x4(%rbp),%eax
+0x0000000000400726 &amp;lt;+166&amp;gt;:   mov    %eax,%esi
+0x0000000000400728 &amp;lt;+168&amp;gt;:   mov    $0x400804,%edi
+0x000000000040072d &amp;lt;+173&amp;gt;:   mov    $0x0,%eax
+0x0000000000400732 &amp;lt;+178&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;调用 printf 函数，esi 保存参数 cnt，edi 保存参数 $0x400804，gdb 下 $0x400804 指向的内容：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /s 0x400804
+0x400804:       &amp;quot;%d\n&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;即：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;printf(&amp;quot;%d\n&amp;quot;, cnt);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;strong&gt;case 0：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x00000000004006ce &amp;lt;+78&amp;gt;:    mov    -0x4(%rbp),%eax
+0x00000000004006d1 &amp;lt;+81&amp;gt;:    cltq   
+0x00000000004006d3 &amp;lt;+83&amp;gt;:    lea    0x0(,%rax,8),%rdx
+0x00000000004006db &amp;lt;+91&amp;gt;:    mov    -0x20(%rbp),%rax
+0x00000000004006df &amp;lt;+95&amp;gt;:    add    %rdx,%rax
+0x00000000004006e2 &amp;lt;+98&amp;gt;:    mov    (%rax),%rax
+0x00000000004006e5 &amp;lt;+101&amp;gt;:   movzbl (%rax),%eax
+0x00000000004006e8 &amp;lt;+104&amp;gt;:   movsbl %al,%eax
+0x00000000004006eb &amp;lt;+107&amp;gt;:   mov    %eax,%esi
+0x00000000004006ed &amp;lt;+109&amp;gt;:   mov    $0x400800,%edi
+0x00000000004006f2 &amp;lt;+114&amp;gt;:   mov    $0x0,%eax
+0x00000000004006f7 &amp;lt;+119&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&amp;lt;+78&amp;gt; 到 &amp;lt;+98&amp;gt; 是取 argv[cnt]。&amp;lt;+101&amp;gt; 到 &amp;lt;+104&amp;gt; 则为 argv[cnt][0]。gdb 0x400800 地址：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /s 0x400800
+0x400800:       &amp;quot;%c\n&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;即为：
+&lt;code&gt;
+printf(&amp;quot;%c\n&amp;quot;, argv[cnt][0]);
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;default：&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;0x0000000000400739 &amp;lt;+185&amp;gt;:   mov    -0x4(%rbp),%eax
+0x000000000040073c &amp;lt;+188&amp;gt;:   mov    %eax,%esi
+0x000000000040073e &amp;lt;+190&amp;gt;:   mov    $0x400808,%edi
+0x0000000000400743 &amp;lt;+195&amp;gt;:   mov    $0x0,%eax
+0x0000000000400748 &amp;lt;+200&amp;gt;:   callq  0x400540 &amp;lt;printf@plt&amp;gt;
+0x000000000040074d &amp;lt;+205&amp;gt;:   nop
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;gdb 0x400808：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(gdb) x /s 0x400808
+0x400808:       &amp;quot;%s\n&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;即&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;printf(&amp;quot;%s\n&amp;quot;, cnt);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;因此逆向出来的 main 函数如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c++&quot; data-lang=&quot;c++&quot;&gt;int main(int argc, char* argv[]) {
+  int cnt = 0;
+  for (; cnt &amp;lt; args; cnt++) {
+      int i = strlen(argv[cnt]);
+      switch (i) {
+      case 1:
+        puts(argv[cnt + 1]);
+        break;
+      case 2:
+        printf(&amp;quot;%d\n&amp;quot;, cnt);
+        break;
+      case 0:
+        printf(&amp;quot;%c\n&amp;quot;, argv[cnt][0]);
+        break;
+      default:
+        printf(&amp;quot;%s\n&amp;quot;, cnt);
+        break;
+      }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;和上面我们给的源码几乎一致。&lt;/p&gt;
+
+&lt;p&gt;由 于core 时栈地址 0x000000000040074d 位于 &amp;lt;+188&amp;gt; 到 &amp;lt;+205&amp;gt; 的范围，即 default 分支的代码。根据我们逆向的 default 分支的代码：&lt;/p&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;printf(&amp;quot;%s\n&amp;quot;, cnt);
+&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;确实会引起崩溃。&lt;/p&gt;
+</description>
+        <pubDate>Wed, 19 Sep 2018 21:15:05 +0800</pubDate>
+        <link>http://masutangu.com/2018/09/coredump-note-2/</link>
+        <guid isPermaLink="true">http://masutangu.com/2018/09/coredump-note-2/</guid>
+        
+        
+        <category>读书笔记</category>
+        
+      </item>
     
       <item>
         <title>Core dump 原理探究学习笔记（一）</title>
@@ -2020,240 +2310,6 @@ func (ro *readOnly) advance(m pb.Message) []*readIndexStatus {
         <pubDate>Thu, 05 Jul 2018 13:46:43 +0800</pubDate>
         <link>http://masutangu.com/2018/07/etcd-raft-note-3/</link>
         <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-3/</guid>
-        
-        
-        <category>源码阅读</category>
-        
-      </item>
-    
-      <item>
-        <title>etcd-raft 源码学习笔记（概览篇）</title>
-        <description>&lt;p&gt;这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;type raft struct {
-    id uint64
-
-    Term uint64
-    Vote uint64
-
-    // the log
-    raftLog *raftLog
-
-    state StateType
-
-    // isLearner is true if the local raft node is a learner.
-    isLearner bool
-
-    votes map[uint64]bool
-
-    msgs []pb.Message
-
-    // the leader id
-    lead uint64
-
-    tick func()
-    step stepFunc
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;type raftLog struct {
-    // storage contains all stable entries since the last snapshot.
-    storage Storage
-
-    // unstable contains all unstable entries and snapshot.
-    // they will be saved into storage.
-    unstable unstable
-
-    // committed is the highest log position that is known to be in
-    // stable storage on a quorum of nodes.
-    committed uint64
-    // applied is the highest log position that the application has
-    // been instructed to apply to its state machine.
-    // Invariant: applied &amp;lt;= committed
-    applied uint64
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// unstable.entries[i] has raft log position i+unstable.offset.
-// Note that unstable.offset may be less than the highest log
-// position in storage; this means that the next write to storage
-// might need to truncate the log before persisting unstable.entries.
-type unstable struct {
-    // the incoming unstable snapshot, if any.
-    snapshot *pb.Snapshot
-    // all entries that have not yet been written to storage.
-    entries []pb.Entry
-    offset  uint64
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// node is the canonical implementation of the Node interface
-type node struct {
-    propc      chan msgWithResult
-    recvc      chan pb.Message
-    readyc     chan Ready
-    advancec   chan struct{}
-    tickc      chan struct{}
-    done       chan struct{}
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;// Ready encapsulates the entries and messages that are ready to read,
-// be saved to stable storage, committed or sent to other peers.
-// All fields in Ready are read-only.
-type Ready struct {
-    // The current volatile state of a Node.
-    // SoftState will be nil if there is no update.
-    // It is not required to consume or store SoftState.
-    *SoftState
-
-    // The current state of a Node to be saved to stable storage BEFORE
-    // Messages are sent.
-    // HardState will be equal to empty state if there is no update.
-    pb.HardState
-
-    // ReadStates can be used for node to serve linearizable read requests locally
-    // when its applied index is greater than the index in ReadState.
-    // Note that the readState will be returned when raft receives msgReadIndex.
-    // The returned is only valid for the request that requested to read.
-    ReadStates []ReadState
-
-    // Entries specifies entries to be saved to stable storage BEFORE
-    // Messages are sent.
-    Entries []pb.Entry
-
-    // Snapshot specifies the snapshot to be saved to stable storage.
-    Snapshot pb.Snapshot
-
-    // CommittedEntries specifies entries to be committed to a
-    // store/state-machine. These have previously been committed to stable
-    // store.
-    CommittedEntries []pb.Entry
-
-    // Messages specifies outbound messages to be sent AFTER Entries are
-    // committed to stable storage.
-    // If it contains a MsgSnap message, the application MUST report back to raft
-    // when the snapshot has been received or has failed by calling ReportSnapshot.
-    Messages []pb.Message
-
-    // MustSync indicates whether the HardState and Entries must be synchronously
-    // written to disk or if an asynchronous write is permissible.
-    MustSync bool
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这几个结构体的关系如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/images/etcd-raft-node-2/illustration-1.png&quot; width=&quot;800&quot;/&gt;&lt;/p&gt;
-
-&lt;p&gt;RaftLog 的 &lt;code&gt;Storage&lt;/code&gt; 和 RaftNode 的 &lt;code&gt;raftStorage&lt;/code&gt; 都是指向同一个 Storage 对象（虚线表示指针）。Storage 在 kvstore 的示例中的实现为 MemoryStorage，可以理解为 WAL 的一个内存缓存。重启时会从 WAL 恢复 MemoryStorage 的数据。整个逻辑由 Node 的 &lt;code&gt;run&lt;/code&gt; 方法的 for loop 驱动，从 &lt;code&gt;recvc&lt;/code&gt; channel 接收请求，调用 raft 的 &lt;code&gt;Step&lt;/code&gt; 函数进行处理。&lt;code&gt;Step&lt;/code&gt; 函数会调用 &lt;code&gt;step&lt;/code&gt;，&lt;code&gt;step&lt;/code&gt; 是函数指针，在节点成为 leader 时将其设置为 &lt;code&gt;stepLeader&lt;/code&gt;，节点变成 follower 时设置为 &lt;code&gt;stepFollower&lt;/code&gt;。&lt;code&gt;step&lt;/code&gt; 处理 append 请求时，会调用 raftLog 的 &lt;code&gt;maybeAppend&lt;/code&gt; 方法，最终会把 entries append 到 &lt;code&gt;unstable&lt;/code&gt; 中。&lt;/p&gt;
-
-&lt;p&gt;在 Node &lt;code&gt;run&lt;/code&gt; 方法的 for loop 中，会定期通过 &lt;code&gt;newReady&lt;/code&gt; 函数构造 Ready 对象。Ready 包括如下：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;HardState 即 raft 节点的 persistent state &lt;/li&gt;
-&lt;li&gt;SoftState 即 raft 节点的 volatile state &lt;/li&gt;
-&lt;li&gt;CommittedEntries 即已经 commit 的 log entries，需要应用层 apply 到状态机&lt;/li&gt;
-&lt;li&gt;Entries 即 unstable 中的 log entries（未落盘的 log entries）&lt;/li&gt;
-&lt;li&gt;Snapshot 即需要持久化的 snapshot&lt;/li&gt;
-&lt;li&gt;Messages 即 mailbox，所有还未发送的消息&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;构造好的 &lt;code&gt;Ready&lt;/code&gt; 对象发送到 &lt;code&gt;readyc&lt;/code&gt; channel，RaftNode 取出后会做如下处理：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;持久化 HardState、Entries、Snapshot 到 Storage 和 WAL (&lt;code&gt;raftStorage.ApplySnapshot()&lt;/code&gt;、&lt;code&gt;raftStorage.Append()&lt;/code&gt; 和 &lt;code&gt;wal.Save(rd.HardState, rd.Entries)&lt;/code&gt; 可以看出 memoryStorage 是 wal 的缓存，写 wal 的同时也写 memoryStorage)&lt;/li&gt;
-&lt;li&gt;apply CommittedEntries 到状态机&lt;/li&gt;
-&lt;li&gt;广播 Messages &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;处理完后调用 Node.Advance() 通知 Node Ready 对象处理完毕，准备好接收下一个。&lt;/p&gt;
-
-&lt;p&gt;最后看看驱动整个逻辑的 &lt;code&gt;run&lt;/code&gt; 方法：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func (n *node) run(r *raft) {
-    var propc chan msgWithResult
-    var readyc chan Ready
-    var advancec chan struct{}
-    var prevLastUnstablei, prevLastUnstablet uint64
-    var havePrevLastUnstablei bool
-    var prevSnapi uint64
-    var rd Ready
-
-    lead := None
-    prevSoftSt := r.softState()
-    prevHardSt := emptyState
-
-    for {
-        if advancec != nil {
-            readyc = nil
-        } else {
-            // 应用层通知上一个 ready 对象已经处理完毕了 此时 advancec 为 nil 
-            rd = newReady(r, prevSoftSt, prevHardSt)
-            if rd.containsUpdates() { // 有更新才把 readyc 设为 非空
-                readyc = n.readyc
-            } else {
-                readyc = nil
-            }
-        }
-
-        select {
-        case m := &amp;lt;-n.recvc:
-            // filter out response message from unknown From.
-            if pr := r.getProgress(m.From); pr != nil || !IsResponseMsg(m.Type) {
-                r.Step(m)
-            }
-        case &amp;lt;-n.tickc:
-            r.tick()
-        case readyc &amp;lt;- rd:
-            if rd.SoftState != nil {
-                prevSoftSt = rd.SoftState
-            }
-            if len(rd.Entries) &amp;gt; 0 {
-                prevLastUnstablei = rd.Entries[len(rd.Entries)-1].Index
-                prevLastUnstablet = rd.Entries[len(rd.Entries)-1].Term
-                havePrevLastUnstablei = true
-            }
-            if !IsEmptyHardState(rd.HardState) {
-                prevHardSt = rd.HardState
-            }
-            if !IsEmptySnap(rd.Snapshot) {
-                prevSnapi = rd.Snapshot.Metadata.Index
-            }
-
-            r.msgs = nil
-            r.readStates = nil
-            advancec = n.advancec
-        case &amp;lt;-advancec:
-            if prevHardSt.Commit != 0 {
-                r.raftLog.appliedTo(prevHardSt.Commit)
-            }
-            // 应用层处理完了 表示 unstable 的东西不需要了 该清理就清理
-            if havePrevLastUnstablei {
-                r.raftLog.stableTo(prevLastUnstablei, prevLastUnstablet)
-                havePrevLastUnstablei = false
-            }
-            r.raftLog.stableSnapTo(prevSnapi)
-            advancec = nil
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;还有构造 Ready 对象的 &lt;code&gt;newReady&lt;/code&gt; 函数：&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;func newReady(r *raft, prevSoftSt *SoftState, prevHardSt pb.HardState) Ready {
-    rd := Ready{
-        Entries:          r.raftLog.unstableEntries(),
-        CommittedEntries: r.raftLog.nextEnts(),
-        Messages:         r.msgs,
-    }
-    if softSt := r.softState(); !softSt.equal(prevSoftSt) {
-        rd.SoftState = softSt
-    }
-    if hardSt := r.hardState(); !isHardStateEqual(hardSt, prevHardSt) {
-        rd.HardState = hardSt
-    }
-    if r.raftLog.unstable.snapshot != nil {
-        rd.Snapshot = *r.raftLog.unstable.snapshot
-    }
-    if len(r.readStates) != 0 {
-        rd.ReadStates = r.readStates
-    }
-    rd.MustSync = MustSync(rd.HardState, prevHardSt, len(rd.Entries))
-    return rd
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</description>
-        <pubDate>Wed, 04 Jul 2018 13:33:35 +0800</pubDate>
-        <link>http://masutangu.com/2018/07/etcd-raft-note-2/</link>
-        <guid isPermaLink="true">http://masutangu.com/2018/07/etcd-raft-note-2/</guid>
         
         
         <category>源码阅读</category>
