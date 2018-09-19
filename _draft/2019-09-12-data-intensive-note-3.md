@@ -37,7 +37,6 @@ Because of this risk of skew and hot spots, many distributed datastores use a ha
 
 Once you have a suitable hash function for keys, you can assign each partition a range of hashes (rather than a range of keys), and every key whose hash falls within a partition’s range will be stored in that partition. 
 
-
 <img src="/assets/images/data-intensive-note-3/illustration-3.png" width="800"/>
 
 Unfortunately however, by using the hash of the key for partitioning we lose a nice property of key-range partitioning: the ability to do efficient range queries. Keys that were once adjacent are now scattered across all the partitions. In MongoDB, if you have enabled hash-based sharding mode, any range query has to be sent to all partitions.
@@ -48,3 +47,22 @@ Cassandra achieves a compromise between the two partitioning strategies. A table
 
 As discussed, hashing a key to determine its partition can help reduce hot spots. However, it can’t avoid them entirely: in the extreme case where all reads and writes are for the same key, you still end up with all requests being routed to the same partition.
 
+Today, most data systems are not able to automatically compensate for such a highly skewed workload, so it’s the responsibility of the application to reduce the skew. For example, if one key is known to be very hot, a simple technique is to add a random number to the beginning or end of the key. However, having split the writes across different keys, any reads now have to do additional work, as they have to read the data from all 100 keys and combine it.
+
+## Partitioning and Secondary Indexes
+
+If records are only ever accessed via their primary key, we can determine the partition from that key and use it to route read and write requests to the partition responsible for that key.
+
+The situation becomes more complicated if secondary indexes are involved. **The problem with secondary indexes is that they don’t map neatly to partitions.** There are two main approaches to partitioning a database with secondary indexes: **document-based partitioning** and **term-based partitioning**.
+
+### Partitioning Secondary Indexes by Document
+
+Imagine you are operating a website for selling used cars. Each listing has a unique ID—call it the document ID—and you partition the database by the document ID.
+
+You want to let users search for cars, allowing them to filter by color and by make, so you need a secondary index on color and make. If you have declared the index, the database can perform the indexing automatically. For example, whenever a red car is added to the database, the database partition automatically adds it to the list of document IDs for the index entry color:red.
+
+<img src="/assets/images/data-intensive-note-3/illustration-4.png" width="800"/>
+
+In this indexing approach, each partition is completely separate: each partition maintains its own secondary indexes, covering only the documents in that partition. A document-partitioned index is also known as a **local index** (as opposed to a **global index**, described in the next section).
+
+If you want to search for red cars, you need to send the query to all partitions, and combine all the results you get back.
