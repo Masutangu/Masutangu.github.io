@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="我的 2016 - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。
+
+">
+    
+    <meta property="article:published_time" content="2016-12-28T22:19:43Z">
+    
+    
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/%E9%9A%8F%E7%AC%94/2016/12/28/review/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>我的 2016 - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/%E9%9A%8F%E7%AC%94/2016/12/28/review/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>我的 2016</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on December 28, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>时间飞逝，又到了写年终总结的时候了。翻回看去年的总结和展望，回想起去年的雄心壮志，今年则是坎坷、困惑与焦虑的一年。</p>
+
+<h1 id="回顾过去">回顾过去</h1>
+
+<p>在这整整一年中，我所思考的和困扰的，可以由三个词来概括：<strong>成绩</strong>、<strong>成长</strong>和<strong>价值</strong>。</p>
+
+<p>工作已经两年半，对自己目前取得的成绩，对自己技术成长的预期，对自己为团队创造的价值，实话实说，都不满意。</p>
+
+<p>从今年年初开始，我就有点焦虑，觉得自己没有太多的成长，一直在原地踏步，已经没有刚入职时那种回顾过去会觉得自己突飞猛进的感觉（工作后做的每个比较大的需求，我都会整理保存下来 ppt，回看时就会清楚自己相比起过去进步了多少）。困于瓶颈期时，我尝试更加主动的去做事情。在那段时间，我开始关注些不仅仅是技术上的知识，例如关注了<a href="https://wanqu.co/">《湾区日报》</a>，做了些读书笔记<a href="http://masutangu.com/2015/12/dewdrop-note-1/">《水滴石穿》</a>。那段时间有些收获，但当我尝试把我阅读中收获的这些想法，运用到工作中时，却发现有层层阻碍。其中细节就不展开了，这让我非常沮丧。一方面，我理解在大公司工作，最重要是“稳”。有新的方案，新的想法，首要考虑的不是这个新的方案、新的想法的收益，而是运维成本。另一方面，这也让我觉得在大公司工作非常乏味，每个人的贡献都是固定的，尤其是工程师，你的定位就是执行者。公司也已经有很多很成熟的组件，即使不太适应于业务场景，也能勉强用用，你的工作就是做做接入，其它不需要操心。</p>
+
+<p>这种状况让我觉得非常的不适应。在学生时代，每一阶段、每个学期你都会学习到新的知识。而在工作中，更多的时候你是在重复做些体力活，例如，复制粘贴的完成一些需求。又例如，一遍遍的用已经成熟的方案去解决一些问题。而我其实不太喜欢这样的工作方式。我蛮希望自己是一个比较有创造力的工程师，我倾向于用不同的方案去完成类似的需求，通过真正的实践来对比不同的方案的优劣性。但在大公司来说，<strong>进度</strong>和<strong>稳定性</strong>是首要目标。只有在发展迅猛的前沿/明星项目中，你才有可能遇到各种新的问题，才有得到锻炼的机会。</p>
+
+<p>互联网不是按照工龄来排资论辈，同样工作三五年，差距可能非常大。有一句话说得好，<strong>“Good judgment comes from experience, experience comes from bad judgment.”</strong>（正确的判断来自于丰富的经验,而丰富的经验来自错误的判断）。如果工作中没有太多挑战，不能促使你学习进步以应对工作的要求，一味追求保守无法得到犯错踩坑进步的机会，那你就应该停下来思考自己的未来了。我非常不希望把工作当做是一个任务，我希望工作是融于生活的，能带给我挑战和战胜难题的动力，能带给我解决问题后的成就感。如果说做为工程师，工作于己如同体力劳动般每日重复，那和流水线工人又有什么区别呢？</p>
+
+<p>再一个让我不适应的，是大公司的考核机制。并不像在学生时代，你的排名和你考出来的成绩相关，和你上课积不积极听讲，有没经常举手回答问题，一点关系都没有。所以你的成绩很差，抱歉，是你不够努力，你知道是自己的原因，所以你会努力去学习让自己进步。工作则不是如此简单纯粹。由于工作中有挑战的难点并不多，每个人做的事情都差不多，那只好看谁做事比较积极主动（并非吐槽，我也非常理解）。而我不太喜欢“伪加班”，也希望工作完成后能有更多自己的时间去学习充电。因此，工作后自己取得的绩效非常平庸。我意识到再这样下去，职业生涯也许就这样了。做为一个已经不算新人的员工来说，我渴望做出成绩，希望能为团队贡献更多的价值。我觉得自己还有很多的能量，我能做的不仅仅是完成我手上的工作。我也意识需要到达一定的职位，才能去推动些什么，去改变些什么。但以我这平庸的考核，我对自己未来的发展不抱有太多的信心，所以我开始寻求改变。</p>
+
+<p>既然不想再在大公司做了，我开始寻找一些有意思的创业公司。在 v2ex 上逛的时候，<a href="https://www.xiaohongshu.com/">小红书</a> 吸引了我的注意。CTO 来自前谷歌中国工程院副院长，团队很多海归名校的背景，非常有吸引力。在经过电面，飞到上海去面试后，我拿到了offer。然而犹豫再三，我还是放弃了。放弃的原因主要是因为我资历尚浅，5月份拿到 offer，那时我才工作了一年多，当时小红书的开发团队已经有几十人，已经算是个大团队了。但不得不说，面试官给我的感觉非常的好，如果是在更早期，团队还是小规模的时候，我一定愿意加入这样的团队。</p>
+
+<p>之后就在公司内部寻找些机会，7月份到了现在的游戏工作室。小团队，后台只有几个人，听起来很有成就感。转岗之前我也有点小担心，担心难以融入，担心过来后也是打打杂，幸好过来后发现多虑了。工作室给我的感觉，很明显，大家共同的目标就是把游戏做好。当然从做社交，到做游戏，一开始还是有些不适应。做社交，本质上是各类存储的设计。游戏则不太一样，复杂的都是在业务逻辑。</p>
+
+<p>下半年的工作，新的环境，新的方向。学习了新的后台框架，对比之前用的框架，自己造了个轮子，写了篇文章<a href="http://masutangu.com/2016/08/simple-async-framework/">《简单异步应用框架的实现》</a>，对后台异步框架的设计有一些了解，不再局限于只会用框架了。浅读了 libuv 和 libco 的源码，同样写了两篇文章<a href="http://masutangu.com/2016/10/libuv-source-code/">《Libuv 源码阅读》</a> 和 <a href="http://masutangu.com/2016/10/learn-libco/">《浅读 Libco》</a>，对异步和协程两种模式都有了进一步的认识。之后，在日常查问题的时候，我意识到自己定位问题的能力有所缺失，主要是对 linux 的各种监控系统状态的命令还不熟悉，操作系统和网络的知识也忘掉差不多了，所以决定重新翻读下 《UNIX 环境高级编程》、《现代操作系统》，并结合 《Linux 内核设计与实现》，了解些操作系统的理论和实现，这个系列的文章<a href="http://masutangu.com/2016/11/linux-kernel-serial-1/">《Linux 内核系列－进程》</a> 还没写完。</p>
+
+<p>经过这阵子的摸索，我明确了之后的突破点，找到了进步的方向。虽然说，这一年，我有很多困惑、迷茫和焦虑，心情经常非常差，情绪起伏也很大。我明白这些都是成长的必经之路，这么看来，这些起起伏伏，也是蛮值得的。</p>
+
+<h1 id="展望未来">展望未来</h1>
+
+<p>新的一年，工作上认真努力，不必多说。这里来聊聊新的一年，个人方面，我想做些什么。</p>
+
+<p>今年我意识到，对于大多数项目来说，技术并不是最重要的，只要不出问题就好（虽然我热爱技术，但我也不得不承认这点）。那技术人员应该如何发挥更大的价值呢？</p>
+
+<p>我给自己定的目标是：<strong>提高核心竞争力</strong>和<strong>变得更全面</strong>。</p>
+
+<p>提升技术能力，这是首要目标。我希望新的一年可以把基础打扎实了，作为后台开发，操作系统和网络知识要打牢。另外了解业界流行的中间件（消息队列、数据库等）的实现，比较深入的选择一个方向（游戏引擎、数据分析、图形学、编程语言等）去研究。</p>
+
+<p>另外在公司工作，技能点很容易变得非常窄。我希望自己可以变得更加全面，不希望把自己局限于后台开发，也不仅局限于技术。新的一年，我希望自己能够做一个上线的 side project 并用心运营。目前看来我应该会选择做一款独立游戏，技术上独立完成前台－接入层－后台的实现，也借此学习下游戏策划的一些思想，让自己更加了解游戏这个行业。</p>
+
+<h1 id="总结心得">总结心得</h1>
+
+<p>今天读了陈皓的<a href="http://coolshell.cn/articles/17583.html">《技术人员的发展之路》</a>，写的很好，推荐大家都读一读。这一年，有两句话，我经常对自己说的，一是：<strong>不忘初心</strong>，二是：<strong>Pursue excellence, and success will follow</strong> (追求卓越，成功就会如期而至)。</p>
+
+<p>不忘初心，是提醒自己，选择了计算机的道路，是因为我喜欢编程，喜欢创造。不要因为眼前的失意去妥协自己。希望自己工作三年，五年，十年，都能保持学生的心态。<strong>stay hungry, stay foolish</strong>。</p>
+
+<p>追求卓越，是因为我相信，让自己成为一个优秀的工程师，比拿到好的绩效更加重要。自己要为自己的职业生涯负责，更勇敢的去追求梦想。</p>
+
+<p>大公司工作，可以带给你光环，但自己要想清楚，去掉光环后，自己还剩下些什么。也许我们都是平凡人，但平凡人也希望做出稍微那么不平凡的成绩。2017 年，希望自己不留遗憾！</p>
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/12/16/linux-kernel-serial-5/" data-toggle="tooltip" data-placement="top" title="Linux 内核系列－文件系统和 IO">
+                        Previous<br>
+                        <span>Linux 内核系列－文件系统和 IO</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/%E5%B7%A5%E4%BD%9C/2017/02/05/linux-performance-monitor/" data-toggle="tooltip" data-placement="top" title="Linux 性能监控">
+                        Next<br>
+                        <span>Linux 性能监控</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

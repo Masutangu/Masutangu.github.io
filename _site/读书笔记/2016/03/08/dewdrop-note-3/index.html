@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="水滴石穿－第三期 - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="
+  不积跬步，无以至千里；不积小流，无以成江海
+
+
+">
+    
+    <meta property="article:published_time" content="2016-03-08T12:42:43Z">
+    
+    
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/03/08/dewdrop-note-3/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>水滴石穿－第三期 - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/03/08/dewdrop-note-3/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>水滴石穿－第三期</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on March 8, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<blockquote>
+  <p>不积跬步，无以至千里；不积小流，无以成江海</p>
+</blockquote>
+
+<h2 id="instagram-is-the-best-social-network"><a href="http://www.theatlantic.com/technology/archive/2015/07/i-like-instagram/398834/">Instagram Is the Best Social Network</a></h2>
+
+<p>作者谈他为何觉得Instagram是最好的社交应用，主要是以下三点：</p>
+
+<ul>
+  <li>简单
+    <ul>
+      <li>信息简单：Instagram以纯图片的方式传递，没有超链接，没有一大段文字</li>
+      <li>操作简单：点赞或者只是浏览。</li>
+    </ul>
+  </li>
+  <li>安静
+  不打扰用户，用户用完即走。这和之前张小龙演讲提到的观点是一致的。</li>
+  <li>无限制社交</li>
+</ul>
+
+<p>Instagram的定位并不是密友社交。并顺带举了path失败的例子，密友社交不是需求，真正的密友社交是一对一的，而不是一个密友圈。</p>
+
+<blockquote>
+  <p>People like social networks because they’re an efficient way of communicating with many others, but, as he said, “efficiency is the enemy of intimacy.”</p>
+</blockquote>
+
+<blockquote>
+  <p>“Real intimacy can never, ever be broadcast. It must be either one-to-one or one-off,”</p>
+</blockquote>
+
+<p>所以你在Instagram上看到不同圈子的照片，你可以有自己的解读：</p>
+
+<blockquote>
+  <p>You can skip inside jokes. You can miss subtext that pricks someone else’s hearts. You can savor the density of meaning in pictures from close friends and the surface beauty of posts from distant ones.</p>
+</blockquote>
+
+<h2 id="how-to-choose-a-profitable-niche"><a href="http://www.trevormckendrick.com/how-to-choose-a-profitable-niche/">How To Choose a Profitable Niche</a></h2>
+
+<p>作者提出具备好商机的app有下面三个条件：</p>
+
+<ul>
+  <li>Is profitable
+  如何确定是否有潜在的利润？作者这块分析的结论没看出来。</li>
+  <li>Can be found via App Store search
+ 找到用户搜索的热词，了解用户需求。</li>
+  <li>Has crappy competitors
+  竞争对手比较烂。</li>
+</ul>
+
+<p>延伸阅读：</p>
+
+<p><a href="http://www.trevormckendrick.com/how-i-sold-my-bible-app-company/">How I Sold my Bible App Company</a></p>
+
+<h2 id="9-daily-habits-of-successful-mobile-app-entrepreneurs"><a href="http://thenextweb.com/entrepreneur/2015/06/02/9-daily-habits-of-successful-mobile-app-entrepreneurs/">9 daily habits of successful mobile app entrepreneurs</a></h2>
+
+<p>如何做好一个app？可以参考下该文章提出的几个习惯：</p>
+
+<ul>
+  <li>Study the App Store：了解用户的评价，排名趋势和排序算法。</li>
+  <li>Learn From The Horrible Apps：分析优秀的app和糟糕的app之间的差别。</li>
+  <li>Answer Support Calls &amp; Emails (Even as a CEO)：回复咨询电话和邮件：每天花部分时间亲自回复用户的咨询，即使你是ceo。</li>
+  <li>Consume Something Inspirational：读些motivational的书，听听ted talk，保持积极向上的心态。</li>
+  <li>Write EVERYTHING Down：好记性不如烂笔头。</li>
+  <li>Benchmark Your Data：紧盯数据趋势（评分，用户评价等），确保走在正确的方向上。</li>
+  <li>Inbox Zero：及时回复邮件。</li>
+  <li>Keep a Journal：“I use journaling as a form of therapy and as a way for me to start each day with a clean slate.”</li>
+</ul>
+
+<h2 id="slack-is-the-operating-system-slack-is-the-operating-system"><a href="https://medium.com/@benbrown/slack-is-the-operating-system-6bae1a6c0291#.m8unpie2p">Slack is the Operating System Slack is the Operating System</a></h2>
+
+<p>对于大多数新的app来说，slack是一个操作系统。在slack上运作一个app，它是跨平台的，实时同步的，并且界面一致，对用户友好。</p>
+
+<blockquote>
+  <p>Designing for messaging will become a discipline as important as responsive design, and will incorporate skills as diverse as copy writing, business analytics and API programming.</p>
+</blockquote>
+
+<blockquote>
+  <p>We’re going to call it Messaging Experience Design, or MXD.</p>
+</blockquote>
+
+<h2 id="messaging-is-the-new-web"><a href="http://www.trenchant.org/daily/2015/6/3/">Messaging is the New Web</a></h2>
+
+<p>Web的优点在于易部署易扩展易分发。而在智能手机兴起的大背景下，Messaging应运而生。</p>
+
+<blockquote>
+  <p>Messaging (in a very broad sense including SMS, texting apps, and things like Slack) present a similar challenge and opportunity today in the context of smartphones.</p>
+</blockquote>
+
+<p>回复信息/文本会话相比起app来说要轻量得多，比起打开浏览器，输入url再等待页面展示也更近方便。同时登陆认证对于用户来说是透明的，用户不需要额外申请账户，也不需要额外学习新的操作界面。</p>
+
+<blockquote>
+  <p>If integration with Slack is cheap and easy and provides additional distribution for business services, more services will be incentivized to offer it, which in turn makes Slack more valuable for its customers. And when Slack’s customers have a host of services integrated with their Slack instance, the more valuable Slack becomes to them</p>
+</blockquote>
+
+<h2 id="the-future-of-asynchronous-io-in-python"><a href="https://medium.com/@paulcolomiets/the-future-of-asynchronous-io-in-python-ce200536d847#.tctyl610p">The Future of Asynchronous IO in Python</a></h2>
+
+<p>这篇没怎么看懂，欢迎交流。</p>
+
+<h2 id="making-sense-of-mvp-minimum-viable-productand-why-i-prefer-earliest-testableusablelovable"><a href="http://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp">Making sense of MVP (Minimum Viable Product) — and why I prefer Earliest Testable/Usable/Lovable</a></h2>
+
+<p>深度好文！文章最后的总结如下：</p>
+
+<ul>
+  <li>
+    <p>Avoid Big Bang delivery for complex, innovative product development. Do it iteratively and incrementally. You knew that already. But are you actually doing it?</p>
+  </li>
+  <li>
+    <p>Start by identifying your skateboard — the earliest testable product. Aim for the clouds, but swallow your pride and start by delivering the skateboard.</p>
+  </li>
+  <li>
+    <p>Avoid the term MVP. Be more explicit about what you’re actually talking about. Earliest testable/usable/lovable is just one example, use whatever terms are least confusing to your stakeholders..</p>
+  </li>
+</ul>
+
+<p>以下是精华摘抄：</p>
+
+<blockquote>
+  <p>We start with the same context — the customer ordered a car. But this time we don’t just build a car. Instead we focus on the underlying need the customer wants fulfilled. Turns out that his underlying need is “I need to get from A to B faster”, and Car is just one possible solution to that.</p>
+</blockquote>
+
+<blockquote>
+  <p>We might learn some really surprising things. Suppose the customer says he hates the skateboard, we ask why, and he says “I hate the color”. We’re like “uh…. the color? That’s all?”. And the customer says “Yeah, make it blue! Other than that, it’s fine!”. You just saved <em>alot</em> of money not building the car! Not likely, but who knows?</p>
+</blockquote>
+
+<blockquote>
+  <p>The key question is “What is the cheapest and fastest way we can start learning?” Can we deliver something even earlier than a skateboard? How about a bus ticket?</p>
+</blockquote>
+
+<blockquote>
+  <p>In most real-life product development scenarios I’ve seen, no matter how much up-front analysis you do, you’re still surprised when you put the first real release into the hands of a real user, and many of your assumptions turn out to be way off.</p>
+</blockquote>
+
+<blockquote>
+  <p>Early feedback from real users! Don’t just design the product and build the whole thing.</p>
+</blockquote>
+
+<h2 id="pleco-building-a-business-not-an-app"><a href="https://stratechery.com/2014/pleco-building-business-just-app/">Pleco: Building a Business, not an App</a></h2>
+
+<blockquote>
+  <p>What stands out to me about Love’s approach was that from day one his differentiation was not based on design, ease-of-use, or some other attribute we usually glorify in developers. Rather, he focused on decidedly less sexy things like licensing. Sure, licensing is particularly pertinent to a dictionary app, but the broader point is that Love’s sustainable differentiation was not about his own code. Sustainable differentiation never is.</p>
+</blockquote>
+
+<blockquote>
+  <p>This is the critical point: developers all want to write an app for themselves, which means everyone has. That’s why there is no money to be made in something like an RSS reader. But there are whole swathes of people out there who have really interesting and specific needs — like Chinese language learning — just waiting for someone who can not only develop, but can also do market research, build a business model, and do all the messystuff upon which true differentiation — and sustainable businesses — are built.</p>
+</blockquote>
+
+<h2 id="architecting-backend-for-a-social-product"><a href="http://highscalability.com/blog/2015/7/22/architecting-backend-for-a-social-product.html">Architecting Backend for a Social Product</a></h2>
+
+<p>如何设计社交产品的后台架构？</p>
+
+<ul>
+  <li>存储
+    <ul>
+      <li>Master Data or Static Form of Data Like User Profile
+  选择document based storage，推荐mongodb。优点：分布式／高可用／可分库分表。</li>
+      <li>Connected or Relational Data 
+  选择图数据库，推荐Neo4j，但是其不支持分库分表。其他选择：FlockDB, AllegroGraph 和InfiniteGraph。</li>
+      <li>Binary data (UGC)
+  推荐Amazon S3</li>
+      <li>Session Data</li>
+      <li>用户相关，推荐redis。</li>
+    </ul>
+  </li>
+  <li>索引
+  Apache Storm用于实时生成索引。Lucene（性能不够）或SolrCloud做索引系统。</li>
+  <li>Queuing &amp; Push Notifications
+  使用ActiveMQ做队列，push通知可以采用pyapns, CommandIQ 或App Booster。</li>
+  <li>缓存策略
+    <ul>
+      <li>Application Level Caching (Content Cache)
+  redis。</li>
+      <li>Proxy Cache
+  Nginx 或ATS。</li>
+      <li>Second Level Cache (Code Level Caching)
+  EhCache。</li>
+      <li>Client Cache
+  客户端做缓存。</li>
+    </ul>
+  </li>
+  <li>传输协议
+  http客户端采用OkHttp，消息传输采用MQTT。</li>
+  <li>安全
+  All our user data must be encrypted
+    <blockquote>
+      <p>MongoDB and Neo4j already supports Storage Encryption. On case basis we can decide to encrypt key user information. Transport Encryption must be enabled for all DB related calls.</p>
+    </blockquote>
+    <ul>
+      <li>Secure Socket Layer
+  SSL</li>
+      <li>All our api endpoints should be run on non default ports and should implement Oauth without fail</li>
+      <li>All reads from DB should happen through rest endpoints always</li>
+      <li>The configuration which holds password must be dealt specially</li>
+    </ul>
+  </li>
+  <li>模块
+  整个后台架构包括以下模块：
+    <ul>
+      <li>Load Balancer：负载均衡</li>
+      <li>Proxy Server：处理http请求，包括cache策略</li>
+      <li>Ingestion Engine：处理输入数据，包括缓存，转码，压缩</li>
+      <li>REST Server: 访问db</li>
+      <li>Event Processor: 从ActiveMQ读取消息并通过notification engine生成push通知。</li>
+      <li>Recommendation Engine: 根据用户操作，做些推荐相关的算法。</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="how-we-release-so-frequently-how-we-release-so-frequently"><a href="http://engineering.skybettingandgaming.com/2016/02/02/how-we-release-so-frequently/">How We Release So Frequently How We Release So Frequently</a></h2>
+<p>如何快速发布？作者提了下面几个快速发布的准则：</p>
+
+<ul>
+  <li>
+    <p>Forward-only Migrations
+  不允许回滚数据库的Migrations。</p>
+
+    <blockquote>
+      <p>Take dropping a column as an example; how do you release that change? Easy:
+  Release a version of the code that doesn’t use that column; ensure it is stable / won’t be rolled back.
+  Do a second release that has a migration to remove the column.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>New Code != New Features
+  用户应该对你代码的发布无感知。</p>
+
+    <blockquote>
+      <p>It’s a really bad experience for customers to see a new feature appear, start using it, and then have it disappear a few minutes later as a release is rolled back — possibly for unrelated reasons</p>
+    </blockquote>
+
+    <blockquote>
+      <p>Every new feature is first released in a hidden state, ready to be turned on with a ‘feature toggle’.</p>
+    </blockquote>
+  </li>
+</ul>
+
+<p>There are some really strong plus points to this approach:</p>
+
+<ul>
+  <li>We don’t have to roll back a whole release (which may contain several changes) just because a single new feature isn’t working</li>
+  <li>We can fully test new features in an environment that has the exact hardware, software and data we need</li>
+  <li>We can release new features to customers gradually</li>
+</ul>
+
+<p>文中介绍了利用session和cookie来实现灰度升级，有兴趣可以仔细阅读下。</p>
+
+<ul>
+  <li>Small Releases
+  The more often we release, the smaller the releases can be. Smaller releases carry less risk, letting us release even more often.</li>
+</ul>
+
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/2016/02/29/using-udf-plus-trigger/" data-toggle="tooltip" data-placement="top" title="UDF + Trigger 实时监控 Mysql 数据更新">
+                        Previous<br>
+                        <span>UDF + Trigger 实时监控 Mysql 数据更新</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/2016/03/08/using-binlog/" data-toggle="tooltip" data-placement="top" title="使用 binlog 实时监控 Mysql 数据更新">
+                        Next<br>
+                        <span>使用 binlog 实时监控 Mysql 数据更新</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

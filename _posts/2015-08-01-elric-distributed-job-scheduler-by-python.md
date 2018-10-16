@@ -2,7 +2,7 @@
 layout: post
 date: 2015-08-01T16:07:58+08:00
 title: Elric：Python 实现的分布式任务调度系统
-category: 个人项目
+tags: 个人项目
 ---
 
 五月中的时候，我花了两周的业余时间，用python写了第一个github项目：[Elric](https://github.com/Masutangu/Elric)。Elric是一个简单的分布式任务调度系统。这里想分享下写这个项目的缘由，思路以及Elric架构演变。

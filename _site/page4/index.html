@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="也許我這一生　始終在追逐那顆九號球">
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/page4/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/page4/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Page Header -->
+
+
+
+
+
+
+
+<header class="intro-header" style="background-image: url('/img/home-bg.jpg')">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        
+        <div class="site-heading">
+        
+          <h1>Masutangu</h1>
+          <span class="subheading">也許我這一生　始終在追逐那顆九號球</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- PostList Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                postlist-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/12/16/linux-kernel-serial-5/">
+        <h2 class="post-title">
+            Linux 内核系列－文件系统和 IO
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+概念
+
+如果能把文件看成是一种地址空间，那么就离理解文件不远了。（文件类似虚拟地址空间，相应的磁盘地址对应内存物理地址，通过 inode 来管理映射关系，类似页表的作用）。
+
+文件系统的实现
+
+文件系统存放在磁盘上。多数磁盘划分为一个或多个...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on December 16, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/12/11/linux-kernel-serial-4/">
+        <h2 class="post-title">
+            Linux 内核系列－内存管理
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+概念
+
+操作系统存储管理方案的演进：
+
+无存储抽象
+
+早期计算机并没有存储抽象，程序直接访问物理内存地址。使用这种模型，想要同时运行多个程序非常困难。
+
+存储抽象：地址空间
+
+地址空间的概念
+
+要保证多个应用程序同时处于内存并且互不影响，则...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on December 11, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/12/01/linux-kernel-serial-3/">
+        <h2 class="post-title">
+            Linux 内核系列－进程调度
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+概念
+
+许多适用于进程调度的处理方法同样适用于线程调度。当内核管理线程的时候，调度经常是按照线程级别的，与线程所属的进程基本没有关联。
+
+调度需要考虑 CPU 的利用率，因为进程切换的代价比较高，进程需要从用户态切...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on December 1, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/11/27/linux-kernel-serial-2/">
+        <h2 class="post-title">
+            Linux 内核系列－进程通信和同步
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+概念
+
+竞争条件
+多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时许，称为竞争条件。
+
+忙等待的互斥
+几种实现互斥的方案：
+
+
+  
+    屏蔽中断
+
+    1
+在单处理器系统中，最简单的方法是使每...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on November 27, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/11/27/linux-kernel-serial-1/">
+        <h2 class="post-title">
+            Linux 内核系列－进程
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+概念
+
+进程即处于运行中的程序，除了程序的代码外，还包括打开的文件、挂起的信号、进程状态、内存地址空间以及用以存储全局变量的数据段等。
+
+执行线程，简称线程，是在进程中活动的对象。每个线程都拥有独立的程序计数器、进...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on November 27, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2016/10/13/libuv-source-code/">
+        <h2 class="post-title">
+            Libuv 源码阅读
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                花了几天时间读了下 libuv 的源码，整理成这篇文章。&lt;a href = #section_1&gt;第一节&lt;/a&gt;是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。&lt;a href = #section_2&gt;第二节&lt;/a&gt;解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。
+
+概念
+
+handles 和 ...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on October 13, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2016/10/05/learn-libco/">
+        <h2 class="post-title">
+            浅读 Libco
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                今天花了一天时间，学习了下微信的开源协程库 libco的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。
+
+协程的原理
+协程的概念和优点这里不再赘述。我们先介绍下实现协程的原理，再来看看相应的代码。
+
+协程的切换，其实就是由我们手动来管理指令执行的上下文。一般每一个协程有自己的 context_buff 来保存自己的运行上下文（寄存...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on October 5, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1/2016/09/03/talk-about-protobuf/">
+        <h2 class="post-title">
+            Protobuf 编码原理
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                最近项目组有在用 protobuf，于是抽空读了些 protobuf 的相关资料。本文总结 protobuf 的编码原理，重点在于其如何实现版本兼容。文中样例及说明都参考了 protobuf 的官方文档。
+
+编码方法的介绍
+要了解 protobuf 的编码方式，首先介绍下 Varint 和 ZigZag 这两种编码。
+
+Varint
+Varint 编码的优势在于值越小的数字，占用的字节更少。...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on September 3, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE/2016/08/30/simple-async-framework/">
+        <h2 class="post-title">
+            简单异步应用框架的实现
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                两年前刚进公司的时候，第一次接触了异步框架，那时还处于懵懵懂懂的状态。最近换了组，接触到另外一种实现的异步框架，这次有了一定的积累后，对异步框架的设计也有了更多的理解。刚好最近自己基于 libuv 造了个简单的轮子 saf (Simple Async Framework)，趁此机会和大家聊聊异步框架的设计思想和实现。
+
+异步框架设计思想
+服务器模型
+先来看看传统的服务器模型，如下图：
+
+
+
+...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on August 30, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E5%B7%A5%E4%BD%9C/2016/07/13/conclusion-of-two-years/">
+        <h2 class="post-title">
+            工作两年记
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。
+
+回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on July 13, 2016
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/page3">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/page5">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+    </div>
+</section>
+
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+  <hr>
+  <h5><a href="/about/">ABOUT ME</a></h5>
+  <div class="short-about">
+    
+    <img src="/img/avatar.jpg" />
+    
+    
+    <p>The only limit is your imagination<br>长风破浪会有时 直挂云帆济沧海</p>
+    
+    <!-- SNS Link -->
+    
+
+
+<ul class="list-inline">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+  </div>
+</section>
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+    		</div>
+        
+	</div>
+</div>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

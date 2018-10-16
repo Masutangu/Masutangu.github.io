@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="也許我這一生　始終在追逐那顆九號球">
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/page5/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/page5/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Page Header -->
+
+
+
+
+
+
+
+<header class="intro-header" style="background-image: url('/img/home-bg.jpg')">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        
+        <div class="site-heading">
+        
+          <h1>Masutangu</h1>
+          <span class="subheading">也許我這一生　始終在追逐那顆九號球</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- PostList Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                postlist-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE/2016/07/07/elric-documentation/">
+        <h2 class="post-title">
+            Elric 使用手册
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 Elric，包括其API，架构，周边能力以及实现细节。
+
+读者可以先阅读之前的这篇文章《Python实现的分布式任务调度系统》来了解Elric的起源和早期设计的思想。
+
+一. 简介
+Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker 架构，Worker 向 Master 提交任务和执行 Ma...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on July 7, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/2016/07/06/python-note-1/">
+        <h2 class="post-title">
+            Python 笔记
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。
+
+注：本文内容整理自网上博客，《Python Cookbook》等，非原创。
+
+性能优化
+1. 字典和列表
+
+Python 字典中使用了 hash table，因此查找操作的复杂度为 O(1)，而 list 实际是个数组，在 list 中，查找需要遍历整个 list，其复杂度为 O(n)，因此对成员的查找访问等操作字典...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on July 6, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E5%B7%A5%E4%BD%9C/2016/07/04/matplot-note/">
+        <h2 class="post-title">
+            Matplotlib 笔记
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：
+
+
+  用Matplotlib生成图表并保存成文件
+  将图片添加为邮件的附件
+  最后通过src="cid:0"的方式将图片嵌入到邮件正文中
+
+
+这篇文章主要对 Matplotlib 的使用做些总结，包括 Matplotlib 如何配置显示中文字体，折线图／柱状图／圆饼图相关介绍，matplot子图的概念。...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on July 4, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2016/05/05/read-tcpcopy-source-code/">
+        <h2 class="post-title">
+            Tcpcopy 源码阅读
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                tcpcopy是网易开源的一款压测工具，可以实时复制线上流量到测试环境，从而利用线上真实的用户流量来对测试环境进行仿真压测。
+由于网上关于tcpcopy的介绍并不多，我对tcpcopy的原理也很感兴趣。因此在学习其源码后写下这篇文章和大家分享。这里非常感谢tcpcopy的作者王斌老师的热心指导。
+
+架构
+第一种架构：
+
+
+  实现原理：
+    
+      从数据链路层捕获客户端的请求包，...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on May 5, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/ios/2016/04/28/ios-introduction/">
+        <h2 class="post-title">
+            iOS 初体验
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：ToDo。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on April 28, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/2016/04/15/python-pickling-error/">
+        <h2 class="post-title">
+            Python 进程池的坑：Pickling Error!
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                前阵子在跑Elric下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：
+
+1
+File “../multiprocessing/queues.py”, line 266, in _feed send(obj) PickingErr...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on April 15, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/2016/03/08/using-binlog/">
+        <h2 class="post-title">
+            使用 binlog 实时监控 Mysql 数据更新
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                上一篇文章《UDF+Trigger实时监控Mysql数据更新》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。
+
+binlog 简介
+
+
+  The binary log is a set of log files that contain information about data modifications made to ...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on March 8, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2016/03/08/dewdrop-note-3/">
+        <h2 class="post-title">
+            水滴石穿－第三期
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                
+  不积跬步，无以至千里；不积小流，无以成江海
+
+
+Instagram Is the Best Social Network
+
+作者谈他为何觉得Instagram是最好的社交应用，主要是以下三点：
+
+
+  简单
+    
+      信息简单：Instagram以纯图片的方式传递，没有超链接，没有一大段文字
+      操作简单：点赞或者只是浏览。
+    
+  
+  安静
+  不打扰用户...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on March 8, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E6%95%B0%E6%8D%AE%E5%BA%93/2016/02/29/using-udf-plus-trigger/">
+        <h2 class="post-title">
+            UDF + Trigger 实时监控 Mysql 数据更新
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：
+
+
+
+大家都知道，缓存带来性能上的提高，然而却有数据不一致的可能。比方说修改了mysql的数据，但是用户读取到的缓存数据还未更新，这时就会有不一致的问题。
+
+这样就需要一种机制来监控mysql中数据的变化以更新缓存：
+
+
+方案
+有两种办法可以实时监控mysql，一是利用mysql的binlo...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on February 29, 2016
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/%E4%BC%98%E5%8C%96&%E9%87%8D%E6%9E%84/2016/02/03/elric-change-log-2/">
+        <h2 class="post-title">
+            Elric Change Log II
+        </h2>
+        
+        <div class="post-content-preview">
+            
+                最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。
+
+优化Worker拉取任务逻辑
+之前的逻辑是从任务队列里拉取任务后就塞给进程池，会导致worker不断从任务队列里取任务，然后在进程池里等待执行。这样的话，Worker不是按需取任务，而是揽一大堆活然后一直积压在手里做不完，而后续拉起空闲的Worker则取不到任务。
+
+
+
+之前的逻辑，拉取任务后直接塞...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Masutangu on February 3, 2016
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/page4">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/page6">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        
+        
+    </div>
+</section>
+
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+  <hr>
+  <h5><a href="/about/">ABOUT ME</a></h5>
+  <div class="short-about">
+    
+    <img src="/img/avatar.jpg" />
+    
+    
+    <p>The only limit is your imagination<br>长风破浪会有时 直挂云帆济沧海</p>
+    
+    <!-- SNS Link -->
+    
+
+
+<ul class="list-inline">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+  </div>
+</section>
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+    		</div>
+        
+	</div>
+</div>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
