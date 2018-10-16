@@ -2,7 +2,7 @@
 layout: post
 date: 2015-10-27T16:07:58+08:00
 title: Elric Change Log I
-category: 优化&重构
+tags: 优化&重构
 ---
 
 自从把Elric放在线上跑，到现在已经跑来小半年。也发现了些接口设计上的不合理和小坑。今天花时间改进了下，分享下改进的地方。

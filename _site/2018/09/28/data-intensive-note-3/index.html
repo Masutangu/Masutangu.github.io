@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Designing Data-Intensive Applications 读书笔记（三） - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="Chapter 6. Partitioning
+
+">
+    
+    <meta property="article:published_time" content="2018-09-28T22:11:46Z">
+    
+    
+    
+    <meta property="article:tag" content="读书笔记">
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/2018/09/28/data-intensive-note-3/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>Designing Data-Intensive Applications 读书笔记（三） - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/2018/09/28/data-intensive-note-3/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0" title="读书笔记">读书笔记</a>
+                        
+                    </div>
+                    <h1>Designing Data-Intensive Applications 读书笔记（三）</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on September 28, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<h1 id="chapter-6-partitioning">Chapter 6. Partitioning</h1>
+
+<p>For very large datasets, or very high query throughput, that is not sufficient: we need to break the data up into <strong>partitions</strong>, also known as <strong>sharding</strong>.</p>
+
+<p>The main reason for wanting to partition data is <strong>scalability</strong>. Different partitions can be placed on different nodes in a shared-nothing cluster.</p>
+
+<p>In this chapter we will first look at different approaches for partitioning large datasets and observe <strong>how the indexing of data interacts with partitioning</strong>. We’ll then talk about <strong>rebalancing</strong>, which is necessary if you want to add or remove nodes in your cluster. Finally, we’ll get an overview of <strong>how databases route requests to the right partitions and execute queries</strong>.</p>
+
+<h2 id="partitioning-and-replication">Partitioning and Replication</h2>
+
+<p>Partitioning is usually combined with replication so that copies of each partition are stored on multiple nodes. <strong>Even though each record belongs to exactly one partition, it may still be stored on several different nodes for fault tolerance.</strong></p>
+
+<p>A node may store more than one partition. If a leader–follower replication model is used, the combination of partitioning and replication can look like bellow figure:</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-1.png" width="800" /></p>
+
+<h2 id="partitioning-of-key-value-data">Partitioning of Key-Value Data</h2>
+
+<p>If the partitioning is unfair, so that some partitions have more data or queries than others, we call it skewed.</p>
+
+<h3 id="partitioning-by-key-range">Partitioning by Key Range</h3>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-2.png" width="800" /></p>
+
+<p>Within each partition, we can keep keys in sorted order. This has the advantage that range scans are easy, and you can treat the key as a concatenated index in order to fetch several related records in one query.</p>
+
+<h3 id="partitioning-by-hash-of-key">Partitioning by Hash of Key</h3>
+
+<p>Because of this risk of skew and hot spots, many distributed datastores use a hash function to determine the partition for a given key.</p>
+
+<p>Once you have a suitable hash function for keys, you can assign each partition a range of hashes (rather than a range of keys), and every key whose hash falls within a partition’s range will be stored in that partition.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-3.png" width="800" /></p>
+
+<p>Unfortunately however, by using the hash of the key for partitioning we lose a nice property of key-range partitioning: the ability to do efficient range queries. Keys that were once adjacent are now scattered across all the partitions. In MongoDB, if you have enabled hash-based sharding mode, any range query has to be sent to all partitions.</p>
+
+<p>Cassandra achieves a compromise between the two partitioning strategies. A table in Cassandra can be declared with a compound primary key consisting of several columns. Only the first part of that key is hashed to determine the partition, but the other columns are used as a concatenated index for sorting the data in Cassandra’s SSTables. A query therefore cannot search for a range of values within the first column of a compound key, but if it specifies a fixed value for the first column, it can perform an efficient range scan over the other columns of the key.</p>
+
+<h3 id="skewed-workloads-and-relieving-hot-spots">Skewed Workloads and Relieving Hot Spots</h3>
+
+<p>As discussed, hashing a key to determine its partition can help reduce hot spots. However, it can’t avoid them entirely: in the extreme case where all reads and writes are for the same key, you still end up with all requests being routed to the same partition.</p>
+
+<p>Today, most data systems are not able to automatically compensate for such a highly skewed workload, so it’s the responsibility of the application to reduce the skew. For example, if one key is known to be very hot, a simple technique is to add a random number to the beginning or end of the key. However, having split the writes across different keys, any reads now have to do additional work, as they have to read the data from all 100 keys and combine it.</p>
+
+<h2 id="partitioning-and-secondary-indexes">Partitioning and Secondary Indexes</h2>
+
+<p>If records are only ever accessed via their primary key, we can determine the partition from that key and use it to route read and write requests to the partition responsible for that key.</p>
+
+<p>The situation becomes more complicated if secondary indexes are involved. <strong>The problem with secondary indexes is that they don’t map neatly to partitions.</strong> There are two main approaches to partitioning a database with secondary indexes: <strong>document-based partitioning</strong> and <strong>term-based partitioning</strong>.</p>
+
+<h3 id="partitioning-secondary-indexes-by-document">Partitioning Secondary Indexes by Document</h3>
+
+<p>Imagine you are operating a website for selling used cars. Each listing has a unique ID—call it the document ID—and you partition the database by the document ID.</p>
+
+<p>You want to let users search for cars, allowing them to filter by color and by make, so you need a secondary index on color and make. If you have declared the index, the database can perform the indexing automatically. For example, whenever a red car is added to the database, the database partition automatically adds it to the list of document IDs for the index entry color:red.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-4.png" width="800" /></p>
+
+<p>In this indexing approach, each partition is completely separate: each partition maintains its own secondary indexes, covering only the documents in that partition. A document-partitioned index is also known as a <strong>local index</strong> (as opposed to a <strong>global index</strong>, described in the next section).</p>
+
+<p>If you want to search for red cars, you need to send the query to all partitions, and combine all the results you get back.</p>
+
+<p>This approach to querying a partitioned database is sometimes known as <strong>scatter/ gather</strong>, and it can make read queries on secondary indexes quite expensive. Even if you query the partitions in parallel, scatter/gather is prone to <strong>tail latency amplification</strong>(多个并行请求，请求时延由最慢的请求决定).</p>
+
+<h3 id="partitioning-secondary-indexes-by-term">Partitioning Secondary Indexes by Term</h3>
+
+<p>Rather than each partition having its own secondary index (a local index), we can construct a global index that covers data in all partitions. A global index must also be partitioned, but it can be partitioned differently from the primary key index.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-5.png" width="800" /></p>
+
+<p>We call this kind of index term-partitioned, because the term we’re looking for determines the partition of the index.</p>
+
+<p>The advantage of a global (term-partitioned) index over a document-partitioned index is that it can make reads more efficient: rather than doing scatter/gather over all partitions, a client only needs to make a request to the partition containing the term that it wants. However, the downside of a global index is that writes are slower and more complicated, because a write to a single document may now affect multiple partitions of the index (every term in the document might be on a different partition, on a different node).</p>
+
+<p>In practice, updates to global secondary indexes are often asynchronous.</p>
+
+<h2 id="rebalancing-partitions">Rebalancing Partitions</h2>
+
+<p>The process of moving load from one node in the cluster to another is called rebalancing.</p>
+
+<p>No matter which partitioning scheme is used, rebalancing is usually expected to meet some minimum requirements:</p>
+
+<ul>
+  <li>After rebalancing, the load (data storage, read and write requests) should be shared fairly between the nodes in the cluster.</li>
+  <li>While rebalancing is happening, the database should continue accepting reads and writes.</li>
+  <li>No more data than necessary should be moved between nodes, to make rebalanc‐ ing fast and to minimize the network and disk I/O load.</li>
+</ul>
+
+<h3 id="strategies-for-rebalancing">Strategies for Rebalancing</h3>
+
+<h4 id="how-not-to-do-it-hash-mod-n">How not to do it: hash mod N</h4>
+
+<p>The problem with the mod N approach is that if the number of nodes N changes, most of the keys will need to be moved from one node to another.</p>
+
+<h4 id="fixed-number-of-partitions">Fixed number of partitions</h4>
+
+<p>Fortunately, there is a fairly simple solution: create many more partitions than there are nodes, and assign several partitions to each node.</p>
+
+<p>Now, if a node is added to the cluster, the new node can steal a few partitions from every existing node until partitions are fairly distributed once again.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-6.png" width="800" /></p>
+
+<p>Only entire partitions are moved between nodes. The number of partitions does not change, nor does the assignment of keys to partitions. The only thing that changes is the assignment of partitions to nodes. This change of assignment is not immediate-it takes some time to transfer a large amount of data over the network—so the old assignment of partitions is used for any reads and writes that happen while the transfer is in progress.</p>
+
+<p>Choosing the right number of partitions is difficult if the total size of the dataset is highly variable.</p>
+
+<h4 id="dynamic-partitioning">Dynamic partitioning</h4>
+
+<p>key range–partitioned databases such as HBase and RethinkDB create partitions dynamically. When a partition grows to exceed a configured size, it is split into two partitions so that approximately half of the data ends up on each side of the split. Conversely, if lots of data is deleted and a partition shrinks below some threshold, it can be merged with an adjacent partition.</p>
+
+<h4 id="partitioning-proportionally-to-nodes">Partitioning proportionally to nodes</h4>
+
+<p>With dynamic partitioning, the number of partitions is proportional to the size of the dataset, since the splitting and merging processes keep the size of each partition between some fixed minimum and maximum. On the other hand, with a fixed number of partitions, the size of each partition is proportional to the size of the dataset. In both of these cases, the number of partitions is independent of the number of nodes.</p>
+
+<p>A third option, used by Cassandra and Ketama, is to make the number of partitions proportional to the number of nodes.</p>
+
+<p>When a new node joins the cluster, it randomly chooses a fixed number of existing partitions to split, and then takes ownership of one half of each of those split partitions while leaving the other half of each partition in place.</p>
+
+<h3 id="operations-automatic-or-manual-rebalancing">Operations: Automatic or Manual Rebalancing</h3>
+
+<p>Fully automated rebalancing can be convenient, however, it can be unpredictable. Rebalancing is an expensive operation, because it requires rerouting requests and moving a large amount of data from one node to another. If it is not done carefully, this process can overload the network or the nodes and harm the performance of other requests while the rebalancing is in progress.</p>
+
+<h2 id="request-routing">Request Routing</h2>
+
+<p>On a high level, there are a few different approaches to this problem:</p>
+
+<ul>
+  <li>
+    <p>Allow clients to contact any node (e.g., via a round-robin load balancer). If that node coincidentally owns the partition to which the request applies, it can handle the request directly; otherwise, it forwards the request to the appropriate node, receives the reply, and passes the reply along to the client.</p>
+  </li>
+  <li>
+    <p>Send all requests from clients to a routing tier first, which determines the node that should handle each request and forwards it accordingly. This routing tier does not itself handle any requests; it only acts as a partition-aware load balancer.</p>
+  </li>
+  <li>
+    <p>Require that clients be aware of the partitioning and the assignment of partitions to nodes. In this case, a client can connect directly to the appropriate node, without any intermediary.</p>
+  </li>
+</ul>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-7.png" width="800" /></p>
+
+<p>Many distributed data systems rely on a separate coordination service such as Zoo‐ Keeper to keep track of this cluster metadata:</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-8.png" width="800" /></p>
+
+<p>Each node registers itself in ZooKeeper, and ZooKeeper maintains the authoritative mapping of partitions to nodes. Other actors, such as the routing tier or the partitioning-aware client, can subscribe to this information in ZooKeeper. Whenever a partition changes ownership, or a node is added or removed, ZooKeeper notifies the routing tier so that it can keep its routing information up to date.</p>
+
+<p>Cassandra and Riak take a different approach: they use a gossip protocol among the nodes to disseminate any changes in cluster state. Requests can be sent to any node, and that node forwards them to the appropriate node for the requested partition.</p>
+
+<p>When using a routing tier or when sending requests to a random node, clients still need to find the IP addresses to connect to. These are not as fast-changing as the assignment of partitions to nodes, so it is often sufficient to use DNS for this purpose.</p>
+
+<h1 id="chapter-7-transactions">Chapter 7. Transactions</h1>
+
+<p>A transaction is a way for an application to group several reads and writes together into a logical unit. Conceptually, all the reads and writes in a transaction are executed as one operation: either the entire transaction succeeds (commit) or it fails (abort, rollback). If it fails, the application can safely retry. With transactions, error handling becomes much simpler for an application, because it doesn’t need to worry about partial failure.</p>
+
+<h2 id="the-slippery-concept-of-a-transaction">The Slippery Concept of a Transaction</h2>
+
+<h3 id="the-meaning-of-acid">The Meaning of ACID</h3>
+
+<p>The safety guarantees provided by transactions are often described by the well-known acronym ACID, which stands for Atomicity, Consistency, Isolation, and Durability.</p>
+
+<h4 id="atomicity">Atomicity</h4>
+
+<p>In general, atomic refers to something that cannot be broken down into smaller parts. ACID atomicity describes what happens if a client wants to make several writes, but a fault occurs after some of the writes have been processed. If the writes are grouped together into an atomic transaction, and the transaction cannot be completed (committed) due to a fault, then the transaction is aborted and the database must discard or undo any writes it has made so far in that transaction.</p>
+
+<p>The ability to abort a transaction on error and have all writes from that transaction discarded is the defining feature of ACID atomicity.</p>
+
+<h4 id="consistency">Consistency</h4>
+
+<p>The idea of ACID consistency is that you have certain statements about your data (invariants) that must always be true–for example, in an accounting system, credits and debits across all accounts must always be balanced.</p>
+
+<p>Atomicity, isolation, and durability are properties of the database, whereas consistency (in the ACID sense) is a property of the application. The application may rely on the database’s atomicity and isolation properties in order to achieve consistency, but it’s not up to the database alone. Thus, the letter C doesn’t really belong in ACID.</p>
+
+<h4 id="isolation">Isolation</h4>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-9.png" width="800" /></p>
+
+<p>Isolation in the sense of ACID means that concurrently executing transactions are isolated from each other: they cannot step on each other’s toes. The classic database textbooks formalize isolation as <strong>serializability</strong>, which means that each transaction can pretend that it is the only transaction running on the entire database. The database ensures that when the transactions have committed, the result is the same as if they had run serially (one after another), even though in reality they may have run concurrently.</p>
+
+<p>However, in practice, serializable isolation is rarely used, because it carries a performance penalty.</p>
+
+<h4 id="durability">Durability</h4>
+
+<p>Durability is the promise that once a transaction has committed successfully, any data it has written will not be forgotten, even if there is a hardware fault or the database crashes.</p>
+
+<h3 id="single-object-and-multi-object-operations">Single-Object and Multi-Object Operations</h3>
+
+<p>In ACID, atomicity and isolation describe what the database should do if a client makes several writes within the same transaction:</p>
+
+<ul>
+  <li>
+    <p>Atomicity
+  If an error occurs halfway through a sequence of writes, the transaction should be aborted, and the writes made up to that point should be discarded. In other words, the database saves you from having to worry about partial failure, by giving an all-or-nothing guarantee.</p>
+  </li>
+  <li>
+    <p>Isolation
+  Concurrently running transactions shouldn’t interfere with each other. For example, if one transaction makes several writes, then another transaction should see either all or none of those writes, but not some subset.</p>
+  </li>
+</ul>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-10.png" width="800" /></p>
+
+<p>User 2 experiences an anomaly: the mailbox listing shows an unread message, but the counter shows zero unread messages because the counter increment has not yet happened.ii Isolation would have prevented this issue by ensuring that user 2 sees either both the inserted email and the updated counter, or neither, but not an inconsistent halfway point.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-11.png" width="800" /></p>
+
+<p>If an error occurs somewhere over the course of the transaction, the contents of the mailbox and the unread counter might become out of sync. In an atomic transaction, if the update to the counter fails, the transaction is aborted and the inserted email is rolled back.</p>
+
+<p>Multi-object transactions require some way of determining which read and write operations belong to the same transaction. In relational databases, that is typically done based on the client’s TCP connection to the database server: on any particular connection, <strong>everything between a BEGIN TRANSACTION and a COMMIT statement is considered to be part of the same transaction</strong>.</p>
+
+<h4 id="single-object-writes">Single-object writes</h4>
+
+<p>Atomicity and isolation also apply when a single object is being changed. For exam‐ ple, imagine you are writing a 20 KB JSON document to a database:</p>
+
+<ul>
+  <li>
+    <p>If the network connection is interrupted after the first 10 KB have been sent, does the database store that unparseable 10 KB fragment of JSON?</p>
+  </li>
+  <li>
+    <p>If the power fails while the database is in the middle of overwriting the previous value on disk, do you end up with the old and new values spliced together?</p>
+  </li>
+  <li>
+    <p>If another client reads that document while the write is in progress, will it see a partially updated value?</p>
+  </li>
+</ul>
+
+<p>Atomicity can be implemented using a log for crash recovery and isolation can be implemented using a lock on each object (allowing only one thread to access an object at any one time).</p>
+
+<p>Some databases also provide more complex atomic operations, such as an increment operation, which removes the need for a read-modify-write cycle. Similarly popular is a compare-and-set operation, which allows a write to happen only if the value has not been concurrently changed by someone else.</p>
+
+<p>These single-object operations are useful, as they can prevent lost updates when several clients try to write to the same object concurrently.</p>
+
+<h4 id="handling-errors-and-aborts">Handling errors and aborts</h4>
+
+<p>ACID databases are based on this philosophy: if the database is in danger of violating its guarantee of atomicity, isolation, or durability, it would rather aban‐ don the transaction entirely than allow it to remain half-finished.</p>
+
+<p>Not all systems follow that philosophy, though. In particular, datastores with leader‐less replication work much more on a “best effort” basis, which could be summarized as “the database will do as much as it can, and if it runs into an error, it won’t undo something it has already done”—so it’s the application’s responsibility to recover from errors.</p>
+
+<p>Although retrying an aborted transaction is a simple and effective error handling mechanism, it isn’t perfect:</p>
+
+<ul>
+  <li>
+    <p>If the transaction actually succeeded, but the network failed while the server tried to acknowledge the successful commit to the client (so the client thinks it failed), then retrying the transaction causes it to be performed twice—unless you have an additional application-level deduplication mechanism in place.</p>
+  </li>
+  <li>
+    <p>If the error is due to overload, retrying the transaction will make the problem worse, not better. To avoid such feedback cycles, you can limit the number of retries, use exponential backoff, and handle overload-related errors differently from other errors (if possible).</p>
+  </li>
+  <li>
+    <p>It is only worth retrying after transient errors (for example due to deadlock, isolation violation, temporary network interruptions, and failover); after a permanent error (e.g., constraint violation) a retry would be pointless.</p>
+  </li>
+  <li>
+    <p>If the transaction also has side effects outside of the database, those side effects may happen even if the transaction is aborted. For example, if you’re sending an email, you wouldn’t want to send the email again every time you retry the transaction. If you want to make sure that several different systems either commit or abort together, two-phase commit can help.</p>
+  </li>
+  <li>
+    <p>If the client process fails while retrying, any data it was trying to write to the database is lost.</p>
+  </li>
+</ul>
+
+<h2 id="weak-isolation-levels">Weak Isolation Levels</h2>
+
+<p>Databases have long tried to hide concurrency issues from application developers by providing <strong>transaction isolation</strong>. <strong>Serializable isolation</strong> means that the database guarantees that transactions have the same effect as if they ran serially.</p>
+
+<p>Serializable isolation has a performance cost, and many databases don’t want to pay that price. It’s therefore common for systems to use weaker levels of isolation, which protect against some concurrency issues, but not all.</p>
+
+<h3 id="read-committed">Read Committed</h3>
+
+<p>The most basic level of transaction isolation is read committed. It makes two guarantees:</p>
+
+<ol>
+  <li>When reading from the database, you will only see data that has been committed (no dirty reads).</li>
+  <li>When writing to the database, you will only overwrite data that has been committed (no dirty writes).</li>
+</ol>
+
+<h4 id="no-dirty-reads">No dirty reads</h4>
+
+<p>Imagine a transaction has written some data to the database, but the transaction has not yet committed or aborted. Can another transaction see that uncommitted data? If yes, that is called a <strong>dirty read</strong>.</p>
+
+<h4 id="no-dirty-writes">No dirty writes</h4>
+
+<p>If the earlier write is part of a transaction that has not yet committed, so the later write overwrites an uncommitted value? This is called a dirty write.</p>
+
+<p>Transactions running at the read committed isolation level must prevent dirty writes, usually by delaying the second write until the first write’s transaction has committed or aborted.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-12.png" width="800" /></p>
+
+<p>However, read committed does not prevent the race condition between two counter increments.</p>
+
+<h4 id="implementing-read-committed">Implementing read committed</h4>
+
+<p>Most commonly, databases prevent dirty writes by using <strong>row-level locks</strong>: when a transaction wants to modify a particular object (row or document), it must first acquire a lock on that object. <strong>It must then hold that lock until the transaction is committed or aborted.</strong></p>
+
+<p>How do we prevent dirty reads? One option would be to use the same lock, and to require any transaction that wants to read an object to briefly acquire the lock and then release it again immediately after reading. This would ensure that a read couldn’t happen while an object has a dirty, uncommitted value.</p>
+
+<p>However, the approach of requiring read locks does not work well in practice, because one long-running write transaction can force many read-only transactions to wait until the long-running transaction has completed.</p>
+
+<p>For that reason, most databasesvi prevent dirty reads using the following approach: for every object that is written, the database remembers both the old committed value and the new value set by the transaction that currently holds the write lock. While the transaction is ongoing, any other transactions that read the object are simply given the old value. Only when the new value is committed do transactions switch over to reading the new value.</p>
+
+<h3 id="snapshot-isolation-and-repeatable-read">Snapshot Isolation and Repeatable Read</h3>
+
+<p>Figure below illustrates a problem that can occur with read committed.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-13.png" width="800" /></p>
+
+<p>This anomaly is called a <strong>nonrepeatable read</strong> or <strong>read skew</strong>.</p>
+
+<p>Some situations cannot tolerate such temporary inconsistency:</p>
+
+<ul>
+  <li>
+    <p>Backups
+  Taking a backup requires making a copy of the entire database, which may take hours on a large database. During the time that the backup process is running, writes will continue to be made to the database. Thus, you could end up with some parts of the backup <strong>containing an older version of the data, and other parts containing a newer version</strong>. If you need to restore from such a backup, the inconsistencies (such as disappearing money) become permanent.</p>
+  </li>
+  <li>
+    <p>Analytic queries and integrity checks
+  Sometimes, you may want to run a query that scans over large parts of the database. Such queries are common in analytics, or may be part of a periodic integrity check that everything is in order (monitoring for data corruption). These queries are likely to return nonsensical results if they observe parts of the database at different points in time.</p>
+  </li>
+</ul>
+
+<p>Snapshot isolation is the most common solution to this problem. The idea is that each transaction reads from a consistent snapshot of the database—that is, the transaction sees all the data that was committed in the database at the start of the transaction. Even if the data is subsequently changed by another transaction, each transaction sees only the old data from that particular point in time.</p>
+
+<h4 id="implementing-snapshot-isolation">Implementing snapshot isolation</h4>
+
+<p>Like read committed isolation, implementations of snapshot isolation typically use write locks to prevent dirty writes.</p>
+
+<p>From a performance point of view, a key principle of snapshot isolation is <strong>readers never block writers, and writers never block readers</strong>.</p>
+
+<p>The database must potentially keep several different committed versions of an object, because various in-progress transactions may need to see the state of the database at different points in time. Because it maintains several versions of an object side by side, this technique is known as <strong>multi-version concurrency control (MVCC)</strong>.</p>
+
+<p>If a database only needed to provide read committed isolation, but not snapshot isolation, it would be sufficient to keep two versions of an object: the committed version and the overwritten-but-not-yet-committed version. However, storage engines that support snapshot isolation typically use MVCC for their read committed isolation level as well.</p>
+
+<p>Following figure illustrates how MVCC-based snapshot isolation is implemented in PostgreSQL(other implementations are similar). When a transaction is started, it is given a unique, always-increasing transaction ID (txid). Whenever a transaction writes anything to the database, the data it writes is tagged with the transaction ID of the writer.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-14.png" width="800" /></p>
+
+<p>Each row in a table has a <strong>created_by</strong> field, containing the ID of the transaction that inserted this row into the table. Moreover, each row has a <strong>deleted_by</strong> field, which is initially empty. If a transaction deletes a row, the row isn’t actually deleted from the database, but it is marked for deletion by setting the deleted_by field to the ID of the transaction that requested the deletion. At some later time, when it is certain that no transaction can any longer access the deleted data, a garbage collection process in the database removes any rows marked for deletion and frees their space.</p>
+
+<h4 id="visibility-rules-for-observing-a-consistent-snapshot">Visibility rules for observing a consistent snapshot</h4>
+
+<p>By carefully defining visibility rules, the database can present a consistent snapshot of the database to the application. This works as follows:</p>
+
+<ol>
+  <li>
+    <p>At the start of each transaction, the database makes a list of all the other transactions that are in progress (not yet committed or aborted) at that time. Any writes that those transactions have made are ignored, even if the transactions subsequently commit.</p>
+  </li>
+  <li>
+    <p>Any writes made by aborted transactions are ignored.</p>
+  </li>
+  <li>
+    <p>Any writes made by transactions with a later transaction ID (i.e., which started after the current transaction started) are ignored, regardless of whether those transactions have committed.</p>
+  </li>
+  <li>
+    <p>All other writes are visible to the application’s queries.</p>
+  </li>
+</ol>
+
+<p>Put another way, an object is visible if both of the following conditions are true:</p>
+
+<ul>
+  <li>
+    <p>At the time when the reader’s transaction started, the transaction that created the object had already committed.</p>
+  </li>
+  <li>
+    <p>The object is not marked for deletion, or if it is, the transaction that requested deletion had not yet committed at the time when the reader’s transaction started.</p>
+  </li>
+</ul>
+
+<p>By never updating values in place but instead creating a new version every time a value is changed, the database can provide a consistent snapshot while incurring only a small overhead.</p>
+
+<h4 id="indexes-and-snapshot-isolation">Indexes and snapshot isolation</h4>
+
+<p>How do indexes work in a multi-version database? One option is to have the index simply point to all versions of an object and require an index query to filter out any object versions that are not visible to the current transaction.</p>
+
+<p>PostgreSQL has optimizations for avoid‐ ing index updates if different versions of the same object can fit on the same page.</p>
+
+<p>Another approach is used in CouchDB, Datomic, and LMDB. Although they also use B-trees, they use an append-only/copy-on-write variant that does not overwrite pages of the tree when they are updated, but instead creates a new copy of each modified page. Parent pages, up to the root of the tree, are copied and updated to point to the new versions of their child pages. Any pages that are not affected by a write do not need to be copied, and remain immutable.</p>
+
+<p>With append-only B-trees, every write transaction (or batch of transactions) creates a new B-tree root, and a particular root is a consistent snapshot of the database at the point in time when it was created. There is no need to filter out objects based on transaction IDs because subsequent writes cannot modify an existing B-tree; they can only create new tree roots. However, this approach also requires a background process for compaction and garbage collection.</p>
+
+<h4 id="repeatable-read-and-naming-confusion">Repeatable read and naming confusion</h4>
+
+<p><strong>Snapshot isolation</strong> is a useful isolation level, especially for read-only transactions. However, many databases that implement it call it by different names. In Oracle it is called <strong>serializable</strong>, and in PostgreSQL and MySQL it is called <strong>repeatable read</strong>.</p>
+
+<h3 id="preventing-lost-updates">Preventing Lost Updates</h3>
+
+<p>The lost update problem can occur if an application reads some value from the data‐ base, modifies it, and writes back the modified value (a read-modify-write cycle). If two transactions do this concurrently, one of the modifications can be lost, because the second write does not include the first modification.</p>
+
+<h4 id="atomic-write-operations">Atomic write operations</h4>
+
+<p>Many databases provide atomic update operations, which remove the need to implement read-modify-write cycles in application code.</p>
+
+<p>Atomic operations are usually implemented by taking an exclusive lock on the object when it is read so that no other transaction can read it until the update has been applied. This technique is sometimes known as <strong>cursor stability</strong>. Another option is to simply force all atomic operations to be executed on a single thread.</p>
+
+<h4 id="explicit-locking">Explicit locking</h4>
+
+<p>Another option for preventing lost updates, is for the application to explicitly lock objects that are going to be updated.</p>
+
+<h4 id="automatically-detecting-lost-updates">Automatically detecting lost updates</h4>
+
+<p>An alternative is to allow them to execute in parallel and, if the transaction manager detects a lost update, abort the transaction and force it to retry its read-modify-write cycle.</p>
+
+<p>An advantage of this approach is that databases can perform this check efficiently in conjunction with snapshot isolation.</p>
+
+<h4 id="compare-and-set">Compare-and-set</h4>
+
+<p>The purpose of this operation is to avoid lost updates by allowing an update to happen only if the value has not changed since you last read it.</p>
+
+<p>However, <strong>if the database allows the WHERE clause to read from an old snapshot, this statement may not prevent lost updates, because the condition may be true even though another concurrent write is occurring</strong>. Check whether your database’s compare-and-set operation is safe before relying on it.</p>
+
+<h4 id="conflict-resolution-and-replication">Conflict resolution and replication</h4>
+
+<p>In replicated databases, preventing lost updates takes on another dimension: since they have copies of the data on multiple nodes, and the data can potentially be modified concurrently on different nodes, some additional steps need to be taken to prevent lost updates.</p>
+
+<p>That is the idea behind Riak 2.0 datatypes, which prevent lost updates across replicas. When a value is concurrently updated by different clients, Riak automatically merges together the updates in such a way that no updates are lost.</p>
+
+<p>On the other hand, the last write wins (LWW) conflict resolution method is prone to lost updates, as discussed in “Last write wins (discarding concurrent writes)”. Unfortunately, LWW is the default in many replicated databases.</p>
+
+<h3 id="write-skew-and-phantoms">Write Skew and Phantoms</h3>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-15.png" width="800" /></p>
+
+<h4 id="more-examples-of-write-skew">More examples of write skew</h4>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-17.png" width="800" /></p>
+
+<p>Unfortunately, snapshot isolation does not prevent another user from concurrently inserting a conflicting meeting. In order to guarantee you won’t get scheduling conflicts, you once again need serializable isolation.</p>
+
+<h4 id="characterizing-write-skew">Characterizing write skew</h4>
+
+<p>This anomaly is called <strong>write skew</strong>. It is neither a dirty write nor a lost update, because the two transactions are updating two different objects.</p>
+
+<p>With write skew, our options are more restricted:</p>
+
+<ul>
+  <li>
+    <p>Atomic single-object operations don’t help, as multiple objects are involved.</p>
+  </li>
+  <li>
+    <p>The automatic detection of lost updates that you find in some implementations of snapshot isolation unfortunately doesn’t help either: write skew is not automatically detected in PostgreSQL’s repeatable read, MySQL/InnoDB’s repeatable read, Oracle’s serializable, or SQL Server’s snapshot isolation level. <strong>Auto‐matically preventing write skew requires true serializable isolation.</strong></p>
+  </li>
+  <li>
+    <p>In order to specify that at least one doctor must be on call, you would need a constraint that involves multiple objects. Most databases do not have built-in support for such constraints, but you may be able to implement them with triggers or materialized views, depending on the database.</p>
+  </li>
+  <li>
+    <p>If you can’t use a serializable isolation level, the second-best option in this case is probably to explicitly lock the rows that the transaction depends on.</p>
+  </li>
+</ul>
+
+<h4 id="phantoms-causing-write-skew">Phantoms causing write skew</h4>
+
+<p>All of these examples follow a similar pattern:</p>
+
+<ol>
+  <li>
+    <p>A SELECT query checks whether some requirement is satisfied by searching for rows that match some search condition (there are at least two doctors on call, there are no existing bookings for that room at that time, the position on the board doesn’t already have another figure on it, the username isn’t already taken, there is still money in the account).</p>
+  </li>
+  <li>
+    <p>Depending on the result of the first query, the application code decides how to continue (perhaps to go ahead with the operation, or perhaps to report an error to the user and abort).</p>
+  </li>
+  <li>
+    <p>If the application decides to go ahead, it makes a write (INSERT, UPDATE, or DELETE) to the database and commits the transaction.</p>
+  </li>
+</ol>
+
+<p>In the case of the doctor on call example, the row being modified in step 3 was one of the rows returned in step 1, so we could make the transaction safe and avoid write skew by locking the rows in step 1 (SELECT FOR UPDATE). However, the other four examples are different: <strong>they check for the absence of rows matching some search condition, and the write adds a row matching the same condition. If the query in step 1 doesn’t return any rows, SELECT FOR UPDATE can’t attach locks to anything.</strong></p>
+
+<p>This effect, where a write in one transaction changes the result of a search query in another transaction, is called a <strong>phantom</strong>. Snapshot isolation avoids phantoms in read-only queries, but in read-write transactions like the examples we discussed, phantoms can lead to particularly tricky cases of write skew.</p>
+
+<h4 id="materializing-conflicts">Materializing conflicts</h4>
+
+<p>If the problem of phantoms is that there is no object to which we can attach the locks, perhaps we can artificially introduce a lock object into the database?</p>
+
+<p>For example, in the meeting room booking case you could imagine creating a table of time slots and rooms. Each row in this table corresponds to a particular room for a particular time period. Now a transaction that wants to create a booking can lock (SELECT FOR UPDATE) the rows in the table that correspond to the desired room and time period. After it has acquired the locks, it can check for overlapping bookings and insert a new booking as before.</p>
+
+<p>This approach is called materializing conflicts, because it takes a phantom and turns it into a lock conflict on a concrete set of rows that exist in the database. Unfortunately, it can be hard and error-prone to figure out how to materialize conflicts, and it’s ugly to let a concurrency control mechanism leak into the application data model. For those reasons, materializing conflicts should be considered a last resort if no alternative is possible. A serializable isolation level is much preferable in most cases.</p>
+
+<h2 id="serializability">Serializability</h2>
+
+<p>It’s a sad situation:</p>
+
+<ul>
+  <li>
+    <p>Isolation levels are hard to understand, and inconsistently implemented in different databases.</p>
+  </li>
+  <li>
+    <p>If you look at your application code, it’s difficult to tell whether it is safe to run at a particular isolation level.</p>
+  </li>
+  <li>
+    <p>There are no good tools to help us detect race conditions.</p>
+  </li>
+</ul>
+
+<p>Serializable isolation is usually regarded as the strongest isolation level. It guarantees that even though transactions may execute in parallel, the end result is the same as if they had executed one at a time, <strong>serially</strong>, without any concurrency.</p>
+
+<p>Most databases that provide serializability today use one of three techniques:</p>
+
+<ul>
+  <li>
+    <p>Literally executing transactions in a serial order</p>
+  </li>
+  <li>
+    <p>Two-phase locking, which for several decades was the only viable option</p>
+  </li>
+  <li>
+    <p>Optimistic concurrency control techniques such as serializable snapshot isolation</p>
+  </li>
+</ul>
+
+<h3 id="actual-serial-execution">Actual Serial Execution</h3>
+
+<p>The simplest way of avoiding concurrency problems is to remove the concurrency entirely: to execute only one transaction at a time, in serial order, on a single thread.</p>
+
+<h4 id="encapsulating-transactions-in-stored-procedures">Encapsulating transactions in stored procedures</h4>
+
+<p>In this interactive style of transaction, a lot of time is spent in network communication between the application and the database. If you were to disallow concurrency in the database and only process one transaction at a time, the throughput would be dreadful because the database would spend most of its time waiting for the applica‐ tion to issue the next query for the current transaction.</p>
+
+<p>For this reason, systems with single-threaded serial transaction processing don’t allow interactive multi-statement transactions. Instead, the application must submit the entire transaction code to the database ahead of time, as a <strong>stored procedure</strong>.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-16.png" width="800" /></p>
+
+<h4 id="partitioning">Partitioning</h4>
+
+<p>If you can find a way of partitioning your dataset so that each transaction only needs to read and write data within a single partition, then each partition can have its own transaction processing thread running independently from the others.</p>
+
+<p>However, for any transaction that needs to access multiple partitions, the database must coordinate the transaction across all the partitions that it touches. The stored procedure needs to be performed in lock-step across all partitions to ensure serializability across the whole system.</p>
+
+<p>Whether transactions can be single-partition depends very much on the structure of the data used by the application. Simple key-value data can often be partitioned very easily, but data with multiple secondary indexes is likely to require a lot of cross-partition coordination.</p>
+
+<h3 id="two-phase-locking-2pl">Two-Phase Locking (2PL)</h3>
+
+<p>Several transactions are allowed to concurrently read the same object as long as nobody is writing to it. But as soon as anyone wants to write (modify or delete) an object, exclusive access is required:</p>
+
+<ul>
+  <li>
+    <p>If transaction A has read an object and transaction B wants to write to that object, B must wait until A commits or aborts before it can continue. (This ensures that B can’t change the object unexpectedly behind A’s back.)</p>
+  </li>
+  <li>
+    <p>If transaction A has written an object and transaction B wants to read that object, B must wait until A commits or aborts before it can continue. (Reading an old version of the object, is not acceptable under 2PL.)</p>
+  </li>
+</ul>
+
+<p>In 2PL, writers don’t just block other writers; they also block readers and vice versa. Snapshot isolation has the mantra <strong>readers never block writers, and writers never block readers</strong>, which captures this key difference between snapshot isolation and two-phase locking.</p>
+
+<p>On the other hand, because 2PL provides serializability, it protects against all the race conditions discussed earlier, including lost updates and write skew.</p>
+
+<h4 id="implementation-of-two-phase-locking">Implementation of two-phase locking</h4>
+
+<p>2PL is used by the serializable isolation level in MySQL (InnoDB) and SQL Server, and the repeatable read isolation level in DB2.</p>
+
+<p>The blocking of readers and writers is implemented by a having a lock on each object in the database. The lock can either be in shared mode or in exclusive mode. The lock is used as follows:</p>
+
+<ul>
+  <li>
+    <p>If a transaction wants to read an object, it must first acquire the lock in <strong>shared mode</strong>. Several transactions are allowed to hold the lock in shared mode simultaneously, but if another transaction already has an exclusive lock on the object, these transactions must wait.</p>
+  </li>
+  <li>
+    <p>If a transaction wants to write to an object, it must first acquire the lock in <strong>exclusive mode</strong>. No other transaction may hold the lock at the same time (either in shared or in exclusive mode), so if there is any existing lock on the object, the transaction must wait.</p>
+  </li>
+  <li>
+    <p>If a transaction first reads and then writes an object, it may <strong>upgrade its shared lock to an exclusive lock</strong>. The upgrade works the same as getting an exclusive lock directly.</p>
+  </li>
+  <li>
+    <p>After a transaction has acquired the lock, it must continue to hold the lock until the end of the transaction (commit or abort). This is where the name “two-phase” comes from: <strong>the first phase (while the transaction is executing) is when the locks are acquired, and the second phase (at the end of the transaction) is when all the locks are released.</strong></p>
+  </li>
+</ul>
+
+<p>Since so many locks are in use, it can happen quite easily that transaction A is stuck waiting for transaction B to release its lock, and vice versa. This situation is called deadlock. The database automatically detects deadlocks between transactions and aborts one of them so that the others can make progress. The aborted transaction needs to be retried by the application.</p>
+
+<h4 id="performance-of-two-phase-locking">Performance of two-phase locking</h4>
+
+<p>The big downside of two-phase locking, and the reason why it hasn’t been used by everybody since the 1970s, is performance: transaction throughput and response times of queries are significantly worse under two-phase locking than under weak isolation.</p>
+
+<h4 id="predicate-locks">Predicate locks</h4>
+
+<p>We discussed the problem of phantoms—that is, one transaction changing the results of another transaction’s search query. A database with serializable isolation must prevent phantoms.</p>
+
+<p>In the meeting room booking example this means that if one transaction has searched for existing bookings for a room within a certain time window, another transaction is not allowed to concurrently insert or update another booking for the same room and time range.</p>
+
+<p>How do we implement this? Conceptually, we need a <strong>predicate lock</strong>.</p>
+
+<p>A predicate lock restricts access as follows:</p>
+
+<ul>
+  <li>
+    <p>If transaction A wants to read objects matching some condition, like in that SELECT query, it must acquire a shared-mode predicate lock on the conditions of the query. If another transaction B currently has an exclusive lock on any object matching those conditions, A must wait until B releases its lock before it is allowed to make its query.</p>
+  </li>
+  <li>
+    <p>If transaction A wants to insert, update, or delete any object, <strong>it must first check whether either the old or the new value matches any existing predicate lock</strong>. If there is a matching predicate lock held by transaction B, then A must wait until B has committed or aborted before it can continue.</p>
+  </li>
+</ul>
+
+<h4 id="index-range-locks">Index-range locks</h4>
+
+<p>Unfortunately, predicate locks do not perform well: if there are many locks by active transactions, checking for matching locks becomes time-consuming. For that reason, most databases with 2PL actually implement <strong>index-range locking</strong>(also known as <strong>next-key locking</strong>), which is a simplified approximation of predicate locking.</p>
+
+<p>It’s safe to simplify a predicate by making it match a greater set of objects.</p>
+
+<p>In the room bookings database you would probably have an index on the room_id column, and/or indexes on start_time and end_time:</p>
+
+<ul>
+  <li>
+    <p>Say your index is on room_id, and the database uses this index to find existing bookings for room 123. <strong>Now the database can simply attach a shared lock to this index entry</strong>, indicating that a transaction has searched for bookings of room 123.</p>
+  </li>
+  <li>
+    <p>Alternatively, if the database uses a time-based index to find existing bookings, it can attach a shared lock to a range of values in that index, indicating that a transaction has searched for bookings that overlap with the time period of noon to 1 p.m. on January 1, 2018.</p>
+  </li>
+</ul>
+
+<p>Either way, an approximation of the search condition is attached to one of the indexes. Now, if another transaction wants to insert, update, or delete a booking for the same room and/or an overlapping time period, it will have to update the same part of the index. In the process of doing so, it will encounter the shared lock, and it will be forced to wait until the lock is released.</p>
+
+<p>Index-range locks are not as precise as predicate locks would be (they may lock a bigger range of objects than is strictly necessary to maintain serializability), but since they have much lower overheads, they are a good compromise.</p>
+
+<h3 id="serializable-snapshot-isolation-ssi">Serializable Snapshot Isolation (SSI)</h3>
+
+<p>An algorithm called serializable snapshot isolation (SSI) is very promising. It provides full serializability, but has only a small performance penalty compared to snapshot isolation.</p>
+
+<p>As SSI is so young compared to other concurrency control mechanisms, it is still proving its performance in practice, but it has the possibility of being fast enough to become the new default in the future.</p>
+
+<h4 id="pessimistic-versus-optimistic-concurrency-control">Pessimistic versus optimistic concurrency control</h4>
+
+<p>Two-phase locking is a so-called <strong>pessimistic concurrency control mechanism</strong>: it is based on the principle that if anything might possibly go wrong (as indicated by a lock held by another transaction), it’s better to wait until the situation is safe again before doing anything. It is like mutual exclusion, which is used to protect data structures in multi-threaded programming.</p>
+
+<p>By contrast, serializable snapshot isolation is an <strong>optimistic concurrency control technique</strong>. Optimistic in this context means that instead of blocking if something potentially dangerous happens, transactions continue anyway, in the hope that everything will turn out all right.</p>
+
+<p>When a transaction wants to commit, the database checks whether anything bad happened (i.e., whether isolation was violated); if so, the transaction is aborted and has to be retried. Only transactions that executed serializably are allowed to commit.</p>
+
+<p>As the name suggests, SSI is based on snapshot isolation—that is, all reads within a transaction are made from a consistent snapshot of the database. On top of snapshot isolation, SSI adds an algorithm for detecting serialization conflicts among writes and determining which transactions to abort.</p>
+
+<h4 id="decisions-based-on-an-outdated-premise">Decisions based on an outdated premise</h4>
+
+<p>Under snapshot isolation, the result from the original query may no longer be up-to-date by the time the transaction commits, because the data may have been modified in the meantime.</p>
+
+<p>Put another way, the transaction is taking an action based on a premise (a fact that was true at the beginning of the transaction, e.g., “There are currently two doctors on call”). Later, when the transaction wants to commit, the original data may have changed—the premise may no longer be true.</p>
+
+<p>How does the database know if a query result might have changed? There are two cases to consider:</p>
+
+<ul>
+  <li>Detecting reads of a stale MVCC object version (uncommitted write occurred before the read)</li>
+  <li>Detecting writes that affect prior reads (the write occurs after the read)</li>
+</ul>
+
+<h4 id="detecting-stale-mvcc-reads">Detecting stale MVCC reads</h4>
+
+<p>In Figure, transaction 43 sees Alice as having on_call = true, because transaction 42 (which modified Alice’s on-call status) is uncommitted. However, by the time transaction 43 wants to commit, transaction 42 has already committed. This means that the write that was ignored when reading from the consistent snapshot has now taken effect, and transaction 43’s premise is no longer true.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-18.png" width="800" /></p>
+
+<p>In order to prevent this anomaly, the database needs to track when a transaction ignores another transaction’s writes due to MVCC visibility rules. When the transaction wants to commit, the database checks whether any of the ignored writes have now been committed. If so, the transaction must be aborted.</p>
+
+<p><strong>Why wait until committing? Why not abort transaction 43 immediately when the stale read is detected?</strong> Well, if transaction 43 was a read-only transaction, it wouldn’t need to be aborted, because there is no risk of write skew. At the time when transaction 43 makes its read, the database doesn’t yet know whether that transaction is going to later perform a write. Moreover, transaction 42 may yet abort or may still be uncommitted at the time when transaction 43 is committed, and so the read may turn out not to have been stale after all. By avoiding unnecessary aborts, SSI preserves snapshot isolation’s support for long-running reads from a consistent snapshot.</p>
+
+<h4 id="detecting-writes-that-affect-prior-reads">Detecting writes that affect prior reads</h4>
+
+<p>The second case to consider is when another transaction modifies data after it has been read.</p>
+
+<p><img src="/assets/images/data-intensive-note-3/illustration-19.png" width="800" /></p>
+
+<p>Transactions 42 and 43 both search for on-call doctors during shift 1234. If there is an index on shift_id, the database can use the index entry 1234 to record the fact that transactions 42 and 43 read this data.</p>
+
+<p>When a transaction writes to the database, it must look in the indexes for any other transactions that have recently read the affected data. This process is similar to acquiring a write lock on the affected key range, but rather than blocking until the readers have committed, the lock acts as a tripwire: it simply notifies the transactions that the data they read may no longer be up to date.</p>
+
+<h4 id="performance-of-serializable-snapshot-isolation">Performance of serializable snapshot isolation</h4>
+
+<p>Compared to two-phase locking, the big advantage of serializable snapshot isolation is that one transaction doesn’t need to block waiting for locks held by another transaction. Like under snapshot isolation, writers don’t block readers, and vice versa.</p>
+
+<p>Compared to serial execution, serializable snapshot isolation is not limited to the throughput of a single CPU core.</p>
+
+<p>The rate of aborts significantly affects the overall performance of SSI. However, SSI is probably less sensitive to slow transactions than two-phase locking or serial execution.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Transactions are an abstraction layer that allows an application to pretend that certain concurrency problems and certain kinds of hardware and software faults don’t exist. A large class of errors is reduced down to a simple transaction abort, and the application just needs to try again.</p>
+
+<p>In this chapter, we went particularly deep into the topic of concurrency control. We discussed several widely used isolation levels, in particular <strong>read committed, snapshot isolation (sometimes called repeatable read), and serializable</strong>.</p>
+
+<ul>
+  <li>
+    <p>Dirty reads
+  One client reads another client’s writes before they have been committed. The read committed isolation level and stronger levels prevent dirty reads.</p>
+  </li>
+  <li>
+    <p>Dirty writes
+  One client overwrites data that another client has written, but not yet committed. Almost all transaction implementations prevent dirty writes.</p>
+  </li>
+  <li>
+    <p>Read skew (nonrepeatable reads)
+  A client sees different parts of the database at different points in time. This issue is most commonly prevented with snapshot isolation, which allows a transaction to read from a consistent snapshot at one point in time. It is usually implemented with multi-version concurrency control (MVCC).</p>
+  </li>
+  <li>
+    <p>Lost updates
+  Two clients concurrently perform a read-modify-write cycle. One overwrites the other’s write without incorporating its changes, so data is lost. Some implementations of snapshot isolation prevent this anomaly automatically, while others require a manual lock (SELECT FOR UPDATE).</p>
+  </li>
+  <li>
+    <p>Write skew
+  A transaction reads something, makes a decision based on the value it saw, and writes the decision to the database. However, by the time the write is made, the premise of the decision is no longer true. Only serializable isolation prevents this anomaly.</p>
+  </li>
+  <li>
+    <p>Phantom reads
+  A transaction reads objects that match some search condition. Another client makes a write that affects the results of that search. Snapshot isolation prevents straightforward phantom reads, but phantoms in the context of write skew require special treatment, such as index-range locks.</p>
+  </li>
+</ul>
+
+<p>Only serializable isolation protects against all of these issues. We discussed three different approaches to implementing serializable transactions:</p>
+
+<ul>
+  <li>
+    <p>Literally executing transactions in a serial order
+ If you can make each transaction very fast to execute, and the transaction throughput is low enough to process on a single CPU core</p>
+  </li>
+  <li>
+    <p>Two-phase locking
+  For decades this has been the standard way of implementing serializability, but many applications avoid using it because of its performance characteristics.</p>
+  </li>
+  <li>
+    <p>Serializable snapshot isolation (SSI)
+  A fairly new algorithm that avoids most of the downsides of the previous approaches. It uses an optimistic approach, allowing transactions to proceed without blocking. When a transaction wants to commit, it is checked, and it is aborted if the execution was not serializable.</p>
+  </li>
+</ul>
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2018/09/19/coredump-note-2/" data-toggle="tooltip" data-placement="top" title="Core dump 原理探究学习笔记（二）">
+                        Previous<br>
+                        <span>Core dump 原理探究学习笔记（二）</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2018/09/28/data-intensive-note-4/" data-toggle="tooltip" data-placement="top" title="Designing Data-Intensive Applications 读书笔记（四）">
+                        Next<br>
+                        <span>Designing Data-Intensive Applications 读书笔记（四）</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        </a>
+        
+        
+                <a data-sort="0058" 
+                    href="/archive/?tag=%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE"
+                    title="个人项目"
+                    rel="4">个人项目</a>
+        
+                <a data-sort="0040" 
+                    href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0"
+                    title="读书笔记"
+                    rel="22">读书笔记</a>
+        
+                <a data-sort="0047" 
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB"
+                    title="源码阅读"
+                    rel="15">源码阅读</a>
+        
+                <a data-sort="0055" 
+                    href="/archive/?tag=%E5%B7%A5%E4%BD%9C"
+                    title="工作"
+                    rel="7">工作</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"
+                    title="编程语言"
+                    rel="3">编程语言</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E9%9A%8F%E7%AC%94"
+                    title="随笔"
+                    rel="3">随笔</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E4%BC%98%E5%8C%96%26%E9%87%8D%E6%9E%84"
+                    title="优化&重构"
+                    rel="2">优化&重构</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E6%95%B0%E6%8D%AE%E5%BA%93"
+                    title="数据库"
+                    rel="2">数据库
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

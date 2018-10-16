@@ -2,7 +2,7 @@
 layout: post
 date: 2018-09-19T21:15:05+08:00
 title: Core dump 原理探究学习笔记（二）
-category: 读书笔记
+tags: 读书笔记
 ---
 
 本系列文章是读[《coredump问题原理探究》](https://blog.csdn.net/xuzhina/article/category/1322964)的读书笔记。

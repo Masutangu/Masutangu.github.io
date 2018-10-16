@@ -2,7 +2,7 @@
 layout: post
 date: 2016-07-06T18:56:31+08:00
 title: Python 笔记
-category: 编程语言
+tags: 编程语言
 ---
 
 这篇文章整理了python相关的资料，包括性能优化、常见错误和高级用法。

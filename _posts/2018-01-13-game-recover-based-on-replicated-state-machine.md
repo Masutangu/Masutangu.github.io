@@ -2,7 +2,7 @@
 layout: post
 date: 2018-01-13T11:30:24+08:00
 title: 基于 Replicated State Machine 实现游戏进程恢复
-category: 工作
+tags: 工作
 ---
 
 ## Introduction

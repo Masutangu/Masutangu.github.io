@@ -2,7 +2,7 @@
 layout: post
 date: 2018-07-03T13:21:23+08:00
 title: etcd-raft 源码学习笔记（示例篇）
-category: 源码阅读
+tags: 源码阅读
 ---
 
 本系列文章为 [etcd-raft](https://github.com/coreos/etcd/tree/master/raft) 源码阅读笔记，采用自顶向下的方式。这篇是开篇，首先来看看 etcd 提供的基于 raft 库实现的 kv store 示例，代码目录位于 contrib/raftexample。

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="iOS 初体验 - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：ToDo。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档...">
+    
+    <meta property="article:published_time" content="2016-04-28T23:10:00Z">
+    
+    
+    
+    <meta property="article:tag" content="iOS">
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/2016/04/28/ios-introduction/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>iOS 初体验 - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/2016/04/28/ios-introduction/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=iOS" title="iOS">iOS</a>
+                        
+                    </div>
+                    <h1>iOS 初体验</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on April 28, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了&lt;iOS Programming The Big Nerd Ranch Guide&gt;,最后写了个非常简单的App：<a href="https://github.com/Masutangu/ToDo">ToDo</a>。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。</p>
+
+<h1 id="whats-in-ios">What’s in iOS?</h1>
+<p><img src="/assets/images/ios-introduction/illustration-1.png" alt="iOS架构图" title="iOS架构图" width="800" /></p>
+
+<p>iOS处于底层硬件和app的中间。iOS的整体架构可以划分为四层：Core OS, Core Services, Media, Cocoa Touch</p>
+
+<ul>
+  <li>
+    <p>Core OS: Contains the low-level features that most other technologies are built upon. Include：OSX Kernel, Mach 3.0, BSD, Sockets, Security, Power Management, Keychain Access, Certificates, File System, Bonjour</p>
+  </li>
+  <li>
+    <p>Core Services: Contains fundamental system services for apps. This layer also contains individual technologies to support features such as location, iCloud, social media, and networking. Include：Collections, Address Book, Networking, File Access, SQLite, Core Location, Net Services, Threading, Preferences, URL Utilities. 我理解是在Core OS基础上封装了一层接口。</p>
+  </li>
+  <li>
+    <p>Media: Contains the graphics, audio, and video technologies you use to implement multimedia experiences in your apps. Include：Core Audio，OpenAL, Audio Mixing, Audio Recording, Video Playback, OpenGL ES, Core Animation.</p>
+  </li>
+  <li>
+    <p>Cocoa Touch: Contains key frameworks for building iOS apps. These frameworks define the appearance of your app. They also provide the basic app infrastructure and support for key technologies such as multitasking, touch-based input, push notifications, and many high-level system services. Include: Multi-Touch, Core Motion, View Hierarchy, Localization, Controls, Alerts, Web View, Map Kit, Image Picker, Camera.</p>
+  </li>
+</ul>
+
+<h1 id="mvc">MVC</h1>
+<p><img src="/assets/images/ios-introduction/illustration-2.png" alt="MVC" title="MVC" width="800" /></p>
+
+<ul>
+  <li><strong>Model</strong>: What your application is (but not how it is displayed)</li>
+  <li><strong>Controller</strong>: How your Model is presented to the user (UI logic)</li>
+  <li><strong>View</strong>:  Your Controller’s minions</li>
+</ul>
+
+<p>应用程序的逻辑应该放在Model而不是Controller，因为<strong>Model = What your application is</strong>。</p>
+
+<h2 id="mvc之间的关系">MVC之间的关系</h2>
+<p><img src="/assets/images/ios-introduction/illustration-3.png" alt="MVC关系" title="MVC关系" width="800" /></p>
+
+<ul>
+  <li>Controller可以直接访问Model和View（outlet）</li>
+  <li>Model和View是完全隔离开的</li>
+  <li>View通过protocol的方式（blind and structured）访问Controller，包括：<strong>target-action</strong>方式，<strong>delegate</strong>方式和<strong>data source</strong>方式。</li>
+  <li>Model通过<strong>notification&amp;KVO（Key Value Observing）</strong>将变化通知给Controller</li>
+</ul>
+
+<h2 id="多个mvc的组织">多个MVC的组织</h2>
+<p><img src="/assets/images/ios-introduction/illustration-4.png" alt="错误方式组织多个MVC" title="错误方式组织多个MVC" width="800" /></p>
+
+<p><em>错误的做法：不同模块的communication非常杂乱，难以维护。</em>
+<img src="/assets/images/ios-introduction/illustration-5.png" alt="正确方式组织多个MVC" title="正确方式组织多个MVC" width="800" /></p>
+
+<p><em>正确的做法：Using MVC as part of the view of another MVC。划分好模块，不同模块间的communication非常少。</em></p>
+
+<h1 id="objective-c">Objective-C</h1>
+
+<p>面向对象编程的三个原则是：<strong>基于消息传递机制</strong>，<strong>对象分离</strong>和<strong>多态</strong></p>
+
+<ul>
+  <li><strong>Category</strong>
+  给已存在的类新增新的方法。
+    <pre><code>
+  //NSObject+HelloWorld.h
+  @interface NSObject (HelloWorld)  
+  -(void)HelloWorld;  
+  @end  
+  //NSObject+HelloWorld.m
+  \#import "NSObject+HelloWorld.h"  
+  @implementation NSObject (HelloWorld)  
+  -(void)HelloWorld{  
+      NSLog(@"Hello World!");  
+  }  
+  @end  
+  </code></pre>
+    <ul>
+      <li><strong>Category vs Inheritance</strong>:
+  Category用于给一个类新增一个功能，Inheritance用于修改父类的功能。</li>
+      <li><strong>Category vs Extension</strong>:
+  Extension一般用来隐藏类的私有信息，需要有类的源码才能添加Extension。另外Extension可以添加成员变量，而Category不允许。</li>
+    </ul>
+  </li>
+  <li><strong>动态绑定</strong>
+    <ul>
+      <li><strong>Introspection</strong>: Asking at runtime what class an object is or what messages can be sent to it.</li>
+    </ul>
+    <pre><code>
+**isKindOfClass**: returns whether an object is that kind of class (inheritance included) 
+**isMemberOfClass**: returns whether an object is that kind of class (no inheritance) 
+**respondsToSelector**: returns whether an object responds to a given method
+ </code></pre>
+    <ul>
+      <li><strong>Protocols</strong>: A syntax that is “in between” id and static typing. Does not specify the class of an object pointed to, but does specify what methods it implements.</li>
+    </ul>
+    <pre><code>
+//definition file
+@protocol Foo
+-(void)someMethod;
+-(void)methodWithArgument:(BOOL)argument;
+@property (readonly) int readonlyProperty; // getter (only) is part of this protocol
+@property NSString *readwriteProperty; // getter and setter are both in the protocol 
+-(int)methodThatReturnsSomething;
+@end
+//example file
+id <Foo> obj = [[MyClass alloc] init];
+ &lt;/code&gt;&lt;/pre&gt;
+Protocols在iOS中的应用包括**delegates** 和 **dataSources**
+
+</Foo></code></pre>
+  </li>
+</ul>
+<h1 id="设计模式">设计模式</h1>
+<ul>
+  <li><strong>Target-Action</strong>:</li>
+</ul>
+
+<blockquote>
+  <p>Cocoa uses the <strong>target-action</strong> mechanism for communication between a <strong>control</strong> and another object.  The receiving object—typically an instance of a custom class—is called the <strong>target</strong>. The <strong>action</strong> is the message that the control sends to the target.</p>
+</blockquote>
+
+<ul>
+  <li><strong>Delegation</strong>:</li>
+</ul>
+
+<blockquote>
+  <p><strong>Delegation</strong> is a simple and powerful pattern in which one object in a program acts on behalf of, or in coordination with, another object. The delegating object keeps a reference to the other object—the delegate—and at the appropriate time sends a message to it.</p>
+</blockquote>
+
+<ul>
+  <li><strong>Date Source</strong>:</li>
+</ul>
+
+<blockquote>
+  <p><strong>A data source</strong> is almost identical to a <strong>delegate</strong>. The difference is in the relationship with the delegating object. Instead of being delegated control of the user interface, a data source is <strong>delegated control of data</strong>. The delegating object, typically a view object such as a table view, holds a reference to its data source and occasionally asks it for the data it should display.</p>
+</blockquote>
+
+<ul>
+  <li><strong>KVO</strong></li>
+</ul>
+
+<blockquote>
+  <p><strong>Key-value observing</strong> is a mechanism that enables an object to be notified directly when a property of another object changes.</p>
+</blockquote>
+
+<h1 id="内存管理">内存管理</h1>
+<p>iOS使用<strong>Automatic Reference Counting</strong>来做内存管理。ARC在编译期会分析代码，确定对象的生命周期，在相应的位置自动加上retain和release。</p>
+
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2016/04/15/python-pickling-error/" data-toggle="tooltip" data-placement="top" title="Python 进程池的坑：Pickling Error!">
+                        Previous<br>
+                        <span>Python 进程池的坑：Pickling Error!</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2016/05/05/read-tcpcopy-source-code/" data-toggle="tooltip" data-placement="top" title="Tcpcopy 源码阅读">
+                        Next<br>
+                        <span>Tcpcopy 源码阅读</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        </a>
+        
+        
+                <a data-sort="0058" 
+                    href="/archive/?tag=%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE"
+                    title="个人项目"
+                    rel="4">个人项目</a>
+        
+                <a data-sort="0040" 
+                    href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0"
+                    title="读书笔记"
+                    rel="22">读书笔记</a>
+        
+                <a data-sort="0047" 
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB"
+                    title="源码阅读"
+                    rel="15">源码阅读</a>
+        
+                <a data-sort="0055" 
+                    href="/archive/?tag=%E5%B7%A5%E4%BD%9C"
+                    title="工作"
+                    rel="7">工作</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"
+                    title="编程语言"
+                    rel="3">编程语言</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E9%9A%8F%E7%AC%94"
+                    title="随笔"
+                    rel="3">随笔</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E4%BC%98%E5%8C%96%26%E9%87%8D%E6%9E%84"
+                    title="优化&重构"
+                    rel="2">优化&重构</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E6%95%B0%E6%8D%AE%E5%BA%93"
+                    title="数据库"
+                    rel="2">数据库
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

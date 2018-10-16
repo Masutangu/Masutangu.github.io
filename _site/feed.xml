@@ -5,8 +5,8 @@
     <description>关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 16 Oct 2018 21:10:30 +0800</pubDate>
-    <lastBuildDate>Tue, 16 Oct 2018 21:10:30 +0800</lastBuildDate>
+    <pubDate>Tue, 16 Oct 2018 21:17:37 +0800</pubDate>
+    <lastBuildDate>Tue, 16 Oct 2018 21:17:37 +0800</lastBuildDate>
     <generator>Jekyll v3.6.3</generator>
     
       <item>
@@ -604,11 +604,11 @@ A database may provide both serializability and linearizability, and this combin
 &lt;/ul&gt;
 </description>
         <pubDate>Fri, 28 Sep 2018 22:11:46 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/28/data-intensive-note-4/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/28/data-intensive-note-4/</guid>
-        
+        <link>http://localhost:4000/2018/09/28/data-intensive-note-4/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/09/28/data-intensive-note-4/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -1332,11 +1332,11 @@ A database may provide both serializability and linearizability, and this combin
 &lt;/ul&gt;
 </description>
         <pubDate>Fri, 28 Sep 2018 22:11:46 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/28/data-intensive-note-3/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/28/data-intensive-note-3/</guid>
-        
+        <link>http://localhost:4000/2018/09/28/data-intensive-note-3/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/09/28/data-intensive-note-3/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -1873,11 +1873,11 @@ End of assembler dump.
 &lt;p&gt;确实会引起崩溃。&lt;/p&gt;
 </description>
         <pubDate>Wed, 19 Sep 2018 21:15:05 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/19/coredump-note-2/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/19/coredump-note-2/</guid>
-        
+        <link>http://localhost:4000/2018/09/19/coredump-note-2/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/09/19/coredump-note-2/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -2395,11 +2395,11 @@ overflow(int, char*)
 &lt;p&gt;因此定位到 &lt;code class=&quot;highlighter-rouge&quot;&gt;overflow&lt;/code&gt; 函数代码中用到 &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; 导致溢出。&lt;/p&gt;
 </description>
         <pubDate>Tue, 18 Sep 2018 22:47:56 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/18/coredump-note-1/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/18/coredump-note-1/</guid>
-        
+        <link>http://localhost:4000/2018/09/18/coredump-note-1/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/09/18/coredump-note-1/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -2971,11 +2971,11 @@ replication with transactions on the leader.&lt;/p&gt;
 &lt;p&gt;The collection of version numbers from all the replicas is called a &lt;strong&gt;version vector&lt;/strong&gt;.&lt;/p&gt;
 </description>
         <pubDate>Wed, 12 Sep 2018 22:03:19 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/12/data-intensive-note-2/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/09/12/data-intensive-note-2/</guid>
-        
+        <link>http://localhost:4000/2018/09/12/data-intensive-note-2/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/09/12/data-intensive-note-2/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -3355,11 +3355,11 @@ code and worse performance.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Analytic workloads are so different from OLTP: when your queries require sequentially scanning across a large number of rows, indexes are much less relevant. Instead it becomes important to encode data very compactly, to minimize the amount of data that the query needs to read from disk.&lt;/strong&gt;&lt;/p&gt;
 </description>
         <pubDate>Thu, 26 Jul 2018 18:57:23 +0800</pubDate>
-        <link>http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/07/26/data-intensive-note-1/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/2018/07/26/data-intensive-note-1/</guid>
-        
+        <link>http://localhost:4000/2018/07/26/data-intensive-note-1/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/07/26/data-intensive-note-1/</guid>
         
         <category>读书笔记</category>
+        
         
       </item>
     
@@ -3395,11 +3395,11 @@ Key2-Version1 -&amp;gt; Value
 https://pingcap.com/blog-cn/tidb-internal-1/&lt;/p&gt;
 </description>
         <pubDate>Mon, 09 Jul 2018 21:59:16 +0800</pubDate>
-        <link>http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/09/tikv-note-1/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/09/tikv-note-1/</guid>
-        
+        <link>http://localhost:4000/2018/07/09/tikv-note-1/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/07/09/tikv-note-1/</guid>
         
         <category>源码阅读</category>
+        
         
       </item>
     
@@ -3592,11 +3592,11 @@ https://pingcap.com/blog-cn/tidb-internal-1/&lt;/p&gt;
 &lt;p&gt;和 golang 版最大的区别，是 golang 用了 channel 来做进行模块之间的数据通信：&lt;code class=&quot;highlighter-rouge&quot;&gt;recvc&lt;/code&gt; channel 收发请求，&lt;code class=&quot;highlighter-rouge&quot;&gt;advancec&lt;/code&gt; channel 收发 advance 消息，&lt;code class=&quot;highlighter-rouge&quot;&gt;readyc&lt;/code&gt; channel 收发 ready 对象。而 rust 中则直接调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;step&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;propose&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;ready&lt;/code&gt; 和 &lt;code class=&quot;highlighter-rouge&quot;&gt;advance&lt;/code&gt; 方法来驱动状态机，没有通过 rust 的 channel 机制做消息传递。也许是考虑到效率？由于 raft-rs 提供的例子有点简单，等之后读 tikv 的代码，再来做下一步的对比。&lt;/p&gt;
 </description>
         <pubDate>Mon, 09 Jul 2018 21:59:16 +0800</pubDate>
-        <link>http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/09/raft-rust/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/09/raft-rust/</guid>
-        
+        <link>http://localhost:4000/2018/07/09/raft-rust/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/07/09/raft-rust/</guid>
         
         <category>源码阅读</category>
+        
         
       </item>
     
@@ -3923,11 +3923,11 @@ https://pingcap.com/blog-cn/tidb-internal-1/&lt;/p&gt;
 &lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Sun, 08 Jul 2018 10:19:08 +0800</pubDate>
-        <link>http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/08/etcd-raft-note-6/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/08/etcd-raft-note-6/</guid>
-        
+        <link>http://localhost:4000/2018/07/08/etcd-raft-note-6/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/07/08/etcd-raft-note-6/</guid>
         
         <category>源码阅读</category>
+        
         
       </item>
     
@@ -4212,11 +4212,11 @@ https://pingcap.com/blog-cn/tidb-internal-1/&lt;/p&gt;
 &lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Fri, 06 Jul 2018 22:56:37 +0800</pubDate>
-        <link>http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/06/etcd-raft-note-5/</link>
-        <guid isPermaLink="true">http://localhost:4000/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/2018/07/06/etcd-raft-note-5/</guid>
-        
+        <link>http://localhost:4000/2018/07/06/etcd-raft-note-5/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/07/06/etcd-raft-note-5/</guid>
         
         <category>源码阅读</category>
+        
         
       </item>
     

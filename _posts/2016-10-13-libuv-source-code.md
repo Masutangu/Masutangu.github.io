@@ -2,7 +2,7 @@
 layout: post
 date: 2016-10-13T15:56:27+08:00
 title: Libuv 源码阅读
-category: 源码阅读
+tags: 源码阅读
 ---
 
 花了几天时间读了下 libuv 的源码，整理成这篇文章。<a href = #section_1>第一节</a>是读官方教程做的笔记，主要是供自己备忘用，读者可以跳过。<a href = #section_2>第二节</a>解读 libuv 的源码，重点在 libuv 队列的实现和如何用线程池实现异步文件 IO。

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="工作两年记 - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。
+
+">
+    
+    <meta property="article:published_time" content="2016-07-13T21:24:34Z">
+    
+    
+    
+    <meta property="article:tag" content="工作">
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/2016/07/13/conclusion-of-two-years/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>工作两年记 - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/2016/07/13/conclusion-of-two-years/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=%E5%B7%A5%E4%BD%9C" title="工作">工作</a>
+                        
+                    </div>
+                    <h1>工作两年记</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on July 13, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>转眼间，我也已经工作了快两年了。两年，在互联网行业，是一个尴尬的时间点。一方面，你不再是一个新人，意味着你的潜力已经渐渐被挖掘得差不多了。另一方面，你又还没完全成长，你会承担一些责任，但也许还没办法掌控全局，做到游刃有余。</p>
+
+<p>回想起刚入职，由于自己完全没有工程经验，心里相当忐忑。机缘巧合，leader 给我分配的第一个任务是爬虫。Python 对于新手来说相当的友好，我很快就上手并能够做出一些简单的成果。之后又熟悉了 Django，了解 MVC。之后再尝试空闲时间读一些库的源码，并最终自己用 Python 写了一个开源项目 <a href="https://github.com/Masutangu/Elric">Elric</a>（基于 Apscheduler ）。这些经历极大得提升了我的自信心，也锻炼了我的代码能力和少部分的架构能力。</p>
+
+<p>第二年的时候，我给自己的计划是多学习新的知识点，重在求广。因此我学了 Golang，写了个小项目 <a href="https://github.com/Masutangu/SuperScripter">SuperScripter</a> 练手（最终这个项目的进化版用在了工作中）；学习了 iOS，写了一个简单的 <a href="https://github.com/Masutangu/ToDo">ToDoList</a>, 对客户端有了些了解；读了 NSQ 的源码，大致了解消息队列的实现；还读了一段时间的非技术类的文章（读书笔记：<a href="http://masutangu.com/2015/12/dewdrop-note-1/">水滴石穿</a>），希望自己的思维可以更宽广，可惜后来没坚持下去。</p>
+
+<p>到了今年的年初，我感觉自己在技术上到了一个瓶颈，对于职业发展也有些迷茫。总会觉得自己在原地踏步，会的更熟练，不会的还是不会，让我有些急躁，心情也不是特别好。有一阵子我每天一闲下来就会想：“到底怎么做才能更进一步？”，始终绕不出这个困扰。后来我发现想要驱除内心的恐慌，取得让自己满意的进步，唯一的方法就是花时间做一些更深入的研究，而不是浮在表面。浮在表面让我非常没有安全感，如果你很快就能学会的，别人也可以。所以我不再把重心放在新知识上，打算打牢基础，并在自己感兴趣的领域做些探索。</p>
+
+<p>想清楚后，我规划了接下来这一年的学习路线：</p>
+
+<ul>
+  <li>
+    <p>回归语言的本质</p>
+
+    <p>学再多语言，不深入思考的话，也只是学到皮毛。不应该止步于会用，而是要深入到编程语言的设计哲学。我希望之后在这方面有一些理解。</p>
+  </li>
+  <li>
+    <p>网络框架读源码，造轮子</p>
+
+    <p>在公司工作，都有了现成的框架。就算自己做项目，也有很多开源框架可以使用。和编程语言类似，我希望自己能够再深入些，比如读读协程／异步／同步框架的代码，比较他们的适用场景，最好是能够自己造一些轻量级的轮子加深理解。</p>
+  </li>
+  <li>
+    <p>巩固操作系统/编译原理/网络基础</p>
+
+    <p>看书学习理论，造轮子加深理解。也许工作中 90% 的情况下不需要这些知识，但总会有 10% 的概率会出各种奇奇怪怪的问题，这时就是考验基本功的时候了。</p>
+  </li>
+</ul>
+
+<p>我觉得第两年到第三年，是一个关键点。这一年，我希望兑现全部潜力，大幅度提升自己的能力，不仅是代码能力、架构能力，还有工程素养。我希望三年级的我，可以扛起重任。就像 NBA 的球员一样，经历了两年的磨砺，三年级，也该去争取进入全明星，争取一阵，争取属于自己的总冠军了！</p>
+
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2016/07/07/elric-documentation/" data-toggle="tooltip" data-placement="top" title="Elric 使用手册">
+                        Previous<br>
+                        <span>Elric 使用手册</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2016/08/30/simple-async-framework/" data-toggle="tooltip" data-placement="top" title="简单异步应用框架的实现">
+                        Next<br>
+                        <span>简单异步应用框架的实现</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        </a>
+        
+        
+                <a data-sort="0058" 
+                    href="/archive/?tag=%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE"
+                    title="个人项目"
+                    rel="4">个人项目</a>
+        
+                <a data-sort="0040" 
+                    href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0"
+                    title="读书笔记"
+                    rel="22">读书笔记</a>
+        
+                <a data-sort="0047" 
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB"
+                    title="源码阅读"
+                    rel="15">源码阅读</a>
+        
+                <a data-sort="0055" 
+                    href="/archive/?tag=%E5%B7%A5%E4%BD%9C"
+                    title="工作"
+                    rel="7">工作</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"
+                    title="编程语言"
+                    rel="3">编程语言</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E9%9A%8F%E7%AC%94"
+                    title="随笔"
+                    rel="3">随笔</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E4%BC%98%E5%8C%96%26%E9%87%8D%E6%9E%84"
+                    title="优化&重构"
+                    rel="2">优化&重构</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E6%95%B0%E6%8D%AE%E5%BA%93"
+                    title="数据库"
+                    rel="2">数据库
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

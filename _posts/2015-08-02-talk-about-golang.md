@@ -2,7 +2,7 @@
 layout: post
 date: 2015-08-02T16:07:58+08:00
 title: 谈谈我对 Golang 的理解
-category: 编程语言
+tags: 编程语言
 ---
 
 谈谈我对Golang的理解 一直想了解下go这门新的语言。前段时间看了Google IO上Rob Pike对Go语言的介绍，又过了下[A Tour of Go](https://tour.golang.org/welcome/1)。然后趁热打铁花了两天时间写了个比较有趣的脚本管理器[Scripter](https://github.com/Masutangu/SuperScripter)。当然对Go语言的语法规范和代码组织还不了解，所以这代码写的有些凌乱。

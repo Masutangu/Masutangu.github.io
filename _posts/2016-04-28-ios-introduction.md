@@ -2,7 +2,7 @@
 layout: post
 date: 2016-04-28T23:10:00+08:00
 title: iOS 初体验
-category: iOS
+tags: iOS
 ---
 
 客户端对做后端的我来说，一直是黑盒子般。自从换了Mac，就寻思着什么时候学习学习iOS开发。这几个月断断续续花了时间，先是看了Stanford的cs193p课程，后来又读了\<iOS Programming The Big Nerd Ranch Guide>,最后写了个非常简单的App：[ToDo](https://github.com/Masutangu/ToDo)。今天这里分享下iOS一些学习笔记，素材取自cs193p的ppt，apple的开发者文档。鉴于我现在iOS水平有限，写得比较浅，大家请见谅。

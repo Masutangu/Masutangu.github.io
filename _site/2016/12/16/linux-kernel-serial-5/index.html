@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。">
+    <meta name="keywords"  content="Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Linux 内核系列－文件系统和 IO - Masutangu 的博客 | Masutangu Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。
+
+">
+    
+    <meta property="article:published_time" content="2016-12-16T21:37:16Z">
+    
+    
+    
+    <meta property="article:tag" content="读书笔记">
+    
+    
+    <meta property="og:image" content="http://localhost:4000/img/avatar.jpg">
+    <meta property="og:url" content="http://localhost:4000/2016/12/16/linux-kernel-serial-5/">
+    <meta property="og:site_name" content="Masutangu 的博客 | Masutangu Blog">
+    
+    <title>Linux 内核系列－文件系统和 IO - Masutangu 的博客 | Masutangu Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://localhost:4000/2016/12/16/linux-kernel-serial-5/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Masutangu</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">主页</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">关于</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">归档</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0" title="读书笔记">读书笔记</a>
+                        
+                    </div>
+                    <h1>Linux 内核系列－文件系统和 IO</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by Masutangu on December 16, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<p>本系列文章为阅读《现代操作系统》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。</p>
+
+<h1 id="概念">概念</h1>
+
+<p>如果能把文件看成是一种地址空间，那么就离理解文件不远了。（文件类似虚拟地址空间，相应的磁盘地址对应内存物理地址，通过 inode 来管理映射关系，类似页表的作用）。</p>
+
+<h2 id="文件系统的实现">文件系统的实现</h2>
+
+<p>文件系统存放在磁盘上。多数磁盘划分为一个或多个区，每个分区有一个独立的文件系统。磁盘的 0 号扇区称为主引导记录（MBR），用来引导计算机。在 MBR 结尾是分区表，给出每个分区的起始和结束地址。</p>
+
+<p>文件系统通常包含了超级块（包含文件系统的关键参数）、空闲空间管理、i节点、根目录以及文件存储区。</p>
+
+<h3 id="文件的实现">文件的实现</h3>
+
+<p>文件存储的实现关键问题是记录各个文件分别用到哪些磁盘块。</p>
+
+<h4 id="连续分配">连续分配</h4>
+
+<p>最简单的分配方案是把每个文件作为一连串连续数据块存储在磁盘上。</p>
+
+<h4 id="链表分配">链表分配</h4>
+
+<p>链表分配不会有磁盘碎片的问题，顺序读取非常方便，但随即存取却相当缓慢。而且由于指针占了一些字节，磁盘块存储数据的字节数不再是 2 的整数幂。</p>
+
+<h4 id="在内存中采用的链表分配">在内存中采用的链表分配</h4>
+
+<p>将每个磁盘块的指针放在内存的一张表中，可以解决上面的两个不足。随机存取虽然依然需要遍历，但不再需要任何磁盘引用。缺点在于整张表必须放在内存，对大磁盘来说（表太大）不太合适。</p>
+
+<h4 id="i-节点">i 节点</h4>
+
+<p>最后一个解决方案是给每个文件赋予一个 i 节点，包含文件属性和文件块的磁盘地址。只有文件打开时，i 节点才会加载到内存。</p>
+
+<h3 id="目录的实现">目录的实现</h3>
+
+<p>对于 i 节点系统，目录项只包括文件名和相应的 i 节点号。查找文件名时，可以在每个目录使用散列表来加快查找速度。另外一种方法是将查找结果放入高速缓存。</p>
+
+<h3 id="虚拟文件系统">虚拟文件系统</h3>
+
+<p>UNIX 使用虚拟文件系统的概念，关键思想在于抽象出所有文件系统的共有部分，把这部分代码放在单独的一层，该层调用底层的实际文件系统来管理数据。</p>
+
+<h1 id="linux-中的实现">Linux 中的实现</h1>
+
+<h2 id="虚拟文件系统-1">虚拟文件系统</h2>
+
+<p>虚拟文件系统（VPS）作为内核子系统，为用户空间程序提供了文件系统相关的接口。通过虚拟文件系统，程序可以利用标准的 UNIX 文件系统调用对不同介质的不同文件系统进行读写操作。</p>
+
+<h3 id="通用文件系统接口">通用文件系统接口</h3>
+
+<p>VFS 使用户可以直接使用 open()、read() 和 write() 这样的系统调用而无需考虑具体文件系统和实际物理介质。</p>
+
+<h3 id="文件系统抽象层">文件系统抽象层</h3>
+
+<p>VFS 抽象层定义了所有文件系统都支持的基本的、概念上的接口和数据结构，因此能衔接各种各样的文件系统。</p>
+
+<p>在内核中，除了文件系统本身外，并不需要了解文件系统的内部细节。例如用户空间程序执行如下的操作：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>该代码将 &amp;buf 指针指向的、长度为 len 字节的数据写入文件描述符 f 对应的文件的当前位置。该用户调用首先被一个通用系统调用 <code class="highlighter-rouge">sys_write()</code> 处理，<code class="highlighter-rouge">sys_write()</code> 函数要找到 f 所在的文件系统对应的写操作，然后执行该操作。</p>
+
+<h3 id="unix-文件系统">Unix 文件系统</h3>
+
+<p>Unix 使用了四种和文件系统相关的传统抽象概念：文件、目录项、索引节点和安装点（mount point）。从本质上讲，文件系统是特殊的数据分层存储结构，它包含文件、目录和相关的控制信息。文件系统的通用操作包含创建、删除和安装等等。在 Unix 中，文件系统被安装在一个特定的安装点上，该安装点在全局层次结构中被称为命名空间，所有的已安装文件系统都作为根文件系统树的枝叶出现在系统中。</p>
+
+<p>Unix 中，目录属于普通文件，它列出包含在其中的所有文件。因此可以对目录执行和文件相同的操作。</p>
+
+<p>Unix 将文件的相关信息和文件本身着两个概念加以区分，例如访问控制权限、大小、拥有者、创建时间等信息。文件相关信息有时被称为索引节点（inode）。</p>
+
+<p>文件系统的控制信息存储在超级块中，超级块是一种包含文件系统信息的数据结构。我们将文件信息和文件系统的信息统称为文件系统数据元。</p>
+
+<p>Unix 文件系统在他们物理磁盘布局中也是按照上述的概念实现的。文件信息按照索引节点形式存储在单独的块中，控制信息集中存储在磁盘的超级块中。</p>
+
+<h3 id="vfs-对象及其数据结构">VFS 对象及其数据结构</h3>
+
+<p>VFS 采用的是面向对象的设计思路，使用一族数据结构来代表通用文件对象。VFS 中有四个主要的对象类型：</p>
+
+<ul>
+  <li>超级块对象，代表一个已安装文件系统</li>
+  <li>索引节点对象，代表一个文件</li>
+  <li>目录项对象，代表一个目录项，是路径的一个组成部分</li>
+  <li>文件对象，代表进程打开的文件</li>
+</ul>
+
+<h3 id="超级块对象">超级块对象</h3>
+
+<p>各种文件系统都必须实现超级块，该对象用于存储特定文件系统信息，通常对应存放于磁盘特定扇区中的文件系统超级块或文件系统控制块。对于并非基于磁盘的文件系统，它们会在现场创建超级块并保存到内存中。</p>
+
+<p>超级块对象由 super_block 结构体表示，定义在文件 &lt;linux/fs.h&gt; 中。</p>
+
+<h3 id="索引节点对象">索引节点对象</h3>
+
+<p>索引节点对象包含了内核在操作文件或目录时需要的全部信息，由 inode 结构体表示，定义在文件 &lt;linux/fs.h&gt; 中。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">inode</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">hlist_node</span>	<span class="n">i_hash</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">i_list</span><span class="p">;</span>		<span class="c1">// 索引节点链表
+</span>	<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">i_sb_list</span><span class="p">;</span>  <span class="c1">// 超级块链表
+</span>	<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">i_dentry</span><span class="p">;</span>   <span class="c1">// 目录项链表
+</span>	<span class="kt">unsigned</span> <span class="kt">long</span>		<span class="n">i_ino</span><span class="p">;</span>      <span class="c1">// 节点号
+</span>	<span class="n">atomic_t</span>			<span class="n">i_count</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span>		<span class="n">i_nlink</span><span class="p">;</span>
+	<span class="n">uid_t</span>			<span class="n">i_uid</span><span class="p">;</span>
+	<span class="n">gid_t</span>			<span class="n">i_gid</span><span class="p">;</span>
+	<span class="n">dev_t</span>			<span class="n">i_rdev</span><span class="p">;</span>  		<span class="c1">// 实际设备标识符
+</span>	<span class="kt">unsigned</span> <span class="kt">int</span>	<span class="n">i_blkbits</span><span class="p">;</span>      <span class="c1">// 以位为单位的块大小
+</span>	<span class="n">u64</span>				<span class="n">i_version</span><span class="p">;</span>
+	<span class="n">loff_t</span>			<span class="n">i_size</span><span class="p">;</span>   		<span class="c1">// 以字节为单位的文件大小
+</span><span class="cp">#ifdef __NEED_I_SIZE_ORDERED
+</span>	<span class="n">seqcount_t</span>		<span class="n">i_size_seqcount</span><span class="p">;</span>
+<span class="cp">#endif
+</span>	<span class="k">struct</span> <span class="n">timespec</span>		<span class="n">i_atime</span><span class="p">;</span>  <span class="c1">// 最后访问时间
+</span>	<span class="k">struct</span> <span class="n">timespec</span>		<span class="n">i_mtime</span><span class="p">;</span>  <span class="c1">// 最后修改时间
+</span>	<span class="k">struct</span> <span class="n">timespec</span>		<span class="n">i_ctime</span><span class="p">;</span>  <span class="c1">// 最后改变时间
+</span>	<span class="n">blkcnt_t</span>		<span class="n">i_blocks</span><span class="p">;</span>     <span class="c1">// 文件块数
+</span>	<span class="kt">unsigned</span> <span class="kt">short</span>  <span class="n">i_bytes</span><span class="p">;</span>  	  <span class="c1">// 使用的字节数
+</span>	<span class="n">umode_t</span>			<span class="n">i_mode</span><span class="p">;</span>       <span class="c1">// 访问权限
+</span>	<span class="n">spinlock_t</span>		<span class="n">i_lock</span><span class="p">;</span>	<span class="cm">/* i_blocks, i_bytes, maybe i_size */</span>
+	<span class="k">struct</span> <span class="n">mutex</span>		<span class="n">i_mutex</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">rw_semaphore</span>	<span class="n">i_alloc_sem</span><span class="p">;</span>
+	<span class="k">const</span> <span class="k">struct</span> <span class="n">inode_operations</span>	<span class="o">*</span><span class="n">i_op</span><span class="p">;</span>  <span class="c1">// 索引节点操作表
+</span>	<span class="k">const</span> <span class="k">struct</span> <span class="n">file_operations</span>	<span class="o">*</span><span class="n">i_fop</span><span class="p">;</span>	<span class="cm">/* former -&gt;i_op-&gt;default_file_ops */</span>
+	<span class="k">struct</span> <span class="n">super_block</span>	<span class="o">*</span><span class="n">i_sb</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">file_lock</span>	<span class="o">*</span><span class="n">i_flock</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">address_space</span>	<span class="o">*</span><span class="n">i_mapping</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">address_space</span>	<span class="n">i_data</span><span class="p">;</span>
+
+	<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">i_devices</span><span class="p">;</span>
+	<span class="k">union</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="n">pipe_inode_info</span>	<span class="o">*</span><span class="n">i_pipe</span><span class="p">;</span>
+		<span class="k">struct</span> <span class="n">block_device</span>	<span class="o">*</span><span class="n">i_bdev</span><span class="p">;</span>
+		<span class="k">struct</span> <span class="n">cdev</span>		<span class="o">*</span><span class="n">i_cdev</span><span class="p">;</span>
+	<span class="p">};</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span>		<span class="n">i_state</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span>		<span class="n">dirtied_when</span><span class="p">;</span>	<span class="c1">// 第一次弄脏数据的时间
+</span>	<span class="kt">unsigned</span> <span class="kt">int</span>		<span class="n">i_flags</span><span class="p">;</span>    	<span class="c1">// 文件系统标识
+</span>	<span class="n">atomic_t</span>		<span class="n">i_writecount</span><span class="p">;</span>       <span class="c1">// 写者计数
+</span>	<span class="kt">void</span>			<span class="o">*</span><span class="n">i_private</span><span class="p">;</span> <span class="cm">/* fs or device private pointer */</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="目录项对象">目录项对象</h3>
+
+<p>VFS 经常需要执行目录相关的操作，例如路径名查找等。路径名查找需要解析路径中的每一个组成部分。为了方便查找操作，VFS 引入目录项的概念。每个 dentry 代表路径中的一个特定部分。在路径中，包括普通文件在内，每一个部分都是目录项对象。</p>
+
+<p>目录项由对象 dentry 结构体表示，定义在文件 &lt;linux/dcache.h&gt; 中：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">dentry</span> <span class="p">{</span>
+	<span class="n">atomic_t</span> <span class="n">d_count</span><span class="p">;</span>     	<span class="c1">// 使用记账
+</span>	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">d_flags</span><span class="p">;</span>   <span class="cm">/* protected by d_lock */</span>
+	<span class="n">spinlock_t</span> <span class="n">d_lock</span><span class="p">;</span>		<span class="cm">/* per dentry lock */</span>
+	<span class="kt">int</span> <span class="n">d_mounted</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="n">d_inode</span><span class="p">;</span>		<span class="cm">/* Where the name belongs to - NULL is * negative */</span>
+	<span class="cm">/*
+	 * The next three fields are touched by __d_lookup.  Place them here
+	 * so they all fit in a cache line.
+	 */</span>
+	<span class="k">struct</span> <span class="n">hlist_node</span> <span class="n">d_hash</span><span class="p">;</span>	<span class="c1">// dcache中的所有dentry对象都通过d_hash指针域链到相应的dentry哈希链表中。
+</span>	<span class="k">struct</span> <span class="n">dentry</span> <span class="o">*</span><span class="n">d_parent</span><span class="p">;</span>	<span class="cm">/* parent directory */</span>
+	<span class="k">struct</span> <span class="n">qstr</span> <span class="n">d_name</span><span class="p">;</span>
+
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">d_lru</span><span class="p">;</span>		<span class="cm">/* LRU list */</span>
+	<span class="cm">/*
+	 * d_child and d_rcu can share memory
+	 */</span>
+	<span class="k">union</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="n">list_head</span> <span class="n">d_child</span><span class="p">;</span>	<span class="cm">/* child of parent list */</span>
+	 	<span class="k">struct</span> <span class="n">rcu_head</span> <span class="n">d_rcu</span><span class="p">;</span>
+	<span class="p">}</span> <span class="n">d_u</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">d_subdirs</span><span class="p">;</span>	<span class="cm">/* our children */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">d_alias</span><span class="p">;</span>	<span class="cm">/* inode alias list */</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">d_time</span><span class="p">;</span>		<span class="cm">/* used by d_revalidate */</span>
+	<span class="k">const</span> <span class="k">struct</span> <span class="n">dentry_operations</span> <span class="o">*</span><span class="n">d_op</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">super_block</span> <span class="o">*</span><span class="n">d_sb</span><span class="p">;</span>	<span class="cm">/* The root of the dentry tree */</span>
+	<span class="kt">void</span> <span class="o">*</span><span class="n">d_fsdata</span><span class="p">;</span>			<span class="cm">/* fs-specific data */</span>
+
+	<span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">d_iname</span><span class="p">[</span><span class="n">DNAME_INLINE_LEN_MIN</span><span class="p">];</span>	<span class="cm">/* small names */</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>不同于前面的两个对象，目录项对象没有对应的磁盘数据结构，VFS 根据字符串形式的路径名现场创建它。</p>
+
+<h4 id="目录项状态">目录项状态</h4>
+
+<p>目录项对象有三种有效状态：被使用、未被使用和负状态。</p>
+
+<p>一个被使用的目录项对应一个有效的索引节点（d_inode 指向相应的索引节点）并表明该对象存在一个或多个使用者（d_count 为正值）。</p>
+
+<p>一个未被使用的目录项对应一个有效的索引节点（d_inode 指向一个索引节点）但 VFS 当前并未使用它（d_count 为 0)。该目录项对象仍然指向一个有效对象，而且被保留在缓存中以便需要时再使用。</p>
+
+<p>一个负状态的目录项没有对应的有效索引节点（d_inode 为 NULL），因为索引节点已被删除或路径不再正确。</p>
+
+<h4 id="目录项缓存">目录项缓存</h4>
+
+<p>内核将目录项对象缓存在目录项缓存（dcache）中。目录项缓存包含三个主要部分：</p>
+
+<ul>
+  <li>“被使用的”目录项链表：该链表通过索引节点对象中的 i_dentry 项连接相关的索引节点。一个给定的索引节点可能有多个链接，就可能有多个目录项对象，因此用链表来连接。</li>
+  <li>“最近被使用的”双向链表：该链表含有未被使用的和负状态的目录项对象。该链表以时间顺序插入，所以链头的节点是最新数据。当内核必须通过删除节点项回收内存时，会从链尾删除节点项。</li>
+  <li>散列表和相应的散列函数用来快速将给定路径解析为相关目录项对象。</li>
+</ul>
+
+<h3 id="文件对象">文件对象</h3>
+
+<p>文件对象表示进程已打开的文件，由结构体 file 表示，定义在文件 &lt;linux/fs.h&gt; 中。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">file</span> <span class="p">{</span>
+	<span class="cm">/*
+	 * fu_list becomes invalid after file_free is called and queued via
+	 * fu_rcuhead for RCU freeing
+	 */</span>
+	<span class="k">union</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">fu_list</span><span class="p">;</span>    <span class="c1">// 文件对象链表
+</span>		<span class="k">struct</span> <span class="n">rcu_head</span> 	<span class="n">fu_rcuhead</span><span class="p">;</span> <span class="c1">// 释放后 rcu 链表
+</span>	<span class="p">}</span> <span class="n">f_u</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">path</span>		<span class="n">f_path</span><span class="p">;</span>   <span class="c1">// 包含目录项
+</span><span class="cp">#define f_dentry	f_path.dentry
+#define f_vfsmnt	f_path.mnt
+</span>	<span class="k">const</span> <span class="k">struct</span> <span class="n">file_operations</span>	<span class="o">*</span><span class="n">f_op</span><span class="p">;</span>  <span class="c1">// 文件操作表
+</span>	<span class="n">spinlock_t</span>		<span class="n">f_lock</span><span class="p">;</span>   <span class="cm">/* f_ep_links, f_flags, no IRQ */</span>
+	<span class="n">atomic_long_t</span>	<span class="n">f_count</span><span class="p">;</span>  <span class="c1">// 文件对象使用计数
+</span>	<span class="kt">unsigned</span> <span class="kt">int</span> 	<span class="n">f_flags</span><span class="p">;</span>  <span class="c1">//打开文件指定的标志位
+</span>	<span class="n">fmode_t</span>			<span class="n">f_mode</span><span class="p">;</span>   <span class="c1">// 文件访问模式
+</span>	<span class="n">loff_t</span>			<span class="n">f_pos</span><span class="p">;</span>    <span class="c1">// 文件当前的位移量
+</span>	<span class="k">struct</span> <span class="n">fown_struct</span>	<span class="n">f_owner</span><span class="p">;</span>
+	<span class="n">u64</span>			<span class="n">f_version</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">address_space</span>	<span class="o">*</span><span class="n">f_mapping</span><span class="p">;</span>  <span class="c1">// 页缓存映射
+</span><span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>文件对象通过 f_dentry 指针指向相关的目录项对象，目录项会指向相关的索引节点，索引节点会记录文件是否为脏。</p>
+
+<h3 id="文件系统相关的数据结构">文件系统相关的数据结构</h3>
+
+<p>struct file_system_type 用来描述每种文件系统的功能和行为：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">file_system_type</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>  				<span class="cm">/* 文件系统的名字 */</span>
+	<span class="kt">int</span> <span class="n">fs_flags</span><span class="p">;</span>					<span class="cm">/* 文件系统类型标志 */</span>
+
+	<span class="cm">/* 从磁盘读取超级块 */</span>
+	<span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">get_sb</span><span class="p">)</span> <span class="p">(</span><span class="k">struct</span> <span class="n">file_system_type</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span>
+		       <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="n">vfsmount</span> <span class="o">*</span><span class="p">);</span>
+
+	<span class="cm">/* 终止访问超级块 */</span>
+	<span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">kill_sb</span><span class="p">)</span> <span class="p">(</span><span class="k">struct</span> <span class="n">super_block</span> <span class="o">*</span><span class="p">);</span>
+
+	<span class="k">struct</span> <span class="n">module</span> <span class="o">*</span><span class="n">owner</span><span class="p">;</span>			<span class="cm">/* 文件系统模块 */</span>
+	<span class="k">struct</span> <span class="n">file_system_type</span> <span class="o">*</span> <span class="n">next</span><span class="p">;</span> <span class="cm">/* 链表中下一个 */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">fs_supers</span><span class="p">;</span>     <span class="cm">/* 超级块对象链表 */</span>
+	
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>当文件系统被实际安装时，将有一个 vfsmount 结构体在安装点被创建。该结构体用来代表文件系统的实例：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">vfsmount</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">mnt_hash</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">vfsmount</span> <span class="o">*</span><span class="n">mnt_parent</span><span class="p">;</span>	<span class="cm">/* fs we are mounted on */</span>
+	<span class="k">struct</span> <span class="n">dentry</span> <span class="o">*</span><span class="n">mnt_mountpoint</span><span class="p">;</span>	<span class="cm">/* dentry of mountpoint */</span>
+	<span class="k">struct</span> <span class="n">dentry</span> <span class="o">*</span><span class="n">mnt_root</span><span class="p">;</span>	<span class="cm">/* root of the mounted tree */</span>
+	<span class="k">struct</span> <span class="n">super_block</span> <span class="o">*</span><span class="n">mnt_sb</span><span class="p">;</span>	<span class="cm">/* pointer to superblock */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">mnt_mounts</span><span class="p">;</span>	<span class="cm">/* list of children, anchored here */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">mnt_child</span><span class="p">;</span>	<span class="cm">/* and going through their mnt_child */</span>
+	<span class="kt">int</span> <span class="n">mnt_flags</span><span class="p">;</span>
+	<span class="cm">/* 4 bytes hole on 64bits arches */</span>
+	<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">mnt_devname</span><span class="p">;</span>	<span class="cm">/* Name of device e.g. /dev/dsk/hda1 */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">mnt_list</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">mnt_namespace</span> <span class="o">*</span><span class="n">mnt_ns</span><span class="p">;</span>	<span class="cm">/* containing namespace */</span>
+	<span class="kt">int</span> <span class="n">mnt_id</span><span class="p">;</span>			<span class="cm">/* mount identifier */</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h3 id="进程相关的数据结构">进程相关的数据结构</h3>
+
+<p>有三个数据结构将 VFS 层和系统进程紧密联系在一起，分别是：files_struct、fs_struct 和 namespace 结构体。</p>
+
+<p>files_structt 结构体定义在文件 &lt;linux/file.h&gt; 中。该结构体由进程描述符中的 files 域指向。所有与每个进程（per-process）相关的信息如果打开的文件和文件描述符都在其中：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">fdtable</span> <span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">max_fds</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">file</span> <span class="o">**</span> <span class="n">fd</span><span class="p">;</span>      <span class="cm">/* current fd array */</span>
+	<span class="n">fd_set</span> <span class="o">*</span><span class="n">close_on_exec</span><span class="p">;</span>
+	<span class="n">fd_set</span> <span class="o">*</span><span class="n">open_fds</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">rcu_head</span> <span class="n">rcu</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">fdtable</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">files_struct</span> <span class="p">{</span>
+  <span class="cm">/*
+   * read mostly part
+   */</span>
+	<span class="n">atomic_t</span> <span class="n">count</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">fdtable</span> <span class="o">*</span><span class="n">fdt</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">fdtable</span> <span class="n">fdtab</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">next_fd</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">embedded_fd_set</span> <span class="n">close_on_exec_init</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">embedded_fd_set</span> <span class="n">open_fds_init</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">file</span> <span class="o">*</span> <span class="n">fd_array</span><span class="p">[</span><span class="n">NR_OPEN_DEFAULT</span><span class="p">];</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>fd 数组指针指向已打开的文件对象链表，默认情况下指向 fd_array 数组。因为 NR_OPEN_DEFAULT 等于 32，如果一个进程打开的文件对象超过 32 个，内核将分配一个新数组并将 fd 指针指向它。</p>
+
+<p>下图是 APUE 中进程打开文件的图例：</p>
+
+<p><img src="/assets/images/linux-kernel-serial-5/illustration-2.png" width="800" /></p>
+
+<p>其中 process table entry 表项对应 files_struct 对象，file table 表项对应 file 对象，v-node table 表项可以看成两部分，一部分是文件操作函数的指针，由 file 对象的 f_op 字段指向，另一部分 inode 信息，由 file 对象的 f_dentry 字段指向的目录项对象的 d_inode 关联到相关的 inode 节点：</p>
+
+<p><img src="/assets/images/linux-kernel-serial-5/illustration-3.png" width="800" /></p>
+
+<blockquote>
+  <p>注：上图取自<a href="https://www.zhihu.com/question/39148572">知乎</a></p>
+</blockquote>
+
+<p>和进程相关的第二个结构体是 fs_struct。该结构由进程描述符 fs 域指向。它包含文件系统和进程相关的信息，定义在 &lt;linux/fs_struct.h&gt; 中：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">path</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">vfsmount</span> <span class="o">*</span><span class="n">mnt</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">dentry</span> <span class="o">*</span><span class="n">dentry</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">fs_struct</span> <span class="p">{</span>
+	<span class="kt">int</span> <span class="n">users</span><span class="p">;</span> 					<span class="cm">/* 结构的使用计数 */</span>
+	<span class="n">rwlock_t</span> <span class="n">lock</span><span class="p">;</span>   
+	<span class="kt">int</span> <span class="n">umask</span><span class="p">;</span>					<span class="cm">/* 默认的文件访问权限 */</span>
+	<span class="kt">int</span> <span class="n">in_exec</span><span class="p">;</span>			 
+	<span class="k">struct</span> <span class="n">path</span> <span class="n">root</span><span class="p">,</span> <span class="n">pwd</span><span class="p">;</span>     <span class="cm">/* 根目录和当前目录的目录项对象和安装点对象 */</span>  
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>最后一个结构体是 mnt_namespace，定义在 &lt;linux/mnt_namespace.h&gt; 中，由进程描述符中的 namespace 指向。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">mnt_namespace</span> <span class="p">{</span>
+	<span class="n">atomic_t</span>		<span class="n">count</span><span class="p">;</span>  		<span class="cm">/* 结构的使用计数 */</span>
+	<span class="k">struct</span> <span class="n">vfsmount</span> <span class="o">*</span>	<span class="n">root</span><span class="p">;</span> 		<span class="cm">/* 根目录的安装点对象 */</span>
+	<span class="k">struct</span> <span class="n">list_head</span>	<span class="n">list</span><span class="p">;</span>   	<span class="cm">/* 安装点链表 */</span>
+	<span class="n">wait_queue_head_t</span> <span class="n">poll</span><span class="p">;</span> 
+	<span class="kt">int</span> <span class="n">event</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>对大多数进程来说，它们的描述符会指向唯一的 files_struct 和 fs_struct 结构体。对于使用克隆标志 CLONE_FILES 或 CLONE_FS 创建的进程，会共享这两个结构体。所以多个进程描述符可能会指向同一个 files_struct 或 fs_struct 结构体。因此每个结构体维护一个 count 域（或 users 域）作为引用计数。</p>
+
+<p>namespace 结构体则不同，默认情况下，所有进程共享同样的命名空间。</p>
+
+<p>http://bean-li.github.io/vfs-inode-dentry/</p>
+
+<p>http://unicornx.github.io/2016/03/20/20160320-lk-vfs/</p>
+
+<p>APUE 对应进程打开文件的图例</p>
+
+<h2 id="块-io-层">块 I/O 层</h2>
+
+<p>系统能随机访问固定大小数据片（chunk）的设备被称作块设备。另一种基本的设备类型是字符设备，字符设备按照字符流的方式被有序访问，例如串口和键盘。</p>
+
+<h3 id="解剖一个块设备">解剖一个块设备</h3>
+
+<p>块设备中最小的可寻址单元是扇区（sector）。扇区大小一般是 2 的整数倍，最常见的大小是 512 个字节。扇区的大小是设备的物理属性，扇区是所有块设备的基本单元，块设备无法对它还小的单元进行寻址的操作。</p>
+
+<p>最小逻辑可寻址单元是块（block）。块是文件系统的抽象，只能基于块来访问文件系统。虽然物理磁盘寻址是按照扇区级进行的，但内核执行的所有磁盘操作都是按照块进行的。对块大小的要求是：必须是扇区大小的 2 的整数倍，并且要小于页面大小。所以块大小通常为 512 字节、1K 或 4K。</p>
+
+<h3 id="缓冲区和缓冲区头">缓冲区和缓冲区头</h3>
+
+<p>当块被调入内存时，它要存储在一个缓冲区中。缓冲区相当于磁盘块在内存中的表示。由于内核在处理数据时需要一些相关的控制信息（比如块属于哪一个块设备，对于哪个缓冲区等），所以每个缓冲区都有一个对应的描述符，由 buffer_head 结构体表示，称为缓冲区头，在 &lt;linux/buffer_head.h&gt; 中定义。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">buffer_head</span> <span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">b_state</span><span class="p">;</span>		<span class="cm">/* buffer state bitmap (see above) */</span>
+	<span class="k">struct</span> <span class="n">buffer_head</span> <span class="o">*</span><span class="n">b_this_page</span><span class="p">;</span><span class="cm">/* circular list of page's buffers */</span>
+	<span class="k">struct</span> <span class="n">page</span> <span class="o">*</span><span class="n">b_page</span><span class="p">;</span>		<span class="cm">/* the page this bh is mapped to */</span>
+
+	<span class="n">sector_t</span> <span class="n">b_blocknr</span><span class="p">;</span>		<span class="cm">/* start block number */</span>
+	<span class="kt">size_t</span> <span class="n">b_size</span><span class="p">;</span>			<span class="cm">/* size of mapping */</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">b_data</span><span class="p">;</span>			<span class="cm">/* pointer to data within the page */</span>
+
+	<span class="k">struct</span> <span class="n">block_device</span> <span class="o">*</span><span class="n">b_bdev</span><span class="p">;</span>
+	<span class="n">bh_end_io_t</span> <span class="o">*</span><span class="n">b_end_io</span><span class="p">;</span>		<span class="cm">/* I/O completion */</span>
+ 	<span class="kt">void</span> <span class="o">*</span><span class="n">b_private</span><span class="p">;</span>		<span class="cm">/* reserved for b_end_io */</span>
+	<span class="k">struct</span> <span class="n">list_head</span> <span class="n">b_assoc_buffers</span><span class="p">;</span> <span class="cm">/* associated with another mapping */</span>
+	<span class="k">struct</span> <span class="n">address_space</span> <span class="o">*</span><span class="n">b_assoc_map</span><span class="p">;</span>	<span class="cm">/* mapping this buffer is
+						   associated with */</span>
+	<span class="n">atomic_t</span> <span class="n">b_count</span><span class="p">;</span>		<span class="cm">/* users using this buffer_head */</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>与缓冲区对应的磁盘物理块由 b_blocknr 域索引，该值是 b_bdev 域指明的块设备中的逻辑块号。</p>
+
+<p>与缓冲区对应的内存物理页由 b_page 域表示，另外 b_data 域直接指向相应的块（它位于 b_page 域所指明的页面的某个位置上）。块的大小由 b_size 域表示，所以块在内存中的起始位置在 b_data 处，结束位置在 (b_data + b_size) 处。</p>
+
+<h3 id="bio-结构体">bio 结构体</h3>
+
+<p>内核中块 I/O 操作的基本容器由 bio 结构体表示，定义在文件 &lt;linux/bio.h&gt; 中。</p>
+
+<p>每个块 I/O 请求都通过一个 bio 结构体表示。每个请求包含了一个或多个块，这些块存储在 bio_vec 结构体数组中。这些结构体描述了每个片段在物理页中的实际位置，并且像 vector 一样被组织在一起。I/O 操作的第一个片段由 b_io_vec 结构体所指向，共有 bi_vcnt 个片段。当块 I/O 层开始执行请求、需要使用各个片段时，bi_idx 域会不断更新，从而指向当前片段。</p>
+
+<p>buffer_head 和 bio 结构体之间存在明显差别。bio 结构体代表的是 I/O 操作，它可以包含内存中的一个或多页；而另一方面，buffer_head 结构体代表的是一个缓冲区，它描述的仅仅是磁盘中的一个块。因为缓冲区头关联的是单独页中的单独磁盘块，所以它可能会引起不必要的分割，将请求按块为单位划分。bio 则不需要连续存储区，也不需要分割 I/O 操作。</p>
+
+<h3 id="请求队列">请求队列</h3>
+
+<p>块设备将它们挂起的块 I/O 请求保存在请求队列中，该队列由 reques_queue 结构体表示，定义在 &lt;linux/blkdev.h&gt; 中，包含一个双向请求链表以及相关控制信息。请求队列表中的每一项都是一个单独的请求，由 request 结构体表示。一个请求可能要操作多个连续的磁盘块，所以每个请求可以由多个 bio 结构体组成。</p>
+
+<h3 id="io-调度程序">I/O 调度程序</h3>
+
+<p>磁盘寻址是整个计算机中最慢的操作之一，缩短寻址时间是提高系统性能的关键。为了优化寻址操作，内核会在提交任务前先执行合并与排序的预操作。在内核中负责提交 I/O 请求的子系统称为 I/O 调度程序。</p>
+
+<h4 id="io-调度程序的工作">I/O 调度程序的工作</h4>
+
+<p>I/O 调度程序的工作是管理块设备的请求队列。I/O 调度程序通过<strong>合并</strong>和<strong>排序</strong>来减少磁盘寻址时间。</p>
+
+<h4 id="linus-电梯">Linus 电梯</h4>
+
+<p>第一个 I/O 调度程序被称为 Linus 电梯。当有新的请求加入队列时，会先检查每一个挂起的请求是否可以和新请求合并。Linus 电梯 I/O 调度程序可以执行向前和向后合并。如果合并失败，那就需要寻找可能的插入点。如果找到就插入，如果没合适的位置，那么新请求就被加入到队列尾部。另外如果队列中有驻留时间过长的请求，那么新请求也将被加入到队列尾部，即使插入后还要排序。这是为了避免由于访问相近磁盘位置的请求太多，从而造成访问磁盘其他位置的请求难以得到执行机会。</p>
+
+<h4 id="最终期限-io-调度程序">最终期限 I/O 调度程序</h4>
+
+<p>最终期限 I/O 调度程序中，每个请求都有一个超时时间。默认情况下，读请求的超时时间是 500 毫秒，写请求的超时时间是 5 秒。最终期限 I/O 调度请求类似于 Linus 电梯，也以磁盘物理位置次序维护请求队列，这个队列称为排序队列。但同时也会根据请求类型将它们插入到额外队列中。读请求按次序被插入特定的读 FIFO 队列中，写请求被插入到特定的写 FIFO 队列中。一般情况下，调度程序从排序队列头部取出请求，再推入到派发队列中。如果在写／读 FIFO 队列头的请求超时，那么调度程序便从 FIFO 队列中提取请求。</p>
+
+<h2 id="页高速缓存和页回写">页高速缓存和页回写</h2>
+
+<p>页高速缓存是 Linux 内核实现的一种主要磁盘缓存。它主要用来减少对磁盘的 I/O 操作。具体来讲，是通过把磁盘中的数据缓存到物理内存，把对磁盘的访问变成对物理内存的访问。</p>
+
+<p>页高速缓存是由 RAM 中的物理页组成，每一页都对应磁盘多个块。每当内核开始执行一个页 I/O 操作时，首先会检查需要的数据是否在高速缓存中，如果在，则直接使用高速缓存中的数据。</p>
+
+<p>也可以通过块 I/O 缓冲区把独立的磁盘块与页高速缓存联系在一起。通过缓存磁盘块以及缓冲块 I/O 操作，页高速缓存同样可以减少块 I/O 操作期间的磁盘访问量。这种缓存通常称为“缓冲区高速缓存”，也是页高速缓存中的一部分。</p>
+
+<h3 id="页高速缓存">页高速缓存</h3>
+
+<p>页高速缓存包含了最近被访问过的文件的全部页面，在执行 I/O 操作前，内核会检查数据是否已经在页高速缓存中了，如果在，则不再需要从磁盘读取数据。</p>
+
+<h4 id="address_space-对象">address_space 对象</h4>
+
+<p>一个物理页可能由多个不连续的物理磁盘块组成，所以在页高速缓存中检测特定数据是否已经被缓存是件非常困难的工作。</p>
+
+<p>Liunx 页高速缓存使用 address_space 结构体描述页高速缓存中的页面。该结构定义在 &lt;linux/fs.h&gt;：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre><span class="k">struct</span> <span class="n">address_space</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">inode</span>			<span class="o">*</span><span class="n">host</span><span class="p">;</span>		<span class="cm">/* owner: inode, block_device */</span>
+	<span class="k">struct</span> <span class="n">radix_tree_root</span>	<span class="n">page_tree</span><span class="p">;</span>	<span class="cm">/* radix tree of all pages */</span>
+	<span class="n">spinlock_t</span>				<span class="n">tree_lock</span><span class="p">;</span>	<span class="cm">/* and lock protecting it */</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span>			<span class="n">i_mmap_writable</span><span class="p">;</span><span class="cm">/* count VM_SHARED mappings */</span>
+	<span class="k">struct</span> <span class="n">prio_tree_root</span>	<span class="n">i_mmap</span><span class="p">;</span>		<span class="cm">/* tree of private and shared mappings */</span>
+	<span class="k">struct</span> <span class="n">list_head</span>		<span class="n">i_mmap_nonlinear</span><span class="p">;</span><span class="cm">/*list VM_NONLINEAR mappings */</span>
+	<span class="n">spinlock_t</span>				<span class="n">i_mmap_lock</span><span class="p">;</span>	<span class="cm">/* protect tree, count, list */</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span>			<span class="n">truncate_count</span><span class="p">;</span>	<span class="cm">/* Cover race condition with truncate */</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span>			<span class="n">nrpages</span><span class="p">;</span>	<span class="cm">/* number of total pages */</span>
+	<span class="n">pgoff_t</span>					<span class="n">writeback_index</span><span class="p">;</span><span class="cm">/* writeback starts here */</span>
+	<span class="k">const</span> <span class="k">struct</span> <span class="n">address_space_operations</span> <span class="o">*</span><span class="n">a_ops</span><span class="p">;</span>	<span class="cm">/* methods */</span>
+	<span class="kt">unsigned</span> <span class="kt">long</span>			<span class="n">flags</span><span class="p">;</span>		<span class="cm">/* error bits/gfp mask */</span>
+	<span class="k">struct</span> <span class="n">backing_dev_info</span> <span class="o">*</span><span class="n">backing_dev_info</span><span class="p">;</span> <span class="cm">/* device readahead, etc */</span>
+	<span class="n">spinlock_t</span>				<span class="n">private_lock</span><span class="p">;</span>	<span class="cm">/* for use by the address_space */</span>
+	<span class="k">struct</span> <span class="n">list_head</span>		<span class="n">private_list</span><span class="p">;</span>	<span class="cm">/* ditto */</span>
+	<span class="k">struct</span> <span class="n">address_space</span>	<span class="o">*</span><span class="n">assoc_mapping</span><span class="p">;</span>	<span class="cm">/* ditto */</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>i_mmap 字段是个优先搜索树，它的搜索范围包含了在 address_space 中所有共享和私有的映射页面。address_space 结构往往会和某些内核对象关联。通常会与一个索引节点（inode）关联，这时 host 域就指向该索引节点，该索引节点的 i_mapping 域指向到 address_space 对象，方便查找自身文件数据是否已经缓存。</p>
+
+<p>a_ops 域指向地址空间对象中的操作函数表。</p>
+
+<p>struct page 中有两个字段：mapping 和 index。其中 mapping 指向该页所有者的 address_space，index 字段表示所有者地址空间中以页大小为单位的偏移量。用这两个字段就能在页高速缓存中查找。</p>
+
+<p>页高速缓存通过两个参数：address_space 对象和一个偏移量进行搜索。每个 address_space 对象都有唯一一个基树，保存在 page_tree 结构体中。基树是一个二叉树，只要指定了文件偏移量，就可以在基树中迅速检索到希望的数据。</p>
+
+<p>inode、address space 和 page 三者的关系如下图：</p>
+
+<p><img src="/assets/images/linux-kernel-serial-5/illustration-1.png" width="800" /></p>
+
+<h1 id="linux-中的-io-机制">Linux 中的 I/O 机制</h1>
+
+<h2 id="buffered-io">Buffered I/O</h2>
+
+<p>Buffered I/O 指的是在内核和用户程序之间设置了一层缓冲区，用来提高IO读写的效率：</p>
+
+<ul>
+  <li>读取：硬盘—&gt;内核缓冲区—&gt;用户缓冲区—&gt;用户程序</li>
+  <li>写回：用户程序—&gt;用户缓冲区—&gt;内核缓冲区—&gt;硬盘</li>
+</ul>
+
+<h2 id="unbuffered-io">Unbuffered I/O</h2>
+
+<p>Unbuffered I/O 没有用户缓冲区，<strong>注意内核缓冲区仍然存在</strong>：</p>
+
+<ul>
+  <li>读取：硬盘—&gt;内核缓冲区—&gt;用户程序</li>
+  <li>写回：用户程序—&gt;内核缓冲区—&gt;硬盘</li>
+</ul>
+
+<h2 id="direct-io">Direct IO</h2>
+
+<p>Direct I/O 是真正的什么缓冲区都没有，直接与硬盘交互：</p>
+
+<ul>
+  <li>读取：硬盘—&gt;用户程序</li>
+  <li>写回：用户程序—&gt;硬盘</li>
+</ul>
+
+<p>使用带有内核缓冲区的 I/O（Buffer I/O 和 Unbuffer I/O），DMA 方式可以将数据直接从磁盘读到页缓存中，或者将数据从页缓存直接写回到磁盘上，而不能直接在应用程序地址空间和磁盘之间进行数据传输。数据在传输过程中需要在应用程序地址空间和页缓存之间进行多次数据拷贝操作，这些数据拷贝操作所带来的 CPU 以及内存开销是非常大的。</p>
+
+<p>Direct I/O 最主要的优点就是通过减少操作系统内核缓冲区和应用程序地址空间的数据拷贝次数，降低了对文件读取和写入时所带来的 CPU 的使用以及内存带宽的占用。</p>
+
+
+
+                <hr style="visibility: hidden;">
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2016/12/11/linux-kernel-serial-4/" data-toggle="tooltip" data-placement="top" title="Linux 内核系列－内存管理">
+                        Previous<br>
+                        <span>Linux 内核系列－内存管理</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2016/12/28/review/" data-toggle="tooltip" data-placement="top" title="我的 2016">
+                        Next<br>
+                        <span>我的 2016</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+                
+
+                
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        </a>
+        
+        
+                <a data-sort="0058" 
+                    href="/archive/?tag=%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE"
+                    title="个人项目"
+                    rel="4">个人项目</a>
+        
+                <a data-sort="0040" 
+                    href="/archive/?tag=%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0"
+                    title="读书笔记"
+                    rel="22">读书笔记</a>
+        
+                <a data-sort="0047" 
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB"
+                    title="源码阅读"
+                    rel="15">源码阅读</a>
+        
+                <a data-sort="0055" 
+                    href="/archive/?tag=%E5%B7%A5%E4%BD%9C"
+                    title="工作"
+                    rel="7">工作</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"
+                    title="编程语言"
+                    rel="3">编程语言</a>
+        
+                <a data-sort="0059" 
+                    href="/archive/?tag=%E9%9A%8F%E7%AC%94"
+                    title="随笔"
+                    rel="3">随笔</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E4%BC%98%E5%8C%96%26%E9%87%8D%E6%9E%84"
+                    title="优化&重构"
+                    rel="2">优化&重构</a>
+        
+                <a data-sort="0060" 
+                    href="/archive/?tag=%E6%95%B0%E6%8D%AE%E5%BA%93"
+                    title="数据库"
+                    rel="2">数据库
+    </div>
+</section>
+
+
+                <!-- Friends Blog -->
+                
+<hr>
+<h5>FRIENDS</h5>
+<ul class="list-inline">
+  
+  <li><a href="https://blog.zhiheng.io">onlyice</a></li>
+  
+</ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/masutangu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://www.instagram.com/masutanguu">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+</ul>
+
+                <p class="copyright text-muted">
+                    Copyright &copy; Masutangu 2018
+                    <br>
+                    Powered by <a href="http://huangxuan.me">Hux Blog</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-77236140-1';
+    var _gaDomain = 'masutangu.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+
+
+<!-- Multi-Lingual -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

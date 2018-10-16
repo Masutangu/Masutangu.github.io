@@ -2,7 +2,7 @@
 layout: post
 date: 2016-02-29T16:07:58+08:00
 title: UDF + Trigger 实时监控 Mysql 数据更新
-category: 数据库
+tags: 数据库
 ---
 
 最近在做缓存相关的事情，需要在mysql的上层架一层缓存，以缓解mysql的压力，简单的架构图如下：

@@ -2,7 +2,7 @@
 layout: post
 date: 2018-07-04T13:33:35+08:00
 title: etcd-raft 源码学习笔记（概览篇）
-category: 源码阅读
+tags: 源码阅读
 ---
 
 这篇文章主要整体上介绍 etcd-raft 库，包括各个类的作用，类之间的串联。不涉及 raft 算法。先来看看 etcd-raft 几个结构体的定义：

@@ -2,7 +2,7 @@
 layout: post
 date: 2018-03-04T09:00:42+08:00
 title: 多排行榜数据刷新方案
-category: 工作
+tags: 工作
 ---
 
 ## 一. 背景

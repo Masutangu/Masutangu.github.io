@@ -2,7 +2,7 @@
 layout: post
 date: 2016-09-03T00:44:24+08:00
 title: Protobuf 编码原理
-category: 协议设计
+tags: 协议设计
 ---
 
 最近项目组有在用 protobuf，于是抽空读了些 protobuf 的相关资料。本文总结 protobuf 的编码原理，重点在于其如何实现版本兼容。文中样例及说明都参考了 protobuf 的[官方文档](https://developers.google.com/protocol-buffers/docs/encoding)。

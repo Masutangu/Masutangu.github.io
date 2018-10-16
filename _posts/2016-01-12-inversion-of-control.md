@@ -2,7 +2,7 @@
 layout: post
 date: 2016-01-12T16:07:58+08:00
 title: 设计模式之控制反转
-category: 设计模式
+tags: 设计模式
 ---
 
 今天重新设计了[Elric](https://github.com/Masutangu/Elric)的logging模块，接触到了Inversion of Control设计模式，记录下分享给大家。*注：本文定义介绍均取自wiki，代码样例取自[Elric](https://github.com/Masutangu/Elric)*

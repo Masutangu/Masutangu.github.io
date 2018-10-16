@@ -2,7 +2,7 @@
 layout: post
 date: 2018-07-26T18:57:23+08:00
 title: Designing Data-Intensive Applications 读书笔记（一）
-category: 读书笔记
+tags: 读书笔记
 ---
 
 # Chapter 1. Reliable, Scalable, and Maintainable Applications

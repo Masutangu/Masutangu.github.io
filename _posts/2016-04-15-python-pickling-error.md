@@ -2,7 +2,7 @@
 layout: post
 date: 2016-04-15T16:07:58+08:00
 title: Python 进程池的坑：Pickling Error!
-category: 编程语言
+tags: 编程语言
 ---
 
 前阵子在跑[Elric](https://github.com/Masutangu/Elric)下的爬虫任务时，发现了worker进程有偶现的异常挂起的现象，通过strace看到worker进程block在futex(…, FUTEX_WAIT,…)这里，查看了worker的标准输出，发现打印了这么一行东西：

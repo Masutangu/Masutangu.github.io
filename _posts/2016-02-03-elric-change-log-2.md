@@ -2,7 +2,7 @@
 layout: post
 date: 2016-02-03T16:07:58+08:00
 title: Elric Change Log II
-category: 优化&重构
+tags: 优化&重构
 ---
 
 最近有些时间，于是对分布式框架Elric做了些优化，同时新增了些新特性，在这里分享给大家。

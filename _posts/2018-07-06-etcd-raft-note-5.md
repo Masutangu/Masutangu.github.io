@@ -2,7 +2,7 @@
 layout: post
 date: 2018-07-06T22:56:37+08:00
 title: etcd-raft 源码学习笔记（Leader Transfer）
-category: 源码阅读
+tags: 源码阅读
 ---
 
 这篇文章介绍 etcd-raft 如何实现 leadership transfer，把 leader 身份转移给某个 follower。

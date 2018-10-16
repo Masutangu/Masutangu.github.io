@@ -2,7 +2,7 @@
 layout: post
 date: 2016-07-07T15:02:11+08:00
 title: Elric 使用手册
-category: 个人项目
+tags: 个人项目
 ---
 
 这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 [Elric](https://github.com/Masutangu/Elric)，包括其API，架构，周边能力以及实现细节。
