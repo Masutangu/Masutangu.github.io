@@ -487,6 +487,6 @@ While this procedure ensures linearizable writes, it doesn’t guarantee lineari
 
 ## Distributed Transactions and Consensus
 
-There are a number of situations in which it is important for nodes to agree. For example:
+Consensus is one of the most important and fundamental problems in distributed computing. On the surface, it seems simple: informally, the goal is simply to get several nodes to agree on something. There are a number of situations in which it is important for nodes to agree. For example:
 
 * Leader election
