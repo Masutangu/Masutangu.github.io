@@ -2,7 +2,9 @@
 layout: post
 date: 2017-02-05T22:57:39+08:00
 title: Linux 性能监控
-tags: 工作
+tags: 
+  - 工作
+  - Linux
 ---
 
 本文是对 [《Linux 性能监测》](http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/) 系列文章的读书笔记，并在此基础上丰富。

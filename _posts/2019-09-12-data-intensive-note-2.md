@@ -2,7 +2,9 @@
 layout: post
 date: 2018-09-12T22:03:19+08:00
 title: Designing Data-Intensive Applications 读书笔记（二）
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - 分布式
 ---
 
 # Chapter 4. Encoding and Evolution

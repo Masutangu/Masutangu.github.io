@@ -2,7 +2,10 @@
 layout: post
 date: 2018-07-08T10:19:08+08:00
 title: etcd-raft 源码学习笔记（PreVote）
-tags: 源码阅读
+tags: 
+  - 源码阅读
+  - 分布式
+  - Golang
 ---
 
 这篇文章介绍 etcd-raft 的 PreVote 机制，避免由于网络分区导致 candidate 的 term 不断增大。

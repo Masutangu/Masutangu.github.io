@@ -2,7 +2,9 @@
 layout: post
 title: 应对反爬虫之换 Cookie
 date: 2015-10-31T16:07:58+08:00
-tags: 爬虫
+tags: 
+  - 爬虫
+  - Python
 
 ---
 

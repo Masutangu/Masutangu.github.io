@@ -2,7 +2,9 @@
 layout: post
 date: 2016-11-27T13:49:16+08:00
 title: Linux 内核系列－进程通信和同步
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - Linux
 ---
 
 本系列文章为阅读《现代操作系统》《UNIX 环境高级编程》和《Linux 内核设计与实现》所整理的读书笔记，源代码取自 Linux-kernel 2.6.34 版本并有做简化。

@@ -2,7 +2,9 @@
 layout: post
 date: 2016-07-04T08:06:35+08:00
 title: Matplotlib 笔记
-tags: 工作
+tags: 
+  - 工作
+  - Python
 ---
 
 最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：

@@ -2,7 +2,10 @@
 layout: post
 date: 2018-07-05T13:46:43+08:00
 title: etcd-raft 源码学习笔记（Linearizable Read 之 ReadIndx）
-tags: 源码阅读
+tags: 
+  - 源码阅读
+  - 分布式
+  - Golang
 ---
 
 这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 [《Strong consistency models》](https://aphyr.com/posts/313-strong-consistency-models)）。

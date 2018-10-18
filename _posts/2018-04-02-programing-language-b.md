@@ -2,7 +2,9 @@
 layout: post
 date: 2018-04-02T19:10:35+08:00
 title: Programming Language Part B 课程笔记
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - 编程语言
 ---
 
 本文是学习[Coursera Programming Language](https://www.coursera.org/learn/programming-languages-part-b/home/info)课程的学习笔记，文章内容及代码均取自课程材料。

@@ -2,7 +2,9 @@
 layout: post
 date: 2016-10-05T15:59:32+08:00
 title: 浅读 Libco 
-tags: 源码阅读
+tags: 
+  - 源码阅读
+  - 协程
 ---
 
 今天花了一天时间，学习了下微信的开源协程库 [libco](https://github.com/tencent-wechat/libco)的代码，写下来做个纪录，有部分细节代码（包括 coctx_swap.S 那段汇编）我还没读懂，以后再补充进来。

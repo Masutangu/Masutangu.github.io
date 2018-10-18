@@ -2,7 +2,9 @@
 layout: post
 date: 2018-03-21T20:36:16+08:00
 title: The Part-Time Parliament 论文笔记
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - 分布式
 ---
 
 # 背景

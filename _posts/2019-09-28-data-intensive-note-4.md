@@ -2,7 +2,9 @@
 layout: post
 date: 2018-09-28T22:11:46+08:00
 title: Designing Data-Intensive Applications 读书笔记（四）
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - 分布式
 ---
 
 # Chapter 8. The Trouble with Distributed Systems
@@ -490,3 +492,70 @@ While this procedure ensures linearizable writes, it doesn’t guarantee lineari
 Consensus is one of the most important and fundamental problems in distributed computing. On the surface, it seems simple: informally, the goal is simply to get several nodes to agree on something. There are a number of situations in which it is important for nodes to agree. For example:
 
 * Leader election
+    The leadership position might become contested if some nodes can’t communicate with others due to a network fault. In this case, consensus is important to avoid a bad failover, resulting in a split brain situation in which two nodes both believe themselves to be the leader.
+
+* Atomic commit
+    In a database that supports transactions spanning several nodes or partitions, we have the problem that a transaction may fail on some nodes but succeed on others. If we want to maintain transaction atomicity (in the sense of ACID), we have to get all nodes to agree on the outcome of the transaction: either they all abort/roll back (if anything goes wrong) or they all commit (if nothing goes wrong). This instance of consensus is known as the atomic commit problem.
+
+### Atomic Commit and Two-Phase Commit (2PC)
+ 
+#### From single-node to distributed atomic commit
+
+For transactions that execute at a single database node, atomicity is commonly implemented by the storage engine. 
+
+However, what if multiple nodes are involved in a transaction? In these cases, it is not sufficient to simply send a commit request to all of the nodes and independently commit the transaction on each one.
+
+#### Introduction to two-phase commit
+
+Two-phase commit is an algorithm for achieving atomic transaction commit across multiple nodes. Instead of a single commit request, as with a single-node transaction, the commit/abort process in 2PC is split into two phases (hence the name):
+
+
+<img src="/assets/images/data-intensive-note-4/illustration-7.png" width="800"/>
+
+2PC uses a new component that does not normally appear in single-node transactions: **a coordinator** (also known as transaction manager). The coordinator is often implemented as a library within the same application process that is requesting the transaction, but it can also be a separate process or service.
+
+When the application is ready to commit, the coordinator begins phase 1: it sends a prepare request to each of the nodes, asking them whether they are able to commit. The coordinator then tracks the responses from the participants:
+
+* If all participants reply “yes,” indicating they are ready to commit, then the coordinator sends out a commit request in phase 2, and the commit actually takes place.
+
+* If any of the participants replies “no,” the coordinator sends an abort request to all nodes in phase 2.
+
+#### A system of promises
+
+To understand why it works, we have to break down the process in a bit more detail:
+
+* When the application wants to begin a distributed transaction, it requests a transaction ID from the coordinator. This transaction ID is globally unique.
+
+* The application begins a single-node transaction on each of the participants, and attaches the globally unique transaction ID to the single-node transaction. All reads and writes are done in one of these single-node transactions. If anything goes wrong at this stage (for example, a node crashes or a request times out), the coordinator or any of the participants can abort.
+
+* When a participant receives the prepare request, it makes sure that it can definitely commit the transaction under all circumstances. This includes writing all transaction data to disk (a crash, a power failure, or running out of disk space is not an acceptable excuse for refusing to commit later), and checking for any conflicts or constraint violations. By replying “yes” to the coordinator, the node promises to commit the transaction without error if requested. In other words, the participant surrenders the right to abort the transaction, but without actually committing it.
+
+* When the coordinator has received responses to all prepare requests, it makes a definitive decision on whether to commit or abort the transaction (committing only if all participants voted “yes”). The coordinator must write that decision to its transaction log on disk so that it knows which way it decided in case it subsequently crashes. This is called the **commit point**.
+
+* Once the coordinator’s decision has been written to disk, the commit or abort request is sent to all participants. If this request fails or times out, the coordinator must retry forever until it succeeds. **There is no more going back: if the decision was to commit, that decision must be enforced, no matter how many retries it takes.** 
+
+#### Coordinator failure
+
+If the coordinator fails before sending the prepare requests, a participant can safely abort the transaction. But **once the participant has received a prepare request and voted “yes,” it can no longer abort unilaterally**—it must wait to hear back from the coordinator whether the transaction was committed or aborted. **If the coordinator crashes or the network fails at this point, the participant can do nothing but wait.**
+
+When the coordinator recovers, **it determines the status of all in-doubt transactions by reading its transaction log**. Any transactions that don’t have a commit record in the coordinator’s log are aborted.
+
+#### Three-phase commit
+
+Two-phase commit is called a blocking atomic commit protocol due to the fact that 2PC can become stuck waiting for the coordinator to recover.
+
+As an alternative to 2PC, an algorithm called three-phase commit (3PC) has been proposed. However, 3PC assumes a network with bounded delay and nodes with bounded response times; **in most practical systems with unbounded network delay and process pauses, it cannot guarantee atomicity**.
+
+In general, nonblocking atomic commit requires a **perfect failure detector**— i.e., a reliable mechanism for telling whether a node has crashed or not. In a network with unbounded delay a timeout is not a reliable failure detector, because a request may time out due to a network problem even if no node has crashed. 
+
+### Distributed Transactions in Practice
+
+Two quite different types of distributed transactions are often conflated:
+
+* Database-internal distributed transactions
+    Some distributed databases support internal transactions among the nodes of that database. In this case, all the nodes participating in the transaction are running the same database software.
+
+* Heterogeneous distributed transactions
+    In a heterogeneous transaction, the participants are two or more different technologies. A distributed transaction across these systems must ensure atomic commit, even though the systems may be entirely different under the hood.
+
+#### Exactly-once message processing

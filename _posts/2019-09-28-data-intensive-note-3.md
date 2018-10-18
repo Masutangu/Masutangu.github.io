@@ -2,7 +2,9 @@
 layout: post
 date: 2018-09-28T22:11:46+08:00
 title: Designing Data-Intensive Applications 读书笔记（三）
-tags: 读书笔记
+tags: 
+  - 读书笔记
+  - 分布式
 ---
 
 # Chapter 6. Partitioning
