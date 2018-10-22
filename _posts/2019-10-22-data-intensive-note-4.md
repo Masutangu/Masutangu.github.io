@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2018-09-28T22:11:46+08:00
+date: 2018-10-22T18:50:44+08:00
 title: Designing Data-Intensive Applications 读书笔记（四）
 tags: 
   - 读书笔记
@@ -558,4 +558,115 @@ Two quite different types of distributed transactions are often conflated:
 * Heterogeneous distributed transactions
     In a heterogeneous transaction, the participants are two or more different technologies. A distributed transaction across these systems must ensure atomic commit, even though the systems may be entirely different under the hood.
 
-#### Exactly-once message processing
+#### Holding locks while in doubt
+
+Why do we care so much about a transaction being stuck in doubt? The problem is with locking. The database cannot release those locks until the transaction commits or aborts.
+
+#### Recovering from coordinator failure
+
+In practice, orphaned in-doubt transactions do occur—that is, transactions for which the coordinator cannot decide the outcome for whatever reason (e.g., because the transaction log has been lost or corrupted due to a software bug). These transactions cannot be resolved automatically, so they sit forever in the database, holding locks and blocking other transactions.
+
+The only way out is for an administrator to manually decide whether to commit or roll back the transactions. The administrator must examine the participants of each in-doubt transaction, determine whether any participant has committed or aborted already, and then apply the same outcome to the other participants.
+
+#### Limitations of distributed transactions
+
+XA transactions solve the real and important problem of keeping several participant data systems consistent with each other, but as we have seen, they also introduce major operational problems. In particular, **the key realization is that the transaction coordinator is itself a kind of database** (in which transaction outcomes are stored), and so it **needs to be approached with the same care as any other important database**:
+
+* If the coordinator is not replicated but runs only on a single machine, it is a single point of failure for the entire system.
+
+* Many server-side applications are developed in a stateless model (as favored by HTTP), with all persistent state stored in a database, which has the advantage. that application servers can be added and removed at will. However, when the coordinator is part of the application server, it changes the nature of the deployment. Suddenly, the coordinator’s logs become a crucial part of the durable system state—as important as the databases themselves, **since the coordinator logs are required in order to recover in-doubt transactions after a crash. Such application servers are no longer stateless.**
+
+* Since XA needs to be compatible with a wide range of data systems, it is necessarily a lowest common denominator. For example, it cannot detect deadlocks across different systems (since that would require a standardized protocol for systems to exchange information on the locks that each transaction is waiting for), and it does not work with SSI, since that would require a protocol for identifying conflicts across different systems.
+
+* For database-internal distributed transactions (not XA), the limitations are not so great—for example, a distributed version of SSI is possible. However, there remains the problem that for 2PC to successfully commit a transaction, all participants must respond. Consequently, if any part of the system is broken, the transaction also fails. Distributed transactions thus have a tendency of **amplifying failures**, which runs counter to our goal of building fault-tolerant systems.
+
+### Fault-Tolerant Consensus
+
+**Informally, consensus means getting several nodes to agree on something.** The consensus problem is normally formalized as follows: **one or more nodes may propose values, and the consensus algorithm decides on one of those values**.
+
+In this formalism, a consensus algorithm must satisfy the following properties:
+
+* Uniform agreement
+    No two nodes decide differently.
+
+* Integrity
+    No node decides twice.
+
+* Validity
+    If a node decides value v, then v was proposed by some node.(v 一定是某个节点 propose 的)
+
+* Termination
+    Every node that does not crash eventually decides some value.
+
+The uniform agreement and integrity properties define the core idea of consensus: **everyone decides on the same outcome, and once you have decided, you cannot change your mind.** The validity property exists mostly to rule out trivial solutions: for example, you could have an algorithm that always decides null, no matter what was proposed; this algorithm would satisfy the agreement and integrity properties, but not the validity property.
+
+The termination property formalizes the idea of fault tolerance. It essentially says that a consensus algorithm cannot simply sit around and do nothing forever—in other words, it must make progress. Even if some nodes fail, the other nodes must still reach a decision.
+
+#### Consensus algorithms and total order broadcast
+
+Remember that total order broadcast requires messages to be delivered exactly once, in the same order, to all nodes. If you think about it, this is equivalent to performing several rounds of consensus: in each round, nodes propose the message that they want to send next, and then decide on the next message to be delivered in the total order.
+
+So, total order broadcast is equivalent to repeated rounds of consensus (each consensus decision corresponding to one message delivery):
+
+* Due to the agreement property of consensus, all nodes decide to deliver the same messages in the same order.
+* Due to the integrity property, messages are not duplicated.
+* Due to the validity property, messages are not corrupted and not fabricated out of thin air.
+* Due to the termination property, messages are not lost.
+
+Viewstamped Replication, Raft, and Zab implement total order broadcast directly, because that is more efficient than doing repeated rounds of one-value-at-a-time consensus. In the case of Paxos, this optimization is known as Multi-Paxos.
+
+#### Epoch numbering and quorums
+
+All of the consensus protocols discussed so far internally use a leader in some form or another, but they don’t guarantee that the leader is unique. Instead, **they can make a weaker guarantee: the protocols define an epoch number** (called the ballot number in Paxos, view number in Viewstamped Replication, and term number in Raft) and **guarantee that within each epoch, the leader is unique**.
+
+Before a leader is allowed to decide anything, it must first check that there isn’t some other leader with a higher epoch number which might take a conflicting decision.
+
+It must collect votes from a quorum of nodes. **For every decision that a leader wants to make, it must send the proposed value to the other nodes and wait for a quorum of nodes to respond in favor of the proposal.** The quorum typically, but not always, consists of a majority of nodes. A node votes in favor of a proposal only if it is not aware of any other leader with a higher epoch.
+
+#### Limitations of consensus
+
+The process by which nodes vote on proposals before they are decided is a kind of synchronous replication. Consensus systems always require a strict majority to operate. This means you need a minimum of three nodes in order to tolerate one failure.
+
+Most consensus algorithms assume a fixed set of nodes that participate in voting, which means that you can’t just add or remove nodes in the cluster. Dynamic membership extensions to consensus algorithms allow the set of nodes in the cluster to change over time, but they are much less well understood than static membership algorithms.
+
+Sometimes, consensus algorithms are particularly sensitive to network problems. For example, Raft has been shown to have unpleasant edge cases: if the entire network is working correctly except for one particular network link that is consistently unreliable, Raft can get into situations where leadership continually bounces between two nodes, or the current leader is continually forced to resign, so the system effectively never makes progress. 
+
+### Membership and Coordination Services
+
+ZooKeeper is modeled after Google’s Chubby lock service, implementing not only total order broadcast (and hence consensus), but also an interesting set of other features that turn out to be particularly useful when building distributed systems:
+
+* Linearizable atomic operations
+    Using an atomic compare-and-set operation, you can implement a lock. A distributed lock is usually implemented as a lease, which has an expiry time so that it is eventually released in case the client fails.
+
+* Total ordering of operations
+    The fencing token is some number that monotonically increases every time the lock is acquired. ZooKeeper provides this by totally ordering all operations and giving each operation a monotonically increasing transaction ID (zxid) and version number (cversion).
+
+* Failure detection
+    Clients maintain a long-lived session on ZooKeeper servers, and the client and server periodically exchange heartbeats to check that the other node is still alive. If the heartbeats cease for a duration that is longer than the session timeout, ZooKeeper declares the session to be dead. Any locks held by a session can be configured to be automatically released when the session times out (ZooKeeper calls these ephemeral nodes).
+
+* Change notifications
+    A client can find out when another client joins the cluster (based on the value it writes to ZooKeeper), or if another client fails (because its session times out and its ephemeral nodes disappear). By subscribing to notifications, a client avoids having to frequently poll to find out about changes.
+
+#### Allocating work to nodes
+
+An application may initially run only on a single node, but eventually may grow to thousands of nodes. **Trying to perform majority votes over so many nodes would be terribly inefficient. Instead, ZooKeeper runs on a fixed number of nodes (usually three or five) and performs its majority votes among those nodes while supporting a potentially large number of clients.** Thus, ZooKeeper provides a way of “outsourcing” some of the work of coordinating nodes (consensus, operation ordering, and failure detection) to an external service.
+
+#### Service discovery
+
+ZooKeeper, etcd, and Consul are also often used for **service discovery**—that is, to find out which IP address you need to connect to in order to reach a particular service.
+
+#### Membership services
+
+A membership service determines which nodes are currently active and live members of a cluster. **It is nevertheless very useful for a system to have agreement on which nodes constitute the current membership.** For example, choosing a leader could mean simply choosing the lowest-numbered among the current members, but this approach would not work if different nodes have divergent opinions on who the current members are.
+
+## Summary
+
+We looked in depth at linearizability, a popular consistency model: its goal is to make replicated data appear as though there were only a single copy, and to make all operations act on it atomically.
+
+Unlike linearizability, which puts all operations in a single, totally ordered timeline, causality provides us with a weaker consistency model: **some things can be concurrent, so the version history is like a timeline with branching and merging**. Causal consistency does not have the coordination overhead of linearizability and is much less sensitive to network problems.
+
+However, even if we capture the causal ordering, we saw that some things cannot be implemented this way: we considered the example of ensuring that a username is unique and rejecting concurrent registrations for the same username. If one node is going to accept a registration, it needs to somehow know that another node isn’t concurrently in the process of registering the same name. **This problem led us toward consensus.**
+
+We saw that achieving consensus means deciding something in such a way that all nodes agree on what was decided, and such that the decision is irrevocable.
+
+Nevertheless, not every system necessarily requires consensus: for example, leaderless and multi-leader replication systems typically do not use global consensus. The conflicts that occur in these systems are a consequence of not having consensus across different leaders, but maybe that’s okay: maybe we simply need to cope without linearizability and learn to work better with data that has branching and merging version histories.
