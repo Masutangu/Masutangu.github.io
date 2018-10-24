@@ -139,7 +139,7 @@ In order to efficiently find the value for a particular key in the database, we 
 
 ### Hash Indexes
 
-Let’s say our data storage consists only of appending to a file. Then the simplest possible indexing strategy is this: **keep an in-memory hash map where every key is mapped to a byte offset in the data file**—the location at which the value can be found. This is essentially what Bitcask (the default storage engine in Riak) does
+Let’s say our data storage consists only of appending to a file. Then the simplest possible indexing strategy is this: **keep an in-memory hash map where every key is mapped to a byte offset in the data file**—the location at which the value can be found. This is essentially what Bitcask (the default storage engine in Riak) does.
 
 A storage engine like Bitcask is well suited to situations where the value for each key is updated frequently. For example, the key might be the URL of a cat video, and the value might be the number of times it has been played. **In this kind of workload, there are a lot of writes, but there are not too many distinct keys—you have a large number of writes per key, but it’s feasible to keep all keys in memory.**
 
@@ -149,21 +149,21 @@ How do we avoid eventually running out of disk space? **A good solution is to br
 
 An append-only design turns out to be good for several reasons:
 
-* Appending and segment merging are sequential write operations, which are generally much faster than random writes, especially on magnetic spinning-disk hard drives.
+* **Appending and segment merging are sequential write operations, which are generally much faster than random writes**, especially on magnetic spinning-disk hard drives.
 
-* Concurrency and crash recovery are much simpler if segment files are append-only or immutable.
+* **Concurrency and crash recovery are much simpler if segment files are append-only or immutable.**
 
-* Merging old segments avoids the problem of data files getting fragmented over time.
+* **Merging old segments avoids the problem of data files getting fragmented over time.**
 
 However, the hash table index also has limitations:
 
-* The hash table must fit in memory, so if you have a very large number of keys, you’re out of luck.
+* **The hash table must fit in memory**, so if you have a very large number of keys, you’re out of luck.
 
-* Range queries are not efficient. 
+* **Range queries are not efficient.**
 
 ### SSTables and LSM-Trees
 
-Now we can make a simple change to the format of our segment files: we require that the sequence of key-value pairs is sorted by key. 
+Now we can make a simple change to the format of our segment files: **we require that the sequence of key-value pairs is sorted by key**. 
 
 We call this format **Sorted String Table, or SSTable** for short. We also require that each key only appears once within each merged segment file (the compaction process already ensures that). SSTables have several big advantages over log segments with hash indexes:
 
@@ -196,7 +196,7 @@ There are also different strategies to determine the order and timing of how SST
 
 The most widely used indexing structure is quite different: the B-tree.
 
-Like SSTables, B-trees keep key-value pairs sorted by key, which allows efficient key- value lookups and range queries. 
+Like SSTables, B-trees keep key-value pairs sorted by key, which allows efficient key-value lookups and range queries. 
 
 The log-structured indexes we saw earlier break the database down into variable-size segments, typically several megabytes or more in size, and always write a segment sequentially. **By contrast, B-trees break the database down into fixed-size blocks or pages**, traditionally 4 KB in size (sometimes bigger), and **read or write one page at a time**. 
 
@@ -270,7 +270,7 @@ Multi-dimensional indexes are a more general way of querying several columns at 
 
 To cope with typos in documents or queries, Lucene is able to search text for words within a certain edit distance.
 
-**Lucene uses a SSTable-like structure for its term dictionary.** This structure requires a small in- memory index that tells queries at which offset in the sorted file they need to look for a key. In LevelDB, this in-memory index is a sparse collection of some of the keys, but **in Lucene, the in-memory index is a finite state automaton over the characters in the keys, similar to a trie**. This automaton can be transformed into a Levenshtein automaton, which supports efficient search for words within a given edit distance.
+**Lucene uses a SSTable-like structure for its term dictionary.** This structure requires a small in-memory index that tells queries at which offset in the sorted file they need to look for a key. In LevelDB, this in-memory index is a sparse collection of some of the keys, but **in Lucene, the in-memory index is a finite state automaton over the characters in the keys, similar to a trie**. This automaton can be transformed into a Levenshtein automaton, which supports efficient search for words within a given edit distance.
 
 #### Keeping everything in memory
 
@@ -280,7 +280,7 @@ Counterintuitively, the performance advantage of in-memory databases is not due 
 
 ### Data Warehousing
 
-**A data warehouse is a separate database that analysts can query to their hearts’ content, without affecting OLTP operations.** The data warehouse contains a read-only copy of the data in all the various OLTP systems in the company. Data is extracted from OLTP databases (using either a periodic data dump or a continuous stream of updates), transformed into an analysis-friendly schema, cleaned up, and then loaded into the data warehouse. This process of getting data into the warehouse is known as Extract–Transform–Load (ETL).
+**A data warehouse is a separate database that analysts can query to their hearts’ content, without affecting OLTP operations.** The data warehouse contains a read-only copy of the data in all the various OLTP systems in the company. Data is extracted from OLTP databases (using either a periodic data dump or a continuous stream of updates), transformed into an analysis-friendly schema, cleaned up, and then loaded into the data warehouse. This process of getting data into the warehouse is known as **Extract–Transform–Load (ETL)**.
 
 A big advantage of using a separate data warehouse, rather than querying OLTP systems directly for analytics, is that the data warehouse can be optimized for analytic access patterns. It turns out that the indexing algorithms discussed in the first half of this chapter work well for OLTP, but are not very good at answering analytic queries.
 
@@ -330,4 +330,4 @@ On the OLTP side, we saw storage engines from two main schools of thought:
 
 * The update-in-place school, which treats the disk as a set of fixed-size pages that can be overwritten. B-trees are the biggest example of this philosophy, being used in all major relational databases and also many nonrelational ones.
 
-**Analytic workloads are so different from OLTP: when your queries require sequentially scanning across a large number of rows, indexes are much less relevant. Instead it becomes important to encode data very compactly, to minimize the amount of data that the query needs to read from disk.**
+Analytic workloads are so different from OLTP: **when your queries require sequentially scanning across a large number of rows, indexes are much less relevant. Instead it becomes important to encode data very compactly, to minimize the amount of data that the query needs to read from disk.**

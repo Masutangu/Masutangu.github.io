@@ -274,9 +274,11 @@ Our second example of an anomaly that can occur when reading from asynchronous f
 
 Our third example of replication lag anomalies concerns violation of causality. Preventing this kind of anomaly requires another type of guarantee: **consistent prefix reads**. **This guarantee says that if a sequence of writes happens in a certain order, then anyone reading those writes will see them appear in the same order.**
 
+<img src="/assets/images/data-intensive-note-2/illustration-6.png" width="800"/>
+
 This is a particular problem in partitioned (sharded) databases. If the database always applies writes in the same order, reads always see a consistent prefix, so this anomaly cannot happen. However, **in many distributed databases, different partitions operate independently, so there is no global ordering of writes**: when a user reads from the database, they may see some parts of the database in an older state and some in a newer state.
 
-**One solution is to make sure that any writes that are causally related to each other are written to the same partition**—but in some applications that cannot be done efficiently. There are also algorithms that explicitly keep track of causal dependencies.
+**One solution is to make sure that any writes that are causally related to each other are written to the same partition**—but in some applications that cannot be done efficiently. There are also algorithms that explicitly keep track of **causal dependencies**.
 
 ### Solutions for Replication Lag
 
@@ -319,7 +321,7 @@ replication with transactions on the leader.
 
 ### Handling Write Conflicts
 
-The biggest problem with multi-leader replication is that write conflicts can occur, which means that conflict resolution is required.
+The biggest problem with multi-leader replication is that write conflicts can occur, which means that **conflict resolution is required**.
 
 #### Synchronous versus asynchronous conflict detection
 
@@ -333,7 +335,7 @@ In principle, you could make the conflict detection synchronous—i.e., wait for
 
 There are various ways of achieving convergent conflict resolution:
 
-* **Give each write a unique ID** (e.g., a timestamp, a long random number, a UUID, or a hash of the key and value), pick the write with the highest ID as the winner, and throw away the other writes. If a timestamp is used, this technique is known as last write wins (LWW). Although this approach is popular, it is dangerously prone to data loss.
+* **Give each write a unique ID** (e.g., a timestamp, a long random number, a UUID, or a hash of the key and value), pick the write with the highest ID as the winner, and throw away the other writes. If a timestamp is used, this technique is known as **last write wins (LWW)**. Although this approach is popular, it is dangerously prone to data loss.
 
 * **Give each replica a unique ID**, and let writes that originated at a higher-numbered replica always take precedence over writes that originated at a lower-numbered replica. This approach also implies data loss.
 
@@ -376,9 +378,13 @@ On the other hand, all-to-all topologies can have issues too. In particular, **s
 
 <img src="/assets/images/data-intensive-note-2/illustration-2.png" width="800"/>
 
-To order these events correctly, a technique called version vectors can be used, which we will discuss later in this chapter. However, conflict detection techniques are poorly implemented in many multi-leader replication systems. 
+This is a problem of causality, similar to the one we saw in “Consistent Prefix Reads”: the update depends on the prior insert, so we need to make sure that all nodes process the insert first, and then the update. **Simply attaching a timestamp to every write is not sufficient, because clocks cannot be trusted to be sufficiently in sync to correctly order these events at leader 2.**
+
+To order these events correctly, a technique called **version vectors** can be used, which we will discuss later in this chapter. However, conflict detection techniques are poorly implemented in many multi-leader replication systems. 
 
 ## Leaderless Replication
+
+In a leader-based configuration, if you want to continue processing writes, you may need to perform a failover. On the other hand, in a leaderless configuration, failover does not exist.
 
 In some leaderless implementations, the client directly sends its writes to several replicas, while in others, a coordinator node does this on behalf of the client. However, unlike a leader database, that coordinator does not enforce a particular ordering of writes. 
 
@@ -386,7 +392,7 @@ In some leaderless implementations, the client directly sends its writes to seve
 
 <img src="/assets/images/data-intensive-note-2/illustration-3.png" width="800"/>
 
-When a client reads from the database, it doesn’t just send its request to one replica: read requests are also sent to several nodes in parallel. The client may get different responses from different nodes; i.e., the up-to-date value from one node and a stale value from another. **Version numbers are used to determine which value is newer.**
+When a client reads from the database, it doesn’t just send its request to one replica: **read requests are also sent to several nodes in parallel**. The client may get different responses from different nodes; i.e., the up-to-date value from one node and a stale value from another. **Version numbers are used to determine which value is newer.**
 
 #### Read repair and anti-entropy
 
@@ -436,7 +442,7 @@ We say the writes are concurrent, so their order is undefined. Even though the w
 
 LWW achieves the goal of eventual convergence, but at the cost of durability: **if there are several concurrent writes to the same key, even if they were all reported as successful to the client (because they were written to w replicas), only one of the writes will survive and the others will be silently discarded**. Moreover, LWW may even drop writes that are not concurrent, as we shall discuss in “Timestamps for ordering events”.
 
-**If losing data is not acceptable, LWW is a poor choice for conflict resolution.** The only safe way of using a database with LWW is to ensure that a key is only written once and thereafter treated as immutable, thus avoiding any concurrent updates to the same key.
+**If losing data is not acceptable, LWW is a poor choice for conflict resolution.** The only safe way of using a database with LWW is to **ensure that a key is only written once and thereafter treated as immutable**, thus avoiding any concurrent updates to the same key.
 
 #### The “happens-before” relationship and concurrency
 
