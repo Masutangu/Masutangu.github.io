@@ -324,3 +324,207 @@ End of assembler dump.
 
 确定是空指针传入 memset 导致 core。
 
+## coredump 分析 II
+
+```
+Program terminated with signal 11, Segmentation fault.
+#0  0x0000000000000000 in ?? ()
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-157.tl2.2.x86_64 libgcc-4.8.5-4.el7.x86_64 libstdc++-4.8.5-4.el7.x86_64
+(gdb) bt
+#0  0x0000000000000000 in ?? ()
+#1  0x0000000000400619 in result(xuzhina_dump_c05_s3_ex*, int) ()
+#2  0x000000000040086d in main ()
+(gdb) disassemble result
+Dump of assembler code for function _Z6resultP22xuzhina_dump_c05_s3_exi:
+   0x00000000004005b0 <+0>:     push   %rbp
+   0x00000000004005b1 <+1>:     mov    %rsp,%rbp
+   0x00000000004005b4 <+4>:     sub    $0x20,%rsp
+   0x00000000004005b8 <+8>:     mov    %rdi,-0x18(%rbp)
+   0x00000000004005bc <+12>:    mov    %esi,-0x1c(%rbp)
+   0x00000000004005bf <+15>:    movl   $0x0,-0x4(%rbp)
+   0x00000000004005c6 <+22>:    movl   $0x0,-0x8(%rbp)
+   0x00000000004005cd <+29>:    jmp    0x400620 <_Z6resultP22xuzhina_dump_c05_s3_exi+112>
+   0x00000000004005cf <+31>:    mov    -0x8(%rbp),%eax
+   0x00000000004005d2 <+34>:    cltq   
+   0x00000000004005d4 <+36>:    shl    $0x4,%rax
+   0x00000000004005d8 <+40>:    mov    %rax,%rdx
+   0x00000000004005db <+43>:    mov    -0x18(%rbp),%rax
+   0x00000000004005df <+47>:    add    %rdx,%rax
+   0x00000000004005e2 <+50>:    mov    0x8(%rax),%rax
+   0x00000000004005e6 <+54>:    mov    -0x8(%rbp),%edx
+   0x00000000004005e9 <+57>:    movslq %edx,%rdx
+   0x00000000004005ec <+60>:    mov    %rdx,%rcx
+   0x00000000004005ef <+63>:    shl    $0x4,%rcx
+   0x00000000004005f3 <+67>:    mov    -0x18(%rbp),%rdx
+   0x00000000004005f7 <+71>:    add    %rcx,%rdx
+   0x00000000004005fa <+74>:    mov    0x4(%rdx),%ecx
+   0x00000000004005fd <+77>:    mov    -0x8(%rbp),%edx
+   0x0000000000400600 <+80>:    movslq %edx,%rdx
+   0x0000000000400603 <+83>:    mov    %rdx,%rsi
+   0x0000000000400606 <+86>:    shl    $0x4,%rsi
+   0x000000000040060a <+90>:    mov    -0x18(%rbp),%rdx
+   0x000000000040060e <+94>:    add    %rsi,%rdx
+   0x0000000000400611 <+97>:    mov    (%rdx),%edx
+   0x0000000000400613 <+99>:    mov    %ecx,%esi
+   0x0000000000400615 <+101>:   mov    %edx,%edi
+   0x0000000000400617 <+103>:   callq  *%rax
+   0x0000000000400619 <+105>:   add    %eax,-0x4(%rbp)
+   0x000000000040061c <+108>:   addl   $0x1,-0x8(%rbp)
+   0x0000000000400620 <+112>:   mov    -0x8(%rbp),%eax
+   0x0000000000400623 <+115>:   cmp    -0x1c(%rbp),%eax
+   0x0000000000400626 <+118>:   jl     0x4005cf <_Z6resultP22xuzhina_dump_c05_s3_exi+31>
+   0x0000000000400628 <+120>:   mov    -0x4(%rbp),%eax
+   0x000000000040062b <+123>:   leaveq 
+   0x000000000040062c <+124>:   retq   
+End of assembler dump.
+(gdb) i r rip
+rip            0x0      0x0
+```
+
+可以看到调用堆栈顶层的地址为空，rip 也为 0。这种情况只可能是调用了地址为 0 的函数指针。
+
+由
+```
+    0x00000000004005bc <+12>:    mov    %esi,-0x1c(%rbp)
+    0x00000000004005c6 <+22>:    movl   $0x0,-0x8(%rbp)
+    ...
+    0x000000000040061c <+108>:   addl   $0x1,-0x8(%rbp)
+    0x0000000000400620 <+112>:   mov    -0x8(%rbp),%eax
+    0x0000000000400623 <+115>:   cmp    -0x1c(%rbp),%eax
+    0x0000000000400626 <+118>:   jl     0x4005cf <_Z6resultP22xuzhina_dump_c05_s3_exi+31>
+```
+推测是循环遍历，循环变量 i 存在 -0x8(%rbp)，每次递增 1，然后与变量 -0x1c(%rbp) 比较。
+
+
+由
+```
+    0x00000000004005b8 <+8>:     mov    %rdi,-0x18(%rbp)
+    ...
+
+    0x00000000004005cf <+31>:    mov    -0x8(%rbp),%eax
+    0x00000000004005d2 <+34>:    cltq   
+    0x00000000004005d4 <+36>:    shl    $0x4,%rax
+    0x00000000004005d8 <+40>:    mov    %rax,%rdx
+    0x00000000004005db <+43>:    mov    -0x18(%rbp),%rax
+    0x00000000004005df <+47>:    add    %rdx,%rax
+    0x00000000004005e2 <+50>:    mov    0x8(%rax),%rax
+
+    0x00000000004005e6 <+54>:    mov    -0x8(%rbp),%edx
+    0x00000000004005e9 <+57>:    movslq %edx,%rdx
+    0x00000000004005ec <+60>:    mov    %rdx,%rcx
+    0x00000000004005ef <+63>:    shl    $0x4,%rcx
+    0x00000000004005f3 <+67>:    mov    -0x18(%rbp),%rdx
+    0x00000000004005f7 <+71>:    add    %rcx,%rdx
+    0x00000000004005fa <+74>:    mov    0x4(%rdx),%ecx
+
+    0x00000000004005fd <+77>:    mov    -0x8(%rbp),%edx
+    0x0000000000400600 <+80>:    movslq %edx,%rdx
+    0x0000000000400603 <+83>:    mov    %rdx,%rsi
+    0x0000000000400606 <+86>:    shl    $0x4,%rsi
+    0x000000000040060a <+90>:    mov    -0x18(%rbp),%rdx
+    0x000000000040060e <+94>:    add    %rsi,%rdx
+    0x0000000000400611 <+97>:    mov    (%rdx),%edx
+```
+
+这三段基本一致的汇编代码我们推测是在遍历数组，数组的基址为 -0x18(%rbp)。由每段最后一句汇编推测数组元素为结构体，每段取结构体中的不同元素。
+
+从```0x00000000004005d4 <+36>:    shl    $0x4,%rax```得知每次遍历数组的偏移值为 16（左移 4 位 即乘以 16），说明数组元素的大小为 16 字节。
+
+看看崩溃时 i 的值：
+
+```
+(gdb) x /x $rbp-0x8
+0x7ffecfe8e358: 0x00000003
+```
+
+crash 时 i 等于 3，即第 4 个数组元素。
+
+由
+```
+    0x00000000004005d4 <+36>:    shl    $0x4,%rax
+    0x00000000004005d8 <+40>:    mov    %rax,%rdx
+    0x00000000004005db <+43>:    mov    -0x18(%rbp),%rax
+    0x00000000004005df <+47>:    add    %rdx,%rax
+    0x00000000004005e2 <+50>:    mov    0x8(%rax),%rax
+    ...
+    0x0000000000400617 <+103>:   callq  *%rax
+```
+
+得知函数指针存放于结构体的 0x8 偏移的字段，我们打印下下数组第三个元素的内存值，即基址 -0x18(%rbp) + 3 * 16 = -0x18(%rbp) + 0x30：
+
+```
+(gdb) x /2x $rbp-0x18
+0x7ffecfe8e348: 0xcfe8e370      0x00007ffe
+(gdb) x /3x 0x00007ffecfe8e370+0x30
+0x7ffecfe8e3a0: 0x00000003      0x00000003      0x00000000
+```
+
+可以看出数组第一和第二个字段值为3，第三个元素为 0，正好是空指针。
+对比下下面的源码：
+
+```c++
+typedef int (*operation)(int a, int b);
+struct xuzhina_dump_c05_s3_ex {
+    int a;
+    int b;
+    operation oper;
+};
+
+int result(struct xuzhina_dump_c05_s3_ex test[], int num) {
+    int res = 0;
+    for (int i = 0; i < num; i++) {
+        res += test[i].oper(test[i].a, test[i].b);
+    }
+    
+    return res;
+}
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int sub(int a, int b) {
+    return a - b;
+}
+
+int mul(int a, int b) {
+    return a * b;
+}
+
+void init(struct xuzhina_dump_c05_s3_ex test[], int num) {
+    for (int i = 0; i < num; i++) {
+        switch( i % 4 ) {
+        case 0:
+            test[i].a = i / 4;
+            test[i].b = 0;
+            test[i].oper = add;
+            break;
+        case 1:
+            test[i].a = i / 4;
+            test[i].b = i % 4;
+            test[i].oper = mul;
+            break;
+        case 2:
+            test[i].a = i % 4;
+            test[i].b = i / 4;
+            test[i].oper = sub;
+            break;
+        default:
+            test[i].a = i;
+            test[i].b = i % 4;
+            test[i].oper = 0;
+            break;
+        }
+    }
+}
+
+int main() {
+    struct xuzhina_dump_c05_s3_ex test[15];
+    init(test, 15);
+
+    return result(test, 15);
+}
+```
+
+数组第三个元素的字段分别为 3、3、0，和我们的推测相符。
+
