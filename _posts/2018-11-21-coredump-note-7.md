@@ -344,3 +344,220 @@ Temporary breakpoint 5, 0x0000000000400995 in main ()
 关系图如下：
 
 <img src="/assets/images/coredump-note-7/illustration-1.png" width="800" />
+
+
+## coredump 分析
+```
+(gdb) set print asm-demangle
+(gdb) bt
+#0  0x0000000000000000 in ?? ()
+#1  0x0000000000400ea0 in main ()
+(gdb) i r 
+rax            0x0      0
+rbx            0x0      0
+rcx            0x7fff070007b1   140733310830513
+rdx            0xa      10
+rsi            0x0      0
+rdi            0x0      0
+rbp            0x7fff06ffe820   0x7fff06ffe820
+rsp            0x7fff06ffe788   0x7fff06ffe788
+r8             0x7f1790ee2060   139739192500320
+r9             0xa      10
+r10            0x0      0
+r11            0x0      0
+r12            0x0      0
+r13            0x7fff06ffe900   140733310822656
+r14            0x0      0
+r15            0x0      0
+rip            0x0      0x0
+eflags         0x10206  [ PF IF RF ]
+cs             0x33     51
+ss             0x2b     43
+ds             0x0      0
+es             0x0      0
+fs             0x0      0
+gs             0x0      0
+```
+
+rip 为 0，根据之前的经验，是调用了空的函数指针。查看 core 附近的汇编：
+
+```
+Dump of assembler code for function main:
+   0x0000000000400ced <+0>:     push   %rbp
+   0x0000000000400cee <+1>:     mov    %rsp,%rbp
+   0x0000000000400cf1 <+4>:     push   %r12
+   0x0000000000400cf3 <+6>:     push   %rbx
+   0x0000000000400cf4 <+7>:     add    $0xffffffffffffff80,%rsp
+   0x0000000000400cf8 <+11>:    mov    %edi,-0x84(%rbp)
+   0x0000000000400cfe <+17>:    mov    %rsi,-0x90(%rbp)
+   0x0000000000400d05 <+24>:    cmpl   $0x3,-0x84(%rbp)
+   0x0000000000400d0c <+31>:    jg     0x400d22 <main+53>
+   0x0000000000400d0e <+33>:    mov    $0x402310,%edi
+   0x0000000000400d13 <+38>:    callq  0x400a80 <puts@plt>
+   0x0000000000400d18 <+43>:    mov    $0xffffffff,%ebx
+   0x0000000000400d1d <+48>:    jmpq   0x400ec6 <main+473>
+   0x0000000000400d22 <+53>:    lea    -0x80(%rbp),%rax
+   0x0000000000400d26 <+57>:    mov    %rax,%rdi
+   0x0000000000400d29 <+60>:    callq  0x400fae <std::map<std::string, int (*)(int, int), std::less<std::string>, std::allocator<std::pair<std::string const, int (*)(int, int)> > >::map()>
+   0x0000000000400d2e <+65>:    lea    -0x41(%rbp),%rax
+   0x0000000000400d32 <+69>:    mov    %rax,%rdi
+   0x0000000000400d35 <+72>:    callq  0x400b80 <_ZNSaIcEC1Ev@plt>
+   0x0000000000400d3a <+77>:    lea    -0x41(%rbp),%rdx
+   0x0000000000400d3e <+81>:    lea    -0x50(%rbp),%rax
+   0x0000000000400d42 <+85>:    mov    $0x402326,%esi
+   0x0000000000400d47 <+90>:    mov    %rax,%rdi
+   0x0000000000400d4a <+93>:    callq  0x400b00 <_ZNSsC1EPKcRKSaIcE@plt>
+   0x0000000000400d4f <+98>:    lea    -0x50(%rbp),%rdx
+   0x0000000000400d53 <+102>:   lea    -0x80(%rbp),%rax
+   0x0000000000400d57 <+106>:   mov    %rdx,%rsi
+   0x0000000000400d5a <+109>:   mov    %rax,%rdi
+   0x0000000000400d5d <+112>:   callq  0x401056 <std::map<std::string, int (*)(int, int), std::less<std::string>, std::allocator<std::pair<std::string const, int (*)(int, int)> > >::operator[](std::string const&)>
+   0x0000000000400d62 <+117>:   movq   $0x400cb0,(%rax)
+   0x0000000000400d69 <+124>:   lea    -0x50(%rbp),%rax
+   0x0000000000400d6d <+128>:   mov    %rax,%rdi
+   0x0000000000400d70 <+131>:   callq  0x400af0 <_ZNSsD1Ev@plt>
+   0x0000000000400d75 <+136>:   lea    -0x41(%rbp),%rax
+   0x0000000000400d79 <+140>:   mov    %rax,%rdi
+   0x0000000000400d7c <+143>:   callq  0x400b30 <_ZNSaIcED1Ev@plt>
+   0x0000000000400d81 <+148>:   lea    -0x31(%rbp),%rax
+   0x0000000000400d85 <+152>:   mov    %rax,%rdi
+   0x0000000000400d88 <+155>:   callq  0x400b80 <_ZNSaIcEC1Ev@plt>
+   0x0000000000400d8d <+160>:   lea    -0x31(%rbp),%rdx
+   0x0000000000400d91 <+164>:   lea    -0x40(%rbp),%rax
+   0x0000000000400d95 <+168>:   mov    $0x402328,%esi
+   0x0000000000400d9a <+173>:   mov    %rax,%rdi
+   0x0000000000400d9d <+176>:   callq  0x400b00 <_ZNSsC1EPKcRKSaIcE@plt>
+   0x0000000000400da2 <+181>:   lea    -0x40(%rbp),%rdx
+   0x0000000000400da6 <+185>:   lea    -0x80(%rbp),%rax
+   0x0000000000400daa <+189>:   mov    %rdx,%rsi
+   0x0000000000400dad <+192>:   mov    %rax,%rdi
+   0x0000000000400db0 <+195>:   callq  0x401056 <std::map<std::string, int (*)(int, int), std::less<std::string>, std::allocator<std::pair<std::string const, int (*)(int, int)> > >::operator[](std::string const&)>
+   0x0000000000400db5 <+200>:   movq   $0x400cc4,(%rax)
+   0x0000000000400dbc <+207>:   lea    -0x40(%rbp),%rax
+   0x0000000000400dc0 <+211>:   mov    %rax,%rdi
+   0x0000000000400dc3 <+214>:   callq  0x400af0 <_ZNSsD1Ev@plt>
+   0x0000000000400dc8 <+219>:   lea    -0x31(%rbp),%rax
+   0x0000000000400dcc <+223>:   mov    %rax,%rdi
+   0x0000000000400dcf <+226>:   callq  0x400b30 <_ZNSaIcED1Ev@plt>
+   0x0000000000400dd4 <+231>:   lea    -0x21(%rbp),%rax
+   0x0000000000400dd8 <+235>:   mov    %rax,%rdi
+   0x0000000000400ddb <+238>:   callq  0x400b80 <_ZNSaIcEC1Ev@plt>
+   0x0000000000400de0 <+243>:   lea    -0x21(%rbp),%rdx
+   0x0000000000400de4 <+247>:   lea    -0x30(%rbp),%rax
+   0x0000000000400de8 <+251>:   mov    $0x40232a,%esi
+   0x0000000000400ded <+256>:   mov    %rax,%rdi
+   0x0000000000400df0 <+259>:   callq  0x400b00 <_ZNSsC1EPKcRKSaIcE@plt>
+   0x0000000000400df5 <+264>:   lea    -0x30(%rbp),%rdx
+   0x0000000000400df9 <+268>:   lea    -0x80(%rbp),%rax
+   0x0000000000400dfd <+272>:   mov    %rdx,%rsi
+   0x0000000000400e00 <+275>:   mov    %rax,%rdi
+   0x0000000000400e03 <+278>:   callq  0x401056 <std::map<std::string, int (*)(int, int), std::less<std::string>, std::allocator<std::pair<std::string const, int (*)(int, int)> > >::operator[](std::string const&)>
+   0x0000000000400e08 <+283>:   movq   $0x400cda,(%rax)
+   0x0000000000400e0f <+290>:   lea    -0x30(%rbp),%rax
+   0x0000000000400e13 <+294>:   mov    %rax,%rdi
+   0x0000000000400e16 <+297>:   callq  0x400af0 <_ZNSsD1Ev@plt>
+   0x0000000000400e1b <+302>:   lea    -0x21(%rbp),%rax
+   0x0000000000400e1f <+306>:   mov    %rax,%rdi
+   0x0000000000400e22 <+309>:   callq  0x400b30 <_ZNSaIcED1Ev@plt>
+   0x0000000000400e27 <+314>:   lea    -0x11(%rbp),%rax
+   0x0000000000400e2b <+318>:   mov    %rax,%rdi
+   0x0000000000400e2e <+321>:   callq  0x400b80 <_ZNSaIcEC1Ev@plt>
+   0x0000000000400e33 <+326>:   mov    -0x90(%rbp),%rax
+   0x0000000000400e3a <+333>:   add    $0x10,%rax
+   0x0000000000400e3e <+337>:   mov    (%rax),%rcx
+   0x0000000000400e41 <+340>:   lea    -0x11(%rbp),%rdx
+   0x0000000000400e45 <+344>:   lea    -0x20(%rbp),%rax
+   0x0000000000400e49 <+348>:   mov    %rcx,%rsi
+   0x0000000000400e4c <+351>:   mov    %rax,%rdi
+   0x0000000000400e4f <+354>:   callq  0x400b00 <_ZNSsC1EPKcRKSaIcE@plt>
+   0x0000000000400e54 <+359>:   lea    -0x20(%rbp),%rdx
+   0x0000000000400e58 <+363>:   lea    -0x80(%rbp),%rax
+   0x0000000000400e5c <+367>:   mov    %rdx,%rsi
+   0x0000000000400e5f <+370>:   mov    %rax,%rdi
+   0x0000000000400e62 <+373>:   callq  0x401056 <std::map<std::string, int (*)(int, int), std::less<std::string>, std::allocator<std::pair<std::string const, int (*)(int, int)> > >::operator[](std::string const&)>
+   0x0000000000400e67 <+378>:   mov    (%rax),%rbx
+   0x0000000000400e6a <+381>:   mov    -0x90(%rbp),%rax
+   0x0000000000400e71 <+388>:   add    $0x18,%rax
+   0x0000000000400e75 <+392>:   mov    (%rax),%rax
+   0x0000000000400e78 <+395>:   mov    %rax,%rdi
+   0x0000000000400e7b <+398>:   callq  0x400b10 <atoi@plt>
+   0x0000000000400e80 <+403>:   mov    %eax,%r12d
+   0x0000000000400e83 <+406>:   mov    -0x90(%rbp),%rax
+   0x0000000000400e8a <+413>:   add    $0x8,%rax
+   0x0000000000400e8e <+417>:   mov    (%rax),%rax
+   0x0000000000400e91 <+420>:   mov    %rax,%rdi
+   0x0000000000400e94 <+423>:   callq  0x400b10 <atoi@plt>
+   0x0000000000400e99 <+428>:   mov    %r12d,%esi
+   0x0000000000400e9c <+431>:   mov    %eax,%edi
+   0x0000000000400e9e <+433>:   callq  *%rbx
+=> 0x0000000000400ea0 <+435>:   mov    %eax,%ebx
+   ...
+(gdb) i r rbx
+rbx            0x0      0
+(gdb) 
+```
+
+确定是 rbx 寄存器为空地址引起的，rbx 存的是 <+373> 调用 operator[] 的返回值。分析下 operator[] 传的是哪个 key 值：
+
+```
+(gdb) x /2wx $rbp-0x20
+0x7ffdcb892580: 0x01fce178      0x00000000
+(gdb) x /s 0x01fce178
+0x1fce178:      "b"
+```
+
+再根据 <+112> <+195> <+278> 可以看出 map 中不存在 key 为 "b" 的元素（分别插入了 "+"，"-"，"*"）：
+
+```
+(gdb) x /2wx $rbp-0x50
+0x7ffdcb892550: 0x01fce028      0x00000000
+(gdb) x /s 0x01fce028
+0x1fce028:      "+"
+(gdb) x /2wx $rbp-0x40
+0x7ffdcb892560: 0x01fce098      0x00000000
+(gdb) x /s 0x01fce098
+0x1fce098:      "-"
+(gdb) x /2wx $rbp-0x30
+0x7ffdcb892570: 0x01fce108      0x00000000
+(gdb) x /s 0x01fce108
+0x1fce108:      "*"
+```
+
+对比源码：
+
+```c++
+#include <map>
+#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int (*oper)(int a, int b );
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int sub(int a, int b) {
+    return a - b;
+}
+
+int mul(int a, int b) {
+    return a * b;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 4) {
+        printf( "parameter less than 4\n" );
+        return -1;
+    }
+
+    std::map< std::string, oper> operMap;
+    operMap["+"] = &add;
+    operMap["-"] = &sub;
+    operMap["*"] = &mul;
+
+    return operMap[argv[2]](atoi(argv[1]), atoi(argv[3]));
+}
+```
+
+执行 ```./test a b c``` 导致 core。
