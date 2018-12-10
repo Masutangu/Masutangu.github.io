@@ -400,7 +400,7 @@ rax            0x604db0 6311344
 0x604db0 <global_val>:  0x007b502c      0x00000000
 ```
 
-可以看出，**因为使用了共享栈，每个协程的 rbp 一致**（stack_buffer 是同一块 malloc 的内存，ss_sp 指向 stack_buffer，因此每个协程的 ss_sp 值相同，进而 sp 也相同）。
+可以看出，**因为使用了共享栈，每个协程的 rbp 一致**（stack_buffer 是同一块 malloc 的内存，ss_sp 指向 stack_buffer，因此每个协程的 ss_sp 值相同，进而 sp 也相同），导致不同协程内分配局部变量的地址会冲突（私有栈则没有这个问题，因为每个协程的栈空间是各自 malloc 的）。
 
 在 RoutineFuncA 中定义的局部变量的地址为 0x007b502c，此地址保存在全局变量 global_val 中。之后启动了 RoutineFuncB，定义了另外的局部变量，地址刚好也为 0x007b502c，则全局变量 global_val 指向的变量实际上是 RoutineFuncB 中的临时变量了，所以打印出的值也就是 RoutineFuncB 中局部变量的值。**因此，在使用共享栈模式时，切记不要在协程之间传递局部变量的地址。**
 
