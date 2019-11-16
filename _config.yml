@@ -1,7 +1,7 @@
 # Site settings
 title: Masutangu
 SEOTitle: Masutangu 的博客 | Masutangu Blog
-header-img: img/home-bg.jpg
+header-img: "https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/home-bg.jpg"
 email: masutangu.cs@gmail.com
 description: "关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。"
 keyword: "Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++"
@@ -71,7 +71,7 @@ ga_domain: masutangu.com
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "<I>\"當我穿過沙漠遇見你</I><br><I>不可思議十三億分之一</I><br><I>遠處夕陽落入地平線裡</I><br><I>風吹過 過去 未來 現在</I><br><I>冥冥之中 誰在編排你\"</I><p>C-BLOCK -《很高興認識你》"
-sidebar-avatar: /img/avatar.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: "https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/avatar.jpg"      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
