@@ -16,9 +16,9 @@ tags:
 
 ## 基于单 leader 的复制（Leader-Based Replication）
 
-Leader-Based Replication，又或**主从复制**的实现下，某个节点被选举为 leader，其他节点为 follower。写操作必须经由 leader 处理，leader 先写本地存储，同时转发给 follower，follower 必须采用和 leader 同样的操作顺序更新本地存储。读操作则可以由 leader 或者 follower 处理（follower 可能会返回过期数据）。
+基于单 leader 的复制，又或**主从复制**的实现下，某个节点被选举为 leader，其他节点为 follower。写操作必须经由 leader 处理，leader 先写本地存储，同时转发给 follower，follower 必须采用和 leader 同样的操作顺序更新本地存储。读操作则可以由 leader 或者 follower 处理（follower 可能会返回过期数据）。
 
-因为 leader 到 follower 的数据同步总是需要时间，follower 相比 leader 数据总存在一定的延时。主从复制分为两种方式：**同步**和**异步**。若采用同步复制的方式，leader 必须阻塞等到 follwer 成功接收更新数据后才会返回成功，但这样某个 follower 节点挂了就会影响到整个系统的可用性，因此通常同步复制的方式只要求其中一台 follower 是同步的，其他为异步复制。如果同步复制的 follower 挂掉了，就重新选出一台 follower 作为同步复制的 follower，这种方式通常也称为**半同步复制**（Semi-Synchronous）。论文 [Semi-Synchronous Replication at Facebook](http://yoshinorimatsunobu.blogspot.com/2014/04/semi-synchronous-replication-at-facebook.html) 介绍了半同步复制在 facebook 的实践。
+因为 leader 到 follower 的数据同步总是需要时间，follower 相比 leader 数据总存在一定的延时。主从复制分为两种方式：**同步**和**异步**。若采用同步复制的方式，leader 必须阻塞等到 follower 成功接收更新数据后才会返回成功，但这样某个 follower 节点挂了就会影响到整个系统的可用性，因此通常同步复制的方式只要求其中一台 follower 是同步的，其他为异步复制。如果同步复制的 follower 挂掉了，就重新选出一台 follower 作为同步复制的 follower，这种方式通常也称为**半同步复制**（Semi-Synchronous）。论文 [Semi-Synchronous Replication at Facebook](http://yoshinorimatsunobu.blogspot.com/2014/04/semi-synchronous-replication-at-facebook.html) 介绍了半同步复制在 facebook 的实践。
 
 尽管异步复制的方式可能会丢数据，例如 leader 挂了，来不及将最新的数据复制给 follower 的情况下。但在实际中却是应用最广泛的。除了同步异步复制，目前还有其他方向的探索，比如 chain replication，有兴趣的参考附录的论文。
 
@@ -101,7 +101,7 @@ Values:
 
 ### 数据延迟引发的一致性问题
 
-主从之间数据的延迟（Replication Lag）可能会带来一致性的问题。下面列举几个一致性模型（关于一致性模型的讨论可参阅附录）说明数据延迟可能引发的风险：
+主从之间数据的延迟（Replication Lag）可能会带来一致性的问题。下面列举几个一致性模型（关于一致性模型的讨论可参阅附录）说明数据延迟可能引发的问题：
 
 #### 写后读一致性（Read-After-Write Consistency）
 
@@ -122,7 +122,7 @@ Values:
 
 <img src="/assets/images/distributed-system-2/illustration-2.png" width="600" />
 
-解决方法可以根据用户 id 做 hash 挑选出一个 replica 节点，每次都从该节点读，但在节点扩容的话哈希路由规则可能会失效。
+解决方法可以根据用户 id 通过哈希路由到固定的 replica 节点，每次都从该节点读，但在节点扩容的话哈希路由规则可能会失效。
 
 #### 前缀一致性（Consistent Prefix Reads Consistency）
 
@@ -284,51 +284,13 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 
 将算法从单节点扩展成多个 replica，则每个 replica 都需要维护所有 replica 的版本号，这个版本号的集合即称之为**版本向量** [version vector](http://zoo.cs.yale.edu/classes/cs426/2013/bib/parker83detection.pdf) 。每个 replica 在写操作时递增自身的版本号，发送消息时需要带上自己的版本向量，接收消息的 replica 需要对齐自己的版本向量。如下图，中括号表示所有 replica 的版本号向量 [replica 1 版本号，replica 2 版本号，...，replica n 版本号]：
 
-<img src="/assets/images/distributed-system-2/illustration-9.png" width="800" />
+<img src="/assets/images/distributed-system-2/illustration-9.png" width="600" />
 
 当事件 A 的版本向量在各个维的值都小于等于事件 B 的版本向量，并至少有一个维的值小于 B 的版本向量时，则事件 A 的版本向量小于事件 B 的版本向量，同时可以推导出事件 A 发生在事件 B 之前。**如果两个事件的版本向量不存在大小关系，则认为这两个事件是同时发生，不存在先后顺序。**上图中客户端最后读取 replica 2 返回值的版本向量为 [2, 1, 0]，读取 replia 3 返回值的版本向量为 [3, 0, 0]，这两个版本向量不存在大小关系，表示这两个值是同时写入的，需要客户端对这两个值进行合并。
 
 版本向量对逻辑时钟进行了扩展，与逻辑时钟不同，**版本向量对事件定义了严格的偏序关系，版本向量的大小准确地反映了事件的时序。**Riak 使用了其变种 [dotted version vector](https://arxiv.org/pdf/1011.5808v1.pdf)，具体可以参阅论文 [Vector Clocks Revisited Part 2: Dotted Version Vectors](https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/) 和 [A Brief History of Time in Riak](https://www.youtube.com/watch?v=HHkKPdOi-ZU)
 
 ## 附录 
-
-### Chain Replication
-
-参考资料：
-* [Chain replication : how to build an effective KV-storage](https://medium.com/coinmonks/chain-replication-how-to-build-an-effective-kv-storage-part-1-2-b0ce10d5afc3)
-
-* [Chain Replication for Supporting High Throughput and Availability](http://static.usenix.org/events/osdi04/tech/full_papers/renesse/renesse.pdf)
-
-* [Object Storage on CRAQ: High-throughput chain replication for read-mostly workloads](https://www.usenix.org/legacy/event/usenix09/tech/full_papers/terrace/terrace.pdf)
-
-### Conflict-free replicated datatypes
-
-参考资料：
-* [A Comprehensive Study of Convergent and Commutative Replicated Data Types](https://hal.inria.fr/inria-00555588/document)
-* [CRDTs: An UPDATE (or Maybe Just a PUT)](https://speakerdeck.com/lenary/crdts-an-update-or-just-a-put)
-* [A Bluffers Guide to CRDTs in Riak](https://gist.github.com/russelldb/f92f44bdfb619e089a4d)
-* [A Conflict-Free Replicated JSON Datatype](https://arxiv.org/abs/1608.03960)
-* [CRDT for Data Consistency in Distributed Environment](https://medium.com/@dmitrymartyanov/crdt-for-data-consistency-in-distributed-environment-ddb8dfdbc396)
-
-### Mergeable persistent data structures
-
-参考资料：
-* [Mergeable persistent data structures](http://gazagnaire.org/pub/FGM15.pdf)
-
-### Operational transformation
-
-参考资料：
-* [Operational Transformation in Real-Time Group Editors: Issues, Algorithms, and Achievements](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.933&rep=rep1&type=pdf)
-
-
-### Version vector 和 vector clock
-
-Version vector 有时也称为 vector clock，但两者并不是同个概念，关于两者的区别可以参阅：
-* [Dotted Version Vectors: Logical Clocks for Optimistic Replication](https://arxiv.org/pdf/1011.5808v1.pdf)
-* [Version Vectors are not Vector Clocks](https://haslab.wordpress.com/2011/07/08/version-vectors-are-not-vector-clocks/)
-* [Detecting Causal Relationships in Distributed Computations:In Search of the Holy Grai](http://dcg.ethz.ch/lectures/hs08/seminar/papers/mattern4.pdf)
-
-Version vector 用于发现冲突，crdt 用于解决冲突。
 
 ### 一致性模型
 
@@ -379,3 +341,41 @@ Version vector 用于发现冲突，crdt 用于解决冲突。
 * [Consistency model](https://en.wikipedia.org/wiki/Consistency_model)
 * [Distributed systems: Principles and Paradigms](http://barbie.uta.edu/~jli/Resources/MapReduce&Hadoop/Distributed%20Systems%20Principles%20and%20Paradigms.pdf)
 * [Strong consistency models](https://aphyr.com/posts/313-strong-consistency-models)
+
+### Chain Replication
+
+参考资料：
+* [Chain replication : how to build an effective KV-storage](https://medium.com/coinmonks/chain-replication-how-to-build-an-effective-kv-storage-part-1-2-b0ce10d5afc3)
+
+* [Chain Replication for Supporting High Throughput and Availability](http://static.usenix.org/events/osdi04/tech/full_papers/renesse/renesse.pdf)
+
+* [Object Storage on CRAQ: High-throughput chain replication for read-mostly workloads](https://www.usenix.org/legacy/event/usenix09/tech/full_papers/terrace/terrace.pdf)
+
+### Conflict-free replicated datatypes
+
+参考资料：
+* [A Comprehensive Study of Convergent and Commutative Replicated Data Types](https://hal.inria.fr/inria-00555588/document)
+* [CRDTs: An UPDATE (or Maybe Just a PUT)](https://speakerdeck.com/lenary/crdts-an-update-or-just-a-put)
+* [A Bluffers Guide to CRDTs in Riak](https://gist.github.com/russelldb/f92f44bdfb619e089a4d)
+* [A Conflict-Free Replicated JSON Datatype](https://arxiv.org/abs/1608.03960)
+* [CRDT for Data Consistency in Distributed Environment](https://medium.com/@dmitrymartyanov/crdt-for-data-consistency-in-distributed-environment-ddb8dfdbc396)
+
+### Mergeable persistent data structures
+
+参考资料：
+* [Mergeable persistent data structures](http://gazagnaire.org/pub/FGM15.pdf)
+
+### Operational transformation
+
+参考资料：
+* [Operational Transformation in Real-Time Group Editors: Issues, Algorithms, and Achievements](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.933&rep=rep1&type=pdf)
+
+
+### Version vector 和 vector clock
+
+Version vector 有时也称为 vector clock，但两者并不是同个概念，关于两者的区别可以参阅：
+* [Dotted Version Vectors: Logical Clocks for Optimistic Replication](https://arxiv.org/pdf/1011.5808v1.pdf)
+* [Version Vectors are not Vector Clocks](https://haslab.wordpress.com/2011/07/08/version-vectors-are-not-vector-clocks/)
+* [Detecting Causal Relationships in Distributed Computations:In Search of the Holy Grai](http://dcg.ethz.ch/lectures/hs08/seminar/papers/mattern4.pdf)
+
+Version vector 用于发现冲突，crdt 用于解决冲突。
