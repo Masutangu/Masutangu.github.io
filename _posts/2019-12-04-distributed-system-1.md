@@ -143,7 +143,7 @@ LSM-Tree 相比起 B-Tree 写放大（write amplification）更低，但读放�
 
 以字节为单位，假设 B-Tree 的 page size 为 B，键值、指针和记录的大小都为常量字节数，每个中间节点包含 O(B) 个子节点，每个叶子节点包含的记录数为 O(B)，可知 B-Tree 的高度为 O(logB N/B)（N 为整个数据库记录数据的总大小）。在最差情况下，每次写操作都需要将 page 刷回磁盘，写放大为 O(B)。最差情况下，读放大为 B-Tree 的高度，为 O(logB N/B)。
 
-假设采用 LCS 策略的 LSM-Tree 每层数据量逐层以 k 倍增长，数据总量为 N，则 LSM-Tree 的高度为 O(logk N/B)。每一层的数据平均被上一层合并 k/2 次，因此写放大为 O(k * logk N/B)。读操作需要在每一层执行二分查找，最后一层的读次数为 log N/B，倒数第二层的读次数为 log N/(k * B) = log N/B - log k，倒数第三层为 log N/(k^2 * B) = log N/B - 2*log k，以此类推。第一层为 1，因此总的读放大为 O((log ^ 2 N/B)/logk)。
+假设采用 LCS 策略的 LSM-Tree 每层数据量逐层以 k 倍增长，数据总量为 N，sstable 文件大小为 B，则 LSM-Tree 的高度为 O(logk N/B)。每一层的数据平均被上一层合并 k/2 次，因此写放大为 O(k * logk N/B)。读操作需要在每一层执行二分查找，最后一层的读次数为 log N/B，倒数第二层的读次数为 log N/(k * B) = log N/B - log k，倒数第三层为 log N/(k^2 * B) = log N/B - 2*log k，以此类推。第一层为 1，因此总的读放大为 O((log ^ 2 N/B)/logk)。
 
 采用 STCS 策略的 LSM-Tree，每层数据只会被写到下一层一次，因此写放大为 O(logk N/B)，但读操作需要读取每一层的数据，因此读放大为 O(k(log ^ 2 N/B)/logk)。
 
@@ -284,3 +284,16 @@ Broker 模式下组件包括 broker 和事件处理器。Broker 模式下没有�
 <img src="/assets/images/distributed-system-1/illustration-13.png" width="600" />
 
 更多细节请参考 [Software Architecture Patterns-Chapter 2. Event-Driven Architecture](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch02.html)。
+
+
+### B-Tree 的 page size 取值
+
+B-Tree 的 page size 取值一般为 4 KB 或 16 KB。写操作频繁的业务场景建议设置小一些的 page size 值，读操作频繁的业务场景建议设置相对较大的 page size 值。因为 page size 越大，写放大越严重，但树的高度也越浅。另外，如果 page size 设置过小，不能很好的利用机械硬盘的带宽。假设 page size 为 4 KB，磁盘传输速率为 100 MB/s，磁盘寻道时间为 5ms，传输 4 KB 的耗时为 0.04 ms，读/写一个 4 KB 的 page 总共耗费 5.04 ms，那么算下来有效传输速率仅为 794 KB /s，远远没有达到 100 MB/s。
+
+### lsm 读写放大优化
+
+[Optimizing Space Amplification in RocksDB](http://cidrdb.org/cidr2017/papers/p82-dong-cidr17.pdf)
+
+[WiscKey: Separating Keys from Values in SSD-conscious Storage](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf)
+
+### wal 的实现
