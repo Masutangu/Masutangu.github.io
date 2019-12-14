@@ -20,7 +20,7 @@ tags:
 
 复制有两种实现方式：**基于 leader（single-leader 和 multi-leader）复制**以及**无 leader（leaderless）复制**。
 
-## 基于单 leader 的复制（Leader-Based Replication）
+## 基于单 leader 的复制 Leader-Based Replication
 
 基于单 leader 的复制，又或**主从复制**的实现下，某个节点被选举为 leader，其他节点为 follower。写操作必须经由 leader 处理，leader 先写本地存储，同时转发给 follower，follower 必须采用和 leader 同样的操作顺序更新本地存储。读操作则可以由 leader 或者 follower 处理（follower 可能会返回过期数据）。
 
@@ -32,7 +32,7 @@ tags:
 
 主从同步的复制日志有不同的形式，包括了 statement-based、wal、row-based，另外还有基于 trigger 的方式。
 
-#### 基于语句复制（statement-based replication）
+#### 基于语句复制 Statement-Based Replication
 
 通过字面可以看出，基于语句复制即把 leader 执行的语句原封不动的转发给 follower 去执行。优点是写入少，只需要记录操作语句，不需要记录所有受影响的行。但这种方式存在如下的问题：
 
@@ -43,11 +43,11 @@ tags:
 
 * 执行带副作用的语句，例如 trigger、UDF，同样可能产生非确定性的结果。
 
-#### 预写日志（Write-ahead log (WAL) shipping）
+#### 预写日志 Write-Ahead Log (WAL) Shipping
 
 上一篇文章提到说 LSM 和 B-Tree 在写操作前都会记录 wal，wal 中以追加的形式记录每次对数据库的写操作。PostgreSQL 和 orcale 就采用了这种做法，参考论文 [WAL Internals Of PostgreSQL](https://www.pgcon.org/2012/schedule/attachments/258_212_Internals%20Of%20PostgreSQL%20Wal.pdf)。但 wal 和存储引擎实现息息相关，两者强耦合，如果升级了存储引擎，可能导致前后不兼容。
 
-#### 逻辑日志复制（Logical (row-based) log replication）
+#### 逻辑日志复制 Logical (Row-Based) Log Replication
 
 相比起 WAL，采用基于行的日志进行复制可以与存储引擎的实现解藕，因此基于行日志也称为逻辑日志，以区分存储引擎中数据的物理存储形式。
 
@@ -101,7 +101,7 @@ Values:
 
 详细关于 statement-based 和 row-based 的对比可以参考 mysql 官方文档 [Advantages and Disadvantages of Statement-Based and Row-Based Replication](https://dev.mysql.com/doc/refman/5.6/en/replication-sbr-rbr.html)
 
-#### 基于触发器复制（Trigger-based replication）
+#### 基于触发器复制 Trigger-Based Replication
 
 还可以采用关系型数据库提供的 triggers 和 stored procedures 来实现主从复制，但会带来更大的性能损耗，也容易引入更多的 bug。不过 trigger-based 的方式提供了更大的灵活性，比如可以只复制数据库中的某张表。
 
@@ -109,7 +109,7 @@ Values:
 
 主从之间数据的延迟（Replication Lag）可能会带来一致性的问题。下面列举几个一致性模型（关于一致性模型的讨论可参阅附录）说明数据延迟可能引发的问题：
 
-#### 写后读一致性（Read-After-Write Consistency）
+#### 写后读一致性 Read-After-Write Consistency
 
 写后读一致性（Read-After-Write Consistency 或 [Read-Your-Writes Consistency](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.71.2269&rep=rep1&type=pdf)）保证一旦数据写入成功，后续的读操作总是能读到写入的数据。但在异步复制模式下，主从数据存在延迟时却会出现读不到最新写数据的情况：
 
@@ -122,7 +122,7 @@ Values:
 
 涉及到多 datacenter 或者用户使用多客户端进行请求的时候，处理起来更加麻烦一些。
 
-#### 单调读一致性（Monotonic Reads Consistency）
+#### 单调读一致性 Monotonic Reads Consistency
 
 单调读一致性保证读操作返回的结果不会倒退。同样异步复制下可能会出现读回退的状况：
 
@@ -130,7 +130,7 @@ Values:
 
 解决方法可以根据用户 id 通过哈希路由到固定的 replica 节点，每次都从该节点读，但在节点扩容的话哈希路由规则可能会失效。
 
-#### 前缀一致性（Consistent Prefix Reads Consistency）
+#### 前缀一致性 Consistent Prefix Reads Consistency
 
 前缀一致性提供如下保证：如果写操作以一定的顺序执行，那么读出来的结果必须和写操作的执行顺序相同。如果数据库不同分区独立执行写操作，则会出现不一致的问题： 
 
@@ -138,7 +138,7 @@ Values:
 
 解决这种问题，可以将所有关联的写操作都写入到同一个分区中，或者需要维护写操作的因果关系。
 
-## 多 leader 复制（Multi-Leader Replication）
+## 多 leader 复制 Multi-Leader Replication
 
 多 leader 复制模式下，允许多个节点处理写请求。处理写操作的同时转发给其他所有的节点。该模式下 leader 同时扮演其他 leader 的 follower 的角色。 
 
@@ -194,7 +194,7 @@ Values:
 
 因为不同机器的时间可能存在差异，给写操作附上时间戳也无法解决上述问题。后续小节介绍的**版本向量**可以用以处理事件的因果关系，但通常多 leader 复制的模式下基本上不检测处理写冲突，也不处理事件的先后时序。
 
-## 无中心复制（Leaderless Replication）
+## 无中心复制 Leaderless Replication
 
 之前讨论的单 leader 和多 leader 模式下，都是由 leader 来决策写操作顺序，follower 以和 leader 相同的操作顺序执行。而**无中心复制（leaderless replication）**则摒弃了 leader 的概念，每个 replica 都可以接收处理写操作。[Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) 的出现极大推动了无中心复制的发展，因此无中心复制也称为 dynamo-style。
 
@@ -236,7 +236,7 @@ Cassandra 和 voldemort 使用了无中心模式来支持多数据中心。Riak 
 
 Replica 2 认为最终 x 的值为 b，replica 3 认为最终 x 的值为 a。
 
-#### Last write wins
+#### Last Write Wins
 
 之前提到可以采用 lww 的方法来最终收敛写冲突，每个 replica 只保存“最近”的值。问题在于，如何定义“最近”？上图的例子可以认为两个写操作是同时的，很难去定义谁先谁后。在这种情况下，虽然我们可以采用 lww 算法，给每个写操作赋予一个 ID，例如时间戳，来给写操作强行排序。但 lww 存在写丢失的问题（给客户端返回成功，实际上同时多个写请求只有一个能成功），而且 lww 并不能真实地反应出写操作的先后顺序。
 

@@ -294,10 +294,13 @@ Broker 模式下组件包括 broker 和事件处理器。Broker 模式下没有�
 
 B-Tree 的 page size 取值一般为 4 KB 或 16 KB。写操作频繁的业务场景建议设置小一些的 page size 值，读操作频繁的业务场景建议设置相对较大的 page size 值。因为 page size 越大，写放大越严重，但树的高度也越浅。另外，如果 page size 设置过小，不能很好的利用机械硬盘的带宽。假设 page size 为 4 KB，磁盘传输速率为 100 MB/s，磁盘寻道时间为 5ms，传输 4 KB 的耗时为 0.04 ms，读/写一个 4 KB 的 page 总共耗费 5.04 ms，那么算下来有效传输速率仅为 794 KB /s，远远没有达到 100 MB/s。
 
-### lsm 读写放大优化
+### LSM 读写放大优化
 
-[Optimizing Space Amplification in RocksDB](http://cidrdb.org/cidr2017/papers/p82-dong-cidr17.pdf)
+参考资料：
 
-[WiscKey: Separating Keys from Values in SSD-conscious Storage](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf)
+* [Optimizing Space Amplification in RocksDB](http://cidrdb.org/cidr2017/papers/p82-dong-cidr17.pdf)
+* [WiscKey: Separating Keys from Values in SSD-conscious Storage](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf)
 
-### wal 的实现
+### WAL 的实现
+
+待补充。
