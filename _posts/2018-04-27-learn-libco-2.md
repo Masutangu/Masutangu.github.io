@@ -16,7 +16,19 @@ tags:
 
 <img src="/assets/images/learn-libco-2/illustration-1.png" width="800"/>
 
-调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 %ebp，并将 %ebp 设置为当前 %esp。子函数通过 %ebp + 4 读取参数1，%ebp + 8 读取参数2，依次类推。
+调用子函数时，父函数从右到左将函数入栈，最后将返回地址入栈保存后，跳到子函数的地址执行。子函数压栈保存父函数的 ebp，并将 ebp 设置为当前 esp。子函数通过 ebp + 4 读取参数1，ebp + 8 读取参数2，依次类推。
+
+<img src="/assets/images/learn-libco-2/illustration-3.png" width="800"/>
+
+子函数调用返回时先执行 leave 指令，相当于执行 ```mov ebp, esp``` 和 ```pop ebp```。
+
+<img src="/assets/images/learn-libco-2/illustration-4.png" width="800"/>
+
+<img src="/assets/images/learn-libco-2/illustration-5.png" width="800"/>
+
+执行 leave 指令后**恢复了调用者执行 call 指令前的堆栈**，此时 esp 指向的是返回地址。执行 ret 指令，弹出返回地址到 eip，恢复调用者的执行。
+
+<img src="/assets/images/learn-libco-2/illustration-6.png" width="800"/>
 
 # co_resume
 
@@ -89,13 +101,13 @@ int coctx_make( coctx_t *ctx,coctx_pfn_t pfn,const void *s,const void *s1 )
     /*
      ss_sp 是在堆上分配的，地址从低到高增长，而栈是从高到低增长，这里要转下
 
-     高地址  ------  <- ss_sp + ss_size 
-           |pading| 
+     高地址  
+           |pading| <- ss_sp + ss_size 
            |s2    |
-           |s1    | 
-            ------  <- sp
-           |void* | 这个返回地址只是预留空间，不需要填。因为 CoRoutineFunc 函数执行完了表示该协程已经跑完，将其 end 标记位置1（co->cEnd = 1）并调用 co_yield_env 切出。不需要再回到该协程来所以也不需要记录调用 CoRoutineFunc 后的返回地址了
-            ------  <- ctx->regs[ kESP ] 这里为返回地址预留空间的目的在于：参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2         
+           |s1    | <- sp
+            ------  
+           |void* | <- ctx->regs[ kESP ] 这个返回地址只是预留空间，不需要填。因为 CoRoutineFunc 函数执行完了表示该协程已经跑完，将其 end 标记位置1（co->cEnd = 1）并调用 co_yield_env 切出。不需要再回到该协程来所以也不需要记录调用 CoRoutineFunc 后的返回地址了。这里为返回地址预留空间的目的在于：参照前言中函数调用的 stack frame layout 图。函数调用压入参数后还需要压入返回地址，这样才能按照约定 ebp + 4 读取参数1，ebp + 8 读取参数2 
+            ------          
            |      |
      低地址  ------  <- ss_sp
 
@@ -131,8 +143,8 @@ leal 4(%esp), %eax     // 由上图可以看出此时 esp 指向返回地址，e
 movl 4(%esp), %esp     // 将 esp 移到指向 curr->ctx    
 
 /*
-此时stack layout如下：
-对应的ESP地址,此时ESP已经指向了第一个参数 curr->ctx，为 coctx_t 结构
+此时 stack layout 如下：
+对应的 ESP 地址,此时 ESP 已经指向了第一个参数 curr->ctx，为 coctx_t 结构
 
 | *ss_sp  |
 | ss_size |
@@ -143,8 +155,8 @@ movl 4(%esp), %esp     // 将 esp 移到指向 curr->ctx
 | regs[3] |
 | regs[2] |
 | regs[1] |
-| regs[0] |
----------- <---ESP
+| regs[0] | <---ESP
+---------- 
 */   
 
 leal 32(%esp), %esp    // 将esp上移 32 个字节
@@ -152,8 +164,7 @@ leal 32(%esp), %esp    // 将esp上移 32 个字节
 /*
 | *ss_sp  |
 | ss_size |
------------ <---ESP
-| regs[7] |
+| regs[7] | <---ESP
 | regs[6] |
 | regs[5] |
 | regs[4] |
@@ -163,14 +174,14 @@ leal 32(%esp), %esp    // 将esp上移 32 个字节
 | regs[0] |
 */     
 
-pushl %eax         //  curr->ctx->regs[7] = %eax 保存返回地址 + 4
+pushl %eax         //  curr->ctx->regs[7] = %eax 保存返回地址 + 4，即 curr->ctx 的地址
 pushl %ebp         //  curr->ctx->regs[6] = %ebp
 pushl %esi         //  curr->ctx->regs[5] = %esi
 pushl %edi         //  curr->ctx->regs[4] = %edi
 pushl %edx         //  curr->ctx->regs[3] = %edx
 pushl %ecx         //  curr->ctx->regs[2] = %ecx
 pushl %ebx         //  curr->ctx->regs[1] = %ebx
-pushl -4(%eax)     //  curr->ctx->regs[0] = 返回地址 注：%eax - 4 = %old_esp 即返回地址
+pushl -4(%eax)     //  curr->ctx->regs[0] = 返回地址 注：%eax - 4 = %old_esp 即返回地址，也就是 co_swap 函数调用后的下一个指令的地址，在这个例子为 stCoRoutineEnv_t* curr_env = co_get_curr_thread_env() 这句指令的地址。当前协程调用 co_swap 后被调度走，下次被调度回来时继续执行 regs[0]，也就是 co_swap 的下一个指令。
 
 /*
 保存寄存器后的 stack layout
@@ -183,8 +194,8 @@ pushl -4(%eax)     //  curr->ctx->regs[0] = 返回地址 注：%eax - 4 = %old_e
 | regs[3] |  %edx
 | regs[2] |  %ecx
 | regs[1] |  %ebx
-| regs[0] |  返回地址
------------ <---ESP
+| regs[0] |  <---ESP返回地址 
+----------- 
 */     
 
 movl 4(%eax), %esp // 将 esp 移到 curr->ctx 向上偏移 4 个字节的地址，也即 pending_co->ctx 的地址，
@@ -200,8 +211,8 @@ movl 4(%eax), %esp // 将 esp 移到 curr->ctx 向上偏移 4 个字节的地址
 | regs[3] | 
 | regs[2] |
 | regs[1] |
-| regs[0] |
------------ <---ESP  指向第二个参数 pending_co->ctx->regs[0]
+| regs[0] | <--- ESP 指向第二个参数 pending_co->ctx->regs[0]
+----------- 
 */     
 
 // 依次恢复寄存器
@@ -212,20 +223,20 @@ popl %edx  // pop from regs[3]
 popl %edi  // pop from regs[4]
 popl %esi  // pop from regs[5]
 popl %ebp  // pop from regs[6]
-popl %esp  // pop from regs[7] 此时 esp指向 regs[7] 即返回地址 + 4 的位置
+popl %esp  // pop from regs[7] 此时 esp 指向 regs[7] 
 
 
 /*
 此时的堆栈
 |   s2    |
 |   s1    |
-|  void*  | 
----------- <- ESP
-| 返回地址 |
+|  void*  | <- ESP
+-----------
+|         |
 
 */
 
-// 下面这行有点ticky, esp 此时指向的是返回地址 + 4的位置，所以这里 push %eax，入栈 %eax 中保存的返回地址，esp 刚好也指向存放该返回地址的位置
+// 下面这行有点 ticky, esp 此时指向的是返回地址 + 4 的位置，所以这里 push %eax，入栈 %eax 中保存的返回地址，esp 刚好也指向存放该返回地址的位置
 pushl %eax
 
 /*
@@ -233,8 +244,8 @@ pushl %eax
 |   s2    |
 |   s1    |
 |  void*  | 
-| 返回地址 |
----------- <- ESP
+| 返回地址 | <- ESP
+---------- 
 */
 
 
@@ -246,14 +257,16 @@ ret // ret 指令弹出返回地址，此时 %esp += 4 并跳转到该地址继�
 此时的堆栈
 |   s2    |
 |   s1    |
-|  void*  | 
----------- <- ESP / EBP
+|  void*  | <- ESP / EBP
+---------- 
 | 返回地址 | 弹出返回地址
 
 在 coctx_make 的情况下，将跳转到 pfn 执行，esp 执行预留的返回地址 void*，此时stack frame layout 和平台函数调用一样，同样通过 %ebp + 4 访问参数1，%ebp + 8 访问参数2
 */
 
 ```
+
+当被调度走的协程再次被调度回来时，从 reg[7] 恢复 esp 寄存器，从 reg[0] 恢复 eip 寄存器。此时 eip 指向调用 ```co_swap``` 返回后下一条指令的地址，即 ```stCoRoutineEnv_t* curr_env = co_get_curr_thread_env();``` 的指令地址，esp 指向的是 curr->ctx 参数，也即是恢复到调用 co_swap 前的堆栈，和普通函数调用一样，**esp 指向了函数调用的第一个参数**，见前言的最后一个图例。
 
 # 参考文献
 
