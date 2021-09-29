@@ -24,7 +24,7 @@ tags:
 
 基于单 leader 的复制，又或**主从复制**的实现下，某个节点被选举为 leader，其他节点为 follower。写操作必须经由 leader 处理，leader 先写本地存储，同时转发给 follower，follower 必须采用和 leader 同样的操作顺序更新本地存储。读操作则可以由 leader 或者 follower 处理（follower 可能会返回过期数据）。
 
-因为 leader 到 follower 的数据同步总是需要时间，follower 相比 leader 数据总存在一定的延时。主从复制分为两种方式：**同步**和**异步**。若采用同步复制的方式，leader 必须阻塞等到 follower 成功接收更新数据后才会返回成功，但这样某个 follower 节点挂了就会影响到整个系统的可用性，因此通常同步复制的方式只要求其中一台 follower 是同步的，其他为异步复制。如果同步复制的 follower 挂掉了，就重新选出一台 follower 作为同步复制的 follower，这种方式通常也称为**半同步复制**（Semi-Synchronous）。论文 [Semi-Synchronous Replication at Facebook](http://yoshinorimatsunobu.blogspot.com/2014/04/semi-synchronous-replication-at-facebook.html) 介绍了半同步复制在 facebook 的实践。
+因为 leader 到 follower 的数据同步总是需要时间，follower 相比 leader 数据总存在一定的延时。主从复制分为两种方式：**同步**和**异步**。若采用同步复制的方式，leader 必须阻塞等到 follower 成功接收更新数据后才会返回成功，但这样某个 follower 节点挂了就会影响到整个系统的可用性，因此通常同步复制的方式只要求其中一台 follower 是同步的，其他为异步复制。如果同步复制的 follower 挂掉了，就重新选出一台 follower 作为同步复制的 follower，这种方式通常也称为**半同步复制**（Semi-Synchronous）。论文 [Semi-Synchronous Replication at Facebook](https://yoshinorimatsunobu.blogspot.com/2014/04/semi-synchronous-replication-at-facebook.html) 介绍了半同步复制在 facebook 的实践。
 
 尽管异步复制的方式可能会丢数据，例如 leader 挂了，来不及将最新的数据复制给 follower 的情况下。但在实际中却是应用最广泛的。除了同步异步复制，目前还有其他方向的探索，比如 chain replication，有兴趣的参考附录的论文。
 
@@ -111,7 +111,7 @@ Values:
 
 #### 写后读一致性 Read-After-Write Consistency
 
-写后读一致性（Read-After-Write Consistency 或 [Read-Your-Writes Consistency](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.71.2269&rep=rep1&type=pdf)）保证一旦数据写入成功，后续的读操作总是能读到写入的数据。但在异步复制模式下，主从数据存在延迟时却会出现读不到最新写数据的情况：
+写后读一致性（Read-After-Write Consistency 或 [Read-Your-Writes Consistency](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.71.2269&rep=rep1&type=pdf)）保证一旦数据写入成功，后续的读操作总是能读到写入的数据。但在异步复制模式下，主从数据存在延迟时却会出现读不到最新写数据的情况：
 
 <img src="/assets/images/distributed-system-2/illustration-1.png" width="600" />
 
@@ -204,7 +204,7 @@ Values:
 
 <img src="/assets/images/distributed-system-2/illustration-5.png" width="600" />
 
-无中心复制采用 quorum 机制进行读写操作：假设有 n 个 replica，写操作需要至少 w 个节点确认才认为是成功，读操作至少需要查询 r 个节点，当 w + r > n 时，能保证读取到最新的数据，这种方式称之为 [quorum reads and writes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.84.7698)。一般来说，r 和 w 会取超过 n/2 的值，以保证 r + w > n。但实际上 r 和 w 并没有必要一定取超过 n/2 的值，只需要保证 w 和 r 有交集即可，论文 [Flexible Paxos: Quorum Intersection Revisited](https://arxiv.org/abs/1608.06696) 探讨了其他一些方案。
+无中心复制采用 quorum 机制进行读写操作：假设有 n 个 replica，写操作需要至少 w 个节点确认才认为是成功，读操作至少需要查询 r 个节点，当 w + r > n 时，能保证读取到最新的数据，这种方式称之为 [quorum reads and writes](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.84.7698)。一般来说，r 和 w 会取超过 n/2 的值，以保证 r + w > n。但实际上 r 和 w 并没有必要一定取超过 n/2 的值，只需要保证 w 和 r 有交集即可，论文 [Flexible Paxos: Quorum Intersection Revisited](https://arxiv.org/abs/1608.06696) 探讨了其他一些方案。
 
 Quorum 虽然简单但并不是十全十美，例如下图：
 
@@ -224,7 +224,7 @@ Dynamo-style 数据库使用的 quorum 机制通常**只能保证最终一致性
 
   Read repair 只会在读的时候修复数据，而没有被读取的冷数据，则可以通过 anti-entory process 的方法，后台起一个进程检查数据差异，同步数据。但整个过程是无序的，并不会按照写操作的先后顺序。
 
-基于 leader 的模式下，因为 follower 和 leader 都是按相同的顺序执行复制日志，因此可以通过比对复制日志的执行位置来监控主从数据复制延迟。但在无中心复制模式下，各个 replica 的执行顺序并不保证相同，因此没有办法按照基于 leader 模式的方法去监控。关于 无中心复制模式下监控复制延迟的一些探讨，可以看看论文 [Quantifying Eventual Consistency with PBS](http://www.bailis.org/papers/pbs-cacm2014.pdf)。
+基于 leader 的模式下，因为 follower 和 leader 都是按相同的顺序执行复制日志，因此可以通过比对复制日志的执行位置来监控主从数据复制延迟。但在无中心复制模式下，各个 replica 的执行顺序并不保证相同，因此没有办法按照基于 leader 模式的方法去监控。关于 无中心复制模式下监控复制延迟的一些探讨，可以看看论文 [Quantifying Eventual Consistency with PBS](https://www.bailis.org/papers/pbs-cacm2014.pdf)。
 
 Cassandra 和 voldemort 使用了无中心模式来支持多数据中心。Riak 在跨数据中心则采用的是类似多 leader 复制模式，具体请看 [Riak Enterprise: Multi-Datacenter Replication](https://riak.com/assets/MultiDatacenter_Replication.pdf)
 
@@ -247,7 +247,7 @@ Replica 2 认为最终 x 的值为 b，replica 3 认为最终 x 的值为 a。
 
 #### Lamport 逻辑时钟
 
-Lamport 在论文 [Time, Clocks and the Ordering of Events in a Distributed System](https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/?from=http%3A%2F%2Fresearch.microsoft.com%2Fen-us%2Fum%2Fpeople%2Flamport%2Fpubs%2Ftime-clocks.pdf) 中提出了**逻辑时钟**的概念来描述分布式系统中事件的时序。
+Lamport 在论文 [Time, Clocks and the Ordering of Events in a Distributed System](https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/?from=https%3A%2F%2Fresearch.microsoft.com%2Fen-us%2Fum%2Fpeople%2Flamport%2Fpubs%2Ftime-clocks.pdf) 中提出了**逻辑时钟**的概念来描述分布式系统中事件的时序。
 
 Lamport 通过消息传递定义了 “happened before” 关系，以符号 -> 表示：
 
@@ -288,7 +288,7 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 * 服务端收到客户端的写操作时，会将小于等于客户端请求版本号的值覆盖，保留高于客户端版本号的值，因为高于客户端版本号写入的值属于同时写（注意这里的同时写并非指真正的“同时发生”，而是说这两个写操作并无因果关系）。
 
 
-将算法从单节点扩展成多个 replica，则每个 replica 都需要维护所有 replica 的版本号，这个版本号的集合即称之为**版本向量** [version vector](http://zoo.cs.yale.edu/classes/cs426/2013/bib/parker83detection.pdf) 。每个 replica 在写操作时递增自身的版本号，发送消息时需要带上自己的版本向量，接收消息的 replica 需要对齐自己的版本向量。如下图，中括号表示所有 replica 的版本号向量 [replica 1 版本号，replica 2 版本号，...，replica n 版本号]：
+将算法从单节点扩展成多个 replica，则每个 replica 都需要维护所有 replica 的版本号，这个版本号的集合即称之为**版本向量** [version vector](https://zoo.cs.yale.edu/classes/cs426/2013/bib/parker83detection.pdf) 。每个 replica 在写操作时递增自身的版本号，发送消息时需要带上自己的版本向量，接收消息的 replica 需要对齐自己的版本向量。如下图，中括号表示所有 replica 的版本号向量 [replica 1 版本号，replica 2 版本号，...，replica n 版本号]：
 
 <img src="/assets/images/distributed-system-2/illustration-9.png" width="600" />
 
@@ -345,7 +345,7 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 
 参考文献：
 * [Consistency model](https://en.wikipedia.org/wiki/Consistency_model)
-* [Distributed systems: Principles and Paradigms](http://barbie.uta.edu/~jli/Resources/MapReduce&Hadoop/Distributed%20Systems%20Principles%20and%20Paradigms.pdf)
+* [Distributed systems: Principles and Paradigms](https://barbie.uta.edu/~jli/Resources/MapReduce&Hadoop/Distributed%20Systems%20Principles%20and%20Paradigms.pdf)
 * [Strong consistency models](https://aphyr.com/posts/313-strong-consistency-models)
 
 ### Chain Replication
@@ -353,7 +353,7 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 参考资料：
 * [Chain replication : how to build an effective KV-storage](https://medium.com/coinmonks/chain-replication-how-to-build-an-effective-kv-storage-part-1-2-b0ce10d5afc3)
 
-* [Chain Replication for Supporting High Throughput and Availability](http://static.usenix.org/events/osdi04/tech/full_papers/renesse/renesse.pdf)
+* [Chain Replication for Supporting High Throughput and Availability](https://static.usenix.org/events/osdi04/tech/full_papers/renesse/renesse.pdf)
 
 * [Object Storage on CRAQ: High-throughput chain replication for read-mostly workloads](https://www.usenix.org/legacy/event/usenix09/tech/full_papers/terrace/terrace.pdf)
 
@@ -369,12 +369,12 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 ### Mergeable persistent data structures
 
 参考资料：
-* [Mergeable persistent data structures](http://gazagnaire.org/pub/FGM15.pdf)
+* [Mergeable persistent data structures](https://gazagnaire.org/pub/FGM15.pdf)
 
 ### Operational transformation
 
 参考资料：
-* [Operational Transformation in Real-Time Group Editors: Issues, Algorithms, and Achievements](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.933&rep=rep1&type=pdf)
+* [Operational Transformation in Real-Time Group Editors: Issues, Algorithms, and Achievements](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.933&rep=rep1&type=pdf)
 
 
 ### Version vector 和 vector clock
@@ -382,6 +382,6 @@ Lamport 逻辑时钟定义了事件的全序关系，但分布式系统中多个
 Version vector 有时也称为 vector clock，但两者并不是同个概念，关于两者的区别可以参阅：
 * [Dotted Version Vectors: Logical Clocks for Optimistic Replication](https://arxiv.org/pdf/1011.5808v1.pdf)
 * [Version Vectors are not Vector Clocks](https://haslab.wordpress.com/2011/07/08/version-vectors-are-not-vector-clocks/)
-* [Detecting Causal Relationships in Distributed Computations:In Search of the Holy Grai](http://dcg.ethz.ch/lectures/hs08/seminar/papers/mattern4.pdf)
+* [Detecting Causal Relationships in Distributed Computations:In Search of the Holy Grai](https://dcg.ethz.ch/lectures/hs08/seminar/papers/mattern4.pdf)
 
 Version vector 用于发现冲突，crdt 用于解决冲突。

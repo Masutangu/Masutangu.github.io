@@ -132,7 +132,7 @@ LCS 解决了 STCS 空间放大和读放大问题，但却引入了较严重的�
 
 <img src="/assets/images/distributed-system-1/illustration-6.png" width="600" title="copy-on-write" />
 
-Copy-on-Write 的 B-Tree 也称为 Append-Only B-Tree，可以参考 [how the append-only btree works](http://www.bzero.se/ldapd/btree.html) 这篇文章了解其实现。
+Copy-on-Write 的 B-Tree 也称为 Append-Only B-Tree，可以参考 [how the append-only btree works](https://www.bzero.se/ldapd/btree.html) 这篇文章了解其实现。
 
 ### LSM-Tree 与 B-Tree 的对比
 
@@ -141,7 +141,7 @@ Copy-on-Write 的 B-Tree 也称为 Append-Only B-Tree，可以参考 [how the ap
 #### 读写放大对比
 
 详细可读：[B-Tree vs LSM-Tree](https://tikv.org/docs/deep-dive/key-value-engine/b-tree-vs-lsm/)
-及论文：[A Comparison of Fractal Trees to Log-Structured Merge (LSM) Trees](http://www.pandademo.com/wp-content/uploads/2017/12/A-Comparison-of-Fractal-Trees-to-Log-Structured-Merge-LSM-Trees.pdf)。
+及论文：[A Comparison of Fractal Trees to Log-Structured Merge (LSM) Trees](https://www.pandademo.com/wp-content/uploads/2017/12/A-Comparison-of-Fractal-Trees-to-Log-Structured-Merge-LSM-Trees.pdf)。
 
 LSM-Tree 相比起 B-Tree 写放大（write amplification）更低，但读放大更高。
 
@@ -298,7 +298,7 @@ B-Tree 的 page size 取值一般为 4 KB 或 16 KB。写操作频繁的业务�
 
 参考资料：
 
-* [Optimizing Space Amplification in RocksDB](http://cidrdb.org/cidr2017/papers/p82-dong-cidr17.pdf)
+* [Optimizing Space Amplification in RocksDB](https://cidrdb.org/cidr2017/papers/p82-dong-cidr17.pdf)
 * [WiscKey: Separating Keys from Values in SSD-conscious Storage](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf)
 
 ### WAL 的实现

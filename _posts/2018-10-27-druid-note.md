@@ -47,7 +47,7 @@ Druid 每行包括三种类型的数据：
 
 # 高效 bitmap 布尔操作：bitmap 压缩
 
-大多数**运行长度编码算法**（run-length encoding algorithms）用一个字来存储一连串的 0 或 1，其中包含了 0/1 串的长度，以及是 zero fill 还是 one fill。例如 [**Word-Aligned Hybrid(WAH)**](http://www.openproceedings.org/2010/conf/edbt/DeliegeP10.pdf) 压缩算法：
+大多数**运行长度编码算法**（run-length encoding algorithms）用一个字来存储一连串的 0 或 1，其中包含了 0/1 串的长度，以及是 zero fill 还是 one fill。例如 [**Word-Aligned Hybrid(WAH)**](https://www.openproceedings.org/2010/conf/edbt/DeliegeP10.pdf) 压缩算法：
 
 <img src="/assets/images/druid-note/illustration-2.png" width="800"/>
 
@@ -66,6 +66,6 @@ word #0、#3 和 #5 最左的 bit 位为 ```1```，表示其为 **literal words*
 
 # 参考文献
 
-[Maximum Performance with Minimum Storage: Data Compression in Druid](http://druid.io/blog/2012/09/21/druid-bitmap-compression.html)
+[Maximum Performance with Minimum Storage: Data Compression in Druid](https://druid.io/blog/2012/09/21/druid-bitmap-compression.html)
 
-[Schema Design](http://druid.io/docs/latest/ingestion/schema-design.html)
+[Schema Design](https://druid.io/docs/latest/ingestion/schema-design.html)

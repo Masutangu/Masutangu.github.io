@@ -2,7 +2,7 @@
 
 ### [View Live Hux Blog &rarr;](https://huangxuan.me)
 
-![](http://huangxuan.me/img/blog-desktop.jpg)
+![](https://huangxuan.me/img/blog-desktop.jpg)
 
 
 
@@ -14,7 +14,7 @@ Want to clone a boilerplate instead of my buzz blog? Here comes this!
 $ git clone git@github.com:Huxpro/huxblog-boilerplate.git
 ```
 
-**[View Boilerplate Here &rarr;](http://huangxuan.me/huxblog-boilerplate/)**
+**[View Boilerplate Here &rarr;](https://huangxuan.me/huxblog-boilerplate/)**
 
 
 ## Porting 
@@ -55,7 +55,7 @@ Thanks [@kitian616/jekyll-TeXt-theme](https://github.com/kitian616/jekyll-TeXt-t
 
 ##### V1.5.1
 
-- **[Comment](#comment)** support [**Disqus**](http://disqus.com) officially, thanks to @rpsh.
+- **[Comment](#comment)** support [**Disqus**](https://disqus.com) officially, thanks to @rpsh.
 
 ##### V1.5
 
@@ -68,14 +68,14 @@ Thanks [@kitian616/jekyll-TeXt-theme](https://github.com/kitian616/jekyll-TeXt-t
 
 ##### V1.3.1
 
-- Support **PingFang (苹方)**, the new Chinese font presented by [OS X El Capitan](http://www.apple.com/cn/osx/whats-new/)
+- Support **PingFang (苹方)**, the new Chinese font presented by [OS X El Capitan](https://www.apple.com/cn/osx/whats-new/)
 
 
 ##### V1.3
 
-- Big Improvement to the **Navigation Menu** *(especially in Android)*:  Dropping the old, stuttering, low-performance [Bootstrap collapse.js](http://getbootstrap.com/javascript/#collapse),  replaced with an own wrote, [jank free](http://jankfree.org/) navbar menu in a pretty high-performance implementation of [Google Material Design](https://www.google.com/design/spec/material-design/introduction.html).
+- Big Improvement to the **Navigation Menu** *(especially in Android)*:  Dropping the old, stuttering, low-performance [Bootstrap collapse.js](https://getbootstrap.com/javascript/#collapse),  replaced with an own wrote, [jank free](https://jankfree.org/) navbar menu in a pretty high-performance implementation of [Google Material Design](https://www.google.com/design/spec/material-design/introduction.html).
 
-<img src="http://huangxuan.me/img/blog-md-navbar.gif" width="320" />
+<img src="https://huangxuan.me/img/blog-md-navbar.gif" width="320" />
 
 
 ##### V1.2
@@ -96,7 +96,7 @@ Thanks [@kitian616/jekyll-TeXt-theme](https://github.com/kitian616/jekyll-TeXt-t
 - **Network optimizaition** for China, dropping Google webfont, using local CDN
 - Using [Github Flavored Markdown](https://help.github.com/articles/github-flavored-markdown/)
 - Using Baidu, Tencent/QQ analytics
-- Using [DuoShuo](http://duoshuo.com/) as the Disqus-like third party discussion system
+- Using [DuoShuo](https://duoshuo.com/) as the Disqus-like third party discussion system
 
 
 ## Support
@@ -152,7 +152,7 @@ weibo_username: huxpro      # the footer woule be auto-updated.
 # paginate: 10              # nums of posts in one page
 ```
 
-There are more options you can check out in the [Jekyll - Official Site](http://jekyllrb.com/), or you can directly dive into code to find more.
+There are more options you can check out in the [Jekyll - Official Site](https://jekyllrb.com/), or you can directly dive into code to find more.
 
 
 #### Write Posts
@@ -177,7 +177,7 @@ tags:
 
 #### SideBar
 
-![](http://huangxuan.me/img/blog-sidebar.jpg)
+![](https://huangxuan.me/img/blog-sidebar.jpg)
 
 Seeing more information may be necessary for you to display, from V1.1, a clean, gorgeous **SideBar** is added for you, which provide more area for displaying possible modules. You can enable *(it is default enable)* this feature by simply config:
 
@@ -188,7 +188,7 @@ sidebar-about-description: "your description here"
 sidebar-avatar: /img/avatar.png     # use absolute URL.
 ```
 
-We default support *[Featured Tags](#featured-tags)*, *[Mini About Me](#mini-about-me)* and *[Friends](#friends)* these three modules and you can add your own. The sidebar is naturally responsive and would be push to bottom in a small screen size (`<= 992px`, according to [Bootstarp Grid System](http://getbootstrap.com/css/#grid))  
+We default support *[Featured Tags](#featured-tags)*, *[Mini About Me](#mini-about-me)* and *[Friends](#friends)* these three modules and you can add your own. The sidebar is naturally responsive and would be push to bottom in a small screen size (`<= 992px`, according to [Bootstarp Grid System](https://getbootstrap.com/css/#grid))  
 More details of these three separate modules are talking below.
 
 #### Mini About Me
@@ -199,7 +199,7 @@ It is really nice-looking and well-designed. It would be hidden in a small scree
 
 #### Featured Tags
 
-Considering the Featured-Tags feature in [Medium](http://medium.com) is pretty cool, so I add it in my blog theme also.   
+Considering the Featured-Tags feature in [Medium](https://medium.com) is pretty cool, so I add it in my blog theme also.   
 This module is independent of sidebar from V1.4, so it can definitely live without enable sidebar, which would be displayed in the bottom when `sidebar` set to false, and it is not only displayed in home page but also every post page bottom.
 
 
@@ -225,11 +225,11 @@ You can just add your friends information in `_config.yml` with a familiar JSON 
 friends: [
     {
         title: "Foo Blog",
-        href: "http://foo.github.io/"
+        href: "https://foo.github.io/"
     },
     {
         title: "Bar Blog",
-        href: "http://bar.github.io"
+        href: "https://bar.github.io"
     }
 ]
 ```
@@ -237,7 +237,7 @@ friends: [
 
 #### Keynote Layout
 
-![](http://huangxuan.me/img/blog-keynote.jpg)
+![](https://huangxuan.me/img/blog-keynote.jpg)
 
 There is a increasing tendency to use Open Web technology to create keynotes, presentations, like Reveal.js, Impress.js, Slides, Prezi etc. I consider a modern blog should have abilities to post these HTML based presentation easily also abilities to play it directly.
 
@@ -246,7 +246,7 @@ Under the hood, a `iframe` is used to include webpage from outer source, so the 
 ```
 ---
 layout:     keynote
-iframe:     "http://huangxuan.me/js-module-7day/"
+iframe:     "https://huangxuan.me/js-module-7day/"
 ---
 ```
 
@@ -255,7 +255,7 @@ The iframe will be automatically resized to adapt different form factors also th
 
 #### Comment
 
-This theme support both [Disqus](http://disqus.com) and [Duoshuo](http://duoshuo.com) as the third party discussion system.
+This theme support both [Disqus](https://disqus.com) and [Duoshuo](https://duoshuo.com) as the third party discussion system.
 
 First, you need to sign up and get your own account. **Repeat, DO NOT use mine!** (I have set Trusted Domains) It is deathly simple to sign up and you will get the full power of management system. Please give it a try!
 
@@ -334,7 +334,7 @@ For other circumstances, check out existing issues or create a new one!
 
 #### How can I customize the theme of code block?
 
-This theme uses the default code syntax highlighter of jekyll, "rouge, which is compatible with Pygments theme so just pick any pygments theme css (e.g. from [here](http://jwarby.github.io/jekyll-pygments-themes/languages/javascript.html) and replace the content of `highlight.less`.
+This theme uses the default code syntax highlighter of jekyll, "rouge, which is compatible with Pygments theme so just pick any pygments theme css (e.g. from [here](https://jwarby.github.io/jekyll-pygments-themes/languages/javascript.html) and replace the content of `highlight.less`.
 
 #### cannot load such file -- jekyll-paginate
 

@@ -20,11 +20,11 @@ tags: 数据库
 trigger可以在特定事件发生时触发指定的操作，因此可以用trigger来监听insert/update/delete操作。再利用udf，我们就能将这些事件通知到同步server，再由同步server更新缓存中已经过时的数据。
 
 > 关于udf的介绍：
-> http://dev.mysql.com/doc/refman/5.7/en/adding-udf.html
+> https://dev.mysql.com/doc/refman/5.7/en/adding-udf.html
 
-> 如何编写udf：http://blog.loftdigital.com/blog/how-to-write-mysql-functions-in-c
+> 如何编写udf：https://blog.loftdigital.com/blog/how-to-write-mysql-functions-in-c
 
-这里我使用了mysql-udf-http，它是开源的UDF，提供了利用HTTP协议进行REST操作的能力。
+这里我使用了mysql-udf-https，它是开源的UDF，提供了利用HTTP协议进行REST操作的能力。
 
 安装完成后，创建trigger如下：
 

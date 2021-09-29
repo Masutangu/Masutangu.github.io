@@ -7,7 +7,7 @@ tags:
   - Linux
 ---
 
-本文是对 [《Linux 性能监测》](http://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/) 系列文章的读书笔记，并在此基础上丰富。
+本文是对 [《Linux 性能监测》](https://www.vpsee.com/2009/11/linux-system-performance-monitoring-introduction/) 系列文章的读书笔记，并在此基础上丰富。
 
 ## CPU 相关
 ### vmstat 
@@ -304,10 +304,10 @@ IpExt:
 
 [《Linux Performance Measurements using vmstat》](https://www.thomas-krenn.com/en/wiki/Linux_Performance_Measurements_using_vmstat)
 
-[《tcpdump使用技巧》](http://linuxwiki.github.io/NetTools/tcpdump.html)
+[《tcpdump使用技巧》](https://linuxwiki.github.io/NetTools/tcpdump.html)
 
 [《Perf -- Linux下的系统性能调优工具》](https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/)
 
-[《通过/proc查看Linux内核态调用栈来定位问题》](http://www.51testing.com/html/56/490256-3711169.html)
+[《通过/proc查看Linux内核态调用栈来定位问题》](https://www.51testing.com/html/56/490256-3711169.html)
 
-[《Linux性能优化》](http://linuxtools-rst.readthedocs.io/zh_CN/latest/advance/03_optimization.html)
+[《Linux性能优化》](https://linuxtools-rst.readthedocs.io/zh_CN/latest/advance/03_optimization.html)

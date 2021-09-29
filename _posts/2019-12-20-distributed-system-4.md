@@ -17,7 +17,7 @@ tags:
 ### ACID 特性
 
 事务具备**原子性（Atomicity）**、**一致性（Consistency）**、**隔离性（Isolation）**、**持久性（Durability）**，简称 ACID 四大特性。
-除了 ACID，在之前[《漫谈分布式：数据库的设计思想与实现》](http://masutangu.com/2019/12/04/distributed-system-1/) 这篇文章还提到过另外一种模型：BASE。
+除了 ACID，在之前[《漫谈分布式：数据库的设计思想与实现》](https://masutangu.com/2019/12/04/distributed-system-1/) 这篇文章还提到过另外一种模型：BASE。
 
 #### 原子性  
 
@@ -129,7 +129,7 @@ tags:
 
 ##### 索引管理
 
-多个数据版本的话，如何管理索引？一个方案是索引指向所有版本的数据，然后查询的时候再做过滤。PostgreSQL 管理索引做的优化可参考 [Mvcc Unmasked](http://momjian.us/main/writings/pgsql/mvcc.pdf)。CouchDB、Datomic 和 LMDB 采用的是另外的方案：append-only/copy-on-write B-trees。更新的时候不修改原来的树，而是把修改的页复制一份，然后逐层往上，从父节点到根节点，都拷贝并更新指向新的子节点，可参考[《漫谈分布式：数据库的设计思想与实现》](http://masutangu.com/2019/12/04/distributed-system-1/) 文中的说明。COW B-tree 实现下，每次写事务都会创建一个新的 B-tree 根节点，每个根节点是一个处于一致状态的数据库快照（因为不会修改原来的树），因此也无需根据事务 id 做过滤。
+多个数据版本的话，如何管理索引？一个方案是索引指向所有版本的数据，然后查询的时候再做过滤。PostgreSQL 管理索引做的优化可参考 [Mvcc Unmasked](https://momjian.us/main/writings/pgsql/mvcc.pdf)。CouchDB、Datomic 和 LMDB 采用的是另外的方案：append-only/copy-on-write B-trees。更新的时候不修改原来的树，而是把修改的页复制一份，然后逐层往上，从父节点到根节点，都拷贝并更新指向新的子节点，可参考[《漫谈分布式：数据库的设计思想与实现》](https://masutangu.com/2019/12/04/distributed-system-1/) 文中的说明。COW B-tree 实现下，每次写事务都会创建一个新的 B-tree 根节点，每个根节点是一个处于一致状态的数据库快照（因为不会修改原来的树），因此也无需根据事务 id 做过滤。
 
 #### 避免更新丢失
 
@@ -168,7 +168,7 @@ SELECT FOR UPDATE 会对查询返回的所有行数据都添加排他锁，其�
 
 ##### 检测更新丢失
 
-相比起前面提到的提前上锁的预防机制，还可以有另外的思路：先放任事务并行执行，如果事务管理器检查到存在更新丢失，再终止该事务。在 [PostgreSQL 官方文档](http://www.interdb.jp/pg/pgsql05.html)讲解了如何检测更新丢失，执行 Update 操作时会调用 ExecUpdate 函数，其伪代码如下：
+相比起前面提到的提前上锁的预防机制，还可以有另外的思路：先放任事务并行执行，如果事务管理器检查到存在更新丢失，再终止该事务。在 [PostgreSQL 官方文档](https://www.interdb.jp/pg/pgsql05.html)讲解了如何检测更新丢失，执行 Update 操作时会调用 ExecUpdate 函数，其伪代码如下：
 
 ```
 (1)  FOR each row that will be updated by this UPDATE command
@@ -214,7 +214,7 @@ SELECT FOR UPDATE 会对查询返回的所有行数据都添加排他锁，其�
 
 ##### 分布式系统下的更新丢失
 
-通过锁或 CAS 避免更新丢失的保护机制只能针对单一一份数据的情况。而在分布式数据中，数据不只在一个节点上，同一份数据可能在多个节点上被同时修改，具体阅读[《漫谈分布式：数据复制》](http://masutangu.com/2019/12/13/distributed-system-2/) 了解多节点下的写冲突如何解决。
+通过锁或 CAS 避免更新丢失的保护机制只能针对单一一份数据的情况。而在分布式数据中，数据不只在一个节点上，同一份数据可能在多个节点上被同时修改，具体阅读[《漫谈分布式：数据复制》](https://masutangu.com/2019/12/13/distributed-system-2/) 了解多节点下的写冲突如何解决。
 
 #### 幻读与写偏差
 
@@ -304,17 +304,17 @@ COMMIT;
 
 2PL 是所谓的**悲观并发控制机制**，类似互斥锁；而 SSI 为**乐观并发控制机制**：事务执行中不阻塞，提交时再检查隔离规则。如果并行事务存在很多竞争，则不适用乐观并发控制机制，因为会引发大量事务需要重试；如果事务之间存在少量竞争，乐观机制比悲观更适用。
 
-从命名可以看出 SSI 的实现基于快照隔离，在其基础上采用 MVSG 算法来检测冲突。具体可读论文 [Serializable Isolation for Snapshot Databases](http://www.cs.nyu.edu/courses/fall12/CSCI-GA.2434-001/p729-cahill.pdf) 和 Michael Cahill 的博士论文 [Serializable Isolation for Snapshot Databases](http://cahill.net.au/wp-content/uploads/2010/02/cahill-thesis.pdf)。
+从命名可以看出 SSI 的实现基于快照隔离，在其基础上采用 MVSG 算法来检测冲突。具体可读论文 [Serializable Isolation for Snapshot Databases](https://www.cs.nyu.edu/courses/fall12/CSCI-GA.2434-001/p729-cahill.pdf) 和 Michael Cahill 的博士论文 [Serializable Isolation for Snapshot Databases](https://cahill.net.au/wp-content/uploads/2010/02/cahill-thesis.pdf)。
 
 
 ## 附录
 
 ### 隔离级别相关论文
 
-* [HAT, not CAP: Towards Highly Available Transactions](http://www.bailis.org/papers/hat-hotos2013.pdf)
-* [Hermitage: Testing the “I” in ACID](http://martin.kleppmann.com/2014/11/25/hermitage-testing-the-i-in-acid.html)
+* [HAT, not CAP: Towards Highly Available Transactions](https://www.bailis.org/papers/hat-hotos2013.pdf)
+* [Hermitage: Testing the “I” in ACID](https://martin.kleppmann.com/2014/11/25/hermitage-testing-the-i-in-acid.html)
 * [Making Snapshot Isolation Serializable](https://www.cse.iitb.ac.in/infolab/Data/Courses/CS632/2009/Papers/p492-fekete.pdf)
-*  [Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transactions](http://pmg.csail.mit.edu/papers/adya-phd.pdf) 从理论角度分析弱隔离级别
-* [Isolation in DB2 (Repeatable Read, Read Stability, Cursor Stability, Uncommitted Read) with Examples](http://mframes.blogspot.com/2013/07/isolation-in-cursor.html)
-* [Cursor Stability (CS) – IBM DB2 Community](http://www.toadworld.com/platforms/ibmdb2/w/wiki/6661.cursor-stability-cs.aspx)
-* [Architecture of a Database System](http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf) 
+*  [Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transactions](https://pmg.csail.mit.edu/papers/adya-phd.pdf) 从理论角度分析弱隔离级别
+* [Isolation in DB2 (Repeatable Read, Read Stability, Cursor Stability, Uncommitted Read) with Examples](https://mframes.blogspot.com/2013/07/isolation-in-cursor.html)
+* [Cursor Stability (CS) – IBM DB2 Community](https://www.toadworld.com/platforms/ibmdb2/w/wiki/6661.cursor-stability-cs.aspx)
+* [Architecture of a Database System](https://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf) 

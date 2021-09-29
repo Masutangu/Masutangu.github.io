@@ -43,7 +43,7 @@ const getCacheBustingUrl = (req) => {
   var now = Date.now();
   url = new URL(req.url)
 
-  // 1. fixed http URL
+  // 1. fixed https URL
   // Just keep syncing with location.protocol
   // fetch(httpURL) belongs to active mixed content.
   // And fetch(httpRequest) is not supported yet.

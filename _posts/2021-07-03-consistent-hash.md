@@ -10,7 +10,7 @@ tags:
 
 一致性哈希是业界最常用的哈希方案，通常在分布式系统中会采用一致性哈希的方式对请求进行路由。
 
-哈希算法的好坏有四个标准：**均衡性（Balance）、单调性（Monotonicity）、分散性（Spread）**和**负载（Load）**，具体可以参考论文 [Consistent Hashing - A Distributed Caching Protocol](http://webcache.googleusercontent.com/search?q=cache:-EmlEOjK3_4J:www.birger-kuehnel.de/uploads/media/consistenthashing_01.pdf+&cd=2&hl=zh-TW&ct=clnk)。
+哈希算法的好坏有四个标准：**均衡性（Balance）、单调性（Monotonicity）、分散性（Spread）**和**负载（Load）**，具体可以参考论文 [Consistent Hashing - A Distributed Caching Protocol](https://webcache.googleusercontent.com/search?q=cache:-EmlEOjK3_4J:www.birger-kuehnel.de/uploads/media/consistenthashing_01.pdf+&cd=2&hl=zh-TW&ct=clnk)。
 
 这里重点提一下**单调性**。哈希桶数量发生变化时，已有的 key 会重新映射。单调性指 key 要么保留在原来的桶中，要么移动到新增加的桶中。如果 key 移动到原有的其他桶中，就不满足“单调性”了。
 

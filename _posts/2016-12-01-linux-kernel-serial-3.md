@@ -303,7 +303,7 @@ CFS 的做法是允许每个进程运行一段时间、循环轮转、选择运�
     >
     > 在多 CPU 的系统上，不同的CPU的负载不一样，有的 CPU 更忙一些，而每个 CPU 都有自己的运行队列，每个队列中的进程的 vruntime 也走得有快有慢。如果一个进程从 min_vruntime 更小的 CPU A上迁移到 min_vruntime 更大的 CPU B 上，可能就会占便宜了，因为 CPU B 的运行队列中进程的 vruntime 普遍比较大，迁移过来的进程就会获得更多的 CPU 时间片。为了避免这种场景，当进程从一个 CPU 的运行队列中出来 (调用 ```dequeue_entity```) 的时候，它的 vruntime 要减去队列的 min_vruntime 值；而当进程加入另一个CPU的运行队列 (调用 ```enqueue_entity```) 时，它的 vruntime 要加上该队列的 min_vruntime 值。这样，进程从一个 CPU 迁移到另一个 CPU 之后，vruntime 保持相对公平。
     >
-    > 参考自[《从几个问题开始理解CFS调度器》](http://linuxperf.com/?p=42)
+    > 参考自[《从几个问题开始理解CFS调度器》](https://linuxperf.com/?p=42)
 
 * 删除进程
 

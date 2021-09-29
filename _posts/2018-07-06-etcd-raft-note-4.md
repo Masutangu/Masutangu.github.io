@@ -10,7 +10,7 @@ tags:
 
 这篇文章介绍 etcd-raft 如何实现 linearizable read（linearizable read 简单的说就是不返回 stale 数据，具体可以看这篇文章 [《Strong consistency models》](https://aphyr.com/posts/313-strong-consistency-models)）。
 
-除了基于 [ReadIndex](http://masutangu.com/2018/07/etcd-raft-note-3/) 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：
+除了基于 [ReadIndex](https://masutangu.com/2018/07/etcd-raft-note-3/) 之外，raft 论文第 8 节还阐述了另一种基于 heartbeat 的 lease 思路：
 
 > Alternatively, the leader could rely on the heartbeat mechanism to provide a form of lease, but this would rely on timing for safety (it
 assumes bounded clock skew).

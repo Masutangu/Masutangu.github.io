@@ -375,4 +375,4 @@ Linux 中使用三级页表完成地址转换。利用多级页表能够节约�
 
 # 相关资料
 
-[《How the Kernel Manages Your Memory》](http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/)
+[《How the Kernel Manages Your Memory》](https://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/)

@@ -12,7 +12,7 @@ tags:
 
 ## 数据划分 Partitioning
 
-上一篇文章[《漫谈分布式：数据复制》](http://masutangu.com/2019/12/13/distributed-system-2/) 提到数据复制可以提高系统的可用性。但是当数据量过大，复制整个数据集显然不现实，此时需要将数据进行**划分（partitioning）**，也称为 **sharding**。数据划分带来最大的好处是**提高了系统的扩展性**，将数据划分到不同的节点，请求因此可以分流到不同的节点中去，提高了整个系统的吞吐量。
+上一篇文章[《漫谈分布式：数据复制》](https://masutangu.com/2019/12/13/distributed-system-2/) 提到数据复制可以提高系统的可用性。但是当数据量过大，复制整个数据集显然不现实，此时需要将数据进行**划分（partitioning）**，也称为 **sharding**。数据划分带来最大的好处是**提高了系统的扩展性**，将数据划分到不同的节点，请求因此可以分流到不同的节点中去，提高了整个系统的吞吐量。
 
 数据划分一般会结合数据复制，每个节点既可能为某个分区的 leader，同时还可能是其他分区的 follower：
 
@@ -46,7 +46,7 @@ tags:
 
 如上图，新增了节点 Hash 2'，则仅需要将位于 [Hash 2, Hash 2'] 这段区间的数据迁移到 Hash 2' 节点上，其他数据无影响。
 
-采用哈希的方式来切分数据最大的问题是范围查询会很低效，查询请求需要发给所有数据分区。MongoDB 就采取了哈希的方式，见[New Hash-Based Sharding Feature in MongoDB 2.4](http://blog.mongodb.org/post/47633823714/new-hash-based-sharding-feature-in-mongodb-24)。Cassandra 则采用了范围和哈希结合的方式。关于 cassandra 可以参阅论文 [Cassandra – A Decentralized Structured Storage System](http://www.cs.cornell.edu/Projects/ladis2009/papers/Lakshman-ladis2009.PDF) 和 [Facebook’s Cassandra paper, annotated and compared to Apache Cassandra 2.0](http://www.datastax.com/documentation/articles/cassandra/cassandrathenandnow.html)。
+采用哈希的方式来切分数据最大的问题是范围查询会很低效，查询请求需要发给所有数据分区。MongoDB 就采取了哈希的方式，见[New Hash-Based Sharding Feature in MongoDB 2.4](https://blog.mongodb.org/post/47633823714/new-hash-based-sharding-feature-in-mongodb-24)。Cassandra 则采用了范围和哈希结合的方式。关于 cassandra 可以参阅论文 [Cassandra – A Decentralized Structured Storage System](https://www.cs.cornell.edu/Projects/ladis2009/papers/Lakshman-ladis2009.PDF) 和 [Facebook’s Cassandra paper, annotated and compared to Apache Cassandra 2.0](https://www.datastax.com/documentation/articles/cassandra/cassandrathenandnow.html)。
 
 ### 热点问题
 

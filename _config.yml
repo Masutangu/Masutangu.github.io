@@ -5,7 +5,7 @@ header-img: "https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/home-bg.j
 email: masutangu.cs@gmail.com
 description: "关于程序与设计、黑客与画家  这里是 Masutangu 的个人博客。"
 keyword: "Masutangu, Masutangu 的博客, Masutangu Blog, 博客, 个人网站, 互联网, 后端, Python, Go, C++"
-url: "http://masutangu.com"              # your host, for absolute URL
+url: "https://masutangu.com"              # your host, for absolute URL
 baseurl: ""                             # for example, '/blog' if your blog hosted on 'host/blog'
 
 # Publish posts or collection documents with a future date.
@@ -41,7 +41,7 @@ plugins: [jekyll-paginate]
 # Markdown settings
 # replace redcarpet to kramdown,
 # although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
-# document: http://jekyllrb.com/docs/configuration/#kramdown
+# document: https://jekyllrb.com/docs/configuration/#kramdown
 markdown: kramdown
 kramdown:
   input: GFM                            # use Github Flavored Markdown !important

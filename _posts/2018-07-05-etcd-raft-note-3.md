@@ -167,7 +167,7 @@ func (n *node) ReadIndex(ctx context.Context, rctx []byte) error {
 }
 ```
 
-上篇文章 [《etcd-raft 源码学习笔记（概览篇）》](http://masutangu.com/2018/07/etcd-raft-note-2/) 提到当节点为 leader 时，```step``` 被设置为 ```stepLeader``` 。我们来看看 ```stepLeader``` 是如何处理 type 为 pb.MsgReadIndex 的 readIndexReq 的：
+上篇文章 [《etcd-raft 源码学习笔记（概览篇）》](https://masutangu.com/2018/07/etcd-raft-note-2/) 提到当节点为 leader 时，```step``` 被设置为 ```stepLeader``` 。我们来看看 ```stepLeader``` 是如何处理 type 为 pb.MsgReadIndex 的 readIndexReq 的：
 
 ```go
 func stepLeader(r *raft, m pb.Message) error {

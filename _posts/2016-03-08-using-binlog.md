@@ -5,7 +5,7 @@ title: 使用 binlog 实时监控 Mysql 数据更新
 tags: 数据库
 ---
 
-上一篇文章《[UDF+Trigger实时监控Mysql数据更新](http://masutangu.github.io/blog/2016/02/29/udftrigger%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7mysql%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0/)》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。
+上一篇文章《[UDF+Trigger实时监控Mysql数据更新](https://masutangu.github.io/blog/2016/02/29/udftrigger%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7mysql%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0/)》介绍了用UDF+Trigger的方式来监控Mysql数据的更新，这次介绍下使用binlog监控数据更新的方法。
 
 # binlog 简介 #
 

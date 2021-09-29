@@ -9,7 +9,7 @@ tags:
 
 这篇文章正式介绍下我之前用 Python 实现的分布式任务框架 [Elric](https://github.com/Masutangu/Elric)，包括其API，架构，周边能力以及实现细节。
 
-读者可以先阅读之前的这篇文章《[Python实现的分布式任务调度系统](http://masutangu.com/2015/08/elric-distributed-job-scheduler-by-python/)》来了解Elric的起源和早期设计的思想。
+读者可以先阅读之前的这篇文章《[Python实现的分布式任务调度系统](https://masutangu.com/2015/08/elric-distributed-job-scheduler-by-python/)》来了解Elric的起源和早期设计的思想。
 
 # 一. 简介
 Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker 架构，Worker 向 Master 提交任务和执行 Master 下发的任务。支持多种任务类型：即时任务，周期任务，crontab 任务和定时任务。
@@ -79,11 +79,11 @@ Elric 是一个 Python 实现的简单的分布式任务框架。Master-Worker �
 Elric 支持任务去重，通常这个特性用于爬虫，比如爬取过的页面无需再次爬取时，可以通过设置 need_filter 为 True 来实现：
 
 ```python
-blog_url = 'http://masutangu.com/'
+blog_url = 'https://masutangu.com/'
 rq_worker = RQWorker(name='crawler', listen_keys=['crawl_blog', ])
 rq_worker.submit_job(crawl_blog, 'crawl_blog', args=[blog_url], job_id=blog_url)
 ```
-任务执行完成后，Master 的 dupefilter 模块会标记（'crawl_blog'，'http://masutangu.com/' ）任务已经执行成功。之后如果 Master 再次接收到任务，会到 dupefilter 模块查询是否有相应的记录，如果存在则直接过滤该任务，不再下发。
+任务执行完成后，Master 的 dupefilter 模块会标记（'crawl_blog'，'https://masutangu.com/' ）任务已经执行成功。之后如果 Master 再次接收到任务，会到 dupefilter 模块查询是否有相应的记录，如果存在则直接过滤该任务，不再下发。
 
 ## 配置
  [settings.py](https://github.com/Masutangu/Elric/blob/master/settings.py) 文件的配置信息如下：
@@ -186,7 +186,7 @@ for job_id, job_key, serialized_job in self.jobstore.get_due_jobs(now):
     job.next_run_time = Job.get_next_trigger_time(job, last_run_time[-1])   
     self.update_job(job)
 ```
-如果在这个操作没有加锁保证原子性，将有可能下发重复的任务。这里我采用了redis实现的分布式锁来解决这个问题。其原理利用了 redis 的 setnx 命令，详细可以查看这篇文章《[Distributed locks with Redis](http://redis.io/topics/distlock)》。
+如果在这个操作没有加锁保证原子性，将有可能下发重复的任务。这里我采用了redis实现的分布式锁来解决这个问题。其原理利用了 redis 的 setnx 命令，详细可以查看这篇文章《[Distributed locks with Redis](https://redis.io/topics/distlock)》。
 
 我把分布式锁封装成 Context Managers 的形式：
 

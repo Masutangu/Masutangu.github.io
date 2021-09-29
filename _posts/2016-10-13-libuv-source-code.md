@@ -141,7 +141,7 @@ typedef void *QUEUE[2];
 #define QUEUE_PREV(q)       ((QUEUE *) ((*(q))[1]))
 ```
 返回值不是左值，在 QUEUE_INIT 函数中对 QUEUE_NEXT 和 QUEUE_PREV 的赋值会编译失败。
-C/C++ 中类型转换有可能会返回左值（可以看 [stackoverflow](http://stackoverflow.com/questions/26508609/is-the-result-of-a-cast-an-rvalue) 的讲解)：
+C/C++ 中类型转换有可能会返回左值（可以看 [stackoverflow](https://stackoverflow.com/questions/26508609/is-the-result-of-a-cast-an-rvalue) 的讲解)：
 
 > The result of the expression (T) cast-expression is of type T. The result is an lvalue if T is an lvalue reference type or an rvalue reference to function type and an xvalue if T is an rvalue reference to object type; **otherwise the result is a prvalue.**[ Note: if T is a non-class type that is cv-qualified, the cv-qualifiers are ignored when determining the type of the resulting prvalue; see 3.10. —end note ]
 

@@ -9,7 +9,7 @@ tags:
 
 最近工作需要在邮件内容中展示一些图表，例如折线图、柱状图、圆饼图等。采用的方案为：
 
-* 用[Matplotlib](http://matplotlib.org/)生成图表并保存成文件
+* 用[Matplotlib](https://matplotlib.org/)生成图表并保存成文件
 * 将图片添加为邮件的附件
 * 最后通过```src="cid:0"```的方式将图片嵌入到邮件正文中
 
@@ -42,7 +42,7 @@ tags:
 
 * Demo
 
-    [官方 Demo](http://matplotlib.org/examples/api/barchart_demo.html)
+    [官方 Demo](https://matplotlib.org/examples/api/barchart_demo.html)
 
 * API 封装
 
@@ -139,7 +139,7 @@ tags:
 
 * Demo
 
-    [官方 Demo](http://matplotlib.org/examples/pie_and_polar_charts/pie_demo_features.html)
+    [官方 Demo](https://matplotlib.org/examples/pie_and_polar_charts/pie_demo_features.html)
 
 * API 封装
 
@@ -177,7 +177,7 @@ matplot 支持绘制子图，相当于把一张图分隔成几个区块，每个
 
 * Demo
 
-    [官方 Demo](http://matplotlib.org/examples/subplots_axes_and_figures/subplot_demo.html)
+    [官方 Demo](https://matplotlib.org/examples/subplots_axes_and_figures/subplot_demo.html)
 
     subplot 函数的签名为 subplot(m, n, k)。参数 m 表示划分的行数，n表示划分的列数，k表示使用第k个子图（从左到右、从上到下的顺序）。
     

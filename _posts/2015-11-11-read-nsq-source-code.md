@@ -13,7 +13,7 @@ tags:
 * 知乎上不少人推荐
 * 对消息队列挺感兴趣，想了解其实现。
 # 关于NSQ #
-官网介绍在此：http://nsq.io/overview/quick_start.html 简单复制粘贴下NSQ包含的几个模块：
+官网介绍在此：https://nsq.io/overview/quick_start.html 简单复制粘贴下NSQ包含的几个模块：
 * nsqd is the daemon that receives, queues, and delivers messages to clients.
 * nsqlookupd is the daemon that manages topology information. Clients query 
 *  nsqlookupd to discover nsqdproducers for a specific topic and nsqd nodes broadcasts topic and channel information.
@@ -37,9 +37,9 @@ protocol的IOLoop接收client的请求，根据命令的不同做相应处理：
 <img src="/assets/images/read-nsq-source-code/illustration-6.png" alt="示例6" title="示例6" width="800" />
 从提交消息开始，可以通过http或者tcp的方式往一个topic发送一条消息。先看看http的方式。
 注册回调函数doPUB：
-<img src="/assets/images/read-nsq-source-code/illustration-7.png" alt="http.go: newHTTPServer()" title="http.go: newHTTPServer()" width="800" />
+<img src="/assets/images/read-nsq-source-code/illustration-7.png" alt="https.go: newHTTPServer()" title="https.go: newHTTPServer()" width="800" />
 看看doPUB函数的关键代码，查询到相应的topic，创建Message实例，调用topic的PutMessage方法将该消息写入topic：
-<img src="/assets/images/read-nsq-source-code/illustration-8.png" alt="http.go: doPUB()" title="http.go: doPUB()" width="800" />
+<img src="/assets/images/read-nsq-source-code/illustration-8.png" alt="https.go: doPUB()" title="https.go: doPUB()" width="800" />
 再看看tcp的方式，上面提到protocol的IOLoop会根据client的不同请求做相应处理，Exec方法判断请求的参数，调用不同的方法：
 <img src="/assets/images/read-nsq-source-code/illustration-9.png" alt="protocol_v2.go: Exec()" title="protocol_v2.go: Exec()" width="800" />
 看看PUB()的实现，类似的，查询相应的topic，创建Message实例，调用topic的PutMessage方法将该消息写入topic：
@@ -112,7 +112,7 @@ NSQ的官方文档提到了管理goroutine的一些方法。通常会用一个ex
 对比了channel和topic，会发现channel的exit()并没有等待child goroutine退出。这里为什么topic需要等待child goroutine结束呢？我猜测是因为child goroutinue有可能会写消息到topic下的channel，而可以看到在topic的exit()函数有关闭channel的操作，因此需要确保child goroutinue退出，不再有消息写入channel后，才执行关闭channel的操作。
 # 心得体会 #
 这次读NSQ的代码，最大的困难在于之前我对NSQ一点都不了解，没有使用过的经验。读源码之前看过官方的文档，但是文档的说明其实比较少。另外国内也几乎没有相关的资料可以参考。所以一开始读起来有点吃力。
-尝试过自顶（nsqd，protocol类）向下（topic，channel类）的顺序来读，也尝试过从自底向上的顺序来读。最后我个人感觉阅读的顺序应该是先从底部（topic，channel类）读起，这部分需要读的细致些。再往上一层层读（protocol，tcp，http，最后到nsqd），梳理好整个的架构。最后再自顶向下一层层画出架构图。
+尝试过自顶（nsqd，protocol类）向下（topic，channel类）的顺序来读，也尝试过从自底向上的顺序来读。最后我个人感觉阅读的顺序应该是先从底部（topic，channel类）读起，这部分需要读的细致些。再往上一层层读（protocol，tcp，https，最后到nsqd），梳理好整个的架构。最后再自顶向下一层层画出架构图。
 另外一个非常大的感受是，要把自己的所得写成文章真是一件很不容易的事情。尤其是梳理架构／流程这一部分。想把自己理解的东西通俗易懂的表达出来是一门大学问，希望读者多多提出意见和批评，好让我不断学习和进步。
 结束语
 nsqd主要的精华在于golang的channel，读完能够更深入的掌握channel的用法和使用时机。之后如果有时间，我会继续阅读nsqlookup这个模块的代码，感兴趣的同学到时再一起探讨吧^_^

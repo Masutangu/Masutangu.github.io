@@ -1,6 +1,6 @@
 # Hux blog 模板
 
-### [我的博客在这里 &rarr;](http://huxpro.github.io)
+### [我的博客在这里 &rarr;](https://huxpro.github.io)
 
 
 ### 关于收到"Page Build Warning"的email
@@ -37,7 +37,7 @@ require': cannot load such file -- webrick (LoadError)
 
 参考 https://github.com/jekyll/jekyll/issues/8523 添加 webrick ```bundle add webrick```
 
-参考文档：[using jekyll with pages](https://help.github.com/articles/using-jekyll-with-pages/) & [Upgrading from 2.x to 3.x](http://jekyllrb.com/docs/upgrading/2-to-3/)
+参考文档：[using jekyll with pages](https://help.github.com/articles/using-jekyll-with-pages/) & [Upgrading from 2.x to 3.x](https://jekyllrb.com/docs/upgrading/2-to-3/)
 
 
 ## 关于模板(beta)
@@ -48,7 +48,7 @@ require': cannot load such file -- webrick (LoadError)
 $ git clone git@github.com:Huxpro/huxblog-boilerplate.git
 ```
 
-**[在这里预览模板 &rarr;](http://huangxuan.me/huxblog-boilerplate/)**
+**[在这里预览模板 &rarr;](https://huangxuan.me/huxblog-boilerplate/)**
 
 ## 各版本特性
 
@@ -112,7 +112,7 @@ weibo_username: huxpro      # 你的微博账号，底部链接会自动更新�
 # paginate: 10              # 一页你准备放几篇文章
 ```
 
-Jekyll官方网站还有很多的参数可以调，比如设置文章的链接形式...网址在这里：[Jekyll - Official Site](http://jekyllrb.com/) 中文版的在这里：[Jekyll中文](http://jekyllcn.com/).
+Jekyll官方网站还有很多的参数可以调，比如设置文章的链接形式...网址在这里：[Jekyll - Official Site](https://jekyllrb.com/) 中文版的在这里：[Jekyll中文](https://jekyllcn.com/).
 
 #### write-posts
 
@@ -137,7 +137,7 @@ tags:
 #### SideBar
 
 看右边:
-![](http://huangxuan.me/img/blog-sidebar.jpg)
+![](https://huangxuan.me/img/blog-sidebar.jpg)
 
 设置是在 `_config.yml`文件里面的`Sidebar settings`那块。
 ```
@@ -147,7 +147,7 @@ sidebar-about-description: "简单的描述一下你自己"
 sidebar-avatar: /img/avatar.png     #你的大头贴，请使用绝对地址.
 ```
 
-侧边栏是响应式布局的，当屏幕尺寸小于992px的时候，侧边栏就会移动到底部。具体请见bootstrap栅格系统 <http://v3.bootcss.com/css/>
+侧边栏是响应式布局的，当屏幕尺寸小于992px的时候，侧边栏就会移动到底部。具体请见bootstrap栅格系统 <https://v3.bootcss.com/css/>
 
 
 #### Mini About Me
@@ -156,7 +156,7 @@ Mini-About-Me 这个模块将在你的头像下面，展示你所有的社交账
 
 #### Featured Tags
 
-看到这个网站 [Medium](http://medium.com) 的推荐标签非常的炫酷，所以我将他加了进来。
+看到这个网站 [Medium](https://medium.com) 的推荐标签非常的炫酷，所以我将他加了进来。
 这个模块现在是独立的，可以呈现在所有页面，包括主页和发表的每一篇文章标题的头上。
 
 ```
@@ -181,11 +181,11 @@ featured-condition-size: 1     # A tag will be featured if the size of it is mor
 friends: [
     {
         title: "Foo Blog",
-        href: "http://foo.github.io/"
+        href: "https://foo.github.io/"
     },
     {
         title: "Bar Blog",
-        href: "http://bar.github.io"
+        href: "https://bar.github.io"
     }
 ]
 ```
@@ -195,7 +195,7 @@ friends: [
 
 HTML5幻灯片的排版：
 
-![](http://huangxuan.me/img/blog-keynote.jpg)
+![](https://huangxuan.me/img/blog-keynote.jpg)
 
 这部分是用于占用html格式的幻灯片的，一般用到的是 Reveal.js, Impress.js, Slides, Prezi 等等.我认为一个现代化的博客怎么能少了放html幻灯的功能呢~
 
@@ -204,7 +204,7 @@ HTML5幻灯片的排版：
 ```
 ---
 layout:     keynote
-iframe:     "http://huangxuan.me/js-module-7day/"
+iframe:     "https://huangxuan.me/js-module-7day/"
 ---
 ```
 
@@ -213,12 +213,12 @@ iframe在不同的设备中，将会自动的调整大小。保留内边距是�
 
 #### Comment
 
-博客不仅支持多说[Duoshuo](http://duoshuo.com)评论系统，也支持[Disqus](http://disqus.com)评论系统。
+博客不仅支持多说[Duoshuo](https://duoshuo.com)评论系统，也支持[Disqus](https://disqus.com)评论系统。
 
-`Disqus`优点是：国际比较流行，界面也很大气、简介，如果有人评论，还能实时通知，直接回复通知的邮件就行了；缺点是：评论必须要去注册一个disqus账号，分享一般只有Facebook和Twitter，另外在墙内加载速度略慢了一点。想要知道长啥样，可以看以前的版本点[这里](http://brucezhaor.github.io/about.html) 最下面就可以看到。
+`Disqus`优点是：国际比较流行，界面也很大气、简介，如果有人评论，还能实时通知，直接回复通知的邮件就行了；缺点是：评论必须要去注册一个disqus账号，分享一般只有Facebook和Twitter，另外在墙内加载速度略慢了一点。想要知道长啥样，可以看以前的版本点[这里](https://brucezhaor.github.io/about.html) 最下面就可以看到。
 
 `多说` 优点是：支持国内各主流社交软件(微博，微信，豆瓣，QQ空间 ...)一键分享按钮功能，另外登陆比较方便，管理界面也是纯中文的，相对于disqus全英文的要容易操作一些；缺点是：就是界面丑了一点。
-当然你是可以自定义界面的css的，详情请看多说开发者文档 http://dev.duoshuo.com/docs/5003ecd94cab3e7250000008 。
+当然你是可以自定义界面的css的，详情请看多说开发者文档 https://dev.duoshuo.com/docs/5003ecd94cab3e7250000008 。
 
 **首先**，你需要去注册一个账号，不管是disqus还是多说的。**不要直接使用我的啊！**
 

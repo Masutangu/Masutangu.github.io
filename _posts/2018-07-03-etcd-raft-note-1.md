@@ -89,7 +89,7 @@ func (rc *raftNode) startRaft() {
 		rc.node = raft.StartNode(c, startPeers)
 	}
 
-	go rc.serveRaft()  // 监听 http 
+	go rc.serveRaft()  // 监听 https 
 	go rc.serveChannels()  // 监听 proposeC channel，读取应用层请求 进行处理
 }
 ```

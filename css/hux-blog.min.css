@@ -1,5 +1,5 @@
 /*!
- * Hux Blog v1.7.0 (http://huxpro.github.io)
+ * Hux Blog v1.7.0 (https://huxpro.github.io)
  * Copyright 2018 Hux <huxpro@gmail.com>
  */
 

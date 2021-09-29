@@ -274,7 +274,7 @@ PID 是进程的唯一标志，其类型为 pid_t。内核将进程的 PID 存�
 
 注：PID 在内核态和用户态是不同的概念。Linux 中的线程都有各自的 PID，而 getpid() 返回的其实不是 PID，而是 TGID。
 
-[stackoverflow](http://stackoverflow.com/questions/9154671/distinction-between-processes-and-threads-in-linux) 上的解释：
+[stackoverflow](https://stackoverflow.com/questions/9154671/distinction-between-processes-and-threads-in-linux) 上的解释：
 
 > The first and most important thing to realize is that "PID" means different things in kernel space and user space. What the kernel calls PIDs are actually kernel-level thread ids (often called TIDs), not to be confused with pthread_t which is a separate identifier. Each thread on the system, whether in the same process or a different one, has a unique TID (or "PID" in the kernel's terminology). What's considered a PID in the POSIX sense of "process", on the other hand, is called a "thread group ID" or "TGID" in the kernel. Each process consists of one or more threads (kernel processes) each with their own TID (kernel PID), but all sharing the same TGID, which is equal to the TID (kernel PID) of the initial thread in which main runs.
 

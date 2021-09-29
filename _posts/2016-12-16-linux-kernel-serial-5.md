@@ -357,9 +357,9 @@ struct mnt_namespace {
 
 namespace 结构体则不同，默认情况下，所有进程共享同样的命名空间。
 
-http://bean-li.github.io/vfs-inode-dentry/
+https://bean-li.github.io/vfs-inode-dentry/
 
-http://unicornx.github.io/2016/03/20/20160320-lk-vfs/
+https://unicornx.github.io/2016/03/20/20160320-lk-vfs/
 
 APUE 对应进程打开文件的图例
 

@@ -8,7 +8,7 @@ tags:
 
 ## 前言
 
-这篇文章是《漫谈分布式》系列文章的第五篇，主题为线性一致性和共识算法，以理清概念为主，不涉及具体的共识算法，如有兴趣参考文章 [MIT 6.824 学习笔记（二）](http://masutangu.com/2017/12/02/mit-6824-note-2/) 介绍了 Raft 算法以及 [The Part-Time Parliament 论文笔记](http://masutangu.com/2018/03/21/the-part-time-parliament-note/) 记录了 Paxos 论文的笔记。
+这篇文章是《漫谈分布式》系列文章的第五篇，主题为线性一致性和共识算法，以理清概念为主，不涉及具体的共识算法，如有兴趣参考文章 [MIT 6.824 学习笔记（二）](https://masutangu.com/2017/12/02/mit-6824-note-2/) 介绍了 Raft 算法以及 [The Part-Time Parliament 论文笔记](https://masutangu.com/2018/03/21/the-part-time-parliament-note/) 记录了 Paxos 论文的笔记。
 
 ## 一致性保证
 
@@ -16,7 +16,7 @@ tags:
 
 ### 线性一致性
 
-**线性一致性**又称为**原子一致性、强一致性。**关于线性一致性的详细介绍，可以读 [Linearizability: A Correctness Condition for Concurrent Objects](http://cs.brown.edu/~mph/HerlihyW90/p463-herlihy.pdf)。**线性一致性为分布式系统提供了数据单一副本的假象。**
+**线性一致性**又称为**原子一致性、强一致性。**关于线性一致性的详细介绍，可以读 [Linearizability: A Correctness Condition for Concurrent Objects](https://cs.brown.edu/~mph/HerlihyW90/p463-herlihy.pdf)。**线性一致性为分布式系统提供了数据单一副本的假象。**
 
 下图以 A、B、C 发起读写操作为例，图中标识的是客户端从发起请求到收到回包的时延，网络延迟的原因，客户端收到回包的时延不一。因为不确定服务端什么时候成功处理完写操作，在读写操作的时间段存在重合的情况下，读操作返回的有可能是旧值也有可能是新值。
 
@@ -62,7 +62,7 @@ tags:
 
 实现线性一致性最简单的做法是只用一个数据副本，但单一数据副本无法做到容灾，容灾最常见的做法是对数据备份多份副本。
 
-在之前[漫谈分布式：数据复制](http://masutangu.com/2019/12/13/distributed-system-2/) 文章中讨论过复制的几种方式：
+在之前[漫谈分布式：数据复制](https://masutangu.com/2019/12/13/distributed-system-2/) 文章中讨论过复制的几种方式：
 
 #### 基于单 leader 的复制：不保证遵循线性一致性
 
@@ -117,7 +117,7 @@ tags:
 
 为了维护因果关系，需要知道每个操作发生的先后顺序，即 “happened-before” 关系。
 
-在 [漫谈分布式：数据复制](http://masutangu.com/2019/12/13/distributed-system-2/) 写冲突小节介绍了 Lamport 逻辑时钟、版本向量的方式来比较事件的先后顺序。这两种方式虽然维护了因果关系，但仍然无法满足某些业务场景，考虑用户昵称唯一的例子， Lamport 逻辑时钟只能在**事后**（收集到所有节点的操作后）根据操作的逻辑时钟大小来决定取昵称操作成功与否，无法在用户发起取昵称请求时就判断这次请求能否成功。
+在 [漫谈分布式：数据复制](https://masutangu.com/2019/12/13/distributed-system-2/) 写冲突小节介绍了 Lamport 逻辑时钟、版本向量的方式来比较事件的先后顺序。这两种方式虽然维护了因果关系，但仍然无法满足某些业务场景，考虑用户昵称唯一的例子， Lamport 逻辑时钟只能在**事后**（收集到所有节点的操作后）根据操作的逻辑时钟大小来决定取昵称操作成功与否，无法在用户发起取昵称请求时就判断这次请求能否成功。
 
 在单 leader 复制模式中，leader 每次递增日志的索引序号，通过日志索引序号，复制日志定义了所有操作的全序关系且该顺序符合因果关系。单 leader 复制模式虽然可以满足用户昵称唯一的业务要求，但也带来了一些挑战点：
 

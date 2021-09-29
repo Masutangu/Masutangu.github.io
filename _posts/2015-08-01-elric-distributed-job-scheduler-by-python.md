@@ -61,6 +61,6 @@ Done! 一个非常简单的分布式任务调度器就完成了。
 
 后续阅读：
 
-[Elric Change Log 1](http://masutangu.com/2015/10/elric-change-log-1/)
+[Elric Change Log 1](https://masutangu.com/2015/10/elric-change-log-1/)
 
-[Elric Change Log 2](http://masutangu.com/2016/02/elric-change-log-2/)
+[Elric Change Log 2](https://masutangu.com/2016/02/elric-change-log-2/)

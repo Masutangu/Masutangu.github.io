@@ -7,7 +7,7 @@ tags: 读书笔记
 
 > 不积跬步，无以至千里；不积小流，无以成江海
 
-## [A Little Architecture](http://blog.cleancoder.com/uncle-bob/2016/01/04/ALittleArchitecture.html)
+## [A Little Architecture](https://blog.cleancoder.com/uncle-bob/2016/01/04/ALittleArchitecture.html)
 
 文章以问答的形式，讲解了如何成为一名优秀的架构师。
 
@@ -32,7 +32,7 @@ tags: 读书笔记
 
 	> Blessed is the team whose architects care about what really matters, and defer those things that don’t.
 
-## [Why’d You Do That?!? An Engineer’s Guide to Debugging User Behavior](http://www.theeffectiveengineer.com/blog/debugging-user-behavior)
+## [Why’d You Do That?!? An Engineer’s Guide to Debugging User Behavior](https://www.theeffectiveengineer.com/blog/debugging-user-behavior)
 
 代码不符合我们的预期，我们可以通过各种方法进行调试，比如打断点，打log等。那如果用户的行为不符合我们的预期，我们应该如何debug用户呢？
 
@@ -45,7 +45,7 @@ tags: 读书笔记
 * **user tests**:
 	Let engaged customers or early adopters beta test a feature and then collect their feedback in a doc or talk to them in person.
 
-## [How to be awesome Swift developer](http://blog.krzyzanowskim.com/2015/12/28/how-to-be-awesome-swift-developer/) 
+## [How to be awesome Swift developer](https://blog.krzyzanowskim.com/2015/12/28/how-to-be-awesome-swift-developer/) 
 
 如何成为了不起的swift程序员？作者给了一些很有用的建议，摘抄如下：
 
@@ -74,9 +74,9 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 
 延伸阅读：
 
-[Model-View-ViewModel for iOS Model-View-ViewModel for iOS](http://www.teehanlax.com/blog/model-view-viewmodel-for-ios/)
+[Model-View-ViewModel for iOS Model-View-ViewModel for iOS](https://www.teehanlax.com/blog/model-view-viewmodel-for-ios/)
 
-## [The Ultimate Guide to Minimum Viable Products](http://scalemybusiness.com/the-ultimate-guide-to-minimum-viable-products/)
+## [The Ultimate Guide to Minimum Viable Products](https://scalemybusiness.com/the-ultimate-guide-to-minimum-viable-products/)
 
 最简可行产品(MVP)是指以最低成本尽可能展现核心概念的产品策略，即是指用最快、最简明的方式建立一个可用的产品原型，这个原型要表达出你产品最终想要的效果，然后通过迭代来完善细节。
 
@@ -113,7 +113,7 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 * Select one MVP strategy you think would work for you
 * Create a simple plan to execute on it (remember the “minimal” in MVP)
 
-## [Meta-analysis: best interview questions to spot ideal employees](http://www.williambharding.com/blog/hiring/meta-analysis-best-interview-questions-to-spot-ideal-employees/)
+## [Meta-analysis: best interview questions to spot ideal employees](https://www.williambharding.com/blog/hiring/meta-analysis-best-interview-questions-to-spot-ideal-employees/)
 
 招聘者最看重的特质是什么？
 
@@ -121,7 +121,7 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 
 另外后面还有些经典的面试题，供面试者和面试官参考学习。
 
-## [Square Defangs Difficult Decisions with this System — Here’s How](http://firstround.com/review/square-defangs-difficult-decisions-with-this-system-heres-how/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29)
+## [Square Defangs Difficult Decisions with this System — Here’s How](https://firstround.com/review/square-defangs-difficult-decisions-with-this-system-heres-how/?ct=t%28How_Does_Your_Leadership_Team_Rate_12_3_2015%29)
 
 文章介绍SPADE，如何运用它来更好地做决策。
 
@@ -158,7 +158,7 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 
 简单介绍了如何用PostgreSQL做全文检索。
 
-## [Why I Quit my Dream Job at Ubisoft Why I Quit my Dream Job at Ubisoft](http://gingearstudio.com/why-i-quit-my-dream-job-at-ubisoft)
+## [Why I Quit my Dream Job at Ubisoft Why I Quit my Dream Job at Ubisoft](https://gingearstudio.com/why-i-quit-my-dream-job-at-ubisoft)
 
 作者讲述了自己从大公司辞职，自己组团队做独立游戏的原因：
 
@@ -168,11 +168,11 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 > When people realize they’re just one very replaceable person on a massive production chain, you can imagine it impacts their motivation.  
 > No matter what’s your job, you don’t have a significant contribution on the game. You’re a drop in a glass of water, and as soon as you realize it, your ownership will evaporate in the sun. And without ownership, no motivation.
 
-## [消息系统设计与实现 稀土掘金：消息系统设计与实现「上篇」 ](http://gold.xitu.io/entry/5649618800b0ee7f5991a717)
+## [消息系统设计与实现 稀土掘金：消息系统设计与实现「上篇」 ](https://gold.xitu.io/entry/5649618800b0ee7f5991a717)
 
 分析了消息系统的设计与实现，非常有参考价值。
 
-## [张小龙谈微信价值观 微信公开课PRO版] (http://v.qq.com/cover/a/a7v5hfc9umds0c9.html?vid=s0019dietdc)
+## [张小龙谈微信价值观 微信公开课PRO版] (https://v.qq.com/cover/a/a7v5hfc9umds0c9.html?vid=s0019dietdc)
 
 微信的四个价值观：
 
@@ -191,7 +191,7 @@ MVVM在MVC的基础上，将Controller的展示逻辑抽离出一个View Model�
 
 ## [Amazon founder and CEO Jeff Bezos delivers graduation speech at Princeton University](https://www.youtube.com/watch?v=vBmavNoChZc)
 
-[原文链接](http://www.princeton.edu/main/news/archive/S27/52/51O99/index.xml)
+[原文链接](https://www.princeton.edu/main/news/archive/S27/52/51O99/index.xml)
 
 “善良比聪明更重要，选择比天赋更重要”。最后的一系列反问句满满的正能量：
 

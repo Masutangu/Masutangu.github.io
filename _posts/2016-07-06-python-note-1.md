@@ -429,7 +429,7 @@ A
 * 一定要调用父类为object的类的super.__init__()函数
 * 调用的super()返回不一定是父类，因此super调用最好保持参数一致
 
-另附一篇也是关于super的文章[Python’s super() considered super!](http://rhettinger.wordpress.com/2011/05/26/super-considered-super/)
+另附一篇也是关于super的文章[Python’s super() considered super!](https://rhettinger.wordpress.com/2011/05/26/super-considered-super/)
 
 ### 8. string转换为dict
 
@@ -467,7 +467,7 @@ g()  # print [1, 2, 3]
 
 【译者】：z.append(3)时，g()内部的引用和z仍然指向一个变量，而z=[1]之后，两者就不再指向一个变量了。
 
-关于闭包，stack overflow http://stackoverflow.com/questions/4020419/closures-in-python
+关于闭包，stack overflow https://stackoverflow.com/questions/4020419/closures-in-python
 
 ### 2. wraps
 
