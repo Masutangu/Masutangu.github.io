@@ -14,7 +14,7 @@ tags:
 
 根据注释：
 
-```cpp
+```
 /**
  * intrusive_ptr<T> is an alternative to shared_ptr<T> that has better
  * performance because it does the refcounting intrusively
