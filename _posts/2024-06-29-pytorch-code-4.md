@@ -431,7 +431,7 @@ OperatorEntry::AnnotatedKernelContainerIterator OperatorEntry::registerKernel(
 `registerKernel` 主要做两件事：
 
 - 写入到 `kernels_` 中
-- 更新 `dispatchTable_`，即运行时调度键表。其为数组类型，以调度键为下标
+- 更新 `dispatchTable_`，即运行时调度键表。其为数组类型，下标由调度键计算得出，见下文
 
 `updateDispatchTable_` 和 `updateDispatchTableFull_` 最终都是调用 `updateDispatchTableEntry_`：
 
