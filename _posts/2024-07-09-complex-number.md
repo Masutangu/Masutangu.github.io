@@ -21,7 +21,7 @@ tags:
 </head>
 
 对虚数、复数的理解，分享两篇不错的文章：
-- [**A Visual, Intuitive Guide to Imaginary Numbers**](https://betterexplained.com/articles/a-visual-intuitive-guide-to-imaginary-numbers/)
+- [**A Visual, Intuitive Guide to Imaginary Numbers**](https://betterexplained.com/articles/a-visual-intuitive-guide-to-imaginary-numbers/)：**强烈推荐阅读原文！！**
 - [**欧拉复数公式**](https://www.shuxuele.com/algebra/eulers-formula.html)
 
 本文是摘抄这两篇文章的笔记。
