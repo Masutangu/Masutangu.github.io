@@ -130,5 +130,3 @@ $$
 $$
 x = \tan^{-1}(4/3) = 0.927
 $$
-
-<img src="/assets/images/complex-number/illustration-7.png" width="600" alt=""/>
