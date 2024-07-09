@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2024-07-01T23:18:21s+08:00
+date: 2024-07-01T23:18:21+08:00
 title: 【论文笔记】Attention Is All You Need
 
 tags: 
@@ -45,7 +45,7 @@ Transformer 中注意力机制用于计算每个位置与其他位置之间的�
 
 Transformer 模型也遵循这种架构，使用**堆叠的自注意力（stacked self-attention）**和**逐点全连接层（point-wise, fully connected layers）**构成编码器和解码器，分别显示在下图的左半部分和右半部分：
 
-<img src="/assets/images/paper-note-1-transformer/illustration-1.png" width="600" alt=""/>
+<img src="/assets/images/paper-note-transformer/illustration-1.png" width="600" alt=""/>
 
 ## Encoder and Decoder Stacks
 
@@ -61,7 +61,7 @@ Transformer 模型也遵循这种架构，使用**堆叠的自注意力（stacke
 
 一个注意力函数可以被描述为将一个查询（query）和一组键-值（key-value）对映射到一个输出（output），其中查询、键、值和输出都是向量。输出（output）由值（value）的加权和计算得出，其中分配给每个值（value）的权重由查询（query）与值（value）相应键（key）的兼容性函数计算得出的。
 
-<img src="/assets/images/paper-note-1-transformer/illustration-2.png" width="600" alt=""/>
+<img src="/assets/images/paper-note-transformer/illustration-2.png" width="600" alt=""/>
 
 ### Scaled Dot-Product Attention
 
@@ -115,7 +115,7 @@ $$
 
 这部分说明了采用自注意力机制，而不是卷积或 RNN的理由。除了总计算复杂度和并行度之外，长程依赖关系的学习是序列转换任务的一个关键挑战。影响该学习能力的一个关键因素是前向和后向信号在网络中所需遍历的路径长度。路径越短，学习长程依赖关系就越容易。论文中比较了由不同层类型组成的网络中任意两个输入和输出位置之间的最大路径长度：
 
-<img src="/assets/images/paper-note-1-transformer/illustration-3.png" width="600" alt=""/>
+<img src="/assets/images/paper-note-transformer/illustration-3.png" width="600" alt=""/>
 
 自注意力层将所有位置连接起来，只需要执行固定数量的顺序操作，而循环层则需要 O(n) 个顺序操作。当序列长度 n 小于表示维度 d 时，自注意力层比循环层更快。
 
