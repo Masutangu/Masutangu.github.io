@@ -20,7 +20,7 @@ tags:
 
 # AutoGrad 概念和基础类
 
-这篇文章介绍 PyTorch 自动微分的概念和基础类，总结自以下三篇文章：
+这篇文章介绍 PyTorch 自动微分的概念和基础类，总结自以下文章：
 * [A Gentle Introduction to torch.autograd](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html)
 * [Overview of PyTorch Autograd Engine](https://pytorch.org/blog/overview-of-pytorch-autograd-engine/)
 * [[源码解析]深度学习利器之自动微分(3) --- 示例解读](https://cloud.tencent.com/developer/article/1891307?from_column=20421&from=20421)
