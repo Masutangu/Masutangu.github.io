@@ -3,7 +3,7 @@ layout: post
 date: 2024-07-24T23:17:40+08:00
 title: Transformer 中的位置编码
 tags: 
-  - 源码阅读
+  - 读书笔记
 ---
 
 <head>
