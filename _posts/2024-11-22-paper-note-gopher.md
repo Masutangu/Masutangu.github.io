@@ -108,9 +108,7 @@ Kaplan 等人（2020）发现了循环神经网络和 Transformer 神经语言�
 
 我们使用 JAX（Bradbury et al., 2018）和 Haiku（Hennigan et al., 2020）构建了我们的训练和评估代码库。特别是，我们使用 JAX 的 pmap 转换来有效地表达数据和模型并行性。我们在 TPUv3 芯片（Jouppi et al., 2020）上训练和评估了所有模型。
 
-Gopher 的半精度参数和单精度 Adam 状态占用 2.5 TiB，远超过每个 TPUv3 核心上可用的 16 GiB 内存。为了解决这些内存问题，我们使用优化器状态分区（optimiser state partitioning）（Rajbhandari et al., 2020）、模型并行性（Shoeybi et al., 2019）和重新物质化（rematerialisation）（Griewank and Walther, 2000）来划分模型状态并减少激活，使其适应 TPU 内存。
-
-
+Gopher 的半精度参数和单精度 Adam 状态占用 2.5 TiB，远超过每个 TPUv3 核心上可用的 16 GiB 内存。为了解决这些内存问题，我们使用**优化器状态分区**（optimiser state partitioning）（Rajbhandari et al., 2020）、**模型并行性**（model parallelism）（Shoeybi et al., 2019）和**重新物质化**（rematerialisation）（Griewank and Walther, 2000）来划分模型状态并减少激活，使其适应 TPU 内存。
 
 我们发现，由于 TPUv3 的快速跨芯片通信，数据和模型并行性的开销都很低，在训练 Gopher 时只产生 10% 的开销。因此，我们发现在 TPU 上，直到训练规模超过 1024 芯片的“pod”时，才需要使用 pipelining（Huang et al., 2019），这大大简化了中型模型的训练。然而，流水线是一种在 commodity networks 上高效的并行方法，因为它的通信量低，所以非常适合连接多个 TPU pod。
 
