@@ -39,7 +39,7 @@ tags:
 
 尽管如此，**知识图谱难以构建**，当前知识图谱的方法不足以处理现实世界知识图谱不完整和动态变化的性质。这些方法未能有效地建模未见过的实体并表示新事实。此外，它们经常忽略知识图谱中丰富的文本信息。此外，现有的方法通常针对特定的知识图谱或任务进行定制，这不够通用。因此，有必要利用 LLMs 来解决知识图谱（KGs）面临的挑战。我们在图 1 中分别总结了 LLMs 和 KGs 的优缺点。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-1.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-1.png" width="600" alt=""/>
 *图1：LLMs的优点：通用知识、语言处理、泛化能力；LLMs的缺点：隐性知识、幻觉、犹豫不决、黑盒、缺乏领域特定/新知识。KGs的优点：结构化知识、准确性、确定性、可解释性、领域特定知识、不断演化的知识；KGs的缺点：不完整性、缺乏语言理解、未知事实。*
 
 
@@ -67,7 +67,7 @@ tags:
 
 如图 2 所示，我们总结了近年来具有不同模型架构、模型大小和开源可用性的几种代表性 LLMs。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-2.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-2.png" width="600" alt=""/>
 
 *图2：近年来的代表性大型语言模型（LLMs）。开源模型由实心方块表示，而闭源模型由空心方块表示。*
 
@@ -157,7 +157,7 @@ LLMs 作为 KGs 已经在各种现实世界的应用中得到了广泛的应用�
 
 统一 KGs 和 LLMs 的路线图如图 6 所示。在路线图中，我们确定了三个统一 LLMs 和 KGs 的框架，包括**KG 增强 LLMs**、**LLM 增强的 KGs**和**协同的 LLMs + KGs**。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-3.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-3.png" width="600" alt=""/>
 
 *图6：将 KGs 和 LLMs 统一的一般路线图如下： KG增强的LLMs；LLM增强的KGs；协同作用的LLMs + KGs。*
 
@@ -181,7 +181,7 @@ KGs 以显式和结构化的方式存储大量知识，可以用来增强 LLMs �
 
 近年来，大语言模型（LLMs）和知识图谱（KGs）的协同作用引起了研究人员的日益关注。LLMs 和 KGs 是两种本质上互补的技术，应统一到一个通用框架中，以相互增强。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-4.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-4.png" width="600" alt=""/>
 
 图 7. *协同 LLMs + KGs* 的一般框架，包含四层：1）数据，2）协同模型，3）技术，4）应用。
 
@@ -191,7 +191,7 @@ KGs 以显式和结构化的方式存储大量知识，可以用来增强 LLMs �
 
 为了更好地理解统一 LLMs 和 KGs 的研究，我们进一步为路线图中的每个框架提供了细粒度的分类。研究的细粒度分类如图 8 所示：
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-5.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-5.png" width="600" alt=""/>
 
 *图 8：统一大语言模型（LLMs）与知识图谱（KGs）研究的细粒度分类*
 
@@ -229,7 +229,7 @@ LLMs 和 KGs 的协同作用旨在将 LLMs 和 KGs 集成到一个统一框架�
 
 这一类别的研究工作主要集中在**设计新颖的知识感知训练目标**（designing novel knowledge-aware training objectives）。一个直观的想法是**在预训练目标中暴露更多的知识实体**。GLM **利用知识图谱结构来分配掩码概率**。具体来说，**在一定的跳数内可以到达**（can be reached within a certain number of hops）的实体是最重要最需要学习的实体，在预训练期间给予更高的掩码概率。此外，E-BERT 进一步控制了 **token 级和实体级训练损失之间的平衡**。训练损失值被用作 token 和实体学习过程的指示，动态地决定了下一个训练周期的比率。SKEP 也遵循类似的融合，在 LLMs 预训练期间注入情感知识。SKEP 首先利用 PMI 以及预定义的一组种子情感词来确定具有积极和消极情感的词，然后为**这些识别出的情感词在词语掩码目标中分配更高的掩码概率**。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-6.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-6.png" width="600" alt=""/>
 *图9：通过文本知识对齐损失将 KG 信息注入到 LLMs 的训练目标中，其中 h 表示 LLMs 生成的隐藏表示*
 
 另一条研究线明确利用了知识与输入文本之间的联系。如图 9 所示，ERNIE 提出了一种新颖的**词-实体对齐训练目标**作为预训练目标。具体来说，ERNIE 将句子和文本中提到的相应实体一起输入 LLMs，然后训练 LLMs **预测文本 token 和知识图谱中的实体之间的对齐链接（alignment links）**。类似地，KALM 通过结合实体嵌入来增强输入 token，并在 token-only 的预训练目标之外**增加了实体预测的预训练任务**。这种方法旨在提高 LLMs 捕捉与实体相关知识的能力。最后，KEPLER 直接**将知识图谱嵌入训练目标和掩码 token 预训练目标整合到一个共享的基于 Transformer 的编码器**中。确定性 LLM 专注于预训练语言模型以**捕捉确定性的事实知识**。它只对具有确定性实体作为问题的 span 进行掩码，并引入额外的**线索对比学习**（clue contrast learning）和**线索分类目标**（clue classification objective）。WKLM 首先用其他同类型的实体替换文本中的实体，然后将它们输入 LLMs。模型进一步预训练以区分实体是否已被替换。
@@ -237,7 +237,7 @@ LLMs 和 KGs 的协同作用旨在将 LLMs 和 KGs 集成到一个统一框架�
 
 #### 4.1.2 将 KGs 集成到 LLMs 的输入中
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-7.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-7.png" width="600" alt=""/>
 
 *图10：通过图结构将知识图谱信息注入到LLMs的输入中。*
 
@@ -289,7 +289,7 @@ KG-enhanced LLM 的预训练方法通常**通过语义相关的真实世界知�
 
 LLM 探测旨在理解 LLMs 中存储的知识。LLMs 在大规模语料库上进行训练，通常被认为包含了大量的知识。然而，LLMs 以隐藏的方式存储知识，这使得很难弄清楚存储的知识是什么。此外，LLMs 还受到幻觉问题的困扰，这导致生成与事实相矛盾的陈述，严重影响了 LLMs 的可靠性。因此，有必要探测和验证 LLMs 中存储的知识。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-8.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-8.png" width="600" alt=""/>
 
 *图12：使用知识图谱进行语言模型探测的一般框架。*
 
@@ -303,7 +303,7 @@ Alex 等人研究了 LLMs 保留不太流行的事实知识的能力。他们从
 
 #### 4.4.2 知识图谱用于大型语言模型分析
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-9.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-9.png" width="600" alt=""/>
 
 *图13：使用知识图谱进行语言模型分析的通用框架。*
 
@@ -318,7 +318,7 @@ KGs 用于预训练语言模型 LLMs 分析旨在回答以下问题，例如 “
 
 知识图谱嵌入（KGE）旨在**将每个实体和关系映射到低维向量（嵌入）空间中**。这些嵌入包含了知识图谱的语义和结构信息，可以用于各种任务，如问答、推理和推荐。传统的知识图谱嵌入方法主要依赖于知识图谱的结构信息，通过在嵌入上定义一个评分函数（例如 TransE 和 DisMult）来进行优化。然而，由于结构连接性有限，这些方法在表示未见过实体和长尾关系时往往表现不佳。为了解决这个问题，如图14所示，最近的研究采用 LLMs，通过编码实体和关系的文本描述来丰富知识图谱的表示，。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-10.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-10.png" width="600" alt=""/>
 
 *图14：LLM作为知识图谱嵌入（KGE）的文本编码器。*
 
@@ -342,7 +342,7 @@ $$
 
 #### 5.1.2 使用 LLM 进行联合文本和KG嵌入
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-11.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-11.png" width="600" alt=""/>
 
 *图15：用于联合文本和知识图谱嵌入的 LLMs。*
 
@@ -366,7 +366,7 @@ $$
 
 #### 5.2.1 LLM 作为编码器（PaE）
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-12.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-12.png" width="600" alt=""/>
 
 *图16.：将 LLMs 作为编码器（PaE）用于知识图谱补全的通用框架。*
 
@@ -435,7 +435,7 @@ LP-BERT 是一种混合 KGC 方法，结合了 MLM 编码和分离编码。该�
 
 #### 5.2.2 LLM 作为生成器（PaG）
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-13.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-13.png" width="600" alt=""/>
 
 *图17：显示了将 LLMs 作为 KG 完成的解码器（PaG）的一般框架。En. 和 De. 分别表示编码器和解码器。*
 
@@ -481,7 +481,7 @@ Justin 等人对集成了 LLMs 的 KGC 方法进行了全面分析。他们的�
 
 **知识图谱构建涉及在特定领域内创建知识的结构化表示**，这包括识别实体及其彼此之间的关系。知识图谱构建的过程通常包括多个阶段，包括 1）**实体发现**，2）**指代消解**和 3）**关系抽取**。图 19 展示了在知识图谱构建的每个阶段应用 LLMs 的一般框架。最近的方法还探索了 4）端到端的知识图谱构建，即在一步中构建完整的知识图谱，或者直接 5）从 LLMs 中提炼知识图谱。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-14.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-14.png" width="600" alt=""/>
 
 *图19：基于 LLMs 的知识图谱构建的一般框架。*
 
@@ -532,7 +532,7 @@ Justin 等人对集成了 LLMs 的 KGC 方法进行了全面分析。他们的�
 
 #### 5.3.4 从 LLMs 中提取知识图谱
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-15.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-15.png" width="600" alt=""/>
 
 *图20：从 LLMs 中提取知识图谱的一般框架。*
 
@@ -550,7 +550,7 @@ LLMs 已经被证明隐式地编码了大量的知识。如图 20 所示，一�
 
 在使用 LLM 进行 KG-to-Text 生成的开创性研究工作中，Ribeiro 等人和 Kale 与 Rastogi 直接对各种 LLM（包括 BART 和 T5）进行了微调，目的是将 LLM 的知识转移到这项任务中。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-16.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-16.png" width="600" alt=""/>
 
 *图21：展示了知识图谱到文本生成的一般框架。*
 
@@ -564,7 +564,7 @@ LLMs 的无监督预训练目标并不一定与 KG-to-text 的生成任务很好
 
 **知识图谱问答（KGQA）旨在基于存储在知识图谱中的结构化事实找到自然语言问题的答案。**KGQA中不可避免的挑战是检索相关事实并将知识图谱的推理优势扩展到问答任务中。因此最近的研究采用 LLMs 来弥合自然语言问题和结构化知识图谱之间的差距。应用 LLMs 进行 KGQA 的一般框架如图22所示：
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-17.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-17.png" width="600" alt=""/>
 
 *图22：使用 LLMs 进行知识图谱问答（KGQA）的通用框架。*
 
@@ -639,7 +639,7 @@ LLMs 和 KGs 的协同作用近年来引起了越来越多的关注，它结合�
 
 为了共同表示知识，研究人员通过引入额外的 KG 融合模块（KG fusion modules）提出了协同模型，这些模块与 LLM 一起进行联合训练。如图 23 所示，ERNIE 提出了一个文本-知识双编码器架构，其中 T-encoder 首先对输入句子进行编码，然后 K-encoder 处理知识图谱，并将其与 T-encoder 的文本表示融合。BERT-MK 采用了类似的双编码器架构，但在 LLM 预训练期间，在知识编码器组件中引入了邻近实体的额外信息。然而，KG 中的一些邻近实体可能与输入文本无关，导致额外的冗余和噪声。CokeBERT 关注这个问题，并提出了一个基于 GNN 的模块，使用输入文本过滤掉不相关的 KG 实体。JAKET 提出在大语言模型的中间融合实体信息。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-18.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-18.png" width="600" alt=""/>
 
 *图23：通过额外的 KG 融合模块实现的协同知识表示。*
 
@@ -653,7 +653,7 @@ KEPLER 提出了一个统一的模型，用于知识嵌入和预训练的语言�
 
 LLM-KG 融合推理利用两个独立的 LLM 和 KG 编码器来处理文本和相关 KG 输入。这两个编码器同等重要，共同融合两个来源的知识进行推理。为了改善文本和知识之间的交互，KagNet 提出首先对输入的 KG 进行编码，然后增强输入文本表示。相比之下，MHGRN 使用输入文本的最终 LLM 输出来指导 KG 上的推理过程。然而，它们都只设计了文本和 KG 之间的单向交互。为了解决这个问题，QA-GNN 提出使用基于 GNN 的模型通过消息传递来共同推理输入上下文和 KG 信息。JointLK 提出了一个框架，通过 LM-to-KG 和 KG-to-LLM 双向注意力机制实现文本输入中任何 token 和任何 KG 实体之间的细粒度交互。如图 24 所示，计算所有文本 token 和 KG 实体之间的点积分数，分别计算双向注意力分数。此外，在每个 JointLK 层，还基于注意力分数动态修剪 KG，以便后续层可以专注于更重要的子 KG 结构。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-19.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-19.png" width="600" alt=""/>
 
 *图24：LLM-KG 融合推理的框架*
 
@@ -663,7 +663,7 @@ LLM-KG 融合推理利用两个独立的 LLM 和 KG 编码器来处理文本和�
 
 LLMs 也可以被当作代理与 KGs 交互进行推理，如图 25 所示。KD-CoT 迭代地从 KGs 中检索事实并生成可靠的推理过程，引导 LLMs 生成答案。KSL 教导 LLMs 在 KGs 上搜索以检索相关事实，然后生成答案。StructGPT 设计了几个 API 接口，允许 LLMs 访问结构化数据并通过遍历 KGs 进行推理。Think-on-graph 提供了一个灵活的即插即用框架，其中 LLM 代理在 KGs 上迭代执行**束搜索**（beam searches）以发现推理路径并生成答案。为了增强代理能力，AgentTuning 提出了几个指令微调数据集来指导 LLM 代理在 KGs 上进行推理。
 
-<img src="/assets/images/paper-note-unify-llm-and-kg/illustration-20.png" width="600" alt=""/>
+<img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-20.png" width="600" alt=""/>
 
 *图25：使用 LLMs 作为在知识图谱上进行推理的代理。*
 
