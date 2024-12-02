@@ -40,7 +40,7 @@ tags:
 尽管如此，**知识图谱难以构建**，当前知识图谱的方法不足以处理现实世界知识图谱不完整和动态变化的性质。这些方法未能有效地建模未见过的实体并表示新事实。此外，它们经常忽略知识图谱中丰富的文本信息。此外，现有的方法通常针对特定的知识图谱或任务进行定制，这不够通用。因此，有必要利用 LLMs 来解决知识图谱（KGs）面临的挑战。我们在图 1 中分别总结了 LLMs 和 KGs 的优缺点。
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-1.png" width="600" alt=""/>
-*图1：LLMs的优点：通用知识、语言处理、泛化能力；LLMs的缺点：隐性知识、幻觉、犹豫不决、黑盒、缺乏领域特定/新知识。KGs的优点：结构化知识、准确性、确定性、可解释性、领域特定知识、不断演化的知识；KGs的缺点：不完整性、缺乏语言理解、未知事实。*
+*图1：LLMs 的优点：通用知识、语言处理、泛化能力；LLMs 的缺点：隐性知识、幻觉、犹豫不决、黑盒、缺乏领域特定/新知识。KGs 的优点：结构化知识、准确性、确定性、可解释性、领域特定知识、不断演化的知识；KGs 的缺点：不完整性、缺乏语言理解、未知事实。*
 
 
 最近，将 LLMs 与 KGs 统一的可能性引起了研究人员和实践者的日益关注。LLMs 和 KGs 本质上是相互联系的，可以相互增强。在 **KG-enhanced LLMs** 中，KGs 不仅可以整合到 LLMs 的预训练和推理阶段以提供外部知识，还可以用于分析 LLMs 并提供可解释性。在 **LLM-augmented KGs** 中，LLMs 已被用于各种与 KG 相关的任务，例如 KG embedding、KG completion、KG construction、KG-to-text generation 和 KGQA，以提高性能并促进 KGs 的应用。在 **Synergized LLM + KG** 中，研究人员结合了 LLMs 和 KGs 的优点，以相互增强知识和推理方面的性能。尽管有一些关于 KG-enhanced LLMs 的研究，但主要关注使用 KGs 作为外部知识来增强 LLMs，忽略了将 KGs 整合到 LLMs 的其他可能性以及 LLMs 在 KG 应用中的潜在作用。
@@ -69,7 +69,7 @@ tags:
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-2.png" width="600" alt=""/>
 
-*图2：近年来的代表性大型语言模型（LLMs）。开源模型由实心方块表示，而闭源模型由空心方块表示。*
+*图2：近年来的代表性大型语言模型。开源模型由实心方块表示，而闭源模型由空心方块表示。*
 
 #### 2.1.1 Encoder-only LLMs
 
@@ -159,7 +159,7 @@ LLMs 作为 KGs 已经在各种现实世界的应用中得到了广泛的应用�
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-3.png" width="600" alt=""/>
 
-*图6：将 KGs 和 LLMs 统一的一般路线图如下： KG增强的LLMs；LLM增强的KGs；协同作用的LLMs + KGs。*
+*图6：将 KGs 和 LLMs 统一的一般路线图如下： KG 增强的 LLMs；LLM 增强的 KGs；协同作用的 LLMs + KGs。*
 
 KG 增强 LLMs 和 LLM 增强 KGs 是两个并行的框架，分别旨在增强 LLMs 和 KGs 的能力。在这些框架的基础上，Synergized LLMs + KGs 是一个统一的框架，旨在使 LLMs 和 KGs 相互协同增强。
 
@@ -168,8 +168,6 @@ KG 增强 LLMs 和 LLM 增强 KGs 是两个并行的框架，分别旨在增强 
 为了解决 LLMs 幻觉和缺乏可解释性的问题，研究人员提出用 KGs 来增强 LLMs。
 
 KGs 以显式和结构化的方式存储大量知识，可以用来增强 LLMs 的知识认知。一些研究人员提出在 LLMs 的预训练阶段将 KGs 纳入其中，这可以帮助 LLMs 从 KGs 中学习知识。其他研究人员提出在 LLMs 的推理阶段将 KGs 纳入其中。通过从 KGs 中检索知识，可以显著提高 LLMs 访问特定领域知识的性能。为了提高 LLMs 的可解释性，研究人员还利用 KGs 来解释事实和 LLMs 的推理过程。
-
-
 
 #### 3.1.2 LLM 增强知识图谱（LLM-Augmented Kgs）
 
@@ -183,7 +181,7 @@ KGs 以显式和结构化的方式存储大量知识，可以用来增强 LLMs �
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-4.png" width="600" alt=""/>
 
-图 7. *协同 LLMs + KGs* 的一般框架，包含四层：1）数据，2）协同模型，3）技术，4）应用。
+*图7：协同 LLMs + KGs* 的一般框架，包含四层：1）数据，2）协同模型，3）技术，4）应用。
 
 为了进一步探索统一，我们提出了一个统一的协同作用 LLMs + KGs 框架，如图 7 所示。统一框架包含四层：1）**数据**，2）**协同模型**，3）**技术**，4）**应用**。在数据层，LLMs 和 KGs 分别用于处理文本和结构化数据。随着多模态 LLMs 和 KGs 的发展，该框架可以扩展到处理多模态数据，如视频、音频和图像。在协同模型层，LLMs 和 KGs 可以相互协同以提高它们的能力。在技术层，可以将 LLMs 和 KGs 中使用的相关技术纳入此框架以进一步提高性能。在应用层，可以将 LLMs 和 KGs 集成以解决各种现实世界的应用，如搜索引擎、推荐系统和 AI 助手。
 
@@ -193,7 +191,7 @@ KGs 以显式和结构化的方式存储大量知识，可以用来增强 LLMs �
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-5.png" width="600" alt=""/>
 
-*图 8：统一大语言模型（LLMs）与知识图谱（KGs）研究的细粒度分类*
+*图8：统一大语言模型（LLMs）与知识图谱（KGs）研究的细粒度分类*
 
 #### KG 增强 LLMs
 
@@ -239,9 +237,9 @@ LLMs 和 KGs 的协同作用旨在将 LLMs 和 KGs 集成到一个统一框架�
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-7.png" width="600" alt=""/>
 
-*图10：通过图结构将知识图谱信息注入到LLMs的输入中。*
+*图10：通过图结构将知识图谱信息注入到 LLMs 的输入中。*
 
-如图10所示，这类研究侧重于将相关的知识子图引入到 LLMs 的输入中。给定一个知识图谱三元组和相应的句子，ERNIE 3.0 将三元组表示为一个标记序列，并直接将其与句子连接起来。它进一步**随机掩码三元组中的关系 token 或句子中的 token**，以更好地将知识与文本表示相结合。但这种知识三元组直接连接的方法，允许句子中的 token 与知识子图中的 token 密集交互，这可能**导致知识噪声（Knowledge Noise）**。为了解决这个问题，K-BERT 首先通过一个可见矩阵将知识三元组注入到句子中，只有知识实体可以访问知识三元组的信息，而句子中的标记只能在自注意力模块中相互关注。为了进一步减少知识噪声，Colake 提出了一个统一的词-知识图（word-knowledge graph）（见图10），其中输入句子中的 token 形成一个完全连接的词图，与知识实体对齐的 token 与其相邻实体相连。
+如图 10 所示，这类研究侧重于将相关的知识子图引入到 LLMs 的输入中。给定一个知识图谱三元组和相应的句子，ERNIE 3.0 将三元组表示为 token 序列，并直接将其与句子连接起来。它进一步**随机掩码三元组中的关系 token 或句子中的 token**，以更好地将知识与文本表示相结合。但这种知识三元组直接连接的方法，允许句子中的 token 与知识子图中的 token 密集交互，这可能**导致知识噪声（Knowledge Noise）**。为了解决这个问题，K-BERT 首先通过一个可见矩阵将知识三元组注入到句子中，只有知识实体可以访问知识三元组的信息，而句子中的 token 只能在自注意力模块中相互关注。为了进一步减少知识噪声，Colake 提出了一个统一的词-知识图（word-knowledge graph）（见图10），其中输入句子中的 token 形成一个完全连接的词图，与知识实体对齐的 token 与其相邻实体相连。
 
 上述方法确实可以将大量的知识注入到 LLMs 中。然而，它们大多集中在热门实体上，忽视了低频和长尾实体。DkLLM 旨在改进 LLMs对这些实体的表示。DkLLM 首先提出了一种新颖的度量方法来确定长尾实体，然后用 pseudo token 嵌入替换文本中的这些选定实体，作为大型语言模型的新输入。Dict-BERT 提出**利用外部词典**来解决这个问题。具体而言，Dict-BERT 通过在输入文本末尾附加来自词典的定义，提高了罕见词的表示质量，并训练语言模型局部对齐输入句子中罕见词表示和词典定义，并判断输入文本和定义是否正确映射。
 
@@ -273,13 +271,13 @@ KGs Prompting 为 LLM 和 KG 的协同提供了一种简单的方式。通过使
 
 KG-enhanced LLM 的预训练方法通常**通过语义相关的真实世界知识丰富大量未标记的语料库**。这些方法允许知识表示与适当的语言上下文对齐（knowledge representations to be aligned with appropriate linguistic context），并明确训练 LLMs 从零开始利用这些知识。当将结果 LLMs 应用于下游知识密集型任务时，它们应该达到最佳性能。相比之下，KG-enhanced LLM  的推理方法只在推理阶段向 LLMs 呈现知识，而底层的 LLMs 可能没有训练充分地利用这些知识进行下游任务，可能导致次优的模型性能。
 
-然而，现实世界的知识是动态的，需要频繁更新。尽管有效，但 KG-enhanced LLM 预训练方法不允许在不重新训练模型的情况下更新或编辑知识。因此，预训练方法可能对最近或未见过的知识泛化能力较差。KG-enhanced LLM 的推理方法可以通过更改推理输入轻松维护知识更新。这些方法有助于提高 LLMs 在新知识和领域上的性能。
+然而，现实世界的知识是动态的，需要频繁更新。尽管有效，但 KG-enhanced LLM 预训练方法不允许在不重新训练模型的情况下更新或编辑知识。因此，**预训练方法可能对最近或未见过的知识泛化能力较差。KG-enhanced LLM 的推理方法可以通过更改推理输入轻松维护知识更新。**这些方法有助于提高 LLMs 在新知识和领域上的性能。
 
 总之，何时使用这些方法取决于应用场景。如果希望将 LLMs 应用于特定领域的实时不敏感知识（例如常识和推理知识），应考虑预训练方法。否则，可以使用推理方法来处理频繁更新的开放领域知识。
 
 ### 4.4 KG-enhanced LLM 的可解释性
 
-大型语言模型的可解释性是指理解和解释大型语言模型的内部运作和决策过程。这可以提高 LLMs 的可信度，并促进它们在高风险场景（如医疗诊断和法律判断）中的应用。KGs 结构性地表示知识，可以为推理结果提供良好的可解释性。因此，研究人员尝试利用 KGs 来提高 LLMs 的可解释性，这大致可以分为两类：
+大型语言模型的可解释性是指**理解和解释大型语言模型的内部运作和决策过程**。这可以提高 LLMs 的可信度，并促进它们在高风险场景（如医疗诊断和法律判断）中的应用。KGs 结构性地表示知识，可以为推理结果提供良好的可解释性。因此，研究人员尝试利用 KGs 来提高 LLMs 的可解释性，这大致可以分为两类：
 
 - **KGs 用于 LLM 探测**（KGs for language model probing）
 - **KGs 用于 LLM 分析**（KGs for language model analysis）
@@ -293,15 +291,15 @@ LLM 探测旨在理解 LLMs 中存储的知识。LLMs 在大规模语料库上�
 
 *图12：使用知识图谱进行语言模型探测的一般框架。*
 
-LAMA 是第一个通过使用 KGs 来探测 LLMs 中的知识的工作。如图12所示，LAMA 首先通过预定义的提示模板将 KGs 中的事实转换为完形填空语句，然后使用 LLMs 来预测缺失的实体。预测结果用于评估 LLMs 中存储的知识。例如，我们尝试探测 LLMs 是否知道事实(Obama, profession, president)。我们首先将事实三元组转换为完形填空问题 "Obama's profession is _."，并将对象屏蔽。然后，我们测试 LLMs 是否能正确预测对象 "president"。
+LAMA 是第一个通过使用 KGs 来探测 LLMs 中的知识的工作。如图 12 所示，LAMA 首先通过预定义的提示模板将 KGs 中的事实转换为完形填空语句，然后使用 LLMs 来预测缺失的实体。预测结果用于评估 LLMs 中存储的知识。例如，我们尝试探测 LLMs 是否知道事实(Obama, profession, president)。我们首先将事实三元组转换为完形填空问题 "Obama's profession is _."，并将对象屏蔽。然后，我们测试 LLMs 是否能正确预测对象 "president"。
 
 然而，LAMA 忽略了 prompt 不合适的事实。例如，"Obama worked as a _" 可能比 "Obama is a _ by profession" 更有利于语言模型预测。
 
-因此，LPAQA 提出了一种**基于挖掘和释义**（mining and paraphrasingbased）的方法，**自动生成高质量和多样化的 prompt**，以更准确地评估语言模型中包含的知识。此外，Adolphs 等人尝试使用样例，让语言模型理解查询。他们在 TREx 数据上对 BERT-large 取得了显著的改进。与使用手动定义的提示模板不同，Autoprompt 提出了一种**基于梯度引导搜索**（gradient-guided search）的自动化方法来创建 prompt。LLM-facteval 设计了一个系统框架，从 KGs 自动生成探测问题。生成的问题随后用于评估 LLMs 中存储的事实知识。
+因此，LPAQA 提出了一种**基于挖掘和释义**（mining and paraphrasingbased）的方法，**自动生成高质量和多样化的 prompt**，以更准确地评估语言模型中包含的知识。此外，Adolphs 等人尝试使用示例，让语言模型理解查询。他们在 TREx 数据上对 BERT-large 取得了显著的改进。与使用手动定义的提示模板不同，Autoprompt 提出了一种**基于梯度引导搜索**（gradient-guided search）的自动化方法来创建 prompt。LLM-facteval 设计了一个系统框架，从 KGs 自动生成探测问题。生成的问题随后用于评估 LLMs 中存储的事实知识。
 
 Alex 等人研究了 LLMs 保留不太流行的事实知识的能力。他们从 Wikidata 知识图谱中选择点击频率低的实体，这些事实随后用于评估，结果表明 LLMs 在处理这类知识时遇到困难，而且扩展规模也未能显著提高尾部事实知识的记忆。
 
-#### 4.4.2 知识图谱用于大型语言模型分析
+#### 4.4.2 KGs 用于 LLM 分析
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-9.png" width="600" alt=""/>
 
@@ -312,15 +310,15 @@ KGs 用于预训练语言模型 LLMs 分析旨在回答以下问题，例如 “
 
 ## 5 LLM-Augmented KGs
 
-统的知识图谱往往是不完整的，现有的方法通常没有考虑文本信息。为了解决这些问题，最近的研究探索了将 LLMs 集成到知识图谱中，以考虑文本信息并提高下游任务的性能。我们将分别介绍将 LLMs 整合到 KG embedding、KG completion、KG construction、KG-to-text generation 和 KG question answering。
+传统的知识图谱往往是不完整的，现有的方法通常没有考虑文本信息。为了解决这些问题，最近的研究探索了将 LLMs 集成到知识图谱中，以考虑文本信息并提高下游任务的性能。我们将分别介绍将 LLMs 整合到 KG embedding、KG completion、KG construction、KG-to-text generation 和 KG question answering。
 
 ### 5.1 LLM 增强知识图谱嵌入
 
-知识图谱嵌入（KGE）旨在**将每个实体和关系映射到低维向量（嵌入）空间中**。这些嵌入包含了知识图谱的语义和结构信息，可以用于各种任务，如问答、推理和推荐。传统的知识图谱嵌入方法主要依赖于知识图谱的结构信息，通过在嵌入上定义一个评分函数（例如 TransE 和 DisMult）来进行优化。然而，由于结构连接性有限，这些方法在表示未见过实体和长尾关系时往往表现不佳。为了解决这个问题，如图14所示，最近的研究采用 LLMs，通过编码实体和关系的文本描述来丰富知识图谱的表示，。
+知识图谱嵌入（KGE）旨在**将每个实体和关系映射到低维向量（嵌入）空间中**。这些嵌入包含了知识图谱的语义和结构信息，可以用于各种任务，如问答、推理和推荐。传统的知识图谱嵌入方法主要依赖于知识图谱的结构信息，通过在嵌入上定义一个评分函数（例如 TransE 和 DisMult）来进行优化。然而，由于结构连接性有限，这些方法在表示未见过实体和长尾关系时往往表现不佳。为了解决这个问题，如图 14 所示，最近的研究采用 LLMs，通过编码实体和关系的文本描述来丰富知识图谱的表示：
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-10.png" width="600" alt=""/>
 
-*图14：LLM作为知识图谱嵌入（KGE）的文本编码器。*
+*图14：LLM 作为知识图谱嵌入（KGE）的文本编码器。*
 
 #### 5.1.1 LLMs 作为文本编码器
 
@@ -340,7 +338,7 @@ $$
 在这种方式下，KGE 模型可以学习到足够的结构信息，同时保留了 LLM 中的部分知识，从而实现更好的知识图谱嵌入。KEPLER 提供了一个统一的模型，用于知识嵌入和预训练语言表示。该模型不仅使用强大的 LLMs 生成有效的文本增强知识嵌入，还无缝地将事实知识集成到 LLMs 中。Nayyeri 等人使用 LLMs 生成世界级、句子级和文档级表示。他们将这些表示与图结构嵌入整合到一个统一的向量中，使用四维超复数的二面体和四元数表示。Huang 等人将 LLMs 与其他视觉和图形编码器相结合，学习多模态知识图嵌入，提高下游任务的性能。CoDEx 提出了一种由 LLMs 赋能的新型损失函数，通过考虑文本信息来指导 KGE 模型衡量三元组的可能性，其提出的损失函数不受限于模型结构，可以与任何 KGE 模型结合使用。
 
 
-#### 5.1.2 使用 LLM 进行联合文本和KG嵌入
+#### 5.1.2 使用 LLM 进行联合文本和 KG 嵌入
 
 <img src="https://masutangu-1259119800.cos.ap-shanghai.myqcloud.com/paper-note-unify-llm-and-kg/illustration-11.png" width="600" alt=""/>
 
@@ -349,20 +347,20 @@ $$
 另一种方法直接利用 LLMs 将图结构和文本信息同时纳入嵌入空间。如图15所示，kNN-KGE **将实体和关系视为 LLM 中的特殊标记**。在训练过程中，它将每个三元组 $(h, r, t)$ 及其对应的文本描述转换为一个句子 $x$，形式如下：
 
 $$
-x = [\texttt{CLS}]~h~\text{Text_h}~[\texttt{SEP}]~r~[\texttt{SEP}]~[MASK]~\text{Text_t}~[\texttt{SEP}]
+x = [\texttt{CLS}]~h~\text{Text_h}~[\texttt{SEP}]~r~[\texttt{SEP}]~[\texttt{MASK}]~\text{Text_t}~[\texttt{SEP}]
 $$
 
 其中，尾部实体被替换为[MASK]。将该句子输入 LLM，然后微调模型以预测被掩码的实体，表示为：
 
 $$
-P_{LLM}(t|h, r) = P([MASK]=t|x, Θ), (4)
+P_{LLM}(t|h, r) = P([\texttt{MASK}]=t|x, Θ), (4)
 $$
 
 其中，$Θ$ 表示 LLM 的参数。LLM 被优化以最大化正确实体 $t$ 的概率。训练完成后，LLM 中相应的 token 表示被用作实体和关系的嵌入。类似地，LMKE 提出了一种对比学习方法，以改进 LLMs 生成的嵌入在 KGE 中的学习。同时，为了更好地捕捉图结构，LambdaKG 采样 1-hop 邻居实体，并将它们的标记与三元组连接成一个句子，输入 LLMs 进行处理。
 
 ### 5.2 LLM 增强知识图谱补全
 
-知识图谱补全（KGC）是指**在给定的知识图谱中推断缺失事实的任务**。与知识图谱嵌入（KGE）类似，传统的 KGC 方法主要关注知识图谱的结构，而没有考虑大量的文本信息。最近 LLMs 的整合使得 KGC 方法能够对文本进行编码或生成事实，以提高 KGC 的性能。这些方法根据它们的利用方式可以分为两个不同的类别：1）**LLM 作为编码器**（PaE），2）**LLM 作为生成器**（PaG）。
+知识图谱补全（KGC）是指**在给定的知识图谱中推断缺失事实的任务**。与知识图谱嵌入类似，传统的 KGC 方法主要关注知识图谱的结构，而没有考虑大量的文本信息。最近 LLMs 的整合使得 KGC 方法能够对文本进行编码或生成事实，以提高 KGC 的性能。这些方法根据它们的利用方式可以分为两个不同的类别：1）**LLM 作为编码器**（PaE），2）**LLM 作为生成器**（PaG）。
 
 #### 5.2.1 LLM 作为编码器（PaE）
 
@@ -374,7 +372,7 @@ $$
 
 ##### 联合编码（Joint Encoding）
 
-由于仅编码器的 LLMs（例如 Bert）在编码文本序列方面表现出色，KG-BERT 将三元组 $(h, r, t)$ 表示为文本序列，并使用 LLM 进行编码，如图16（a）所示。
+由于 encoder-only LLMs（例如 Bert）在编码文本序列方面表现出色，KG-BERT 将三元组 $(h, r, t)$ 表示为文本序列，并使用 LLM 进行编码，如图16（a）所示。
 
 $$
 x = [\texttt{CLS}]~Text_h~[\texttt{SEP}]~Text_r~[\texttt{SEP}]~Text_t~[\texttt{SEP}]
@@ -387,12 +385,10 @@ s = σ(MLP(e_{[\texttt{CLS}]}))
 $$
 
 其中 $σ(·)$ 表示 sigmoid 函数，$e_{[\texttt{CLS}]}$ 表示由 LLMs 编码后的表示。为了提高 KG-BERT 的效果：
-* **MTL-KGC** 提出了一种多任务学习的KGC框架，将额外的辅助任务纳入模型的训练中，即**预测**（RP）**和相关性排序**（RR）。
-* **PKGC** 通过将三元组及其支持信息转化为预定义模板的自然语言句子来评估三元组 $(h, r, t)$ 的有效性。然后，这些句子通过 LLMs 进行二分类处理。三元组的支持信息是通过一个语言化函数从 $h$ 和 $t$ 的属性中得出的。例如，如果三元组是 (Lebron James，member of sports team，Lakers)，那么关于 Lebron James 的信息将被语言化为 “Lebron James：美国篮球运动员”。
-* **LASS** 观察到语言语义和图结构对于 KGC 同样重要。因此，LASS 提出了同时学习两种类型的嵌入：语义嵌入和结构嵌入。在这种方法中，将三元组的完整文本传递给 LLM，并分别计算 $h$、$r$ 和 $t$ 的相应 LLM 输出的平均池化。然后，将这些嵌入传递给基于图的方法，即 TransE，以重构知识图谱的结构。
+* **MTL-KGC** 提出了一种多任务学习的 KGC 框架，将额外的辅助任务纳入模型的训练中，即**预测**（RP）和**相关性排序**（RR）。
+* **PKGC** 通过使用预定义模版将三元组及其支持信息转化为自然语言句子来评估三元组 $(h, r, t)$ 的有效性。这些句子通过 LLMs 进行二分类处理。三元组的支持信息是通过一个语言化函数从 $h$ 和 $t$ 的属性中得出的。例如，如果三元组是 (Lebron James，member of sports team，Lakers)，那么关于 Lebron James 的信息将被语言化为 “Lebron James: American basketball player”。
+* **LASS** 观察到语言语义和图结构对于 KGC 同样重要。因此，LASS 提出了同时学习两种类型的嵌入：**语义嵌入**和**结构嵌入**。在这种方法中，将三元组的完整文本传递给 LLM，并分别计算 $h$、$r$ 和 $t$ 的相应 LLM 输出的平均池化。然后，将这些嵌入传递给基于图的方法，即 TransE，以重构知识图谱的结构。
 
-
-联合编码。由于仅编码器的LLMs（例如Bert [1]）在编码文本序列方面表现出色，KG-BERT [26]将三元组（h，r，t）表示为文本序列，并使用LLM进行编码，如图16（a）所示。
 
 ##### MLM 编码（MLM Encoding）
 
