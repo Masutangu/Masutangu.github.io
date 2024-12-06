@@ -84,7 +84,7 @@ tags:
 
 ##### 事件提取
 
-为了简化，我们在 MAVEN 的 20 个随机样本上进行了事件检测实验，涵盖了所有事件类型。使用 Fscore 指标，将 GPT-4 的性能与现有的最先进（SOTA）模型以及其他 GPT 系列模型进行了基准测试。根据我们的结果，GPT-4 在超越 SOTA 方面表现不稳定，GPT-4 和 ChatGPT 在不同场景下相互超越。
+为了简化，我们在 MAVEN 的 20 个随机样本上进行了事件检测实验，涵盖了所有事件类型。使用 Fscore 指标，将 GPT-4 的性能与现有的最先进（State-of-the-Art，SOTA）模型以及其他 GPT 系列模型进行了基准测试。根据我们的结果，GPT-4 在超越 SOTA 方面表现不稳定，GPT-4 和 ChatGPT 在不同场景下相互超越。
 
 - **Zero-shot**：如表 1 所示，GPT-4 的表现优于 ChatGPT。对于句子 "Now an established member of the line-up, he agreed to sing it more often."，ChatGPT 生成了 "Becoming a member" 的结果，而 GPT-4 则识别出了两个额外的事件类型："Agree or refuse to act" 和 "Performing"。值得注意的是，在这个实验中，ChatGPT 经常提供单一事件类型的答案。相比之下，GPT-4 通过把握复杂的上下文信息，能够在这些句子中识别出多个事件类型。
 
