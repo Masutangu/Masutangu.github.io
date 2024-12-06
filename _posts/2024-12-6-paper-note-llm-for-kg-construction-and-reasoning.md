@@ -72,7 +72,7 @@ tags:
 
 ##### 实体和关系提取
 
-我们对 DuIE2.0、ReTACRED 和 SciERC 进行了实验，每个数据集的测试/验证集中包含了 20 个样本，涵盖了数据集中存在的所有关系类型。在每个数据集上，我们使用 PaddleNLP LIC2021 IE 2、PL-Marker 和 EXOBRAIN 作为基准线。为了评估模型的性能，我们使用标准的微平均 F1 分数进行报告。如表 1 所示，与 ChatGPT 相比，GPT-4 在零样本和一样本任务中表现相对较好，尽管其性能尚未超过完全监督的小型模型。
+我们对 DuIE2.0、ReTACRED 和 SciERC 进行了实验，每个数据集的测试/验证集中包含了 20 个样本，涵盖了数据集中存在的所有关系类型。在每个数据集上，我们使用 PaddleNLP LIC2021 IE 2、PL-Marker 和 EXOBRAIN 作为基准线。为了评估模型的性能，我们使用标准的 micro F1 score 进行报告。如表 1 所示，与 ChatGPT 相比，GPT-4 在零样本和一样本任务中表现相对较好，尽管其性能尚未超过完全监督的小型模型。
 
 - **Zero-shot**：GPT-4 zero-shot 的表现在所有测试的数据集上显著提高。具体来说，在图 2 中的 Re-TACRED 示例中，ChatGPT 未能提取出目标三元组，相比之下，GPT-4 给出了正确答案 "org:alternate names"，突显了其优秀的语言理解能力。
 - **One-shot**：文本指令的优化已被证明可以提高语言模型的性能。在图 2 所示的 DuIE2.0 的情境中，GPT-4 从关于 George Wilcombe 与洪都拉斯国家队的关联的陈述中辨别出了隐含的关系。这种准确性归因于 GPT-4 的广泛知识库，它有助于推断 George Wilcombe 的国籍。然而，也观察到 GPT-4 在处理复杂句子时遇到了挑战，prompt 的质量和关系的歧义等因素会影响结果。
@@ -86,7 +86,7 @@ tags:
 
 为了简化，我们在 MAVEN 的 20 个随机样本上进行了事件检测实验，涵盖了所有事件类型。使用 Fscore 指标，将 GPT-4 的性能与现有的最先进（SOTA）模型以及其他 GPT 系列模型进行了基准测试。根据我们的结果，GPT-4 在超越 SOTA 方面表现不稳定，GPT-4 和 ChatGPT 在不同场景下相互超越。
 
-- **Zero-shot**：如表 1 所示，GPT-4 的表现优于 ChatGPT。对于句子 "Now an established member of the line-up, he agreed to sing it more often."，ChatGPT 生成了"成为一名成员"的结果，而 GPT-4 则识别出了两个额外的事件类型："Agree or refuse to act" 和 "Performing"。值得注意的是，在这个实验中，ChatGPT 经常提供单一事件类型的答案。相比之下，GPT-4 通过把握复杂的上下文信息，能够在这些句子中识别出多个事件类型。
+- **Zero-shot**：如表 1 所示，GPT-4 的表现优于 ChatGPT。对于句子 "Now an established member of the line-up, he agreed to sing it more often."，ChatGPT 生成了 "Becoming a member" 的结果，而 GPT-4 则识别出了两个额外的事件类型："Agree or refuse to act" 和 "Performing"。值得注意的是，在这个实验中，ChatGPT 经常提供单一事件类型的答案。相比之下，GPT-4 通过把握复杂的上下文信息，能够在这些句子中识别出多个事件类型。
 
 - **One-shot**：ChatGPT 的性能显著提高，而 GPT-4 略微下降。同时，我们观察到在 one-shot 设置下，**当 GPT-4 无法识别出正确答案时，它往往会产生更多错误的回答。**我们推测这可能源于数据集中的隐含类型指示（implicit type indication）。
 
@@ -161,7 +161,7 @@ tags:
 
 LLMs 在 KG 构建和推理方面的优势明显，它们不仅优化了资源利用，而且在适应性方面优于小型模型，特别是在不同的应用领域和数据有限的环境中。然而，尽管 LLMs 的能力令人印象深刻，但研究人员也发现了一些局限性，例如与人类偏好的不一致和幻觉。**进一步改进模型的回答需要复杂的用户任务描述和丰富的交互环境**，因此，人们对交互式自然语言处理（interactive natural language processing, iNLP）和智能代理（intelligent agents）的研究越来越感兴趣。
 
-这种进展的一个显著例子是 AutoGPT，它可以独立生成 prompt 并执行事件分析、编程和数学运算等任务。同时，Li等人深入探讨了代理之间自主合作的潜力，并引入了一种名为角色扮演的新型合作代理框架。
+这种进展的一个显著例子是 AutoGPT，它可以独立生成 prompt 并执行事件分析、编程和数学运算等任务。同时，Li 等人深入探讨了代理之间自主合作的潜力，并引入了一种名为角色扮演的新型合作代理框架。
 
 根据我们的研究结果，我们提议使用沟通智能代理（communicative intelligent agents）进行知识图谱构建，利用分配给多个代理的不同角色，基于彼此的共同知识协作完成知识图谱任务。考虑到在预训练阶段大型模型中存在的知识截断，我们建议引入外部资源来辅助任务完成。这些资源可以包括知识库、现有的知识图谱和互联网检索系统等。我们将其命名为 AutoKG。
 
