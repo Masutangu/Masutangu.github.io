@@ -18,7 +18,7 @@ tags:
     </script>
 </head>
 
-本文是[《Building Knowledge Graph Using Pre-Trained Language Model For Learning Entity-Aware Relationships》](https://ieeexplore.ieee.org/document/9231227)的笔记
+本文是[《Building Knowledge Graph Using Pre-Trained Language Model For Learning Entity-Aware Relationships》](https://ieeexplore.ieee.org/document/9231227)的笔记。
 
 ## 摘要
 

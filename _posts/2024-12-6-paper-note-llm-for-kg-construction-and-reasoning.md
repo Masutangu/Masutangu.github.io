@@ -18,7 +18,7 @@ tags:
     </script>
 </head>
 
-本文是[《LLMs For Knowledge Graph Construction And Reasoning: Recent Capabilities And Future Opportunities》](https://arxiv.org/pdf/2305.13168)的笔记
+本文是[《LLMs For Knowledge Graph Construction And Reasoning: Recent Capabilities And Future Opportunities》](https://arxiv.org/pdf/2305.13168)的笔记。
 
 ### 摘要
 
