@@ -140,7 +140,7 @@ with the answer. The reasoning process and answer are enclosed within <think> </
 
 ### 2.4. 蒸馏：赋予小模型推理能力
 
-为了使更高效的小模型具备像 DeepSeek-R1 这样的推理能力，我们直接使用 DeepSeek-R1 精选的 80 万样本对开源模型 Qwen 和 Llama 进行了微调。我们的研究表明，这种直接的蒸馏方法显著提高了小模型的推理能力。我们在这里使用的基础模型包括 Qwen2.5-Math-1.5B、Qwen2.5-Math-7B、Qwen2.5-14B、Qwen2.5-32B、Llama-3.1-8B 和 Llama-3.3-70B-Instruct。我们选择 Llama-3.3 是因为其推理能力略优于 Llama-3.1。
+为了使更高效的小模型具备像 DeepSeek-R1 这样的推理能力，我们直接使用 DeepSeek-R1 精选的 80 万样本对开源模型 Qwen 和 Llama 进行了微调，具体细节见第 2.3.3 节。我们的研究表明，这种**直接的蒸馏方法显著提高了小模型的推理能力**。我们在这里使用的基础模型包括 Qwen2.5-Math-1.5B、Qwen2.5-Math-7B、Qwen2.5-14B、Qwen2.5-32B、Llama-3.1-8B 和 Llama-3.3-70B-Instruct。我们选择 Llama-3.3 是因为其推理能力略优于 Llama-3.1。
 
 对于蒸馏模型，我们仅应用 SFT，不包括 RL 阶段，即使加入 RL 可能会大幅提高模型性能。我们在这里的主要目标是展示蒸馏技术的有效性，将 RL 阶段的探索留给更广泛的研究社区。
 
