@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2025-2-7T16:23:15+08:00
-title: 【论文笔记】DeepSeek-R1-Incentivizing Reasoning Capability in LLMs via Reinforcement Learning
+title: 【论文笔记】DeepSeek-R1 - Incentivizing Reasoning Capability in LLMs via Reinforcement Learning
 tags: 
   - 机器学习
   - 读书笔记
