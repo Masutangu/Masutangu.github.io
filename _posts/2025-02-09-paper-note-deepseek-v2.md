@@ -90,10 +90,7 @@ $$
 \begin{equation}\boldsymbol{q}_t^{\top} \boldsymbol{k}_t{} = \left(\boldsymbol{W}^Q\boldsymbol{h}_t\right)^\top \left(\boldsymbol{W}^{UK} \boldsymbol{c}_t^{KV}\right){} = \left(\boldsymbol{h}_t^{\top}\boldsymbol{W}^Q{}^{\top}\right) \left(\boldsymbol{W}^{UK}\boldsymbol{c}_t^{KV}\right) = \boldsymbol{h}_t^{\top}\left(\boldsymbol{W}^Q{}^{\top}\boldsymbol{W}^{UK}\right)\boldsymbol{c}_t^{KV} \end{equation}
 $$
 
-
-
 <img src="/assets/images/paper-note-deepseek-v2/illustration-1.png" width="600" alt=""/>
-
 
 为了在训练期间减少激活内存，我们还对查询进行低秩压缩，即使它不能减少 KV 缓存：
 
