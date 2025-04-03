@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2025-3-24T13:28:16+08:00
+date: 2025-4-3T13:28:16+08:00
 title: 【论文笔记】Deep Residual Learning for Image Recognition
 tags: 
   - 机器学习
