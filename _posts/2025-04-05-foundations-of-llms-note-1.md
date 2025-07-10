@@ -144,7 +144,7 @@ Transformer 是由两种模块组合构建的模块化网络结构。两种模�
 
 全连接前馈层占据了 Transformer 近三分之二的参数，可以看作是一种 Key-Value 模式的记忆存储管理模块（[《Transformer Feed-Forward Layers Are Key-Value Memories》](https://arxiv.org/pdf/2012.14913)）
 
-引入残差连接可以有效解决梯度消失问题。将层正则化置于残差连接之后的网络结构被称为 Post-LN Transformer。与之相对的，还有一种将层正则化置于残差连接之前的网络结构，称之为 Pre-LN Transformers。Post-LN Transformer 应对表征坍塌（Representation Collapse）的能力更强，但处理梯度消失略弱。而 Pre-LN Transformers 可以更好的应对梯度消失，但处理表征坍塌的能力略弱（[《ResiDual: Transformer with Dual Residual Connections》](https://arxiv.org/abs/2304.14802)）。
+引入残差连接可以有效解决梯度消失问题。将层正则化置于残差连接之后的网络结构被称为 Post-LN Transformer。与之相对的，还有一种将层正则化置于残差连接之前的网络结构，称之为 Pre-LN Transformers。Post-LN Transformer 应对表征坍塌（Representation Collapse）的能力更强，但处理梯度消失略弱。而 Pre-LN Transformers 可以更好的应对梯度消失，但处理表征坍塌的能力略弱（[《ResiDual: Transformer with Dual Residual Connections》](https://arxiv.org/abs/2304.14802)、[《为什么Pre Norm的效果不如Post Norm？》](https://kexue.fm/archives/9009)）。
 
 ## 语言模型的采样方法
 

@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2025-5-6T13:21:52+31:00
+date: 2025-5-6T13:21:52+08:00
 title: 【论文笔记】RAGCache - Efficient Knowledge Caching for Retrieval-Augmented Generation
 tags: 
   - 机器学习

@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2025-4-25T13:05:15+31:00
+date: 2025-4-25T13:05:15+08:00
 title: 【读书笔记】Foundations-of-LLMs 检索增强生成
 tags: 
   - 机器学习
