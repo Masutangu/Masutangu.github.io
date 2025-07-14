@@ -91,7 +91,7 @@ $$
 \alpha + \beta \leq u \leq \alpha' + \beta'
 $$
 
-定义：我们将定理 1 中确定的唯一实数 $u$ 叫做实数 $a$ 和 $b$ 之和。
+**定义**：我们将定理 1 中确定的唯一实数 $u$ 叫做实数 $a$ 和 $b$ 之和。
 
 **定理 2：设 $a$ 和 $b$ 是非负实数，则存在唯一实数 $v$，使对于满足条件 $0 \leq \alpha \leq a \leq \alpha', 0 \leq \beta \leq b \leq \beta'$ 的任意有尽小数 $\alpha, \alpha', \beta, \beta'$，都有：**
 
@@ -99,7 +99,7 @@ $$
 \alpha \beta \leq v \leq \alpha' \beta'
 $$
 
-定义：我们将定理 2 中确定的唯一实数 $v$ 叫做非负实数 $a$ 和 $b$ 的乘积。
+**定义**：我们将定理 2 中确定的唯一实数 $v$ 叫做非负实数 $a$ 和 $b$ 的乘积。
 
 **引理 1：设 $a$ 是任意一个实数，则对任何正的有尽小数 $\epsilon$，存在有尽小数 $\alpha$ 和 $\alpha'$，满足条件 $\alpha\leq a \leq \alpha', \alpha' - \alpha < \epsilon$。**
 
@@ -219,7 +219,7 @@ $$
 
 **定理 3：对于任何正实数 $a$，存在唯一的正实数 $w$，使得对于满足条件 $0 < \alpha \leq a \leq \alpha'$ 的任意有尽小数 $\alpha, \alpha'$ 和任意自然数 $m, n$ 都有 $(1/\alpha')_m \leq w \leq (1/\alpha)'_n$**
 
-定义：定理 3 中唯一确定的正实数 $w$ 叫做正实数 $a$ 的倒数，记为 $1/a$。
+**定义**：定理 3 中唯一确定的正实数 $w$ 叫做正实数 $a$ 的倒数，记为 $1/a$。
 
 证明：
 
