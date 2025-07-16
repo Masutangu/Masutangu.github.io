@@ -45,6 +45,8 @@ tags:
 
 **定理 1：如果序列 $\\{x_n\\}$ 有极限，那么它的极限是唯一的。**
 
+证明：反证法。假设序列 $\\{x_n\\}$ 有极限 $a$ 和 $b$，$a < b$。我们取 $\epsilon \in \mathbf{R}$ 满足 $0 < \epsilon < \frac{b-a}{2}$。于是，存在 $N_1 \in \mathbf{N}$，使得 $n > N_1$ 时，$a - \epsilon < x_n < a + \epsilon$。又存在 $N_2 \in \mathbf{N}$，使得 $n > N_2$ 时，$b - \epsilon < x_n < b + \epsilon$。置 $N = \max\\{N_1, N_2\\}$，则当 $n > N$ 时，就有 $b - \epsilon < x_n < a + \epsilon$。这与 $0 < \epsilon < \frac{b - a}{2}$ 矛盾。
+
 **定理 2（夹挤原理）：设 $\\{x_n\\}, \\{y_n\\}$ 和 $\\{z_n\\}$ 都是实数序列，满足条件 $x_n \leq y_n \leq z_n, \forall n \in \mathbf{N}$。如果 $\lim x_n = \lim z_n = a$，那么 $\\{y_n\\}$ 也是收敛序列，并且 $\lim y_n = a$。**
 
 **定理 3：设 $\\{x_n\\}$ 是实数序列，$a$ 是实数，则以下三陈述等价：**
@@ -164,3 +166,168 @@ $$
 **定理 3：如果 $\lim x_n = + \infty$（或 $-\infty$，或 $\infty$），那么对于 $\\{x_n\\}$ 的任意子序列 $\\{x_{n_k}\\}$，也有 $\lim x_{n_k} = + \infty$（或 $-\infty$，或 $\infty$）。**
 
 **定理 5：实数序列最多只有一个极限。**
+
+## 函数的极限
+
+**定义**：对于 $x_0 \in R$ 和 $\eta \in R，\eta > 0$，我们把 
+
+$$
+U(x_0, \eta) = (x_0 - \eta, x_0 + \eta) = \{x \in \mathbf{R}|~l|x-x_0| < \eta\}
+$$ 
+
+称为 $x_0$ 点的 $\eta$ 的邻域，而把  
+
+$$
+\check{U}(x_0, \eta) = (x_0 - \eta, x_0 + \eta) \backslash \{x_0\} =\{x \in \mathbf{R}| 0 < |x-x_0| < \eta\}
+$$ 
+
+称为 $x_0$ 点的去心 $\eta$ 的邻域。
+
+对于 $H \in \mathbf{R}, H > 0$，把 $\check{U}(+\infty, H)= (H, +\infty) = \\{x\in \mathbf{R} \| x > H\\}$ 称为 $+\infty$ 的去心 $H$ 领域，类似的 $\check{U}(-\infty, H)= (H, -\infty) = \\{x\in \mathbf{R} \| x < -H\\}$ 称为 $-\infty$ 的去心 $H$ 领域。
+
+关于函数的极限， 我们将介绍两种定义⽅式。第⼀种是海因（Heine）提出的**序列式定义**；第⼆种是柯西（Cauchy）提出的 $\epsilon-\delta$ 式定义。
+
+### 函数极限的序列式定义
+
+**定义**：设 $a, A \in \mathbf{\overline{R}}$，并设函数 $f(x)$ 在 $a$ 点的某个去心领域 $\check{U}(a)$ 上有定义。如果对于任何满足条件 $x_n \to a$ 的序列 $\\{x_n\\} \subset \check{U}(a)$，相应的**函数值序列 $\\{f(x_n)\\}$**都以 $A$ 为极限，那么我们就说当 $x\to a$ 时，函数 $f(x)$ 的极限为 $A$，记为 $\lim_{x \to a} f(x) = A$。还可以用类似的方式定义 $\lim_{x \to \infty} f(x) = A$。
+
+**定理 1：函数极限 $\lim_{x \to a} f(x)$ 是唯一的。**
+
+证明：对任意取定的满足条件 $x_n \neq a, x_n \to a$ 的序列 $\\{x_n\\}$，相应的函数值序列 $\\{f(x_n)\\}$ 的极限至多只能有一个（将函数极限转化为序列极限，从而直接应用数列的定理）。
+
+**定理 2（夹挤原理）：设 $f(x), g(x)$ 和 $h(x)$ 在 $a$ 的某个去心领域 $\check{U}(a)$ 上有定义，并且满足不等式 $f(x) \leq g(x) \leq h(x), \forall x \in \check{U}(a)$。如果 $\lim_{x \to a} f(x) = \lim_{x \to a} h(x) = A$，那么 $\lim_{x\to a} g(x) = A$**
+
+证明：对任何满足条件 $x_n \to a$ 的序列 $\\{x_n\\} \subset \check{U}(a)$，我们有 $f(x_n) \leq g(x_n) \leq h(x_n)$ 和 $\lim f(x_n) = \lim h(x_n) = A$，因而 $\lim g(x_n) = A$（将函数极限转化为序列极限，从而直接应用数列的夹挤原理）。
+
+**定理 3：关于函数极限，有以下运算法则（成立条件是右端有意义）：**
+
+$$
+\begin{aligned}
+\lim_{x \to a} (f(x) \pm g(x)) &= \lim_{x \to a} f(x) \pm \lim_{x \to a} g(x) \\
+\lim_{x \to a} (f(x)g(x)) &= \lim_{x \to a} f(x) \cdot \lim_{x \to a} g(x) \\
+\lim_{x \to a} (\frac{g(x)}{f(x)}) &= \frac{\lim_{x \to a} g(x)}{\lim_{x \to a} f(x)}
+\end{aligned}
+$$
+
+证明：设函数 $f(x)$ 和 $g(x)$ 在 $a$ 点的某个去心邻域 $\check{U}(a)$ 上有定义，并且 $\lim_{x\to a} f(x)=A, \lim_{x\to a} g(x)=B$。如果 $A+B$ 有意义，那么对于任何满足条件 $x_n \to a, \\{x_n\\} \subset \check{U}(a)$ 的序列 $\\{x_n\\}$ 都有
+
+$$
+\lim (f(x_n) + g(x_n)) = \lim f(x_n) + \lim g(x_n) = A + B
+$$
+
+**定理 4：设函数 $g$ 在 $b$ 点的某个去心邻域 $\check{U}(b)$ 上有定义，$\lim_{y \to b} g(y) = c$。又设函数 $f$ 在 $a$ 点的某个去心邻域 $\check{U}(a)$ 上有定义，$f$ 把 $\check{U}(a)$ 中的点映到 $\check{U}(b)$ 之中（即 $f(\check{U}(a)) \subset \check{U}(b)$），并且 $\lim_{x\to a}f(x) = b$，则有 $\lim_{x \to a} g(f(x)) = c$。**
+
+证明：对任何满足条件 $x_n \to a$ 的序列 $\\{x_n\\} \subset \check{U}(a)$，我们有 $\\{f(x_n)\\} \subset \check{U}(b)$ 和 $f(x_n) \to b$，因而 $\lim g(f(x_n)) = c$。这证明了 $\lim_{x \to a} g(f(x)) = c$。
+
+### 函数极限的 $\epsilon-\delta$ 式定义
+
+**定义**：设 $a, A \in \mathbf{R}$，并设函数 $f(x)$ 在 $a$ 点的某个去心邻域 $\check{U}(a, \eta)$ 上有定义。如果对任意 $\epsilon > 0$，存在 $\delta > 0$ 使得 $0 < \|x-a\| < \delta$，就有 $\|f(x) -A\| < \epsilon$，那么我们就说：$x\to a$ 时函数 $f(x)$ 的极限是 $A$，记为 $\lim_{x\to a} f(x) = A$。
+
+**引理：设 $a, A \in \mathbf{R}, \lim_{x\to a} f(x) = A$，则存在 $\eta > 0$，使得函数 $f$ 在 $\check{U}(a, \eta)$ 上有界。**
+
+证明：对于 $\epsilon = 1 > 0$，存在 $\eta > 0$，使得对于 $x \in \check{U}(a, \eta)$ 有 $\|f(x) - A\| < 1$。可得 $\|f(x)\| \leq \|f(x) - A\| + \|A\| < 1 + \|A\|$。
+
+**引理：设 $\lim_{x\to a}f(x) = A$，这里 $a, A \in \mathbf{R}, A \neq 0$。则存在 $\eta > 0$，使得对于 $x \in \check{U}(a, \eta)$ 有 $\|f(x)\| > \|A\|/2$。**
+
+证明：对于  $\epsilon = \|A\|/2 > 0$，存在 $\eta > 0$，使得对于 $x \in \check{U}(a, \eta)$ 有 $\|f(x) - A\| < \|A\|/2$。可得 $\|f(x)\| \geq \|A\| - \|f(x) - A\| > \|A\| - \|A\|/2 = \|A\|/2$。
+
+**定理 5：设 $a, A, B \in \mathbf{R}$，$\lim_{x\to a} f(x) = A, \lim_{x \to a} g(x) = B$，则：**
+
+$$
+\lim_{x\to a}(f(x) \pm g(x)) = A \pm B \\
+\lim_{x\to a}(f(x) \cdot g(x)) = A \cdot B \\
+\lim_{x \to a} 1/f(x) = 1 / A (A \neq 0)
+$$
+
+**定理 6：设 $\lim_{x \to a} f(x) < \lim_{x \to a} g(x)$，则存在 $\delta > 0$，使得对 $x \in \check{U}(a, \delta)$ 有 $f(x) < g(x)$。**
+
+证明：设 $\lim_{x \to a} f(x) = A, \lim_{x \to a} g(x) = B, A < B$，则对 $\epsilon = (B-A)/2 > 0$，存在 $\delta_1, \delta_2 > 0$，使得：
+
+$$
+0 < |x - a | < \delta_1 时，A - \epsilon < f(x) < A + \epsilon \\
+0 < |x - a | < \delta_2 时，B - \epsilon < g(x) < B + \epsilon
+$$
+
+记 $\delta = \min\\{\delta_1, \delta_2\\}$，则对于 $x \in \check{U}(a, \delta)$ 就有 $f(x) < A + \epsilon = B - \epsilon < g(x)$。
+
+**定理 7（关于函数极限的收敛原理）：设函数 $f(x)$ 在 $\check{U}(a, \eta)$ 上有定义，则使得有穷极限 $\lim_{x \to a} f(x)$ 存在的充分必要条件是：对任意 $\epsilon > 0$，存在 $\eta > 0$，使得只要 $x$ 和 $x'$ 适合 $0 < \|x - a \| < \delta, 0 < \|x' - a\| < \delta$，就有 $\|f(x) - f'(x) \| < \epsilon$。**
+
+证明：
+
+必要性：设 $\lim_{x \to a} f(x) = A \in \mathbf{R}$。则对于任意 $\epsilon > 0$，存在 $\delta > 0$，使得 $0 < \|x-a\| < \delta \implies \|f(x) - A\| < \epsilon/2$。则如果 $0 < \|x-a\| < \delta, 0 < \|x'-a\| < \delta$，就有 $\|f(x) - f(x')\| \leq \|f(x) - A\| + \|f'(x) - A\| < \epsilon/2 + \epsilon/2 = \epsilon$。
+
+充分性：设对任意 $\epsilon > 0$，存在 $\delta > 0$，使得只要 $0 < \|x-a\| < \delta, 0 < \|x'-a\| < \delta$，就有 $\|f(x) - f(x')\| < \epsilon$。我们来证明这时一定存在有穷极限 $\lim_{x \to a}f(x)$。设序列 $\\{x_n\\} \subset \check{U}(a, \eta)$ 满足条件 $x_n \to a$，则存在 $N \in \mathbf{N}$，使得 $n > \mathbf{N}$ 时有 $0 < \|x_n - a\| < \delta$。于是，当 $m, n > N$时，就有 $\|f(x_m) - f(x_n)\| < \epsilon$。根据序列收敛原理可以断定 $f(\\{x_n\\})$ 收敛。
+
+接下来证明，所有这样的序列 $f(\\{x_n\\})$ 收敛于同一极限 $A$。使用反证法，假设存在序列 $\\{x'_n\\}$ 和 $\\{x_n''\\}$ 满足条件：
+
+$$
+\{x_n'\}, \{x_n''\} \subset \check{U}(a, \eta)$ \\
+x_n' \to a, x_n'' \to a \\
+\lim f(x_n') = A', \lim f(x_n'') = A'', A' \neq A''
+$$
+
+那么我们可以定义一个序列 $\\{x_n\\}$ 如下：
+
+$$
+x_n = \begin{cases}
+    x_k' & \text{如果} n=2k-1, \\
+    x_k''  & \text{如果} n=2k.
+\end{cases}
+$$
+
+这序列 $\\{x_n\\} \subset \check{U}(a, \eta)$  满足条件 $x_n \to a$，但 $\\{f(x_n)\\}$ 不收敛，与上面已证明的结果矛盾。因此所有这样的序列 $f(\\{x_n\\})$ 收敛于同一极限 $A$，即 $\lim_{x\to a} f(x) = A$
+
+## 单侧极限
+
+**定理 1：设 $a \in \mathbf{R}$，并设函数 $f(x)$ 在 $a$ 点的去心邻域 $\check{U}(a, \eta)$ 上有定义，则极限 $\lim_{x\to a} f(x)$ 存在的充分必要条件是两个单侧极限存在并相等：**
+
+$$
+\lim_{x \to a-}f(x) = \lim_{x \to a+}f(x) = A
+$$
+
+**当这条件满足时，我们有 $\lim_{x\to a} f(x) = A$。**
+
+**定理 1'：设函数 $f(x)$ 在 $\check{U}(\infty, H)$ 上有定义，则极限 $\lim_{x\to \infty} f(x)$ 存在的充分必要条件是两个单侧极限存在并相等：**
+
+$$
+\lim_{x \to -\infty}f(x) = \lim_{x \to +\infty}f(x) = A
+$$
+
+
+**当这条件满足时，我们有 $\lim_{x\to \infty} f(x) = A$。**
+
+
+**定理 2：（1）设函数 $f(x)$ 在开区间 $(a-\eta, a)$ 上递增（递减），则**
+
+$$
+\lim_{x\to a-}f(x) = \sup_{x \in (a-\eta, a)} f(x) (递减：\inf_{x \in (a-\eta, a)} f(x))
+$$
+
+**（2）设函数 $f(x)$ 在开区间 $(a, a+\eta)$ 上递增（递减），则**
+
+$$
+\lim_{x\to a+}f(x) = \sup_{x \in (a, a+\eta)} f(x) (递减：\inf_{x \in (a, a+\eta)} f(x))
+$$
+
+证明：如果 $\sup_{x\in (a-\eta, a)} f(x) = + \infty$，那么对任意 $E > 0$，存在 $x_E \in (a-\eta, a)$，使得 $f(x_E) > E$。
+
+记 $\delta = a - x_E$，则对于 $a > x > a - \delta = x_E$，就有 $f(x) \geq f(x_E) > E$。这证明了 
+
+$$
+\lim_{x \to a-} f(x) = \sup_{x \in (a-\eta, a)}f(x) = +\infty
+$$
+
+如果 $\sup_{x \in (a-\eta, a)}f(x) = A < +\infty$，那么对任何 $\epsilon > 0$，有 $A - \epsilon < A$。根据上确界的定义，存在 $x_\epsilon \in (a-\eta, a)$，使得 $A - \epsilon < f(x_\epsilon) \leq A$。
+
+记 $\delta = a - x_\epsilon$，则对于 $x\in (a-\delta, a)$ 有 
+
+$$
+a > x > a - \delta = x_\epsilon \\
+A \geq f(x) \geq f(x_\epsilon) > A - \epsilon
+$$
+
+这证明了
+
+$$
+\lim_{x \to a-} f(x) = \sup_{x \in (a-\eta, a)}f(x) = A
+$$
