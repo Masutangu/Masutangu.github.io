@@ -127,7 +127,7 @@ $$
 
 
 
-**定理 5（收敛原理）：序列 $\\{x_n\\}$ 收敛的必要充分条件是：对任意 $\epsilon > 0$，存在 $N \in \mathbf{N}$，使得当 $m, n > N$ 时，就有 $\|x_m - x_n\| < \epsilon$。即 序列 $\\{x_n\\}$ 收敛 $\iff$ 序列 $\\{x_n\\}$ 是基本序列。**
+**定理 5（柯西收敛原理）：序列 $\\{x_n\\}$ 收敛的必要充分条件是：对任意 $\epsilon > 0$，存在 $N \in \mathbf{N}$，使得当 $m, n > N$ 时，就有 $\|x_m - x_n\| < \epsilon$。即 序列 $\\{x_n\\}$ 收敛 $\iff$ 序列 $\\{x_n\\}$ 是基本序列。**
 
 证明：
 
@@ -193,11 +193,11 @@ $$
 
 **定理 1：函数极限 $\lim_{x \to a} f(x)$ 是唯一的。**
 
-证明：对任意取定的满足条件 $x_n \neq a, x_n \to a$ 的序列 $\\{x_n\\}$，相应的函数值序列 $\\{f(x_n)\\}$ 的极限至多只能有一个（将函数极限转化为序列极限，从而直接应用数列的定理）。
+证明：对任意取定的满足条件 $x_n \neq a, x_n \to a$ 的序列 $\\{x_n\\}$，相应的函数值序列 $\\{f(x_n)\\}$ 的极限至多只能有一个（将函数极限转化为序列极限，从而直接应用序列的定理）。
 
 **定理 2（夹挤原理）：设 $f(x), g(x)$ 和 $h(x)$ 在 $a$ 的某个去心领域 $\check{U}(a)$ 上有定义，并且满足不等式 $f(x) \leq g(x) \leq h(x), \forall x \in \check{U}(a)$。如果 $\lim_{x \to a} f(x) = \lim_{x \to a} h(x) = A$，那么 $\lim_{x\to a} g(x) = A$**
 
-证明：对任何满足条件 $x_n \to a$ 的序列 $\\{x_n\\} \subset \check{U}(a)$，我们有 $f(x_n) \leq g(x_n) \leq h(x_n)$ 和 $\lim f(x_n) = \lim h(x_n) = A$，因而 $\lim g(x_n) = A$（将函数极限转化为序列极限，从而直接应用数列的夹挤原理）。
+证明：对任何满足条件 $x_n \to a$ 的序列 $\\{x_n\\} \subset \check{U}(a)$，我们有 $f(x_n) \leq g(x_n) \leq h(x_n)$ 和 $\lim f(x_n) = \lim h(x_n) = A$，因而 $\lim g(x_n) = A$（将函数极限转化为序列极限，从而直接应用序列的夹挤原理）。
 
 **定理 3：关于函数极限，有以下运算法则（成立条件是右端有意义）：**
 
@@ -250,13 +250,13 @@ $$
 
 记 $\delta = \min\\{\delta_1, \delta_2\\}$，则对于 $x \in \check{U}(a, \delta)$ 就有 $f(x) < A + \epsilon = B - \epsilon < g(x)$。
 
-**定理 7（关于函数极限的收敛原理）：设函数 $f(x)$ 在 $\check{U}(a, \eta)$ 上有定义，则使得有穷极限 $\lim_{x \to a} f(x)$ 存在的充分必要条件是：对任意 $\epsilon > 0$，存在 $\eta > 0$，使得只要 $x$ 和 $x'$ 适合 $0 < \|x - a \| < \delta, 0 < \|x' - a\| < \delta$，就有 $\|f(x) - f'(x) \| < \epsilon$。**
+**定理 7（关于函数极限的收敛原理）：设函数 $f(x)$ 在 $\check{U}(a, \eta)$ 上有定义，则使得有穷极限 $\lim_{x \to a} f(x)$ 存在的充分必要条件是：对任意 $\epsilon > 0$，存在 $\delta > 0$，使得只要 $x$ 和 $x'$ 适合 $0 < \|x - a \| < \delta, 0 < \|x' - a\| < \delta$，就有 $\|f(x) - f'(x) \| < \epsilon$。**
 
 证明：
 
 必要性：设 $\lim_{x \to a} f(x) = A \in \mathbf{R}$。则对于任意 $\epsilon > 0$，存在 $\delta > 0$，使得 $0 < \|x-a\| < \delta \implies \|f(x) - A\| < \epsilon/2$。则如果 $0 < \|x-a\| < \delta, 0 < \|x'-a\| < \delta$，就有 $\|f(x) - f(x')\| \leq \|f(x) - A\| + \|f'(x) - A\| < \epsilon/2 + \epsilon/2 = \epsilon$。
 
-充分性：设对任意 $\epsilon > 0$，存在 $\delta > 0$，使得只要 $0 < \|x-a\| < \delta, 0 < \|x'-a\| < \delta$，就有 $\|f(x) - f(x')\| < \epsilon$。我们来证明这时一定存在有穷极限 $\lim_{x \to a}f(x)$。设序列 $\\{x_n\\} \subset \check{U}(a, \eta)$ 满足条件 $x_n \to a$，则存在 $N \in \mathbf{N}$，使得 $n > \mathbf{N}$ 时有 $0 < \|x_n - a\| < \delta$。于是，当 $m, n > N$时，就有 $\|f(x_m) - f(x_n)\| < \epsilon$。根据序列收敛原理可以断定 $f(\\{x_n\\})$ 收敛。
+充分性：设对任意 $\epsilon > 0$，存在 $\delta > 0$，使得只要 $0 < \|x-a\| < \delta, 0 < \|x'-a\| < \delta$，就有 $\|f(x) - f(x')\| < \epsilon$。我们来证明这时一定存在有穷极限 $\lim_{x \to a}f(x)$。设序列 $\\{x_n\\} \subset \check{U}(a, \eta)$ 满足条件 $x_n \to a$，则存在 $N \in \mathbf{N}$，使得 $n > N$ 时有 $0 < \|x_n - a\| < \delta$。于是，当 $m, n > N$时，就有 $\|f(x_m) - f(x_n)\| < \epsilon$。根据序列收敛原理可以断定 $f(\\{x_n\\})$ 收敛。
 
 接下来证明，所有这样的序列 $f(\\{x_n\\})$ 收敛于同一极限 $A$。使用反证法，假设存在序列 $\\{x'_n\\}$ 和 $\\{x_n''\\}$ 满足条件：
 
