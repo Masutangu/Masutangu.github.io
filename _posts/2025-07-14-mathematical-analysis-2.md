@@ -307,7 +307,7 @@ $$
 **（2）设函数 $f(x)$ 在开区间 $(a, a+\eta)$ 上递增（递减），则**
 
 $$
-\lim_{x\to a+}f(x) = \sup_{x \in (a, a+\eta)} f(x) (递减：\inf_{x \in (a, a+\eta)} f(x))
+\lim_{x\to a+}f(x) = \inf_{x \in (a, a+\eta)} f(x) (递减：\sup_{x \in (a, a+\eta)} f(x))
 $$
 
 证明：如果 $\sup_{x\in (a-\eta, a)} f(x) = + \infty$，那么对任意 $E > 0$，存在 $x_E \in (a-\eta, a)$，使得 $f(x_E) > E$。
